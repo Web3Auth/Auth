@@ -1,0 +1,5 @@
+{
+  "require": ["../../test/setup.js"],
+  "timeout": 0,
+  "exit": true
+}
