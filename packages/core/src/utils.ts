@@ -1,4 +1,5 @@
 import { JRPCResponse } from "./jrpc";
+import SerializableError from "./serializableError";
 
 export async function documentReady(): Promise<void> {
   return new Promise<void>((resolve) => {
@@ -12,6 +13,12 @@ export async function documentReady(): Promise<void> {
   });
 }
 
+export function serializeError(error: Error | SerializableError<any>): string {
+  return error.toString();
+}
+
+export type Json = boolean | number | string | null | { [property: string]: Json } | Json[];
+
 export const getRpcPromiseCallback = (resolve: (value?: any) => void, reject: (error?: Error) => void, unwrapResult = true) => (
   error: Error,
   response: JRPCResponse<unknown>
@@ -24,8 +31,6 @@ export const getRpcPromiseCallback = (resolve: (value?: any) => void, reject: (e
     resolve(response.result);
   }
 };
-
-export const randomId = (): number => Math.floor((Math.random() * Number.MAX_SAFE_INTEGER) / 2);
 
 export type Maybe<T> = Partial<T> | null | undefined;
 

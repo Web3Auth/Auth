@@ -5,7 +5,7 @@
 ## Usage
 
 ```
-const core = require('core');
+const core = require('@openlogin/core');
 
 // TODO: DEMONSTRATE API
 ```

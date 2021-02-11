@@ -1,12 +1,14 @@
-import { createIdRemapMiddleware, JsonRpcEngine, JsonRpcRequest } from "json-rpc-engine";
+// import { createIdRemapMiddleware, JsonRpcEngine } from "json-rpc-engine";
 import pump from "pump";
 
 import { iframeDOMElementID } from "./constants";
-import createStreamMiddleware, { createErrorMiddleware, JRPCRequest } from "./jrpc";
+import createStreamMiddleware, { createErrorMiddleware, createIdRemapMiddleware, JRPCRequest } from "./jrpc";
+import { JsonRpcEngine } from "./jrpcengine";
 import { ObjectMultiplex } from "./mux";
 import { PostMessageStream } from "./postMessageStream";
+import { randomId } from "./randomId";
 import SafeEventEmitter from "./safeEventEmitter";
-import { documentReady, randomId } from "./utils";
+import { documentReady } from "./utils";
 
 export class Provider extends SafeEventEmitter {
   iframeElem: HTMLIFrameElement | null = null;
@@ -76,6 +78,6 @@ export class Provider extends SafeEventEmitter {
     if (!payload.id) {
       payload.id = randomId();
     }
-    this.rpcEngine.handle(payload as JsonRpcRequest<unknown>, callback);
+    this.rpcEngine.handle(payload as JRPCRequest<unknown>, callback);
   }
 }

@@ -1,6 +1,6 @@
-import { JsonRpcMiddleware } from "json-rpc-engine";
 import { Duplex } from "stream";
 
+import { randomId } from "./randomId";
 import SafeEventEmitter from "./safeEventEmitter";
 import SerializableError from "./serializableError";
 
@@ -25,7 +25,7 @@ export interface JRPCRequest<T> extends JRPCBase {
 
 export type JRPCMiddleware<T, U> = (req: JRPCRequest<T>, res: JRPCResponse<U>, next: any, end: any) => void;
 
-export function createErrorMiddleware(log: ConsoleLike): JsonRpcMiddleware<unknown, unknown> {
+export function createErrorMiddleware(log: ConsoleLike): JRPCMiddleware<unknown, unknown> {
   return (req, res, next) => {
     // json-rpc-engine will terminate the request when it notices this error
     if (typeof req.method !== "string" || !req.method) {
@@ -44,6 +44,7 @@ export function createErrorMiddleware(log: ConsoleLike): JsonRpcMiddleware<unkno
 }
 export type JRPCEngineNextCallback = (cb?: (done: (error?: Error) => void) => void) => void;
 export type JRPCEngineEndCallback = (error?: Error) => void;
+export type JsonRpcEngineReturnHandler = (done: (error?: Error) => void) => void;
 
 interface IdMapValue {
   req: JRPCRequest<unknown>;
@@ -105,7 +106,7 @@ export default function createStreamMiddleware() {
     write: processMessage,
   });
 
-  const middleware: JsonRpcMiddleware<unknown, unknown> = (req, res, next, end) => {
+  const middleware: JRPCMiddleware<unknown, unknown> = (req, res, next, end) => {
     // write req to stream
     stream.push(req);
     // register request on id map
@@ -113,4 +114,18 @@ export default function createStreamMiddleware() {
   };
 
   return { events, middleware, stream };
+}
+
+export function createIdRemapMiddleware(): JRPCMiddleware<unknown, unknown> {
+  return (req, res, next, _end) => {
+    const originalId = req.id;
+    const newId = randomId();
+    req.id = newId;
+    res.id = newId;
+    next((done) => {
+      req.id = originalId;
+      res.id = originalId;
+      done();
+    });
+  };
 }
