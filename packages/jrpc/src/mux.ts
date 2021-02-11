@@ -6,7 +6,7 @@ import { Duplex } from "stream";
 import Substream from "./substream";
 import { BufferEncoding } from "./utils";
 
-const IGNORE_SUBSTREAM = Symbol("IGNORE_SUBSTREAM");
+export const IGNORE_SUBSTREAM = Symbol("IGNORE_SUBSTREAM");
 
 interface Chunk {
   name: string;

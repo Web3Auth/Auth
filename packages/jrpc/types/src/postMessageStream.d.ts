@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { Duplex } from "stream";
-export declare class PostMessageStream extends Duplex {
+export default class PostMessageStream extends Duplex {
     _init: boolean;
     _haveSyn: boolean;
     _name: string;

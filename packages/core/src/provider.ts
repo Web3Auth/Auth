@@ -6,13 +6,13 @@ import {
   JRPCRequest,
   JsonRpcEngine,
   ObjectMultiplex,
+  PostMessageStream,
   randomId,
   SafeEventEmitter,
 } from "@openlogin/jrpc";
 import pump from "pump";
 
 import { iframeDOMElementID } from "./constants";
-import { PostMessageStream } from "./postMessageStream";
 import { documentReady } from "./utils";
 
 export class Provider extends SafeEventEmitter {
@@ -50,7 +50,7 @@ export class Provider extends SafeEventEmitter {
   async setupStream(): Promise<void> {
     if (this.iframeElem === null) throw new Error("iframe is null");
     this.rpcStream = new PostMessageStream({
-      name: `embed_rpc`,
+      name: "embed_rpc",
       target: "iframe_rpc",
       targetWindow: this.iframeElem.contentWindow,
     });

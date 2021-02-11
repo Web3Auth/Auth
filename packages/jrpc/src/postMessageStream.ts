@@ -7,7 +7,7 @@ function noop(): void {
 const SYN = "SYN";
 const ACK = "ACK";
 
-export class PostMessageStream extends Duplex {
+export default class PostMessageStream extends Duplex {
   _init: boolean;
 
   _haveSyn: boolean;
