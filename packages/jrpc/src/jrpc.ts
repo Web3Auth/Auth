@@ -13,17 +13,48 @@ export interface JRPCBase {
   id?: JRPCId;
 }
 
+export function serializeError(error: Error | SerializableError<any>): string {
+  return error.toString();
+}
 export interface JRPCResponse<T> extends JRPCBase {
   result?: T;
   error?: any;
 }
+
+export const getRpcPromiseCallback = (resolve: (value?: any) => void, reject: (error?: Error) => void, unwrapResult = true) => (
+  error: Error,
+  response: JRPCResponse<unknown>
+): void => {
+  if (error || response.error) {
+    reject(error || response.error);
+  } else if (!unwrapResult || Array.isArray(response)) {
+    resolve(response);
+  } else {
+    resolve(response.result);
+  }
+};
 
 export interface JRPCRequest<T> extends JRPCBase {
   method: string;
   params?: T;
 }
 
-export type JRPCMiddleware<T, U> = (req: JRPCRequest<T>, res: JRPCResponse<U>, next: any, end: any) => void;
+export type JRPCEngineNextCallback = (cb?: (done: (error?: Error) => void) => void) => void;
+export type JRPCEngineEndCallback = (error?: Error) => void;
+export type JsonRpcEngineReturnHandler = (done: (error?: Error) => void) => void;
+
+interface IdMapValue {
+  req: JRPCRequest<unknown>;
+  res: JRPCResponse<unknown>;
+  next: JRPCEngineNextCallback;
+  end: JRPCEngineEndCallback;
+}
+
+interface IdMap {
+  [requestId: string]: IdMapValue;
+}
+
+export type JRPCMiddleware<T, U> = (req: JRPCRequest<T>, res: JRPCResponse<U>, next: JRPCEngineNextCallback, end: JRPCEngineEndCallback) => void;
 
 export function createErrorMiddleware(log: ConsoleLike): JRPCMiddleware<unknown, unknown> {
   return (req, res, next) => {
@@ -42,22 +73,7 @@ export function createErrorMiddleware(log: ConsoleLike): JRPCMiddleware<unknown,
     });
   };
 }
-export type JRPCEngineNextCallback = (cb?: (done: (error?: Error) => void) => void) => void;
-export type JRPCEngineEndCallback = (error?: Error) => void;
-export type JsonRpcEngineReturnHandler = (done: (error?: Error) => void) => void;
-
-interface IdMapValue {
-  req: JRPCRequest<unknown>;
-  res: JRPCResponse<unknown>;
-  next: JRPCEngineNextCallback;
-  end: JRPCEngineEndCallback;
-}
-
-interface IdMap {
-  [requestId: string]: IdMapValue;
-}
-
-export default function createStreamMiddleware() {
+export function createStreamMiddleware() {
   const idMap: IdMap = {};
 
   function readNoop() {

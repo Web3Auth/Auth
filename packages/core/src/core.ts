@@ -1,7 +1,7 @@
-import { JRPCRequest } from "./jrpc";
-import { ObjectMultiplex, setupMultiplex } from "./mux";
+import { getRpcPromiseCallback, JRPCRequest, ObjectMultiplex, setupMultiplex } from "@openlogin/jrpc";
+
 import { Provider } from "./provider";
-import { getRpcPromiseCallback, Maybe } from "./utils";
+import { Maybe } from "./utils";
 
 type OpenLoginState = {
   iframeURL: string;

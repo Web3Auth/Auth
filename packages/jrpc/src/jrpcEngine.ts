@@ -1,7 +1,14 @@
-import { JRPCEngineEndCallback, JRPCEngineNextCallback, JRPCRequest, JRPCResponse, JsonRpcEngineReturnHandler } from "./jrpc";
+import {
+  JRPCEngineEndCallback,
+  JRPCEngineNextCallback,
+  JRPCMiddleware,
+  JRPCRequest,
+  JRPCResponse,
+  JsonRpcEngineReturnHandler,
+  serializeError,
+} from "./jrpc";
 import SafeEventEmitter from "./safeEventEmitter";
 import SerializableError from "./serializableError";
-import { serializeError } from "./utils";
 
 /**
  * An identifier established by the Client that MUST contain a String, Number,
@@ -17,8 +24,6 @@ export interface JsonRpcError {
   data?: unknown;
   stack?: string;
 }
-
-export type JRPCMiddleware<T, U> = (req: JRPCRequest<T>, res: JRPCResponse<U>, next: JRPCEngineNextCallback, end: JRPCEngineEndCallback) => void;
 
 /**
  * A JSON-RPC request and response processor.

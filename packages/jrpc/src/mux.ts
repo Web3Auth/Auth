@@ -3,7 +3,7 @@ import once from "once";
 import pump from "pump";
 import { Duplex } from "stream";
 
-import { Substream } from "./substream";
+import Substream from "./substream";
 import { BufferEncoding } from "./utils";
 
 const IGNORE_SUBSTREAM = Symbol("IGNORE_SUBSTREAM");

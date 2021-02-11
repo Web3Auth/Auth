@@ -1,13 +1,18 @@
 // import { createIdRemapMiddleware, JsonRpcEngine } from "json-rpc-engine";
+import {
+  createErrorMiddleware,
+  createIdRemapMiddleware,
+  createStreamMiddleware,
+  JRPCRequest,
+  JsonRpcEngine,
+  ObjectMultiplex,
+  randomId,
+  SafeEventEmitter,
+} from "@openlogin/jrpc";
 import pump from "pump";
 
 import { iframeDOMElementID } from "./constants";
-import createStreamMiddleware, { createErrorMiddleware, createIdRemapMiddleware, JRPCRequest } from "./jrpc";
-import { JsonRpcEngine } from "./jrpcengine";
-import { ObjectMultiplex } from "./mux";
 import { PostMessageStream } from "./postMessageStream";
-import { randomId } from "./randomId";
-import SafeEventEmitter from "./safeEventEmitter";
 import { documentReady } from "./utils";
 
 export class Provider extends SafeEventEmitter {
