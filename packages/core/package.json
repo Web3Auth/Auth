@@ -22,6 +22,11 @@
   },
   "dependencies": {
     "@types/node": "^14.14.25",
+    "end-of-stream": "^1.4.4",
+    "fast-safe-stringify": "^2.0.7",
+    "json-rpc-engine": "^6.1.0",
+    "once": "^1.4.0",
+    "pump": "^3.0.0",
     "readable-stream": "^3.6.0"
   },
   "peerDependencies": {
