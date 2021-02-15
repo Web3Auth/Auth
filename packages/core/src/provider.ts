@@ -8,6 +8,7 @@ import {
   PostMessageStream,
   randomId,
   SafeEventEmitter,
+  setupMultiplex,
 } from "@openlogin/jrpc";
 import pump from "pump";
 
@@ -54,10 +55,12 @@ export class Provider extends SafeEventEmitter {
       targetWindow: this.iframeElem.contentWindow,
     });
 
-    this.mux = new ObjectMultiplex();
-    pump(this.rpcStream, this.mux, this.rpcStream, (error) => {
-      window.console.log(`disconnected `, error);
-    });
+    // this.mux = new ObjectMultiplex();
+    this.mux = setupMultiplex(this.rpcStream);
+
+    // pump(this.rpcStream, this.mux, this.rpcStream, (error) => {
+    //   window.console.log(`disconnected `, error);
+    // });
     const JRPCConnection = createStreamMiddleware();
     pump(JRPCConnection.stream, this.mux.createStream("jrpc"), JRPCConnection.stream, (error) => {
       window.console.log(`JRPC connection broken`, error);

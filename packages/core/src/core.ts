@@ -1,4 +1,4 @@
-import { getRpcPromiseCallback, JRPCRequest, ObjectMultiplex, setupMultiplex } from "@openlogin/jrpc";
+import { getRpcPromiseCallback, JRPCRequest } from "@openlogin/jrpc";
 
 import { Provider } from "./provider";
 import { Maybe } from "./utils";
@@ -12,8 +12,6 @@ class OpenLogin {
 
   state: OpenLoginState;
 
-  rpcMux: ObjectMultiplex;
-
   constructor({ iframeURL }: { iframeURL: string }) {
     this.provider = new Proxy(new Provider(), {
       deleteProperty: () => true, // work around for web3
@@ -23,7 +21,6 @@ class OpenLogin {
 
   async init(): Promise<void> {
     await this.provider.init({ iframeURL: this.state.iframeURL });
-    this.rpcMux = setupMultiplex(this.provider.rpcStream);
   }
 
   async cleanup(): Promise<void> {
