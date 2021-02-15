@@ -18,12 +18,12 @@ class OpenLogin {
     this.provider = new Proxy(new Provider(), {
       deleteProperty: () => true, // work around for web3
     });
-    this.rpcMux = setupMultiplex(this.provider.rpcStream);
-    this.state.iframeURL = iframeURL;
+    this.state = { iframeURL };
   }
 
   async init(): Promise<void> {
     await this.provider.init({ iframeURL: this.state.iframeURL });
+    this.rpcMux = setupMultiplex(this.provider.rpcStream);
   }
 
   async cleanup(): Promise<void> {

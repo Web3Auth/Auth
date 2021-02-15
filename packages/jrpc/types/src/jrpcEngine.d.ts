@@ -1,3 +1,5 @@
+/// <reference types="node" />
+import { Duplex } from "stream";
 import { JRPCMiddleware, JRPCRequest, JRPCResponse } from "./jrpc";
 import SafeEventEmitter from "./safeEventEmitter";
 /**
@@ -17,7 +19,7 @@ export interface JsonRpcError {
  * A JSON-RPC request and response processor.
  * Give it a stack of middleware, pass it requests, and get back responses.
  */
-export declare class JsonRpcEngine extends SafeEventEmitter {
+export declare class JRPCEngine extends SafeEventEmitter {
     private _middleware;
     constructor();
     /**
@@ -111,3 +113,8 @@ export declare class JsonRpcEngine extends SafeEventEmitter {
      */
     private static _checkForCompletion;
 }
+export declare function mergeMiddleware(middlewareStack: JRPCMiddleware<unknown, unknown>[]): JRPCMiddleware<unknown, unknown>;
+export interface EngineStreamOptions {
+    engine: JRPCEngine;
+}
+export declare function createEngineStream(opts: EngineStreamOptions): Duplex;

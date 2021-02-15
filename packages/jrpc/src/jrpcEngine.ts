@@ -1,10 +1,12 @@
+import { Duplex } from "stream";
+
 import {
   JRPCEngineEndCallback,
   JRPCEngineNextCallback,
+  JRPCEngineReturnHandler,
   JRPCMiddleware,
   JRPCRequest,
   JRPCResponse,
-  JsonRpcEngineReturnHandler,
   serializeError,
 } from "./jrpc";
 import SafeEventEmitter from "./safeEventEmitter";
@@ -29,7 +31,7 @@ export interface JsonRpcError {
  * A JSON-RPC request and response processor.
  * Give it a stack of middleware, pass it requests, and get back responses.
  */
-export class JsonRpcEngine extends SafeEventEmitter {
+export class JRPCEngine extends SafeEventEmitter {
   private _middleware: JRPCMiddleware<unknown, unknown>[];
 
   constructor() {
@@ -108,16 +110,16 @@ export class JsonRpcEngine extends SafeEventEmitter {
   asMiddleware(): JRPCMiddleware<unknown, unknown> {
     return async (req, res, next, end) => {
       try {
-        const [middlewareError, isComplete, returnHandlers] = await JsonRpcEngine._runAllMiddleware(req, res, this._middleware);
+        const [middlewareError, isComplete, returnHandlers] = await JRPCEngine._runAllMiddleware(req, res, this._middleware);
 
         if (isComplete) {
-          await JsonRpcEngine._runReturnHandlers(returnHandlers);
+          await JRPCEngine._runReturnHandlers(returnHandlers);
           return end(middlewareError as Error);
         }
 
         return next(async (handlerCallback) => {
           try {
-            await JsonRpcEngine._runReturnHandlers(returnHandlers);
+            await JRPCEngine._runReturnHandlers(returnHandlers);
           } catch (error) {
             return handlerCallback(error);
           }
@@ -228,15 +230,15 @@ export class JsonRpcEngine extends SafeEventEmitter {
    * are satisfied.
    */
   private async _processRequest(req: JRPCRequest<unknown>, res: JRPCResponse<unknown>): Promise<void> {
-    const [error, isComplete, returnHandlers] = await JsonRpcEngine._runAllMiddleware(req, res, this._middleware);
+    const [error, isComplete, returnHandlers] = await JRPCEngine._runAllMiddleware(req, res, this._middleware);
 
     // Throw if "end" was not called, or if the response has neither a result
     // nor an error.
-    JsonRpcEngine._checkForCompletion(req, res, isComplete);
+    JRPCEngine._checkForCompletion(req, res, isComplete);
 
     // The return handlers should run even if an error was encountered during
     // middleware processing.
-    await JsonRpcEngine._runReturnHandlers(returnHandlers);
+    await JRPCEngine._runReturnHandlers(returnHandlers);
 
     // Now we re-throw the middleware processing error, if any, to catch it
     // further up the call chain.
@@ -260,17 +262,17 @@ export class JsonRpcEngine extends SafeEventEmitter {
     [
       unknown, // error
       boolean, // isComplete
-      JsonRpcEngineReturnHandler[]
+      JRPCEngineReturnHandler[]
     ]
   > {
-    const returnHandlers: JsonRpcEngineReturnHandler[] = [];
+    const returnHandlers: JRPCEngineReturnHandler[] = [];
     let error = null;
     let isComplete = false;
 
     // Go down stack of middleware, call and collect optional returnHandlers
     for (const middleware of middlewareStack) {
       // eslint-disable-next-line no-await-in-loop
-      [error, isComplete] = await JsonRpcEngine._runMiddleware(req, res, middleware, returnHandlers);
+      [error, isComplete] = await JRPCEngine._runMiddleware(req, res, middleware, returnHandlers);
       if (isComplete) {
         break;
       }
@@ -288,7 +290,7 @@ export class JsonRpcEngine extends SafeEventEmitter {
     req: JRPCRequest<unknown>,
     res: JRPCResponse<unknown>,
     middleware: JRPCMiddleware<unknown, unknown>,
-    returnHandlers: JsonRpcEngineReturnHandler[]
+    returnHandlers: JRPCEngineReturnHandler[]
   ): Promise<[unknown, boolean]> {
     return new Promise((resolve) => {
       const end: JRPCEngineEndCallback = (err?: unknown) => {
@@ -300,13 +302,13 @@ export class JsonRpcEngine extends SafeEventEmitter {
         resolve([error, true]);
       };
 
-      const next: JRPCEngineNextCallback = (returnHandler?: JsonRpcEngineReturnHandler) => {
+      const next: JRPCEngineNextCallback = (returnHandler?: JRPCEngineReturnHandler) => {
         if (res.error) {
           end(res.error);
         } else {
           if (returnHandler) {
             if (typeof returnHandler !== "function") {
-              end(new SerializableError({ message: "JsonRpcEngine: 'next' return handlers must be functions" }));
+              end(new SerializableError({ message: "JRPCEngine: 'next' return handlers must be functions" }));
             }
             returnHandlers.push(returnHandler);
           }
@@ -328,7 +330,7 @@ export class JsonRpcEngine extends SafeEventEmitter {
    * Serially executes array of return handlers. The request and response are
    * assumed to be in their scope.
    */
-  private static async _runReturnHandlers(handlers: JsonRpcEngineReturnHandler[]): Promise<void> {
+  private static async _runReturnHandlers(handlers: JRPCEngineReturnHandler[]): Promise<void> {
     for (const handler of handlers) {
       // eslint-disable-next-line no-await-in-loop
       await new Promise<void>((resolve, reject) => {
@@ -349,4 +351,44 @@ export class JsonRpcEngine extends SafeEventEmitter {
       throw new SerializableError({ message: "Nothing ended request" });
     }
   }
+}
+
+export function mergeMiddleware(middlewareStack: JRPCMiddleware<unknown, unknown>[]): JRPCMiddleware<unknown, unknown> {
+  const engine = new JRPCEngine();
+  middlewareStack.forEach((middleware) => engine.push(middleware));
+  return engine.asMiddleware();
+}
+
+export interface EngineStreamOptions {
+  engine: JRPCEngine;
+}
+
+export function createEngineStream(opts: EngineStreamOptions): Duplex {
+  if (!opts || !opts.engine) {
+    throw new Error("Missing engine parameter!");
+  }
+
+  const { engine } = opts;
+  let stream: Duplex;
+
+  function read() {
+    return undefined;
+  }
+
+  function write(req: JRPCRequest<unknown>, _encoding: unknown, cb: (error?: Error | null) => void) {
+    engine.handle(req, (_err, res) => {
+      stream.push(res);
+    });
+    cb();
+  }
+
+  stream = new Duplex({ objectMode: true, read, write });
+
+  // forward notifications
+  if (engine.on) {
+    engine.on("notification", (message) => {
+      stream.push(message);
+    });
+  }
+  return stream;
 }

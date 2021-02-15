@@ -4,6 +4,8 @@ import { randomId } from "./randomId";
 import SafeEventEmitter from "./safeEventEmitter";
 import SerializableError from "./serializableError";
 
+export type Json = boolean | number | string | null | { [property: string]: Json } | Json[];
+
 export type JRPCVersion = "2.0";
 export type JRPCId = number | string | void;
 
@@ -41,7 +43,7 @@ export interface JRPCRequest<T> extends JRPCBase {
 
 export type JRPCEngineNextCallback = (cb?: (done: (error?: Error) => void) => void) => void;
 export type JRPCEngineEndCallback = (error?: Error) => void;
-export type JsonRpcEngineReturnHandler = (done: (error?: Error) => void) => void;
+export type JRPCEngineReturnHandler = (done: (error?: Error) => void) => void;
 
 interface IdMapValue {
   req: JRPCRequest<unknown>;
@@ -73,7 +75,8 @@ export function createErrorMiddleware(log: ConsoleLike): JRPCMiddleware<unknown,
     });
   };
 }
-export function createStreamMiddleware() {
+
+export function createStreamMiddleware(): { events: SafeEventEmitter; middleware: JRPCMiddleware<unknown, unknown>; stream: Duplex } {
   const idMap: IdMap = {};
 
   function readNoop() {
@@ -132,6 +135,27 @@ export function createStreamMiddleware() {
   return { events, middleware, stream };
 }
 
+type ScaffoldMiddlewareHandler<T, U> = JRPCMiddleware<T, U> | Json;
+
+export function createScaffoldMiddleware(handlers: {
+  [methodName: string]: ScaffoldMiddlewareHandler<unknown, unknown>;
+}): JRPCMiddleware<unknown, unknown> {
+  return (req, res, next, end) => {
+    const handler = handlers[req.method];
+    // if no handler, return
+    if (handler === undefined) {
+      return next();
+    }
+    // if handler is fn, call as middleware
+    if (typeof handler === "function") {
+      return handler(req, res, next, end);
+    }
+    // if handler is some other value, use as result
+    (res as JRPCResponse<unknown>).result = handler;
+    return end();
+  };
+}
+
 export function createIdRemapMiddleware(): JRPCMiddleware<unknown, unknown> {
   return (req, res, next, _end) => {
     const originalId = req.id;
@@ -143,5 +167,12 @@ export function createIdRemapMiddleware(): JRPCMiddleware<unknown, unknown> {
       res.id = originalId;
       done();
     });
+  };
+}
+
+export function createLoggerMiddleware(logger: ConsoleLike): JRPCMiddleware<unknown, unknown> {
+  return (req, res, next, _) => {
+    logger.debug("REQ", req, "RES", res);
+    next();
   };
 }

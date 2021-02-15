@@ -1,10 +1,9 @@
-// import { createIdRemapMiddleware, JsonRpcEngine } from "json-rpc-engine";
 import {
   createErrorMiddleware,
   createIdRemapMiddleware,
   createStreamMiddleware,
+  JRPCEngine,
   JRPCRequest,
-  JsonRpcEngine,
   ObjectMultiplex,
   PostMessageStream,
   randomId,
@@ -20,7 +19,7 @@ export class Provider extends SafeEventEmitter {
 
   rpcStream: PostMessageStream;
 
-  rpcEngine: JsonRpcEngine;
+  rpcEngine: JRPCEngine;
 
   initialized: boolean;
 
@@ -56,15 +55,15 @@ export class Provider extends SafeEventEmitter {
     });
 
     this.mux = new ObjectMultiplex();
-    pump(this.rpcStream, this.mux, this.rpcStream, (streamName, error) => {
-      window.console.log(`${streamName} disconnected.`, error);
+    pump(this.rpcStream, this.mux, this.rpcStream, (error) => {
+      window.console.log(`disconnected `, error);
     });
     const JRPCConnection = createStreamMiddleware();
-    pump(JRPCConnection.stream, this.mux.createStream("jrpc"), JRPCConnection.stream, (streamName, error) => {
+    pump(JRPCConnection.stream, this.mux.createStream("jrpc"), JRPCConnection.stream, (error) => {
       window.console.log(`JRPC connection broken`, error);
     });
 
-    const rpcEngine = new JsonRpcEngine();
+    const rpcEngine = new JRPCEngine();
     rpcEngine.push(createIdRemapMiddleware());
     rpcEngine.push(createErrorMiddleware(window.console));
     rpcEngine.push(JRPCConnection.middleware);
