@@ -3,19 +3,6 @@ import { Duplex } from "stream";
 import { JRPCMiddleware, JRPCRequest, JRPCResponse } from "./jrpc";
 import SafeEventEmitter from "./safeEventEmitter";
 /**
- * An identifier established by the Client that MUST contain a String, Number,
- * or NULL value if included. If it is not included it is assumed to be a
- * notification. The value SHOULD normally not be Null and Numbers SHOULD
- * NOT contain fractional parts.
- */
-export declare type JsonRpcId = number | string | void;
-export interface JsonRpcError {
-    code: number;
-    message: string;
-    data?: unknown;
-    stack?: string;
-}
-/**
  * A JSON-RPC request and response processor.
  * Give it a stack of middleware, pass it requests, and get back responses.
  */
