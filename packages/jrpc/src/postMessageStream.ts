@@ -22,7 +22,7 @@ export default class PostMessageStream extends Duplex {
 
   _onMessage: any;
 
-  constructor({ name, target, targetWindow }: { name: string; target: string; targetWindow: any }) {
+  constructor({ name, target, targetWindow }: { name: string; target: string; targetWindow: Window }) {
     super({
       objectMode: true,
     });
@@ -43,7 +43,7 @@ export default class PostMessageStream extends Duplex {
     this.cork();
   }
 
-  _onData(data): void {
+  _onData(data: unknown): void {
     if (!this._init) {
       // listen for handshake
       if (data === SYN) {
@@ -66,7 +66,7 @@ export default class PostMessageStream extends Duplex {
     }
   }
 
-  _postMessage(data): void {
+  _postMessage(data: unknown): void {
     this._targetWindow.postMessage(
       {
         target: this._target,
@@ -98,7 +98,7 @@ export default class PostMessageStream extends Duplex {
     return undefined;
   }
 
-  _write(data: any, _, cb: () => void): void {
+  _write(data: unknown, _, cb: () => void): void {
     this._postMessage(data);
     cb();
   }
