@@ -11,12 +11,12 @@ export default class PostMessageStream extends Duplex {
     constructor({ name, target, targetWindow }: {
         name: string;
         target: string;
-        targetWindow: any;
+        targetWindow: Window;
     });
     _handShake(): void;
-    _onData(data: any): void;
-    _postMessage(data: any): void;
+    _onData(data: unknown): void;
+    _postMessage(data: unknown): void;
     onMessage(event: MessageEvent): void;
     _read(): void;
-    _write(data: any, _: any, cb: () => void): void;
+    _write(data: unknown, _: any, cb: () => void): void;
 }
