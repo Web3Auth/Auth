@@ -5,23 +5,26 @@ import OpenLoginStore from "./store";
 import { constructURL, Maybe } from "./utils";
 
 type OpenLoginState = {
-  iframeUrl: string;
   authUrl: string;
   userProfile?: Json;
   support3PC?: boolean;
   clientId: string;
+  iframeUrl: string;
   redirectUrl: string;
+  webAuthnUrl: string;
   loginProvider?: string;
-  fastLogin?: boolean;
   store: OpenLoginStore;
   popup: boolean;
 };
 
-type LoginParams = {
-  popup: boolean;
-  loginProvider: string;
+type BaseLoginParams = {
   clientId: string;
+  popup: boolean;
   redirectUrl: string;
+};
+
+type LoginParams = BaseLoginParams & {
+  loginProvider: string;
 };
 
 type OpenLoginOptions = {
@@ -29,6 +32,7 @@ type OpenLoginOptions = {
   iframeUrl: string;
   redirectUrl?: string;
   authUrl?: string;
+  webAuthnUrl?: string;
   popup?: boolean;
 };
 
@@ -42,7 +46,10 @@ class OpenLogin {
       options.redirectUrl = window.location.href;
     }
     if (!options.authUrl) {
-      options.authUrl = options.iframeUrl;
+      options.authUrl = `${options.iframeUrl}/auth`;
+    }
+    if (!options.webAuthnUrl) {
+      options.webAuthnUrl = `${options.iframeUrl}/webauthn`;
     }
     if (!options.popup) {
       options.popup = false;
@@ -61,6 +68,7 @@ class OpenLogin {
       authUrl: options.authUrl,
       clientId: options.clientId,
       redirectUrl: options.redirectUrl,
+      webAuthnUrl: options.webAuthnUrl,
     };
   }
 
@@ -70,14 +78,33 @@ class OpenLogin {
     this._syncState(this._getHashQueryParams());
   }
 
-  async login(params: Partial<LoginParams>): Promise<void> {
-    let loginUrl: string;
+  async webAuthnLogin(params: BaseLoginParams): Promise<void> {
+    let webAuthnLoginUrl: string;
+    if (!this.state.support3PC) {
+      webAuthnLoginUrl = constructURL(this.state.authUrl, params);
+    } else {
+      await this._setWebAuthnLoginParams(params);
+      webAuthnLoginUrl = this.state.webAuthnUrl;
+    }
+    return this.open(webAuthnLoginUrl);
+  }
 
-    const loginParams: LoginParams = {
+  async login(params: Partial<LoginParams>): Promise<void> {
+    const defaultParams: BaseLoginParams = {
       clientId: this.state.clientId,
       redirectUrl: this.state.redirectUrl,
       popup: this.state.popup,
+    };
+    // fast login flow
+    if (this.state.store.get("webAuthnPreferred") === true) {
+      return this.webAuthnLogin(defaultParams);
+    }
+
+    let loginUrl: string;
+
+    const loginParams: LoginParams = {
       loginProvider: params.loginProvider,
+      ...defaultParams,
       ...params,
     };
 
@@ -121,6 +148,13 @@ class OpenLogin {
     });
   }
 
+  async _setWebAuthnLoginParams(params: BaseLoginParams): Promise<Record<string, unknown>> {
+    return this.request<Json, Record<string, unknown>>({
+      method: "openlogin_set_webauthn_login_params",
+      params: [params],
+    });
+  }
+
   async _setLoginParams(loginParams: LoginParams): Promise<Record<string, unknown>> {
     return this.request<Json, Record<string, unknown>>({
       method: "openlogin_set_login_params",
@@ -129,6 +163,15 @@ class OpenLogin {
   }
 
   _syncState(newState: Record<string, unknown>): void {
+    if (newState.store) {
+      if (typeof newState.store !== "object") {
+        throw new Error("expected store to be an object");
+      }
+      Object.keys(newState.store).forEach((key) => {
+        this.state.store.set(key, newState.store[key]);
+      });
+      delete newState.store;
+    }
     this.state = { ...this.state, ...newState };
   }
 
