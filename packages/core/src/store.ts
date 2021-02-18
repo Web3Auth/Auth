@@ -41,5 +41,6 @@ export default class OpenLoginStore {
   set<T>(key: string, value: T): void {
     const store = JSON.parse(this.storage.getItem(storeKey));
     store[key] = value;
+    this.storage.setItem(storeKey, JSON.stringify(store));
   }
 }
