@@ -26,8 +26,8 @@ export class Provider extends SafeEventEmitter {
 
   mux: ObjectMultiplex;
 
-  async init({ iframeURL }: { iframeURL: string }): Promise<void> {
-    await this.initIFrame(iframeURL);
+  async init({ iframeUrl }: { iframeUrl: string }): Promise<void> {
+    await this.initIFrame(iframeUrl);
     await this.setupStream();
     this.initialized = true;
   }
