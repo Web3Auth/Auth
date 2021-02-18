@@ -4,24 +4,32 @@ import { Provider } from "./provider";
 import OpenLoginStore from "./store";
 import { constructURL, Maybe } from "./utils";
 
-type LoginParams = {
-  clientId?: string;
-  redirectUrl?: string;
-  loginProvider: string;
-  fastLogin?: boolean;
-};
-
-interface OpenLoginState {
+type OpenLoginState = {
   iframeUrl: string;
+  authUrl: string;
   userProfile?: Json;
   support3PC?: boolean;
-  loginDefaults: Partial<LoginParams>;
+  clientId: string;
+  redirectUrl: string;
+  loginProvider?: string;
+  fastLogin?: boolean;
   store: OpenLoginStore;
-}
+  popup: boolean;
+};
+
+type LoginParams = {
+  popup: boolean;
+  loginProvider: string;
+  clientId: string;
+  redirectUrl: string;
+};
 
 type OpenLoginOptions = {
   clientId: string;
   iframeUrl: string;
+  redirectUrl?: string;
+  authUrl?: string;
+  popup?: boolean;
 };
 
 class OpenLogin {
@@ -30,6 +38,15 @@ class OpenLogin {
   state: OpenLoginState;
 
   constructor(options: OpenLoginOptions) {
+    if (!options.redirectUrl) {
+      options.redirectUrl = window.location.href;
+    }
+    if (!options.authUrl) {
+      options.authUrl = options.iframeUrl;
+    }
+    if (!options.popup) {
+      options.popup = false;
+    }
     this.provider = new Proxy(new Provider(), {
       deleteProperty: () => true, // work around for web3
     });
@@ -38,12 +55,12 @@ class OpenLogin {
 
   initState(options: OpenLoginOptions): void {
     this.state = {
-      iframeUrl: options.iframeUrl,
-      loginDefaults: {
-        clientId: options.clientId,
-        redirectUrl: constructURL(options.iframeUrl, {}, { redirect: true }),
-      },
+      popup: options.popup,
       store: OpenLoginStore.getInstance(),
+      iframeUrl: options.iframeUrl,
+      authUrl: options.authUrl,
+      clientId: options.clientId,
+      redirectUrl: options.redirectUrl,
     };
   }
 
@@ -53,9 +70,25 @@ class OpenLogin {
     this._syncState(this._getHashQueryParams());
   }
 
-  async login({ options, popup }: { options: LoginParams; popup: boolean }): Promise<void> {
-    const loginURL = constructURL(this.state.iframeUrl, { ...options, ...this.state.loginDefaults });
-    return this.open(loginURL, popup);
+  async login(params: Partial<LoginParams>): Promise<void> {
+    let loginUrl: string;
+
+    const loginParams: LoginParams = {
+      clientId: this.state.clientId,
+      redirectUrl: this.state.redirectUrl,
+      popup: this.state.popup,
+      loginProvider: params.loginProvider,
+      ...params,
+    };
+
+    if (!this.state.support3PC) {
+      loginUrl = constructURL(this.state.authUrl, loginParams);
+    } else {
+      await this._setLoginParams(loginParams);
+      loginUrl = this.state.authUrl;
+    }
+
+    return this.open(loginUrl);
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -85,6 +118,13 @@ class OpenLogin {
 
     return new Promise<T>((resolve, reject) => {
       this.provider._rpcRequest({ method, params }, getRpcPromiseCallback(resolve, reject));
+    });
+  }
+
+  async _setLoginParams(loginParams: LoginParams): Promise<Record<string, unknown>> {
+    return this.request<Json, Record<string, unknown>>({
+      method: "openlogin_set_login_params",
+      params: [loginParams],
     });
   }
 
