@@ -14,6 +14,7 @@ type LoginParams = {
 interface OpenLoginState {
   iframeUrl: string;
   userProfile?: Json;
+  support3PC?: boolean;
   loginDefaults: Partial<LoginParams>;
   store: OpenLoginStore;
 }

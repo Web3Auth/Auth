@@ -151,7 +151,7 @@ export function createScaffoldMiddleware(handlers: {
       return handler(req, res, next, end);
     }
     // if handler is some other value, use as result
-    (res as JRPCResponse<unknown>).result = handler;
+    res.result = handler;
     return end();
   };
 }
