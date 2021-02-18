@@ -5,7 +5,7 @@ export default class SerializableError<T> extends Error {
 
   public data: T;
 
-  constructor({ code, message, data }: { code?: number; message: string; data?: T }) {
+  constructor({ code, message, data }: { code: number; message: string; data?: T }) {
     if (!Number.isInteger(code)) {
       throw new Error("code must be an integer");
     }

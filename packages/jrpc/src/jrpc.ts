@@ -62,7 +62,7 @@ export function createErrorMiddleware(log: ConsoleLike): JRPCMiddleware<unknown,
   return (req, res, next) => {
     // json-rpc-engine will terminate the request when it notices this error
     if (typeof req.method !== "string" || !req.method) {
-      res.error = new SerializableError({ message: "invalid method" });
+      res.error = new SerializableError({ code: -32603, message: "invalid method" });
     }
 
     next((done) => {

@@ -5,8 +5,8 @@ export declare class Provider extends SafeEventEmitter {
     rpcEngine: JRPCEngine;
     initialized: boolean;
     mux: ObjectMultiplex;
-    init({ iframeURL }: {
-        iframeURL: string;
+    init({ iframeUrl }: {
+        iframeUrl: string;
     }): Promise<void>;
     initIFrame(src: string): Promise<void>;
     setupStream(): Promise<void>;

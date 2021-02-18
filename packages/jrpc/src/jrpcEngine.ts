@@ -174,12 +174,12 @@ export class JRPCEngine extends SafeEventEmitter {
    */
   private async _handle(callerReq: JRPCRequest<unknown>, cb: (error: unknown, response: JRPCResponse<unknown>) => void): Promise<void> {
     if (!callerReq || Array.isArray(callerReq) || typeof callerReq !== "object") {
-      const error = new SerializableError({ message: "request must be plain object" });
+      const error = new SerializableError({ code: -32603, message: "request must be plain object" });
       return cb(error, { id: undefined, jsonrpc: "2.0", error });
     }
 
     if (typeof callerReq.method !== "string") {
-      const error = new SerializableError({ message: "method must be string" });
+      const error = new SerializableError({ code: -32603, message: "method must be string" });
       return cb(error, { id: callerReq.id, jsonrpc: "2.0", error });
     }
 
@@ -293,7 +293,7 @@ export class JRPCEngine extends SafeEventEmitter {
         } else {
           if (returnHandler) {
             if (typeof returnHandler !== "function") {
-              end(new SerializableError({ message: "JRPCEngine: 'next' return handlers must be functions" }));
+              end(new SerializableError({ code: -32603, message: "JRPCEngine: 'next' return handlers must be functions" }));
             }
             returnHandlers.push(returnHandler);
           }
@@ -330,10 +330,10 @@ export class JRPCEngine extends SafeEventEmitter {
    */
   private static _checkForCompletion(req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, isComplete: boolean): void {
     if (!("result" in res) && !("error" in res)) {
-      throw new SerializableError({ message: "Response has no error or result for request" });
+      throw new SerializableError({ code: -32603, message: "Response has no error or result for request" });
     }
     if (!isComplete) {
-      throw new SerializableError({ message: "Nothing ended request" });
+      throw new SerializableError({ code: -32603, message: "Nothing ended request" });
     }
   }
 }
