@@ -1,7 +1,7 @@
 import { getRpcPromiseCallback, JRPCRequest, Json } from "@openlogin/jrpc";
 
-import { Provider } from "./provider";
-import OpenLoginStore from "./store";
+import OpenLoginStore from "./OpenLoginStore";
+import { Provider } from "./Provider";
 import { constructURL, Maybe } from "./utils";
 
 type OpenLoginState = {
