@@ -55,16 +55,14 @@ type OpenLoginOptions = {
 class OpenLogin {
   provider: Provider;
 
-  initialized: Promise<void>;
-
-  private _initializedResolve: () => void;
+  // private _initializedResolve: () => void;
 
   state: OpenLoginState;
 
   constructor(options: OpenLoginOptions) {
-    this.initialized = new Promise((resolve) => {
-      this._initializedResolve = resolve;
-    });
+    // this.initialized = new Promise((resolve) => {
+    //   this._initializedResolve = resolve;
+    // });
     this.provider = new Proxy(new Provider(), {
       deleteProperty: () => true, // work around for web3
     });
@@ -94,15 +92,16 @@ class OpenLogin {
   async init(): Promise<void> {
     await this.provider.init({ iframeUrl: this.state.iframeUrl });
     this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
-    this.state.support3PC = await this._check3PCSupport();
+    const res = await this._check3PCSupport();
+    this.state.support3PC = !!res.support3PC;
     if (this.state.support3PC) {
       this._syncState(await this._getIframeData());
     }
-    this._initializedResolve();
+    // this._initializedResolve();
   }
 
   async fastLogin(params: BaseLoginParams): Promise<UserProfile> {
-    await this.initialized;
+    // await this.initialized;
     let webAuthnLoginUrl: string;
     if (!this.state.support3PC) {
       webAuthnLoginUrl = constructURL(this.state.authUrl, params);
@@ -114,7 +113,7 @@ class OpenLogin {
   }
 
   async login(params: Partial<LoginParams>): Promise<UserProfile> {
-    await this.initialized;
+    // await this.initialized;
 
     if (this.state.userProfile) {
       return this.state.userProfile;
@@ -149,8 +148,9 @@ class OpenLogin {
     return this.open(loginUrl);
   }
 
+  // eslint-disable-next-line class-methods-use-this
   async open(url: string, popup = false): Promise<UserProfile> {
-    await this.initialized;
+    // await this.initialized;
     if (popup) {
       const u = new URL(url);
       const reqId = randomId().toString();
@@ -166,7 +166,7 @@ class OpenLogin {
   }
 
   async request<T, U>(args: JRPCRequest<T>): Promise<Maybe<U>> {
-    await this.initialized;
+    // await this.initialized;
     if (!args || typeof args !== "object" || Array.isArray(args)) {
       throw new Error("invalid request args");
     }
@@ -186,8 +186,8 @@ class OpenLogin {
     });
   }
 
-  async _check3PCSupport(): Promise<boolean> {
-    return this.request<Json, boolean>({
+  async _check3PCSupport(): Promise<Record<string, unknown>> {
+    return this.request<Json, Record<string, unknown>>({
       method: "openlogin_check_3PC_support",
       params: [],
     });
