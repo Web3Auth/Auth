@@ -1,5 +1,6 @@
 import { getRpcPromiseCallback, JRPCRequest, Json } from "@openlogin/jrpc";
 
+import { UX_MODE, UX_MODE_TYPE } from "./constants";
 import OpenLoginStore from "./OpenLoginStore";
 import { Provider } from "./Provider";
 import { constructURL, Maybe } from "./utils";
@@ -14,13 +15,13 @@ type OpenLoginState = {
   webAuthnUrl: string;
   loginProvider?: string;
   store: OpenLoginStore;
-  popup: boolean;
+  uxMode: UX_MODE_TYPE;
 };
 
 type BaseLoginParams = {
   clientId: string;
-  popup: boolean;
-  redirectUrl: string;
+  uxMode: UX_MODE_TYPE;
+  redirectUrl?: string;
 };
 
 type LoginParams = BaseLoginParams & {
@@ -33,7 +34,7 @@ type OpenLoginOptions = {
   redirectUrl?: string;
   authUrl?: string;
   webAuthnUrl?: string;
-  popup?: boolean;
+  uxMode?: UX_MODE_TYPE;
 };
 
 class OpenLogin {
@@ -42,27 +43,21 @@ class OpenLogin {
   state: OpenLoginState;
 
   constructor(options: OpenLoginOptions) {
-    if (!options.redirectUrl) {
-      options.redirectUrl = window.location.href;
-    }
-    if (!options.authUrl) {
-      options.authUrl = `${options.iframeUrl}/auth`;
-    }
-    if (!options.webAuthnUrl) {
-      options.webAuthnUrl = `${options.iframeUrl}/webauthn`;
-    }
-    if (!options.popup) {
-      options.popup = false;
-    }
     this.provider = new Proxy(new Provider(), {
       deleteProperty: () => true, // work around for web3
     });
-    this.initState(options);
+    this.initState({
+      ...options,
+      redirectUrl: options.redirectUrl ?? window.location.href,
+      authUrl: options.authUrl ?? `${options.iframeUrl}/auth`,
+      webAuthnUrl: options.webAuthnUrl ?? `${options.iframeUrl}/auth`,
+      uxMode: options.uxMode ?? UX_MODE.REDIRECT,
+    });
   }
 
-  initState(options: OpenLoginOptions): void {
+  initState(options: Required<OpenLoginOptions>): void {
     this.state = {
-      popup: options.popup,
+      uxMode: options.uxMode,
       store: OpenLoginStore.getInstance(),
       iframeUrl: options.iframeUrl,
       authUrl: options.authUrl,
@@ -78,7 +73,7 @@ class OpenLogin {
     this._syncState(this._getHashQueryParams());
   }
 
-  async webAuthnLogin(params: BaseLoginParams): Promise<void> {
+  async fastLogin(params: BaseLoginParams): Promise<void> {
     let webAuthnLoginUrl: string;
     if (!this.state.support3PC) {
       webAuthnLoginUrl = constructURL(this.state.authUrl, params);
@@ -93,11 +88,11 @@ class OpenLogin {
     const defaultParams: BaseLoginParams = {
       clientId: this.state.clientId,
       redirectUrl: this.state.redirectUrl,
-      popup: this.state.popup,
+      uxMode: this.state.uxMode,
     };
     // fast login flow
     if (this.state.store.get("webAuthnPreferred") === true) {
-      return this.webAuthnLogin(defaultParams);
+      return this.fastLogin(defaultParams);
     }
 
     let loginUrl: string;
@@ -121,7 +116,8 @@ class OpenLogin {
   // eslint-disable-next-line class-methods-use-this
   async open(url: string, popup = false): Promise<void> {
     if (popup) {
-      // TODO: implement popup flow
+      const u = new URL(url);
+      u.searchParams.append("popup", "1");
     } else {
       // TODO: implement redirect handling
       window.location.href = url;
