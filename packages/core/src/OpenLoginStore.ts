@@ -7,7 +7,7 @@ export default class OpenLoginStore {
 
   private constructor(storage: Storage) {
     this.storage = storage;
-    if (localStorage.getItem(storeKey) === "") {
+    if (!localStorage.getItem(storeKey)) {
       this.resetStore();
     }
   }
