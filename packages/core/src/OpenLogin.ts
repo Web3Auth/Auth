@@ -5,8 +5,18 @@ import OpenLoginStore from "./OpenLoginStore";
 import { Provider } from "./Provider";
 import { awaitReq, constructURL, getHashQueryParams, Maybe } from "./utils";
 
+type TorusKey = {
+  privateKey: "";
+  pubKey: {
+    pub_key_X: "";
+    pub_key_Y: "";
+  };
+  publicAddress: "";
+  metadataNonce: "";
+};
+
 export type UserProfile = {
-  privKey: string;
+  userKey: TorusKey;
 };
 
 type OpenLoginState = {
@@ -97,7 +107,7 @@ class OpenLogin {
     if (!this.state.support3PC) {
       webAuthnLoginUrl = constructURL(this.state.authUrl, params);
     } else {
-      await this._setWebAuthnLoginParams(params);
+      await this._setParams(params);
       webAuthnLoginUrl = this.state.webAuthnUrl;
     }
     return this.open(webAuthnLoginUrl);
@@ -132,7 +142,7 @@ class OpenLogin {
     if (!this.state.support3PC) {
       loginUrl = constructURL(this.state.authUrl, loginParams);
     } else {
-      await this._setLoginParams(loginParams);
+      await this._setParams(loginParams);
       loginUrl = this.state.authUrl;
     }
 
@@ -147,7 +157,7 @@ class OpenLogin {
       u.searchParams.append("reqId", reqId);
       const data = await awaitReq(reqId);
       return {
-        privKey: data.privKey as string,
+        userKey: data.userKey as TorusKey,
       };
     }
     // TODO: implement redirect handling
@@ -183,17 +193,16 @@ class OpenLogin {
     });
   }
 
-  async _setWebAuthnLoginParams(params: BaseLoginParams): Promise<Record<string, unknown>> {
-    return this.request<Json, Record<string, unknown>>({
-      method: "openlogin_set_webauthn_login_params",
-      params: [params],
+  async _setParams(loginParams: Omit<Partial<LoginParams>, "uxMode">): Promise<void> {
+    await this.request<Json, Record<string, unknown>>({
+      method: "openlogin_set_params",
+      params: [loginParams],
     });
   }
 
-  async _setLoginParams(loginParams: LoginParams): Promise<Record<string, unknown>> {
+  async _getIframeData(): Promise<Record<string, unknown>> {
     return this.request<Json, Record<string, unknown>>({
-      method: "openlogin_set_login_params",
-      params: [loginParams],
+      method: "openlogin_get_data",
     });
   }
 
@@ -208,12 +217,6 @@ class OpenLogin {
       delete newState.store;
     }
     this.state = { ...this.state, ...newState };
-  }
-
-  async _getIframeData(): Promise<Record<string, unknown>> {
-    return this.request<Json, Record<string, unknown>>({
-      method: "openlogin_get_data",
-    });
   }
 
   async _cleanup(): Promise<void> {
