@@ -70,7 +70,7 @@ export function createErrorMiddleware(log: ConsoleLike): JRPCMiddleware<unknown,
       if (!error) {
         return done();
       }
-      log.error(`MetaMask - RPC Error: ${error.message}`, error);
+      log.error(`OpenLogin - RPC Error: ${error.message}`, error);
       return done();
     });
   };
