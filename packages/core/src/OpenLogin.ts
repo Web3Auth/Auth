@@ -1,21 +1,25 @@
-import { getRpcPromiseCallback, JRPCRequest, Json } from "@openlogin/jrpc";
+import { getRpcPromiseCallback, JRPCRequest, Json, randomId } from "@openlogin/jrpc";
 
 import { UX_MODE, UX_MODE_TYPE } from "./constants";
 import OpenLoginStore from "./OpenLoginStore";
 import { Provider } from "./Provider";
-import { constructURL, Maybe } from "./utils";
+import { awaitReq, constructURL, getHashQueryParams, Maybe } from "./utils";
+
+export type UserProfile = {
+  privKey: string;
+};
 
 type OpenLoginState = {
   authUrl: string;
-  userProfile?: Json;
+  userProfile?: UserProfile;
   support3PC?: boolean;
   clientId: string;
   iframeUrl: string;
   redirectUrl: string;
   webAuthnUrl: string;
-  loginProvider?: string;
   store: OpenLoginStore;
   uxMode: UX_MODE_TYPE;
+  replaceUrlOnRedirect: boolean;
 };
 
 type BaseLoginParams = {
@@ -35,14 +39,22 @@ type OpenLoginOptions = {
   authUrl?: string;
   webAuthnUrl?: string;
   uxMode?: UX_MODE_TYPE;
+  replaceUrlOnRedirect?: boolean;
 };
 
 class OpenLogin {
   provider: Provider;
 
+  initialized: Promise<void>;
+
+  private _initializedResolve: () => void;
+
   state: OpenLoginState;
 
   constructor(options: OpenLoginOptions) {
+    this.initialized = new Promise((resolve) => {
+      this._initializedResolve = resolve;
+    });
     this.provider = new Proxy(new Provider(), {
       deleteProperty: () => true, // work around for web3
     });
@@ -52,6 +64,7 @@ class OpenLogin {
       authUrl: options.authUrl ?? `${options.iframeUrl}/auth`,
       webAuthnUrl: options.webAuthnUrl ?? `${options.iframeUrl}/auth`,
       uxMode: options.uxMode ?? UX_MODE.REDIRECT,
+      replaceUrlOnRedirect: options.replaceUrlOnRedirect ?? true,
     });
   }
 
@@ -64,16 +77,22 @@ class OpenLogin {
       clientId: options.clientId,
       redirectUrl: options.redirectUrl,
       webAuthnUrl: options.webAuthnUrl,
+      replaceUrlOnRedirect: options.replaceUrlOnRedirect,
     };
   }
 
   async init(): Promise<void> {
     await this.provider.init({ iframeUrl: this.state.iframeUrl });
-    this._syncState(await this._getIframeData());
-    this._syncState(this._getHashQueryParams());
+    this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
+    this.state.support3PC = await this._check3PCSupport();
+    if (this.state.support3PC) {
+      this._syncState(await this._getIframeData());
+    }
+    this._initializedResolve();
   }
 
-  async fastLogin(params: BaseLoginParams): Promise<void> {
+  async fastLogin(params: BaseLoginParams): Promise<UserProfile> {
+    await this.initialized;
     let webAuthnLoginUrl: string;
     if (!this.state.support3PC) {
       webAuthnLoginUrl = constructURL(this.state.authUrl, params);
@@ -84,12 +103,19 @@ class OpenLogin {
     return this.open(webAuthnLoginUrl);
   }
 
-  async login(params: Partial<LoginParams>): Promise<void> {
+  async login(params: Partial<LoginParams>): Promise<UserProfile> {
+    await this.initialized;
+
+    if (this.state.userProfile) {
+      return this.state.userProfile;
+    }
+
     const defaultParams: BaseLoginParams = {
       clientId: this.state.clientId,
       redirectUrl: this.state.redirectUrl,
       uxMode: this.state.uxMode,
     };
+
     // fast login flow
     if (this.state.store.get("webAuthnPreferred") === true) {
       return this.fastLogin(defaultParams);
@@ -113,18 +139,24 @@ class OpenLogin {
     return this.open(loginUrl);
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  async open(url: string, popup = false): Promise<void> {
+  async open(url: string, popup = false): Promise<UserProfile> {
+    await this.initialized;
     if (popup) {
       const u = new URL(url);
-      u.searchParams.append("popup", "1");
-    } else {
-      // TODO: implement redirect handling
-      window.location.href = url;
+      const reqId = randomId().toString();
+      u.searchParams.append("reqId", reqId);
+      const data = await awaitReq(reqId);
+      return {
+        privKey: data.privKey as string,
+      };
     }
+    // TODO: implement redirect handling
+    window.location.href = url;
+    return null; // redirects anyway
   }
 
   async request<T, U>(args: JRPCRequest<T>): Promise<Maybe<U>> {
+    await this.initialized;
     if (!args || typeof args !== "object" || Array.isArray(args)) {
       throw new Error("invalid request args");
     }
@@ -141,6 +173,13 @@ class OpenLogin {
 
     return new Promise<T>((resolve, reject) => {
       this.provider._rpcRequest({ method, params }, getRpcPromiseCallback(resolve, reject));
+    });
+  }
+
+  async _check3PCSupport(): Promise<boolean> {
+    return this.request<Json, boolean>({
+      method: "openlogin_check_3PC_support",
+      params: [],
     });
   }
 
@@ -169,16 +208,6 @@ class OpenLogin {
       delete newState.store;
     }
     this.state = { ...this.state, ...newState };
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  _getHashQueryParams(): Record<string, unknown> {
-    const url = new URL(window.location.href);
-    const params: Record<string, unknown> = {};
-    url.searchParams.forEach((value, key) => {
-      params[value] = key;
-    });
-    return params;
   }
 
   async _getIframeData(): Promise<Record<string, unknown>> {

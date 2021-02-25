@@ -10,6 +10,40 @@ export async function documentReady(): Promise<void> {
   });
 }
 
+export function getHashQueryParams(replaceUrl = false): Record<string, string> {
+  const result = {};
+
+  const url = new URL(window.location.href);
+  url.searchParams.forEach((value, key) => {
+    result[key] = value;
+  });
+
+  const hash = url.hash.substr(1);
+  const hashUrl = new URL(`${window.location.origin}/${hash}`);
+  hashUrl.searchParams.forEach((value, key) => {
+    result[key] = value;
+  });
+
+  if (replaceUrl) {
+    const cleanUrl = window.location.origin + window.location.pathname;
+    window.history.replaceState(null, "", cleanUrl);
+  }
+
+  return result;
+}
+
+export async function awaitReq(reqId: string): Promise<Record<string, unknown>> {
+  return new Promise((resolve) => {
+    const handler = (ev: MessageEvent<Record<string, unknown>>) => {
+      const { resId } = ev.data;
+      if (resId !== reqId) return;
+      window.removeEventListener("message", handler);
+      resolve(ev.data);
+    };
+    window.addEventListener("message", handler);
+  });
+}
+
 export function constructURL(baseURL: string, queryParams: Record<string, unknown>, hashParams?: Record<string, unknown>): string {
   const url = new URL(baseURL);
   Object.keys(queryParams).forEach((key) => {
