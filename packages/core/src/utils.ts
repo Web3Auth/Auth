@@ -19,7 +19,7 @@ export function getHashQueryParams(replaceUrl = false): Record<string, string> {
   });
 
   const hash = url.hash.substr(1);
-  const hashUrl = new URL(`${window.location.origin}/${hash}`);
+  const hashUrl = new URL(`${window.location.origin}/?${hash}`);
   hashUrl.searchParams.forEach((value, key) => {
     result[key] = value;
   });
@@ -32,13 +32,18 @@ export function getHashQueryParams(replaceUrl = false): Record<string, string> {
   return result;
 }
 
-export async function awaitReq(reqId: string): Promise<Record<string, unknown>> {
+type PopupResponse<T> = {
+  pid: string;
+  data: T;
+};
+
+export async function awaitReq<T>(popupId: string): Promise<T> {
   return new Promise((resolve) => {
-    const handler = (ev: MessageEvent<Record<string, unknown>>) => {
-      const { resId } = ev.data;
-      if (resId !== reqId) return;
+    const handler = (ev: MessageEvent<PopupResponse<T>>) => {
+      const { pid } = ev.data;
+      if (popupId !== pid) return;
       window.removeEventListener("message", handler);
-      resolve(ev.data);
+      resolve(ev.data.data);
     };
     window.addEventListener("message", handler);
   });

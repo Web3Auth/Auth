@@ -5,28 +5,20 @@ import OpenLoginStore from "./OpenLoginStore";
 import { Provider } from "./Provider";
 import { awaitReq, constructURL, getHashQueryParams, Maybe } from "./utils";
 
-type TorusKey = {
-  privateKey: "";
-  pubKey: {
-    pub_key_X: "";
-    pub_key_Y: "";
-  };
-  publicAddress: "";
-  metadataNonce: "";
-};
-
-export type UserProfile = {
-  userKey: TorusKey;
+type BaseLogoutParams = {
+  clientId: string;
+  uxMode: UX_MODE_TYPE;
 };
 
 type OpenLoginState = {
   authUrl: string;
-  userProfile?: UserProfile;
+  privKey?: string;
   support3PC?: boolean;
   clientId: string;
   iframeUrl: string;
   redirectUrl: string;
   webAuthnUrl: string;
+  logoutUrl: string;
   store: OpenLoginStore;
   uxMode: UX_MODE_TYPE;
   replaceUrlOnRedirect: boolean;
@@ -48,6 +40,7 @@ type OpenLoginOptions = {
   redirectUrl?: string;
   authUrl?: string;
   webAuthnUrl?: string;
+  logoutUrl?: string;
   uxMode?: UX_MODE_TYPE;
   replaceUrlOnRedirect?: boolean;
 };
@@ -55,14 +48,9 @@ type OpenLoginOptions = {
 class OpenLogin {
   provider: Provider;
 
-  // private _initializedResolve: () => void;
-
   state: OpenLoginState;
 
   constructor(options: OpenLoginOptions) {
-    // this.initialized = new Promise((resolve) => {
-    //   this._initializedResolve = resolve;
-    // });
     this.provider = new Proxy(new Provider(), {
       deleteProperty: () => true, // work around for web3
     });
@@ -71,6 +59,7 @@ class OpenLogin {
       redirectUrl: options.redirectUrl ?? window.location.href,
       authUrl: options.authUrl ?? `${options.iframeUrl}/start`,
       webAuthnUrl: options.webAuthnUrl ?? `${options.iframeUrl}/start`,
+      logoutUrl: options.logoutUrl ?? `${options.iframeUrl}/logout`,
       uxMode: options.uxMode ?? UX_MODE.REDIRECT,
       replaceUrlOnRedirect: options.replaceUrlOnRedirect ?? true,
     });
@@ -85,6 +74,7 @@ class OpenLogin {
       clientId: options.clientId,
       redirectUrl: options.redirectUrl,
       webAuthnUrl: options.webAuthnUrl,
+      logoutUrl: options.logoutUrl,
       replaceUrlOnRedirect: options.replaceUrlOnRedirect,
     };
   }
@@ -95,28 +85,38 @@ class OpenLogin {
     const res = await this._check3PCSupport();
     this.state.support3PC = !!res.support3PC;
     if (this.state.support3PC) {
+      await this._setParams({ clientId: this.state.clientId });
       this._syncState(await this._getIframeData());
     }
-    // this._initializedResolve();
   }
 
-  async fastLogin(params: BaseLoginParams): Promise<UserProfile> {
-    // await this.initialized;
+  async fastLogin(params?: Partial<BaseLoginParams>): Promise<{ userKey?: string }> {
+    const defaultParams: BaseLoginParams = {
+      clientId: this.state.clientId,
+      redirectUrl: this.state.redirectUrl,
+      uxMode: this.state.uxMode,
+    };
+
+    const loginParams: BaseLoginParams = {
+      ...defaultParams,
+      ...params,
+    };
+
     let webAuthnLoginUrl: string;
     if (!this.state.support3PC) {
-      webAuthnLoginUrl = constructURL(this.state.authUrl, params);
+      webAuthnLoginUrl = constructURL(this.state.authUrl, loginParams);
     } else {
-      await this._setParams(params);
+      await this._setParams(loginParams);
       webAuthnLoginUrl = this.state.webAuthnUrl;
     }
-    return this.open(webAuthnLoginUrl);
+    return this.open(webAuthnLoginUrl, loginParams.uxMode);
   }
 
-  async login(params: Partial<LoginParams>): Promise<UserProfile> {
+  async login(params?: LoginParams & Partial<BaseLoginParams>): Promise<string> {
     // await this.initialized;
 
-    if (this.state.userProfile) {
-      return this.state.userProfile;
+    if (this.state.privKey) {
+      return this.state.privKey;
     }
 
     const defaultParams: BaseLoginParams = {
@@ -127,7 +127,7 @@ class OpenLogin {
 
     // fast login flow
     if (this.state.store.get("webAuthnPreferred") === true) {
-      return this.fastLogin(defaultParams);
+      return (await this.fastLogin(defaultParams)).userKey;
     }
 
     let loginUrl: string;
@@ -142,23 +142,45 @@ class OpenLogin {
       loginUrl = constructURL(this.state.authUrl, loginParams);
     } else {
       await this._setParams(loginParams);
-      loginUrl = this.state.authUrl;
+      loginUrl = constructURL(this.state.authUrl, { clientId: loginParams.clientId });
     }
 
-    return this.open(loginUrl);
+    return (await this.open<{ userKey: string }>(loginUrl, loginParams.uxMode)).userKey;
+  }
+
+  async logout(params?: Partial<BaseLogoutParams>): Promise<void> {
+    if (!this.state.privKey) {
+      return;
+    }
+    const defaultParams: BaseLogoutParams = {
+      uxMode: this.state.uxMode,
+      clientId: this.state.clientId,
+    };
+
+    const logoutParams: BaseLoginParams = {
+      ...defaultParams,
+      ...params,
+    };
+
+    if (this.state.support3PC) {
+      await this._requestLogout();
+    } else {
+      const logoutUrl = constructURL(this.state.logoutUrl, { clientId: logoutParams.clientId });
+      await this.open(logoutUrl, logoutParams.uxMode);
+    }
+
+    delete this.state.privKey;
   }
 
   // eslint-disable-next-line class-methods-use-this
-  async open(url: string, popup = false): Promise<UserProfile> {
+  async open<T>(url: string, uxMode: UX_MODE_TYPE): Promise<T> {
     // await this.initialized;
-    if (popup) {
+    if (uxMode === UX_MODE.POPUP) {
       const u = new URL(url);
-      const reqId = randomId().toString();
-      u.searchParams.append("reqId", reqId);
-      const data = await awaitReq(reqId);
-      return {
-        userKey: data.userKey as TorusKey,
-      };
+      const pid = randomId().toString();
+      u.searchParams.append("pid", pid);
+      window.open(u.toString());
+      return awaitReq<T>(pid);
     }
     // TODO: implement redirect handling
     window.location.href = url;
@@ -186,6 +208,13 @@ class OpenLogin {
     });
   }
 
+  async _requestLogout(): Promise<void> {
+    await this.request<Json, Record<string, unknown>>({
+      method: "openlogin_logout",
+      params: [{ clientId: this.state.clientId }],
+    });
+  }
+
   async _check3PCSupport(): Promise<Record<string, unknown>> {
     return this.request<Json, Record<string, unknown>>({
       method: "openlogin_check_3PC_support",
@@ -203,6 +232,7 @@ class OpenLogin {
   async _getIframeData(): Promise<Record<string, unknown>> {
     return this.request<Json, Record<string, unknown>>({
       method: "openlogin_get_data",
+      params: [{ clientId: this.state.clientId }],
     });
   }
 
@@ -214,7 +244,6 @@ class OpenLogin {
       Object.keys(newState.store).forEach((key) => {
         this.state.store.set(key, newState.store[key]);
       });
-      delete newState.store;
     }
     this.state = { ...this.state, ...newState };
   }
