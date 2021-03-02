@@ -53,9 +53,11 @@ export function constructURL(params: { baseURL: string; queryParams?: Record<str
   const { baseURL, queryParams, hashParams } = params;
 
   const url = new URL(baseURL);
-  Object.keys(queryParams).forEach((key) => {
-    url.searchParams.append(key, queryParams[key] as string);
-  });
+  if (queryParams) {
+    Object.keys(queryParams).forEach((key) => {
+      url.searchParams.append(key, queryParams[key] as string);
+    });
+  }
   if (hashParams) {
     const hash = new URL(constructURL({ baseURL, queryParams: hashParams })).searchParams.toString();
     url.hash = hash;

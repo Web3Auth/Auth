@@ -18,6 +18,9 @@ export declare type BaseLogoutParams = {
     clientId: string;
     uxMode: UX_MODE_TYPE;
 };
+export declare type WhitelistData = {
+    [P in string]: string;
+};
 export declare type OpenLoginState = {
     loginUrl: string;
     privKey?: string;
@@ -30,7 +33,7 @@ export declare type OpenLoginState = {
     store: OpenLoginStore;
     uxMode: UX_MODE_TYPE;
     replaceUrlOnRedirect: boolean;
-    whitelistData: string[];
+    whitelistData: WhitelistData;
 };
 export declare type BaseLoginParams = {
     clientId: string;
@@ -49,7 +52,7 @@ export declare type OpenLoginOptions = {
     logoutUrl?: string;
     uxMode?: UX_MODE_TYPE;
     replaceUrlOnRedirect?: boolean;
-    whitelistData?: string[];
+    whitelistData?: WhitelistData;
 };
 declare class OpenLogin {
     provider: Provider;
@@ -66,7 +69,6 @@ declare class OpenLogin {
     logout(params?: Partial<BaseLogoutParams>): Promise<void>;
     request<T>(args: RequestParams): Promise<T>;
     _jrpcRequest<T, U>(args: JRPCRequest<T>): Promise<U>;
-    _logout(): Promise<void>;
     _check3PCSupport(): Promise<Record<string, unknown>>;
     _setPIDData(pid: string, data: Record<string, unknown>[]): Promise<void>;
     _getData(): Promise<Record<string, unknown>>;

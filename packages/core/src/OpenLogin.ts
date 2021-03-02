@@ -1,4 +1,4 @@
-import { getRpcPromiseCallback, JRPCRequest, randomId } from "@openlogin/jrpc";
+import { getRpcPromiseCallback, JRPCRequest, JRPCResponse, randomId } from "@openlogin/jrpc";
 
 import { UX_MODE, UX_MODE_TYPE } from "./constants";
 import OpenLoginStore from "./OpenLoginStore";
@@ -106,7 +106,7 @@ class OpenLogin {
     await this.provider.init({ iframeUrl: this.state.iframeUrl });
     this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
     const res = await this._check3PCSupport();
-    this.state.support3PC = !!res.support3PC;
+    this.state.support3PC = !!res.result?.support3PC;
     if (this.state.support3PC) {
       this._syncState(await this._getData());
     }
@@ -202,7 +202,7 @@ class OpenLogin {
     params = { ...params, ...session };
 
     if (this.state.support3PC && allowedInteractions.includes(ALLOWED_INTERACTIONS.JRPC)) {
-      return this._jrpcRequest<Record<string, unknown>[], T>({ method, id: pid, params });
+      return this._jrpcRequest<Record<string, unknown>[], T>({ method, params });
     }
 
     if (this.state.support3PC) {
@@ -231,7 +231,7 @@ class OpenLogin {
 
       if (allowedInteractions.includes(ALLOWED_INTERACTIONS.POPUP)) {
         const u = new URL(finalUrl);
-        u.searchParams.append("pid", pid);
+        u.searchParams.append("_pid", pid);
         window.open(u.toString());
         // TODO: implement popup flow
         return awaitReq<T>(pid);
@@ -241,7 +241,7 @@ class OpenLogin {
 
       if (allowedInteractions.includes(ALLOWED_INTERACTIONS.POPUP)) {
         const u = new URL(finalUrl);
-        u.searchParams.append("pid", pid);
+        u.searchParams.append("_pid", pid);
         window.open(u.toString());
         // TODO: implement popup flow
         return awaitReq<T>(pid);
@@ -271,8 +271,12 @@ class OpenLogin {
       throw new Error("invalid request method");
     }
 
-    if (params !== undefined && !Array.isArray(params) && (typeof params !== "object" || params === null)) {
+    if (params === undefined || !Array.isArray(params)) {
       throw new Error("invalid request params");
+    }
+
+    if (params.length === 0) {
+      params.push({});
     }
 
     return new Promise<U>((resolve, reject) => {
@@ -280,22 +284,16 @@ class OpenLogin {
     });
   }
 
-  async _logout(): Promise<void> {
-    await this._jrpcRequest<Record<string, unknown>[], unknown>({
-      method: "openlogin_logout",
-      params: [{ clientId: this.state.clientId }],
-    });
-  }
-
-  async _check3PCSupport(): Promise<Record<string, unknown>> {
-    return this._jrpcRequest<Record<string, unknown>[], Record<string, unknown>>({
+  async _check3PCSupport(): Promise<JRPCResponse<Record<string, boolean>>> {
+    return this._jrpcRequest({
       method: "openlogin_check_3PC_support",
-      params: [],
+      params: [{}],
     });
   }
 
   async _setPIDData(pid: string, data: Record<string, unknown>[]): Promise<void> {
-    await this._jrpcRequest<Record<string, unknown>[], unknown>({
+    await this.request({
+      allowedInteractions: [ALLOWED_INTERACTIONS.JRPC],
       method: "openlogin_set_pid_data",
       params: [
         {
