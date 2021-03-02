@@ -25,6 +25,10 @@ export type BaseLogoutParams = {
   uxMode: UX_MODE_TYPE;
 };
 
+export type WhitelistData = {
+  [P in string]: string;
+};
+
 export type OpenLoginState = {
   loginUrl: string;
   privKey?: string;
@@ -37,7 +41,7 @@ export type OpenLoginState = {
   store: OpenLoginStore;
   uxMode: UX_MODE_TYPE;
   replaceUrlOnRedirect: boolean;
-  whitelistData: string[];
+  whitelistData: WhitelistData;
 };
 
 export type BaseLoginParams = {
@@ -59,7 +63,7 @@ export type OpenLoginOptions = {
   logoutUrl?: string;
   uxMode?: UX_MODE_TYPE;
   replaceUrlOnRedirect?: boolean;
-  whitelistData?: string[];
+  whitelistData?: WhitelistData;
 };
 
 class OpenLogin {
@@ -79,7 +83,7 @@ class OpenLogin {
       logoutUrl: options.logoutUrl ?? `${options.iframeUrl}/logout`,
       uxMode: options.uxMode ?? UX_MODE.REDIRECT,
       replaceUrlOnRedirect: options.replaceUrlOnRedirect ?? true,
-      whitelistData: options.whitelistData ?? [],
+      whitelistData: options.whitelistData ?? { [window.location.origin]: "" },
     });
   }
 
@@ -177,7 +181,7 @@ class OpenLogin {
   async request<T>(args: RequestParams): Promise<T> {
     const pid = randomId().toString();
     let { params } = args;
-    const session: { _user: string; _whitelistData: string[] } = { _user: "", _whitelistData: [] };
+    const session: { _user: string; _whitelistData: string } = { _user: "", _whitelistData: "" };
     if (params.length !== 1) throw new Error("request params array should have only one element");
 
     const { url, method, allowedInteractions } = args;
@@ -189,9 +193,9 @@ class OpenLogin {
       session._user = this.state.privKey;
     }
 
-    if (this.state.whitelistData.length > 0) {
+    if (this.state.whitelistData[window.location.origin]) {
       // TODO: pass along whitelisted urls
-      session._whitelistData = this.state.whitelistData;
+      session._whitelistData = this.state.whitelistData[window.location.origin];
     }
 
     // add in validated data
