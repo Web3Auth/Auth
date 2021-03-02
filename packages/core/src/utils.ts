@@ -37,11 +37,11 @@ type PopupResponse<T> = {
   data: T;
 };
 
-export async function awaitReq<T>(popupId: string): Promise<T> {
+export async function awaitReq<T>(id: string): Promise<T> {
   return new Promise((resolve) => {
     const handler = (ev: MessageEvent<PopupResponse<T>>) => {
       const { pid } = ev.data;
-      if (popupId !== pid) return;
+      if (id !== pid) return;
       window.removeEventListener("message", handler);
       resolve(ev.data.data);
     };
@@ -49,13 +49,15 @@ export async function awaitReq<T>(popupId: string): Promise<T> {
   });
 }
 
-export function constructURL(baseURL: string, queryParams: Record<string, unknown>, hashParams?: Record<string, unknown>): string {
+export function constructURL(params: { baseURL: string; queryParams?: Record<string, unknown>; hashParams?: Record<string, unknown> }): string {
+  const { baseURL, queryParams, hashParams } = params;
+
   const url = new URL(baseURL);
   Object.keys(queryParams).forEach((key) => {
     url.searchParams.append(key, queryParams[key] as string);
   });
   if (hashParams) {
-    const hash = new URL(constructURL(baseURL, hashParams)).searchParams.toString();
+    const hash = new URL(constructURL({ baseURL, queryParams: hashParams })).searchParams.toString();
     url.hash = hash;
   }
   return url.toString();

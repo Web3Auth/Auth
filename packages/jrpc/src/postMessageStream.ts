@@ -67,12 +67,22 @@ export default class PostMessageStream extends Duplex {
   }
 
   _postMessage(data: unknown): void {
+    let originConstraint = this._origin;
+    if (typeof data === "object") {
+      const dataObj = data as Record<string, unknown>;
+      if (typeof dataObj.data === "object") {
+        const datadataObj = dataObj.data as Record<string, unknown>;
+        if (datadataObj._redirectUrl) {
+          originConstraint = datadataObj._redirectUrl as string;
+        }
+      }
+    }
     this._targetWindow.postMessage(
       {
         target: this._target,
         data,
       },
-      this._origin
+      originConstraint
     );
   }
 

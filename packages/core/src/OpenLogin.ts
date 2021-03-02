@@ -1,17 +1,32 @@
-import { getRpcPromiseCallback, JRPCRequest, Json, randomId } from "@openlogin/jrpc";
+import { getRpcPromiseCallback, JRPCRequest, randomId } from "@openlogin/jrpc";
 
 import { UX_MODE, UX_MODE_TYPE } from "./constants";
 import OpenLoginStore from "./OpenLoginStore";
 import { Provider } from "./Provider";
-import { awaitReq, constructURL, getHashQueryParams, Maybe } from "./utils";
+import { awaitReq, constructURL, getHashQueryParams } from "./utils";
 
-type BaseLogoutParams = {
+export const ALLOWED_INTERACTIONS = {
+  POPUP: "popup",
+  REDIRECT: "redirect",
+  JRPC: "jrpc",
+};
+
+export type ALLOWED_INTERACTIONS_TYPE = typeof ALLOWED_INTERACTIONS[keyof typeof ALLOWED_INTERACTIONS];
+
+export type RequestParams = {
+  url?: string;
+  method: string;
+  params: Record<string, unknown>[];
+  allowedInteractions: ALLOWED_INTERACTIONS_TYPE[];
+};
+
+export type BaseLogoutParams = {
   clientId: string;
   uxMode: UX_MODE_TYPE;
 };
 
-type OpenLoginState = {
-  authUrl: string;
+export type OpenLoginState = {
+  loginUrl: string;
   privKey?: string;
   support3PC?: boolean;
   clientId: string;
@@ -22,27 +37,29 @@ type OpenLoginState = {
   store: OpenLoginStore;
   uxMode: UX_MODE_TYPE;
   replaceUrlOnRedirect: boolean;
+  whitelistData: string[];
 };
 
-type BaseLoginParams = {
+export type BaseLoginParams = {
   clientId: string;
   uxMode: UX_MODE_TYPE;
   redirectUrl?: string;
 };
 
-type LoginParams = BaseLoginParams & {
+export type LoginParams = BaseLoginParams & {
   loginProvider: string;
 };
 
-type OpenLoginOptions = {
+export type OpenLoginOptions = {
   clientId: string;
   iframeUrl: string;
   redirectUrl?: string;
-  authUrl?: string;
+  loginUrl?: string;
   webAuthnUrl?: string;
   logoutUrl?: string;
   uxMode?: UX_MODE_TYPE;
   replaceUrlOnRedirect?: boolean;
+  whitelistData?: string[];
 };
 
 class OpenLogin {
@@ -57,11 +74,12 @@ class OpenLogin {
     this.initState({
       ...options,
       redirectUrl: options.redirectUrl ?? window.location.href,
-      authUrl: options.authUrl ?? `${options.iframeUrl}/start`,
+      loginUrl: options.loginUrl ?? `${options.iframeUrl}/start`,
       webAuthnUrl: options.webAuthnUrl ?? `${options.iframeUrl}/start`,
       logoutUrl: options.logoutUrl ?? `${options.iframeUrl}/logout`,
       uxMode: options.uxMode ?? UX_MODE.REDIRECT,
       replaceUrlOnRedirect: options.replaceUrlOnRedirect ?? true,
+      whitelistData: options.whitelistData ?? [],
     });
   }
 
@@ -70,12 +88,13 @@ class OpenLogin {
       uxMode: options.uxMode,
       store: OpenLoginStore.getInstance(),
       iframeUrl: options.iframeUrl,
-      authUrl: options.authUrl,
+      loginUrl: options.loginUrl,
       clientId: options.clientId,
       redirectUrl: options.redirectUrl,
       webAuthnUrl: options.webAuthnUrl,
       logoutUrl: options.logoutUrl,
       replaceUrlOnRedirect: options.replaceUrlOnRedirect,
+      whitelistData: options.whitelistData,
     };
   }
 
@@ -85,12 +104,11 @@ class OpenLogin {
     const res = await this._check3PCSupport();
     this.state.support3PC = !!res.support3PC;
     if (this.state.support3PC) {
-      await this._setParams({ clientId: this.state.clientId });
-      this._syncState(await this._getIframeData());
+      this._syncState(await this._getData());
     }
   }
 
-  async fastLogin(params?: Partial<BaseLoginParams>): Promise<{ userKey?: string }> {
+  async fastLogin(params: Partial<BaseLoginParams>): Promise<{ privKey: string }> {
     const defaultParams: BaseLoginParams = {
       clientId: this.state.clientId,
       redirectUrl: this.state.redirectUrl,
@@ -102,21 +120,19 @@ class OpenLogin {
       ...params,
     };
 
-    let webAuthnLoginUrl: string;
-    if (!this.state.support3PC) {
-      webAuthnLoginUrl = constructURL(this.state.authUrl, loginParams);
-    } else {
-      await this._setParams(loginParams);
-      webAuthnLoginUrl = this.state.webAuthnUrl;
-    }
-    return this.open(webAuthnLoginUrl, loginParams.uxMode);
+    return this.request({
+      params: [loginParams],
+      method: "openlogin_fast_login",
+      url: this.state.webAuthnUrl,
+      allowedInteractions: [ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
+    });
   }
 
-  async login(params?: LoginParams & Partial<BaseLoginParams>): Promise<string> {
-    // await this.initialized;
-
+  async login(params?: LoginParams & Partial<BaseLoginParams>): Promise<{ privKey: string }> {
     if (this.state.privKey) {
-      return this.state.privKey;
+      return {
+        privKey: this.state.privKey,
+      };
     }
 
     const defaultParams: BaseLoginParams = {
@@ -125,69 +141,121 @@ class OpenLogin {
       uxMode: this.state.uxMode,
     };
 
-    // fast login flow
-    if (this.state.store.get("webAuthnPreferred") === true) {
-      return (await this.fastLogin(defaultParams)).userKey;
-    }
-
-    let loginUrl: string;
-
     const loginParams: LoginParams = {
       loginProvider: params.loginProvider,
       ...defaultParams,
       ...params,
     };
 
-    if (!this.state.support3PC) {
-      loginUrl = constructURL(this.state.authUrl, loginParams);
-    } else {
-      await this._setParams(loginParams);
-      loginUrl = constructURL(this.state.authUrl, { clientId: loginParams.clientId });
+    // fast login flow
+    if (this.state.store.get("webAuthnPreferred") === true) {
+      return this.fastLogin(loginParams);
     }
 
-    return (await this.open<{ userKey: string }>(loginUrl, loginParams.uxMode)).userKey;
+    return this.request({
+      method: "openlogin_login",
+      allowedInteractions: [UX_MODE.REDIRECT, UX_MODE.POPUP],
+      url: this.state.loginUrl,
+      params: [loginParams],
+    });
   }
 
   async logout(params?: Partial<BaseLogoutParams>): Promise<void> {
-    if (!this.state.privKey) {
-      return;
-    }
-    const defaultParams: BaseLogoutParams = {
-      uxMode: this.state.uxMode,
-      clientId: this.state.clientId,
-    };
-
-    const logoutParams: BaseLoginParams = {
-      ...defaultParams,
+    delete this.state.privKey;
+    await this.request<void>({
+      ...{
+        method: "openlogin_logout",
+        params: [{}],
+        url: this.state.logoutUrl,
+        uxMode: this.state.uxMode,
+        allowedInteractions: [ALLOWED_INTERACTIONS.JRPC, ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
+      },
       ...params,
-    };
+    });
+  }
+
+  async request<T>(args: RequestParams): Promise<T> {
+    const pid = randomId().toString();
+    let { params } = args;
+    const session: { _user: string; _whitelistData: string[] } = { _user: "", _whitelistData: [] };
+    if (params.length !== 1) throw new Error("request params array should have only one element");
+
+    const { url, method, allowedInteractions } = args;
+    if (allowedInteractions.length === 0) throw new Error("no allowed interactions");
+
+    // TODO: move this out as middleware
+    if (this.state.privKey) {
+      // TODO: implement signing
+      session._user = this.state.privKey;
+    }
+
+    if (this.state.whitelistData.length > 0) {
+      // TODO: pass along whitelisted urls
+      session._whitelistData = this.state.whitelistData;
+    }
+
+    // add in validated data
+    params = { ...params, ...session };
+
+    if (this.state.support3PC && allowedInteractions.includes(ALLOWED_INTERACTIONS.JRPC)) {
+      return this._jrpcRequest<Record<string, unknown>[], T>({ method, id: pid, params });
+    }
 
     if (this.state.support3PC) {
-      await this._requestLogout();
+      // set params first if 3PC supported
+      await this._setPIDData(pid, params);
+      params = [{}];
+    }
+
+    if (!url) {
+      throw new Error("no url for redirect / popup flow");
+    }
+
+    // method and pid are always in URL hash params
+    const finalUrl = constructURL({ baseURL: url, hashParams: { ...params[0], _pid: pid, _method: method } });
+
+    if (this.state.uxMode === UX_MODE.REDIRECT) {
+      // if redirects preferred, check for redirect flows first, then check for popup flow
+
+      if (allowedInteractions.includes(ALLOWED_INTERACTIONS.REDIRECT)) {
+        // give time for synchronous methods to complete before redirect
+        setTimeout(() => {
+          window.location.href = finalUrl;
+        }, 50);
+        return null;
+      }
+
+      if (allowedInteractions.includes(ALLOWED_INTERACTIONS.POPUP)) {
+        const u = new URL(finalUrl);
+        u.searchParams.append("pid", pid);
+        window.open(u.toString());
+        // TODO: implement popup flow
+        return awaitReq<T>(pid);
+      }
     } else {
-      const logoutUrl = constructURL(this.state.logoutUrl, { clientId: logoutParams.clientId });
-      await this.open(logoutUrl, logoutParams.uxMode);
+      // if popups preferred, check for popup flows first, then check for redirect flow
+
+      if (allowedInteractions.includes(ALLOWED_INTERACTIONS.POPUP)) {
+        const u = new URL(finalUrl);
+        u.searchParams.append("pid", pid);
+        window.open(u.toString());
+        // TODO: implement popup flow
+        return awaitReq<T>(pid);
+      }
+
+      if (allowedInteractions.includes(ALLOWED_INTERACTIONS.REDIRECT)) {
+        // give time for synchronous methods to complete before redirect
+        setTimeout(() => {
+          window.location.href = finalUrl;
+        }, 50);
+        return null;
+      }
     }
 
-    delete this.state.privKey;
+    throw new Error("no matching allowed interactions");
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  async open<T>(url: string, uxMode: UX_MODE_TYPE): Promise<T> {
-    // await this.initialized;
-    if (uxMode === UX_MODE.POPUP) {
-      const u = new URL(url);
-      const pid = randomId().toString();
-      u.searchParams.append("pid", pid);
-      window.open(u.toString());
-      return awaitReq<T>(pid);
-    }
-    // TODO: implement redirect handling
-    window.location.href = url;
-    return null; // redirects anyway
-  }
-
-  async request<T, U>(args: JRPCRequest<T>): Promise<Maybe<U>> {
+  async _jrpcRequest<T, U>(args: JRPCRequest<T>): Promise<U> {
     // await this.initialized;
     if (!args || typeof args !== "object" || Array.isArray(args)) {
       throw new Error("invalid request args");
@@ -203,34 +271,40 @@ class OpenLogin {
       throw new Error("invalid request params");
     }
 
-    return new Promise<T>((resolve, reject) => {
+    return new Promise<U>((resolve, reject) => {
       this.provider._rpcRequest({ method, params }, getRpcPromiseCallback(resolve, reject));
     });
   }
 
-  async _requestLogout(): Promise<void> {
-    await this.request<Json, Record<string, unknown>>({
+  async _logout(): Promise<void> {
+    await this._jrpcRequest<Record<string, unknown>[], unknown>({
       method: "openlogin_logout",
       params: [{ clientId: this.state.clientId }],
     });
   }
 
   async _check3PCSupport(): Promise<Record<string, unknown>> {
-    return this.request<Json, Record<string, unknown>>({
+    return this._jrpcRequest<Record<string, unknown>[], Record<string, unknown>>({
       method: "openlogin_check_3PC_support",
       params: [],
     });
   }
 
-  async _setParams(loginParams: Omit<Partial<LoginParams>, "uxMode">): Promise<void> {
-    await this.request<Json, Record<string, unknown>>({
-      method: "openlogin_set_params",
-      params: [loginParams],
+  async _setPIDData(pid: string, data: Record<string, unknown>[]): Promise<void> {
+    await this._jrpcRequest<Record<string, unknown>[], unknown>({
+      method: "openlogin_set_pid_data",
+      params: [
+        {
+          pid,
+          data: data[0],
+        },
+      ],
     });
   }
 
-  async _getIframeData(): Promise<Record<string, unknown>> {
-    return this.request<Json, Record<string, unknown>>({
+  async _getData(): Promise<Record<string, unknown>> {
+    return this.request({
+      allowedInteractions: [ALLOWED_INTERACTIONS.JRPC],
       method: "openlogin_get_data",
       params: [{ clientId: this.state.clientId }],
     });

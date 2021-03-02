@@ -79,7 +79,7 @@ export class Provider extends SafeEventEmitter {
       payload.jsonrpc = "2.0";
     }
     if (!payload.id) {
-      payload.id = randomId();
+      payload.id = randomId().toString();
     }
     this.rpcEngine.handle(payload, callback);
   }

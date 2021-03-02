@@ -2,13 +2,24 @@ import { JRPCRequest } from "@openlogin/jrpc";
 import { UX_MODE_TYPE } from "./constants";
 import OpenLoginStore from "./OpenLoginStore";
 import { Provider } from "./Provider";
-import { Maybe } from "./utils";
-declare type BaseLogoutParams = {
+export declare const ALLOWED_INTERACTIONS: {
+    POPUP: string;
+    REDIRECT: string;
+    JRPC: string;
+};
+export declare type ALLOWED_INTERACTIONS_TYPE = typeof ALLOWED_INTERACTIONS[keyof typeof ALLOWED_INTERACTIONS];
+export declare type RequestParams = {
+    url?: string;
+    method: string;
+    params: Record<string, unknown>[];
+    allowedInteractions: ALLOWED_INTERACTIONS_TYPE[];
+};
+export declare type BaseLogoutParams = {
     clientId: string;
     uxMode: UX_MODE_TYPE;
 };
-declare type OpenLoginState = {
-    authUrl: string;
+export declare type OpenLoginState = {
+    loginUrl: string;
     privKey?: string;
     support3PC?: boolean;
     clientId: string;
@@ -19,24 +30,26 @@ declare type OpenLoginState = {
     store: OpenLoginStore;
     uxMode: UX_MODE_TYPE;
     replaceUrlOnRedirect: boolean;
+    whitelistData: string[];
 };
-declare type BaseLoginParams = {
+export declare type BaseLoginParams = {
     clientId: string;
     uxMode: UX_MODE_TYPE;
     redirectUrl?: string;
 };
-declare type LoginParams = BaseLoginParams & {
+export declare type LoginParams = BaseLoginParams & {
     loginProvider: string;
 };
-declare type OpenLoginOptions = {
+export declare type OpenLoginOptions = {
     clientId: string;
     iframeUrl: string;
     redirectUrl?: string;
-    authUrl?: string;
+    loginUrl?: string;
     webAuthnUrl?: string;
     logoutUrl?: string;
     uxMode?: UX_MODE_TYPE;
     replaceUrlOnRedirect?: boolean;
+    whitelistData?: string[];
 };
 declare class OpenLogin {
     provider: Provider;
@@ -44,17 +57,19 @@ declare class OpenLogin {
     constructor(options: OpenLoginOptions);
     initState(options: Required<OpenLoginOptions>): void;
     init(): Promise<void>;
-    fastLogin(params?: Partial<BaseLoginParams>): Promise<{
-        userKey?: string;
+    fastLogin(params: Partial<BaseLoginParams>): Promise<{
+        privKey: string;
     }>;
-    login(params?: LoginParams & Partial<BaseLoginParams>): Promise<string>;
+    login(params?: LoginParams & Partial<BaseLoginParams>): Promise<{
+        privKey: string;
+    }>;
     logout(params?: Partial<BaseLogoutParams>): Promise<void>;
-    open<T>(url: string, uxMode: UX_MODE_TYPE): Promise<T>;
-    request<T, U>(args: JRPCRequest<T>): Promise<Maybe<U>>;
-    _requestLogout(): Promise<void>;
+    request<T>(args: RequestParams): Promise<T>;
+    _jrpcRequest<T, U>(args: JRPCRequest<T>): Promise<U>;
+    _logout(): Promise<void>;
     _check3PCSupport(): Promise<Record<string, unknown>>;
-    _setParams(loginParams: Omit<Partial<LoginParams>, "uxMode">): Promise<void>;
-    _getIframeData(): Promise<Record<string, unknown>>;
+    _setPIDData(pid: string, data: Record<string, unknown>[]): Promise<void>;
+    _getData(): Promise<Record<string, unknown>>;
     _syncState(newState: Record<string, unknown>): void;
     _cleanup(): Promise<void>;
 }
