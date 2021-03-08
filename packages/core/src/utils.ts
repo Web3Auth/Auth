@@ -49,18 +49,18 @@ export async function awaitReq<T>(id: string): Promise<T> {
   });
 }
 
-export function constructURL(params: { baseURL: string; queryParams?: Record<string, unknown>; hashParams?: Record<string, unknown> }): string {
-  const { baseURL, queryParams, hashParams } = params;
+export function constructURL(params: { baseURL: string; query?: Record<string, unknown>; hash?: Record<string, unknown> }): string {
+  const { baseURL, query, hash } = params;
 
   const url = new URL(baseURL);
-  if (queryParams) {
-    Object.keys(queryParams).forEach((key) => {
-      url.searchParams.append(key, queryParams[key] as string);
+  if (query) {
+    Object.keys(query).forEach((key) => {
+      url.searchParams.append(key, query[key] as string);
     });
   }
-  if (hashParams) {
-    const hash = new URL(constructURL({ baseURL, queryParams: hashParams })).searchParams.toString();
-    url.hash = hash;
+  if (hash) {
+    const h = new URL(constructURL({ baseURL, query: hash })).searchParams.toString();
+    url.hash = h;
   }
   return url.toString();
 }

@@ -1,4 +1,5 @@
 import { getRpcPromiseCallback, JRPCRequest, JRPCResponse, randomId } from "@openlogin/jrpc";
+import { jsonToBase64 } from "@openlogin/jrpc/src/utils";
 
 import { UX_MODE, UX_MODE_TYPE } from "./constants";
 import OpenLoginStore from "./OpenLoginStore";
@@ -183,7 +184,6 @@ class OpenLogin {
     let { params } = args;
     const session: { _user: string; _whitelistData: string } = { _user: "", _whitelistData: "" };
     if (params.length !== 1) throw new Error("request params array should have only one element");
-
     const { url, method, allowedInteractions } = args;
     if (allowedInteractions.length === 0) throw new Error("no allowed interactions");
 
@@ -199,7 +199,7 @@ class OpenLogin {
     }
 
     // add in validated data
-    params = { ...params, ...session };
+    params = [{ ...params[0], ...session }];
 
     if (this.state.support3PC && allowedInteractions.includes(ALLOWED_INTERACTIONS.JRPC)) {
       return this._jrpcRequest<Record<string, unknown>[], T>({ method, params });
@@ -216,7 +216,8 @@ class OpenLogin {
     }
 
     // method and pid are always in URL hash params
-    const finalUrl = constructURL({ baseURL: url, hashParams: { ...params[0], _pid: pid, _method: method } });
+    // convert params from JSON to base64
+    const finalUrl = constructURL({ baseURL: url, hash: { b64Params: jsonToBase64(params[0]), _pid: pid, _method: method } });
 
     if (this.state.uxMode === UX_MODE.REDIRECT) {
       // if redirects preferred, check for redirect flows first, then check for popup flow
@@ -226,7 +227,7 @@ class OpenLogin {
         setTimeout(() => {
           window.location.href = finalUrl;
         }, 50);
-        return null;
+        return {} as T;
       }
 
       if (allowedInteractions.includes(ALLOWED_INTERACTIONS.POPUP)) {
@@ -285,7 +286,7 @@ class OpenLogin {
   }
 
   async _check3PCSupport(): Promise<JRPCResponse<Record<string, boolean>>> {
-    return this._jrpcRequest({
+    return this._jrpcRequest<Record<string, unknown>[], JRPCResponse<Record<string, boolean>>>({
       method: "openlogin_check_3PC_support",
       params: [{}],
     });
