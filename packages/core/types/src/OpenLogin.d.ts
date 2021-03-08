@@ -16,7 +16,6 @@ export declare type RequestParams = {
 };
 export declare type BaseLogoutParams = {
     clientId: string;
-    uxMode: UX_MODE_TYPE;
 };
 export declare type WhitelistData = {
     [P in string]: string;
@@ -36,8 +35,6 @@ export declare type OpenLoginState = {
     whitelistData: WhitelistData;
 };
 export declare type BaseLoginParams = {
-    clientId: string;
-    uxMode: UX_MODE_TYPE;
     redirectUrl?: string;
 };
 export declare type LoginParams = BaseLoginParams & {
@@ -60,6 +57,7 @@ declare class OpenLogin {
     constructor(options: OpenLoginOptions);
     initState(options: Required<OpenLoginOptions>): void;
     init(): Promise<void>;
+    get privKey(): string;
     fastLogin(params: Partial<BaseLoginParams>): Promise<{
         privKey: string;
     }>;

@@ -23,7 +23,6 @@ export type RequestParams = {
 
 export type BaseLogoutParams = {
   clientId: string;
-  uxMode: UX_MODE_TYPE;
 };
 
 export type WhitelistData = {
@@ -46,8 +45,6 @@ export type OpenLoginState = {
 };
 
 export type BaseLoginParams = {
-  clientId: string;
-  uxMode: UX_MODE_TYPE;
   redirectUrl?: string;
 };
 
@@ -113,11 +110,13 @@ class OpenLogin {
     }
   }
 
+  get privKey(): string {
+    return this.state.privKey ?? "";
+  }
+
   async fastLogin(params: Partial<BaseLoginParams>): Promise<{ privKey: string }> {
     const defaultParams: BaseLoginParams = {
-      clientId: this.state.clientId,
       redirectUrl: this.state.redirectUrl,
-      uxMode: this.state.uxMode,
     };
 
     const loginParams: BaseLoginParams = {
@@ -126,24 +125,16 @@ class OpenLogin {
     };
 
     return this.request({
-      params: [loginParams],
-      method: "openlogin_fast_login",
+      params: [{ ...loginParams, fastLogin: true }],
+      method: "openlogin_login",
       url: this.state.webAuthnUrl,
       allowedInteractions: [ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
     });
   }
 
   async login(params?: LoginParams & Partial<BaseLoginParams>): Promise<{ privKey: string }> {
-    if (this.state.privKey) {
-      return {
-        privKey: this.state.privKey,
-      };
-    }
-
     const defaultParams: BaseLoginParams = {
-      clientId: this.state.clientId,
       redirectUrl: this.state.redirectUrl,
-      uxMode: this.state.uxMode,
     };
 
     const loginParams: LoginParams = {
@@ -153,7 +144,7 @@ class OpenLogin {
     };
 
     // fast login flow
-    if (this.state.store.get("webAuthnPreferred") === true) {
+    if (this.state.store.get("touchIDEnabled") === true) {
       return this.fastLogin(loginParams);
     }
 
@@ -165,12 +156,12 @@ class OpenLogin {
     });
   }
 
-  async logout(params?: Partial<BaseLogoutParams>): Promise<void> {
+  async logout(params: Partial<BaseLogoutParams> = {}): Promise<void> {
     delete this.state.privKey;
     await this.request<void>({
       ...{
         method: "openlogin_logout",
-        params: [{}],
+        params: [{ ...params }],
         url: this.state.logoutUrl,
         uxMode: this.state.uxMode,
         allowedInteractions: [ALLOWED_INTERACTIONS.JRPC, ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
@@ -182,7 +173,7 @@ class OpenLogin {
   async request<T>(args: RequestParams): Promise<T> {
     const pid = randomId().toString();
     let { params } = args;
-    const session: { _user: string; _whitelistData: string } = { _user: "", _whitelistData: "" };
+    const session: { _user: string; _whitelistData: string; _clientId: string } = { _user: "", _whitelistData: "", _clientId: "" };
     if (params.length !== 1) throw new Error("request params array should have only one element");
     const { url, method, allowedInteractions } = args;
     if (allowedInteractions.length === 0) throw new Error("no allowed interactions");
@@ -198,8 +189,12 @@ class OpenLogin {
       session._whitelistData = this.state.whitelistData[window.location.origin];
     }
 
-    // add in validated data
-    params = [{ ...params[0], ...session }];
+    if (this.state.clientId) {
+      session._clientId = this.state.clientId;
+    }
+
+    // add in session data (allow overrides)
+    params = [{ ...session, ...params[0] }];
 
     if (this.state.support3PC && allowedInteractions.includes(ALLOWED_INTERACTIONS.JRPC)) {
       return this._jrpcRequest<Record<string, unknown>[], T>({ method, params });
@@ -309,7 +304,7 @@ class OpenLogin {
     return this.request({
       allowedInteractions: [ALLOWED_INTERACTIONS.JRPC],
       method: "openlogin_get_data",
-      params: [{ clientId: this.state.clientId }],
+      params: [{}],
     });
   }
 
