@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
-  "main": "dist/core.cjs.js",
-  "unpkg": "dist/core.umd.min.js",
-  "jsdelivr": "dist/core.umd.min.js",
+  "main": "dist/openlogin.cjs.js",
+  "unpkg": "dist/openlogin.umd.min.js",
+  "jsdelivr": "dist/openlogin.umd.min.js",
   "types": "types/index.d.ts",
   "author": "Torus Labs",
   "scripts": {
