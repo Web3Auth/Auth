@@ -301,11 +301,15 @@ class OpenLogin {
   }
 
   async _getData(): Promise<Record<string, unknown>> {
-    return this.request({
+    const jrpcRes = await this.request<JRPCResponse<Record<string, unknown>>>({
       allowedInteractions: [ALLOWED_INTERACTIONS.JRPC],
       method: "openlogin_get_data",
       params: [{}],
     });
+    if (jrpcRes.error) {
+      throw new Error(`get data error ${jrpcRes.error}`);
+    }
+    return jrpcRes.result;
   }
 
   _syncState(newState: Record<string, unknown>): void {
@@ -317,7 +321,8 @@ class OpenLogin {
         this.state.store.set(key, newState.store[key]);
       });
     }
-    this.state = { ...this.state, ...newState };
+    const { store } = this.state;
+    this.state = { ...this.state, ...newState, store };
   }
 
   async _cleanup(): Promise<void> {
