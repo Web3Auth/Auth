@@ -75,7 +75,7 @@ class OpenLogin {
     });
     this.initState({
       ...options,
-      redirectUrl: options.redirectUrl ?? window.location.href,
+      redirectUrl: options.redirectUrl ?? `${window.location.protocol}//${window.location.host}${window.location.pathname}`,
       loginUrl: options.loginUrl ?? `${options.iframeUrl}/start`,
       webAuthnUrl: options.webAuthnUrl ?? `${options.iframeUrl}/start`,
       logoutUrl: options.logoutUrl ?? `${options.iframeUrl}/logout`,

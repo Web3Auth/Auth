@@ -23,8 +23,8 @@ export function getHashQueryParams(replaceUrl = false): Record<string, string> {
   if (queryResult) {
     try {
       const queryParams = JSON.parse(atob(queryResult));
-      Object.keys(queryParams).forEach((value, key) => {
-        result[key] = value;
+      Object.keys(queryParams).forEach((key) => {
+        result[key] = queryParams[key];
       });
     } catch (error) {
       window.console.error(error);
@@ -43,8 +43,8 @@ export function getHashQueryParams(replaceUrl = false): Record<string, string> {
   if (hashResult) {
     try {
       const hashParams = JSON.parse(atob(hashResult));
-      Object.keys(hashParams).forEach((value, key) => {
-        result[key] = value;
+      Object.keys(hashParams).forEach((key) => {
+        result[key] = hashParams[key];
       });
     } catch (error) {
       window.console.error(error);
