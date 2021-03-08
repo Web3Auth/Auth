@@ -1,4 +1,4 @@
-import { JRPCRequest, JRPCResponse } from "@openlogin/jrpc";
+import { JRPCRequest, JRPCResponse } from "@toruslabs/openlogin-jrpc";
 import { UX_MODE_TYPE } from "./constants";
 import OpenLoginStore from "./OpenLoginStore";
 import { Provider } from "./Provider";

@@ -1,4 +1,4 @@
-import { JRPCEngine, JRPCRequest, ObjectMultiplex, PostMessageStream, SafeEventEmitter } from "@openlogin/jrpc";
+import { JRPCEngine, JRPCRequest, ObjectMultiplex, PostMessageStream, SafeEventEmitter } from "@toruslabs/openlogin-jrpc";
 export declare class Provider extends SafeEventEmitter {
     iframeElem: HTMLIFrameElement | null;
     rpcStream: PostMessageStream;

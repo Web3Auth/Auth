@@ -1,5 +1,5 @@
-import { getRpcPromiseCallback, JRPCRequest, JRPCResponse, randomId } from "@openlogin/jrpc";
-import { jsonToBase64 } from "@openlogin/jrpc/src/utils";
+import { getRpcPromiseCallback, JRPCRequest, JRPCResponse, randomId } from "@toruslabs/openlogin-jrpc";
+import { jsonToBase64 } from "@toruslabs/openlogin-jrpc/src/utils";
 
 import { UX_MODE, UX_MODE_TYPE } from "./constants";
 import OpenLoginStore from "./OpenLoginStore";

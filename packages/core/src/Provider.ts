@@ -9,7 +9,7 @@ import {
   randomId,
   SafeEventEmitter,
   setupMultiplex,
-} from "@openlogin/jrpc";
+} from "@toruslabs/openlogin-jrpc";
 import pump from "pump";
 
 import { iframeDOMElementID } from "./constants";
