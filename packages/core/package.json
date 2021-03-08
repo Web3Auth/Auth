@@ -49,5 +49,8 @@
   "bugs": {
     "url": "https://github.com/torusresearch/OpenLoginSdk/issues"
   },
-  "keywords": []
+  "keywords": [],
+  "publishConfig": {
+    "access": "public"
+  }
 }
