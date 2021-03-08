@@ -1,6 +1,6 @@
 {
-  "name": "@openlogin/jrpc",
-  "version": "1.0.0",
+  "name": "@toruslabs/openlogin-jrpc",
+  "version": "0.0.0",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
   "main": "dist/jrpc.cjs.js",
