@@ -74,8 +74,5 @@
       "pre-commit": "lerna run pre-commit --concurrency 1 --since HEAD"
     }
   },
-  "resolutions": {
-    "npm-packlist": "1.4.4"
-  },
   "dependencies": {}
 }
