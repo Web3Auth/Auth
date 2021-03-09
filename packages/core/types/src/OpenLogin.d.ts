@@ -1,4 +1,4 @@
-import { JRPCRequest, JRPCResponse } from "@toruslabs/openlogin-jrpc";
+import { JRPCRequest, JRPCResponse, WhitelistData } from "@toruslabs/openlogin-jrpc";
 import { UX_MODE_TYPE } from "./constants";
 import OpenLoginStore from "./OpenLoginStore";
 import { Provider } from "./Provider";
@@ -17,9 +17,6 @@ export declare type RequestParams = {
 export declare type BaseLogoutParams = {
     clientId: string;
     fastLogin: boolean;
-};
-export declare type WhitelistData = {
-    [P in string]: string;
 };
 export declare type OpenLoginState = {
     loginUrl: string;
