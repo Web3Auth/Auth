@@ -23,6 +23,7 @@ export type RequestParams = {
 
 export type BaseLogoutParams = {
   clientId: string;
+  fastLogin: boolean;
 };
 
 export type WhitelistData = {
@@ -144,7 +145,7 @@ class OpenLogin {
     };
 
     // fast login flow
-    if (this.state.store.get("touchIDEnabled") === true) {
+    if (this.state.store.get("touchIDPreference") === "enabled") {
       return this.fastLogin(loginParams);
     }
 
@@ -156,18 +157,21 @@ class OpenLogin {
     });
   }
 
-  async logout(params: Partial<BaseLogoutParams> = {}): Promise<void> {
-    delete this.state.privKey;
+  async logout(logoutParams: Partial<BaseLogoutParams> = {}): Promise<void> {
+    const params: Record<string, unknown> = {};
+    if (logoutParams.clientId) {
+      params._clientId = logoutParams.clientId;
+    }
+    if (logoutParams.fastLogin) {
+      params.fastLogin = logoutParams.fastLogin;
+    }
     await this.request<void>({
-      ...{
-        method: "openlogin_logout",
-        params: [{ ...params }],
-        url: this.state.logoutUrl,
-        uxMode: this.state.uxMode,
-        allowedInteractions: [ALLOWED_INTERACTIONS.JRPC, ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
-      },
-      ...params,
+      method: "openlogin_logout",
+      params: [params],
+      url: this.state.logoutUrl,
+      allowedInteractions: [ALLOWED_INTERACTIONS.JRPC, ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
     });
+    this._syncState(await this._getData());
   }
 
   async request<T>(args: RequestParams): Promise<T> {

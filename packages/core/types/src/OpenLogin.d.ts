@@ -16,6 +16,7 @@ export declare type RequestParams = {
 };
 export declare type BaseLogoutParams = {
     clientId: string;
+    fastLogin: boolean;
 };
 export declare type WhitelistData = {
     [P in string]: string;
@@ -64,7 +65,7 @@ declare class OpenLogin {
     login(params?: LoginParams & Partial<BaseLoginParams>): Promise<{
         privKey: string;
     }>;
-    logout(params?: Partial<BaseLogoutParams>): Promise<void>;
+    logout(logoutParams?: Partial<BaseLogoutParams>): Promise<void>;
     request<T>(args: RequestParams): Promise<T>;
     _jrpcRequest<T, U>(args: JRPCRequest<T>): Promise<U>;
     _check3PCSupport(): Promise<JRPCResponse<Record<string, boolean>>>;
