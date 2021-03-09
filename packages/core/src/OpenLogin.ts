@@ -1,4 +1,4 @@
-import { getRpcPromiseCallback, JRPCRequest, JRPCResponse, randomId } from "@toruslabs/openlogin-jrpc";
+import { getRpcPromiseCallback, JRPCRequest, JRPCResponse, randomId, WhitelistData } from "@toruslabs/openlogin-jrpc";
 import { jsonToBase64 } from "@toruslabs/openlogin-jrpc/src/utils";
 
 import { UX_MODE, UX_MODE_TYPE } from "./constants";
@@ -24,10 +24,6 @@ export type RequestParams = {
 export type BaseLogoutParams = {
   clientId: string;
   fastLogin: boolean;
-};
-
-export type WhitelistData = {
-  [P in string]: string;
 };
 
 export type OpenLoginState = {
@@ -177,7 +173,7 @@ class OpenLogin {
   async request<T>(args: RequestParams): Promise<T> {
     const pid = randomId().toString();
     let { params } = args;
-    const session: { _user: string; _whitelistData: string; _clientId: string } = { _user: "", _whitelistData: "", _clientId: "" };
+    const session: { _user: string; _whitelistData: WhitelistData; _clientId: string } = { _user: "", _whitelistData: {}, _clientId: "" };
     if (params.length !== 1) throw new Error("request params array should have only one element");
     const { url, method, allowedInteractions } = args;
     if (allowedInteractions.length === 0) throw new Error("no allowed interactions");
@@ -188,10 +184,7 @@ class OpenLogin {
       session._user = this.state.privKey;
     }
 
-    if (this.state.whitelistData[window.location.origin]) {
-      // TODO: pass along whitelisted urls
-      session._whitelistData = this.state.whitelistData[window.location.origin];
-    }
+    session._whitelistData = this.state.whitelistData;
 
     if (this.state.clientId) {
       session._clientId = this.state.clientId;
