@@ -1,11 +1,11 @@
 {
-  "name": "@openlogin/jrpc",
-  "version": "1.0.0",
+  "name": "@toruslabs/openlogin-jrpc",
+  "version": "0.0.1",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
-  "main": "dist/jrpc.cjs.js",
-  "unpkg": "dist/jrpc.umd.min.js",
-  "jsdelivr": "dist/jrpc.umd.min.js",
+  "main": "dist/openlogin-jrpc.cjs.js",
+  "unpkg": "dist/openlogin-jrpc.umd.min.js",
+  "jsdelivr": "dist/openlogin-jrpc.umd.min.js",
   "types": "types/index.d.ts",
   "author": "Torus Labs",
   "scripts": {
@@ -50,5 +50,8 @@
   "bugs": {
     "url": "https://github.com/torusresearch/OpenLoginSdk/issues"
   },
-  "keywords": []
+  "keywords": [],
+  "publishConfig": {
+    "access": "public"
+  }
 }

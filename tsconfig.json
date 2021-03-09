@@ -13,7 +13,7 @@
     "allowSyntheticDefaultImports": true,
     "baseUrl": "./packages",
     "paths": {
-      "@openlogin/*": ["*/index.ts"]
+      "@toruslabs/*": ["*/index.ts"]
     },
     "skipLibCheck": true,
   }

@@ -8,11 +8,9 @@
   "eslint.options": {
     "extends": [
       "plugin:@typescript-eslint/recommended",
-      "prettier/@typescript-eslint",
       "standard",
       "eslint:recommended",
       "plugin:prettier/recommended",
-      "prettier/babel",
       "plugin:import/errors",
       "plugin:import/warnings",
       "plugin:import/typescript",

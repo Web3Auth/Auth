@@ -1,11 +1,11 @@
 {
-  "name": "@openlogin/core",
-  "version": "1.0.0",
+  "name": "@toruslabs/openlogin",
+  "version": "0.0.1",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
-  "main": "dist/core.cjs.js",
-  "unpkg": "dist/core.umd.min.js",
-  "jsdelivr": "dist/core.umd.min.js",
+  "main": "dist/openlogin.cjs.js",
+  "unpkg": "dist/openlogin.umd.min.js",
+  "jsdelivr": "dist/openlogin.umd.min.js",
   "types": "types/index.d.ts",
   "author": "Torus Labs",
   "scripts": {
@@ -21,7 +21,7 @@
     "pre-commit": "lint-staged"
   },
   "dependencies": {
-    "@openlogin/jrpc": "^1.0.0",
+    "@toruslabs/openlogin-jrpc": "^0.0.1",
     "@types/node": "^14.14.25",
     "end-of-stream": "^1.4.4",
     "fast-safe-stringify": "^2.0.7",
@@ -49,5 +49,8 @@
   "bugs": {
     "url": "https://github.com/torusresearch/OpenLoginSdk/issues"
   },
-  "keywords": []
+  "keywords": [],
+  "publishConfig": {
+    "access": "public"
+  }
 }
