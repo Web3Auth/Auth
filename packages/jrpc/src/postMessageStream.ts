@@ -71,12 +71,19 @@ export default class PostMessageStream extends Duplex {
     if (typeof data === "object") {
       const dataObj = data as Record<string, unknown>;
       if (typeof dataObj.data === "object") {
-        const datadataObj = dataObj.data as Record<string, unknown>;
-        if (datadataObj._origin) {
-          originConstraint = datadataObj._origin as string;
+        const dataObjData = dataObj.data as Record<string, unknown>;
+        if (Array.isArray(dataObjData.params) && dataObjData.params.length > 0) {
+          const dataObjDataParam = dataObjData.params[0] as Record<string, unknown>;
+          if (dataObjDataParam._origin) {
+            originConstraint = dataObjDataParam._origin as string;
+          }
+
+          // add a constraint for the response
+          dataObjDataParam._origin = window.location.origin;
         }
       }
     }
+
     this._targetWindow.postMessage(
       {
         target: this._target,
@@ -100,11 +107,7 @@ export default class PostMessageStream extends Duplex {
       return;
     }
 
-    if (typeof message.data === "object") {
-      this._onData({ ...message.data, _origin: window.location.origin });
-    } else {
-      this._onData(message.data);
-    }
+    this._onData(message.data);
   }
 
   // eslint-disable-next-line class-methods-use-this

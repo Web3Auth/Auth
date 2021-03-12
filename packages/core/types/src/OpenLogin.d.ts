@@ -1,4 +1,4 @@
-import { JRPCRequest, JRPCResponse, WhitelistData } from "@toruslabs/openlogin-jrpc";
+import { JRPCRequest, JRPCResponse, OriginData } from "@toruslabs/openlogin-jrpc";
 import { UX_MODE_TYPE } from "./constants";
 import OpenLoginStore from "./OpenLoginStore";
 import { Provider } from "./Provider";
@@ -30,7 +30,7 @@ export declare type OpenLoginState = {
     store: OpenLoginStore;
     uxMode: UX_MODE_TYPE;
     replaceUrlOnRedirect: boolean;
-    whitelistData: WhitelistData;
+    originData: OriginData;
 };
 export declare type BaseLoginParams = {
     redirectUrl?: string;
@@ -47,7 +47,7 @@ export declare type OpenLoginOptions = {
     logoutUrl?: string;
     uxMode?: UX_MODE_TYPE;
     replaceUrlOnRedirect?: boolean;
-    whitelistData?: WhitelistData;
+    originData?: OriginData;
 };
 declare class OpenLogin {
     provider: Provider;

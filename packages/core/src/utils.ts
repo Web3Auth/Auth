@@ -1,3 +1,6 @@
+import { getPublic, sign } from "@toruslabs/eccrypto";
+import { base64url } from "@toruslabs/openlogin-jrpc";
+
 export async function documentReady(): Promise<void> {
   return new Promise<void>((resolve) => {
     if (document.readyState !== "loading") {
@@ -8,6 +11,13 @@ export async function documentReady(): Promise<void> {
       });
     }
   });
+}
+
+export async function whitelistUrl(clientId: string, appKey: string, origin: string): Promise<string> {
+  const appKeyBuf = Buffer.from(appKey, "hex");
+  if (base64url.encode(getPublic(appKeyBuf)) !== clientId) throw new Error("appKey mismatch");
+  const sig = await sign(appKeyBuf, Buffer.from(origin, "utf-8"));
+  return base64url.encode(sig);
 }
 
 export function getHashQueryParams(replaceUrl = false): Record<string, string> {

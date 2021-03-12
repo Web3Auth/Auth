@@ -1,5 +1,15 @@
-import { getRpcPromiseCallback, JRPCRequest, JRPCResponse, randomId, WhitelistData } from "@toruslabs/openlogin-jrpc";
-import { jsonToBase64 } from "@toruslabs/openlogin-jrpc/src/utils";
+import { getPublic, sign } from "@toruslabs/eccrypto";
+import {
+  base64url,
+  getRpcPromiseCallback,
+  JRPCRequest,
+  JRPCResponse,
+  jsonToBase64,
+  OriginData,
+  randomId,
+  SessionInfo,
+} from "@toruslabs/openlogin-jrpc";
+import { sha256 } from "hash.js";
 
 import { UX_MODE, UX_MODE_TYPE } from "./constants";
 import OpenLoginStore from "./OpenLoginStore";
@@ -38,7 +48,7 @@ export type OpenLoginState = {
   store: OpenLoginStore;
   uxMode: UX_MODE_TYPE;
   replaceUrlOnRedirect: boolean;
-  whitelistData: WhitelistData;
+  originData: OriginData;
 };
 
 export type BaseLoginParams = {
@@ -58,7 +68,7 @@ export type OpenLoginOptions = {
   logoutUrl?: string;
   uxMode?: UX_MODE_TYPE;
   replaceUrlOnRedirect?: boolean;
-  whitelistData?: WhitelistData;
+  originData?: OriginData;
 };
 
 class OpenLogin {
@@ -78,7 +88,7 @@ class OpenLogin {
       logoutUrl: options.logoutUrl ?? `${options.iframeUrl}/logout`,
       uxMode: options.uxMode ?? UX_MODE.REDIRECT,
       replaceUrlOnRedirect: options.replaceUrlOnRedirect ?? true,
-      whitelistData: options.whitelistData ?? { [window.location.origin]: "" },
+      originData: options.originData ?? { [window.location.origin]: "" },
     });
   }
 
@@ -93,7 +103,7 @@ class OpenLogin {
       webAuthnUrl: options.webAuthnUrl,
       logoutUrl: options.logoutUrl,
       replaceUrlOnRedirect: options.replaceUrlOnRedirect,
-      whitelistData: options.whitelistData,
+      originData: options.originData,
     };
   }
 
@@ -173,22 +183,29 @@ class OpenLogin {
   async request<T>(args: RequestParams): Promise<T> {
     const pid = randomId().toString();
     let { params } = args;
-    const session: { _user: string; _whitelistData: WhitelistData; _clientId: string } = { _user: "", _whitelistData: {}, _clientId: "" };
+
+    // Note: _origin is added later in postMessageStream, do not add it here since its used for checking postMessage constraints
+    const session: Partial<SessionInfo> = {};
     if (params.length !== 1) throw new Error("request params array should have only one element");
     const { url, method, allowedInteractions } = args;
     if (allowedInteractions.length === 0) throw new Error("no allowed interactions");
 
-    // TODO: move this out as middleware
-    if (this.state.privKey) {
-      // TODO: implement signing
-      session._user = this.state.privKey;
-    }
-
-    session._whitelistData = this.state.whitelistData;
-
     if (this.state.clientId) {
       session._clientId = this.state.clientId;
     }
+
+    if (this.state.privKey) {
+      const userData = {
+        clientId: session._clientId,
+        timestamp: Date.now().toString(),
+      };
+      const sig = await sign(Buffer.from(this.state.privKey, "hex"), Buffer.from(sha256().update(JSON.stringify(userData)).digest("hex"), "hex"));
+      session._user = getPublic(Buffer.from(this.state.privKey, "hex")).toString("hex");
+      session._userSig = base64url.encode(sig);
+      session._userData = userData;
+    }
+
+    session._originData = this.state.originData;
 
     // add in session data (allow overrides)
     params = [{ ...session, ...params[0] }];
@@ -280,7 +297,7 @@ class OpenLogin {
   async _check3PCSupport(): Promise<JRPCResponse<Record<string, boolean>>> {
     return this._jrpcRequest<Record<string, unknown>[], JRPCResponse<Record<string, boolean>>>({
       method: "openlogin_check_3PC_support",
-      params: [{}],
+      params: [{ _originData: this.state.originData }],
     });
   }
 
