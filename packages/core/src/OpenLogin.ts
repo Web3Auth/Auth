@@ -5,11 +5,11 @@ import {
   JRPCRequest,
   JRPCResponse,
   jsonToBase64,
+  keccak,
   OriginData,
   randomId,
   SessionInfo,
 } from "@toruslabs/openlogin-jrpc";
-import { sha256 } from "hash.js";
 
 import { UX_MODE, UX_MODE_TYPE } from "./constants";
 import OpenLoginStore from "./OpenLoginStore";
@@ -199,7 +199,10 @@ class OpenLogin {
         clientId: session._clientId,
         timestamp: Date.now().toString(),
       };
-      const sig = await sign(Buffer.from(this.state.privKey, "hex"), Buffer.from(sha256().update(JSON.stringify(userData)).digest("hex"), "hex"));
+      const sig = await sign(
+        Buffer.from(this.state.privKey, "hex"),
+        Buffer.from(keccak("keccak256").update(JSON.stringify(userData)).digest("hex"), "hex")
+      );
       session._user = getPublic(Buffer.from(this.state.privKey, "hex")).toString("hex");
       session._userSig = base64url.encode(sig);
       session._userData = userData;

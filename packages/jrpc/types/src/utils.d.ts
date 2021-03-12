@@ -1,3 +1,4 @@
+export * as keccak from "keccak";
 export declare type OriginData = {
     [P in string]: string;
 };

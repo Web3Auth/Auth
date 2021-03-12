@@ -1,5 +1,7 @@
 import base64url from "base64url";
 
+export * as keccak from "keccak";
+
 export type OriginData = {
   [P in string]: string;
 };
