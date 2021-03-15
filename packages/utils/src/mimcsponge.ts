@@ -44,7 +44,7 @@ export function mimcGetConstants(seed?: string, nRounds?: number): any[] {
   return cts;
 }
 
-const cts = exports.getConstants(SEED, NROUNDS);
+const cts = mimcGetConstants(SEED, NROUNDS);
 
 export function mimcHash(
   _xL_in: any,
@@ -89,13 +89,13 @@ export function mimcMultiHash(arr: any[], key: any, numOutputs: any): BigInt[] {
 
   for (let i = 0; i < arr.length; i += 1) {
     R = F.add(R, F.e(arr[i]));
-    const S = exports.hash(R, C, _key);
+    const S = mimcHash(R, C, _key);
     R = S.xL;
     C = S.xR;
   }
   const outputs = [R];
   for (let i = 1; i < _numOutputs; i += 1) {
-    const S = exports.hash(R, C, _key);
+    const S = mimcHash(R, C, _key);
     R = S.xL;
     C = S.xR;
     outputs.push(R);
