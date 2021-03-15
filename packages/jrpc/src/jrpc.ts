@@ -1,6 +1,6 @@
+import { randomId } from "@toruslabs/openlogin-utils";
 import { Duplex } from "stream";
 
-import { randomId } from "./randomId";
 import SafeEventEmitter from "./safeEventEmitter";
 import SerializableError from "./serializableError";
 

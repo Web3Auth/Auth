@@ -6,10 +6,10 @@ import {
   JRPCRequest,
   ObjectMultiplex,
   PostMessageStream,
-  randomId,
   SafeEventEmitter,
   setupMultiplex,
 } from "@toruslabs/openlogin-jrpc";
+import { randomId } from "@toruslabs/openlogin-utils";
 import pump from "pump";
 
 import { iframeDOMElementID } from "./constants";

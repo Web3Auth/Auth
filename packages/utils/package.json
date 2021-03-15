@@ -1,11 +1,11 @@
 {
-  "name": "@toruslabs/openlogin-jrpc",
+  "name": "@toruslabs/openlogin-utils",
   "version": "0.0.4",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
-  "main": "dist/openlogin-jrpc.cjs.js",
-  "unpkg": "dist/openlogin-jrpc.umd.min.js",
-  "jsdelivr": "dist/openlogin-jrpc.umd.min.js",
+  "main": "dist/openlogin-utils.cjs.js",
+  "unpkg": "dist/openlogin-utils.umd.min.js",
+  "jsdelivr": "dist/openlogin-utils.umd.min.js",
   "types": "types/index.d.ts",
   "author": "Torus Labs",
   "scripts": {
@@ -21,7 +21,6 @@
     "pre-commit": "lint-staged"
   },
   "dependencies": {
-    "@toruslabs/openlogin-utils": "^0.0.4",
     "@types/node": "^14.14.25",
     "base64url": "^3.0.1",
     "bn.js": "^5.2.0",

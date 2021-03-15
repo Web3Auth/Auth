@@ -7,9 +7,9 @@ import {
   jsonToBase64,
   keccak,
   OriginData,
-  randomId,
   SessionInfo,
 } from "@toruslabs/openlogin-jrpc";
+import { randomId } from "@toruslabs/openlogin-utils";
 
 import { UX_MODE, UX_MODE_TYPE } from "./constants";
 import OpenLoginStore from "./OpenLoginStore";
