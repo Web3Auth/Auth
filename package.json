@@ -4,8 +4,8 @@
   "repository": "git@github.com:torusresearch/OpenLoginSdk.git",
   "scripts": {
     "bootstrap": "lerna bootstrap",
-    "publish:lerna": "lerna publish",
-    "clean": "lerna clean --yes && lerna exec -- rimraf package-lock.json yarn.lock dist/ .rts2_cache_{cjs,esm}/ openlogin-*.tgz",
+    "publish:lerna": "yarn clean && yarn bootstrap && lerna publish",
+    "clean": "lerna clean --yes && lerna exec -- rimraf package-lock.json yarn.lock dist/ .rts2_cache_{cjs,esm}/ toruslabs-*.tgz",
     "build": "lerna run build",
     "dev": "lerna run dev",
     "test": "lerna run test --parallel",
