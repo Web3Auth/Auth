@@ -9,7 +9,7 @@ import {
   OriginData,
   SessionInfo,
 } from "@toruslabs/openlogin-jrpc";
-import { randomId } from "@toruslabs/openlogin-utils";
+import { randomId, URLWithHashParams } from "@toruslabs/openlogin-utils";
 
 import { UX_MODE, UX_MODE_TYPE } from "./constants";
 import OpenLoginStore from "./OpenLoginStore";
@@ -184,7 +184,8 @@ class OpenLogin {
     const pid = randomId().toString();
     let { params } = args;
 
-    // Note: _origin is added later in postMessageStream, do not add it here since its used for checking postMessage constraints
+    // Note: _origin is added later in postMessageStream for jrpc requests
+    // do not add it here since its used for checking postMessage constraints
     const session: Partial<SessionInfo> = {};
     if (params.length !== 1) throw new Error("request params array should have only one element");
     const { url, method, allowedInteractions } = args;
@@ -213,10 +214,16 @@ class OpenLogin {
     // add in session data (allow overrides)
     params = [{ ...session, ...params[0] }];
 
+    // use JRPC where possible
+
     if (this.state.support3PC && allowedInteractions.includes(ALLOWED_INTERACTIONS.JRPC)) {
       return this._jrpcRequest<Record<string, unknown>[], T>({ method, params });
     }
 
+    // set origin
+    params[0]._origin = new URL((params[0].redirectUrl as string) ?? this.state.redirectUrl).origin;
+
+    // preset params
     if (this.state.support3PC) {
       // set params first if 3PC supported
       await this._setPIDData(pid, params);
@@ -229,7 +236,10 @@ class OpenLogin {
 
     // method and pid are always in URL hash params
     // convert params from JSON to base64
-    const finalUrl = constructURL({ baseURL: url, hash: { b64Params: jsonToBase64(params[0]), _pid: pid, _method: method } });
+    const finalUrl = constructURL({
+      baseURL: url,
+      hash: { b64Params: jsonToBase64(params[0]), _pid: pid, _method: method },
+    });
 
     if (this.state.uxMode === UX_MODE.REDIRECT) {
       // if redirects preferred, check for redirect flows first, then check for popup flow
@@ -243,8 +253,8 @@ class OpenLogin {
       }
 
       if (allowedInteractions.includes(ALLOWED_INTERACTIONS.POPUP)) {
-        const u = new URL(finalUrl);
-        u.searchParams.append("_pid", pid);
+        const u = new URLWithHashParams(finalUrl);
+        u.hashParams.append("_pid", pid);
         window.open(u.toString());
         // TODO: implement popup flow
         return awaitReq<T>(pid);
@@ -253,8 +263,8 @@ class OpenLogin {
       // if popups preferred, check for popup flows first, then check for redirect flow
 
       if (allowedInteractions.includes(ALLOWED_INTERACTIONS.POPUP)) {
-        const u = new URL(finalUrl);
-        u.searchParams.append("_pid", pid);
+        const u = new URLWithHashParams(finalUrl);
+        u.hashParams.append("_pid", pid);
         window.open(u.toString());
         // TODO: implement popup flow
         return awaitReq<T>(pid);
