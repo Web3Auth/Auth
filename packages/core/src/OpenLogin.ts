@@ -120,7 +120,7 @@ class OpenLogin {
   }
 
   get privKey(): string {
-    return this.state.privKey ?? "";
+    return this.state.privKey ? this.state.privKey.padStart(64, "0") : "";
   }
 
   async fastLogin(params: Partial<BaseLoginParams>): Promise<{ privKey: string }> {
@@ -203,10 +203,10 @@ class OpenLogin {
         timestamp: Date.now().toString(),
       };
       const sig = await sign(
-        Buffer.from(this.state.privKey, "hex"),
+        Buffer.from(this.state.privKey.padStart(64, "0"), "hex"),
         Buffer.from(keccak("keccak256").update(JSON.stringify(userData)).digest("hex"), "hex")
       );
-      session._user = getPublic(Buffer.from(this.state.privKey, "hex")).toString("hex");
+      session._user = getPublic(Buffer.from(this.state.privKey.padStart(64, "0"), "hex")).toString("hex");
       session._userSig = base64url.encode(sig);
       session._userData = userData;
     }
