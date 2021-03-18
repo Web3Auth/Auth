@@ -9,7 +9,7 @@ export function subkey(keyHex: string, input: Buffer): string {
   const privKeyBuf = Buffer.from(new BN(keyHex, "hex").toString(16, 64), "hex");
   // TODO: check against existing usage of mimc
   // TODO: check that MPC is possible with mimc, with tests
-  const inputPath = new BN(input).umod(new BN(SECP256K1_CURVE_N, "hex"));
+  const inputPath = Buffer.from(new BN(input).umod(new BN(SECP256K1_CURVE_N, "hex")).toString(16, 64), "hex");
 
   const output = mimcHash(1, privKeyBuf, inputPath);
   return output.xL.toString(16);
