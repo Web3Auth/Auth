@@ -1,6 +1,15 @@
 <template>
   <div id="app">
     <p>Note: This is a testing application. Please open console for debugging.</p>
+    <div :style="{ marginTop: '20px' }">
+      <h4>Login and resets</h4>
+      <button @click="triggerLogin">login</button>
+      <button @click="triggerFastLogin">Fast login</button>
+      <br />
+    </div>
+    <div id="console">
+      <p></p>
+    </div>
   </div>
 </template>
 
@@ -110,12 +119,36 @@ export default {
   },
   methods: {
     async init() {
-      console.log(this)
-      let sdk = new OpenLogin({ clientId: this.verifiers.google.clientId, iframeUrl: "beta.openlogin.com" });
-      console.log(sdk);
+      if(this.sdk) return
+      this.sdk = new OpenLogin({ clientId: this.verifiers.google.clientId, iframeUrl: "http://beta.openlogin.com" });
+      window.openlogin = this.sdk;
+      await this.sdk.init();
+
+      if (this.sdk.privKey) {
+        console.log("private key: ", this.sdk.privKey);
+        this.console(this.sdk.privKey)
+      }
+    },
+
+    async triggerLogin() {
+      await this.sdk.login({
+        loginProvider: "google",
+        redirectUrl: "http://localhost:3000/redirect"
+      });
+      console.log("private key: ", this.sdk.privKey);
+
+    },
+
+    async triggerFastLogin() {
+      await this.sdk.fastLogin({ redirectUrl: "http://localhost:3000/redirect"})
+    },
+
+    console(text) {
+      document.querySelector("#console>p").innerHTML = typeof text === "object" ? JSON.stringify(text) : text;
     }
   },
   async mounted() {
+    // check hash params for privkey
     await this.init();
   }
 };
