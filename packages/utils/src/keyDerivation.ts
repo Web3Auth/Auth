@@ -6,10 +6,10 @@ export const SECP256K1_CURVE_N = "fffffffffffffffffffffffffffffffebaaedce6af48a0
 
 // creates subkeys via MiMC hash, output keys are not padded
 export function subkey(keyHex: string, input: Buffer): string {
-  const privKeyBuf = Buffer.from(new BN(keyHex, "hex").toString(16, 64), "hex");
+  const privKeyBuf = new BN(keyHex, "hex").toString(10);
   // TODO: check against existing usage of mimc
   // TODO: check that MPC is possible with mimc, with tests
-  const inputPath = Buffer.from(new BN(input).umod(new BN(SECP256K1_CURVE_N, "hex")).toString(16, 64), "hex");
+  const inputPath = new BN(input).umod(new BN(SECP256K1_CURVE_N, "hex")).toString(10);
 
   const output = mimcHash(1, privKeyBuf, inputPath);
   return output.xL.toString(16);
