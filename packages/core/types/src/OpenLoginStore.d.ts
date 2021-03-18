@@ -1,5 +1,6 @@
+import { IStore } from "./IStore";
 export default class OpenLoginStore {
-    storage: Storage;
+    storage: IStore;
     private static instance;
     private constructor();
     static getInstance(): OpenLoginStore;
