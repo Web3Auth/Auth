@@ -37,6 +37,8 @@ export declare type BaseLoginParams = {
 };
 export declare type LoginParams = BaseLoginParams & {
     loginProvider: string;
+    fastLogin?: boolean;
+    relogin?: boolean;
 };
 export declare type OpenLoginOptions = {
     clientId: string;

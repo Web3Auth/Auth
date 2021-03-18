@@ -57,6 +57,8 @@ export type BaseLoginParams = {
 
 export type LoginParams = BaseLoginParams & {
   loginProvider: string;
+  fastLogin?: boolean;
+  relogin?: boolean;
 };
 
 export type OpenLoginOptions = {
