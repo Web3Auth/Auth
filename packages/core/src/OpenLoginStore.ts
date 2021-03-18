@@ -1,20 +1,22 @@
-import { storeKey } from "./constants";
+import { localStorageAvailable, storeKey } from "./constants";
+import { IStore } from "./IStore";
+import { MemoryStore } from "./MemoryStore";
 
 export default class OpenLoginStore {
-  public storage: Storage;
+  public storage: IStore;
 
   private static instance: OpenLoginStore;
 
-  private constructor(storage: Storage) {
+  private constructor(storage: IStore) {
     this.storage = storage;
-    if (!localStorage.getItem(storeKey)) {
+    if (!storage.getItem(storeKey)) {
       this.resetStore();
     }
   }
 
   static getInstance(): OpenLoginStore {
     if (!this.instance) {
-      this.instance = new this(localStorage);
+      this.instance = new this(localStorageAvailable ? localStorage : new MemoryStore());
     }
     return this.instance;
   }
