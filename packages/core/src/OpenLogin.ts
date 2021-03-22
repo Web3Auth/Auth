@@ -12,6 +12,7 @@ import {
 import { randomId, URLWithHashParams } from "@toruslabs/openlogin-utils";
 
 import { UX_MODE, UX_MODE_TYPE } from "./constants";
+import { Modal } from "./Modal";
 import OpenLoginStore from "./OpenLoginStore";
 import { Provider } from "./Provider";
 import { awaitReq, constructURL, getHashQueryParams } from "./utils";
@@ -78,10 +79,13 @@ class OpenLogin {
 
   state: OpenLoginState;
 
+  modal: Modal;
+
   constructor(options: OpenLoginOptions) {
     this.provider = new Proxy(new Provider(), {
       deleteProperty: () => true, // work around for web3
     });
+    this.modal = new Modal(`${options.iframeUrl}/sdk-modal`);
     this.initState({
       ...options,
       redirectUrl: options.redirectUrl ?? `${window.location.protocol}//${window.location.host}${window.location.pathname}`,
@@ -110,7 +114,8 @@ class OpenLogin {
   }
 
   async init(): Promise<void> {
-    await this.provider.init({ iframeUrl: this.state.iframeUrl });
+    await Promise.all([this.provider.init({ iframeUrl: this.state.iframeUrl }), this.modal.init()]);
+
     this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
     const res = await this._check3PCSupport();
     this.state.support3PC = !!res.result?.support3PC;
@@ -170,16 +175,17 @@ class OpenLogin {
     if (logoutParams.clientId) {
       params._clientId = logoutParams.clientId;
     }
-    if (logoutParams.fastLogin) {
+    if (logoutParams.fastLogin !== undefined) {
       params.fastLogin = logoutParams.fastLogin;
     }
+    this.state.privKey = "";
+    if (!params.fastLogin) this.state.store.set("touchIDPreference", "disabled");
     await this.request<void>({
       method: "openlogin_logout",
       params: [params],
       url: this.state.logoutUrl,
       allowedInteractions: [ALLOWED_INTERACTIONS.JRPC, ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
     });
-    this._syncState(await this._getData());
   }
 
   async request<T>(args: RequestParams): Promise<T> {
@@ -310,7 +316,7 @@ class OpenLogin {
   }
 
   async _check3PCSupport(): Promise<JRPCResponse<Record<string, boolean>>> {
-    return this._jrpcRequest<Record<string, unknown>[], JRPCResponse<Record<string, boolean>>>({
+    return this._jrpcRequest<Record<string, unknown>[], Record<string, boolean>>({
       method: "openlogin_check_3PC_support",
       params: [{ _originData: this.state.originData }],
     });
@@ -354,8 +360,21 @@ class OpenLogin {
     this.state = { ...this.state, ...newState, store };
   }
 
+  async prompt(): Promise<{
+    privKey: string;
+  }> {
+    return new Promise<{ privKey: string }>((resolve) => {
+      this.modal._prompt(
+        async (chunk): Promise<void> => {
+          resolve(await this.login({ ...chunk }));
+        }
+      );
+    });
+  }
+
   async _cleanup(): Promise<void> {
     await this.provider.cleanup();
+    await this.modal.cleanup();
   }
 }
 

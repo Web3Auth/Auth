@@ -1,0 +1,19 @@
+import { ObjectMultiplex, Substream } from "@toruslabs/openlogin-jrpc";
+export declare const modalDOMElementID = "openlogin-modal";
+export declare const handleStream: (handle: Substream, eventName: string, handler: (chunk: any) => void) => void;
+export declare class Modal {
+    modalUrl: string;
+    iframeElem: HTMLIFrameElement;
+    initialized: boolean;
+    modalZIndex: number;
+    mux: ObjectMultiplex;
+    verifierStream: Substream;
+    constructor(modalUrl: string);
+    init(): Promise<void>;
+    setupStream(): void;
+    initIFrame(src: string): Promise<void>;
+    _showModal(): void;
+    _hideModal(): void;
+    _prompt(cb: (chunk: any) => Promise<void>): Promise<void>;
+    cleanup(): Promise<void>;
+}

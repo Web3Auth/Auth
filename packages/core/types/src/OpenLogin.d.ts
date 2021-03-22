@@ -1,5 +1,6 @@
 import { JRPCRequest, JRPCResponse, OriginData } from "@toruslabs/openlogin-jrpc";
 import { UX_MODE_TYPE } from "./constants";
+import { Modal } from "./Modal";
 import OpenLoginStore from "./OpenLoginStore";
 import { Provider } from "./Provider";
 export declare const ALLOWED_INTERACTIONS: {
@@ -54,6 +55,7 @@ export declare type OpenLoginOptions = {
 declare class OpenLogin {
     provider: Provider;
     state: OpenLoginState;
+    modal: Modal;
     constructor(options: OpenLoginOptions);
     initState(options: Required<OpenLoginOptions>): void;
     init(): Promise<void>;
@@ -71,6 +73,9 @@ declare class OpenLogin {
     _setPIDData(pid: string, data: Record<string, unknown>[]): Promise<void>;
     _getData(): Promise<Record<string, unknown>>;
     _syncState(newState: Record<string, unknown>): void;
+    prompt(): Promise<{
+        privKey: string;
+    }>;
     _cleanup(): Promise<void>;
 }
 export default OpenLogin;
