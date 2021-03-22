@@ -97,7 +97,7 @@ export class Modal {
     );
   }
 
-  async _prompt(cb: (chunk: any) => Promise<void>): Promise<void> {
+  async _prompt(clientId: string, cb: (chunk: any) => Promise<void>): Promise<void> {
     this._showModal();
     const modalHandler = (chunk) => {
       this._hideModal();
@@ -106,6 +106,7 @@ export class Modal {
     handleStream(this.verifierStream, "data", modalHandler);
     this.verifierStream.write({
       name: "prompt",
+      clientId,
     });
   }
 

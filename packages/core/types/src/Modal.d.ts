@@ -14,6 +14,6 @@ export declare class Modal {
     initIFrame(src: string): Promise<void>;
     _showModal(): void;
     _hideModal(): void;
-    _prompt(cb: (chunk: any) => Promise<void>): Promise<void>;
+    _prompt(clientId: string, cb: (chunk: any) => Promise<void>): Promise<void>;
     cleanup(): Promise<void>;
 }

@@ -1,4 +1,4 @@
-import { JRPCRequest, JRPCResponse, OriginData } from "@toruslabs/openlogin-jrpc";
+import { JRPCRequest, OriginData } from "@toruslabs/openlogin-jrpc";
 import { UX_MODE_TYPE } from "./constants";
 import { Modal } from "./Modal";
 import OpenLoginStore from "./OpenLoginStore";
@@ -69,7 +69,7 @@ declare class OpenLogin {
     logout(logoutParams?: Partial<BaseLogoutParams>): Promise<void>;
     request<T>(args: RequestParams): Promise<T>;
     _jrpcRequest<T, U>(args: JRPCRequest<T>): Promise<U>;
-    _check3PCSupport(): Promise<JRPCResponse<Record<string, boolean>>>;
+    _check3PCSupport(): Promise<Record<string, boolean>>;
     _setPIDData(pid: string, data: Record<string, unknown>[]): Promise<void>;
     _getData(): Promise<Record<string, unknown>>;
     _syncState(newState: Record<string, unknown>): void;

@@ -1,14 +1,5 @@
 import { getPublic, sign } from "@toruslabs/eccrypto";
-import {
-  base64url,
-  getRpcPromiseCallback,
-  JRPCRequest,
-  JRPCResponse,
-  jsonToBase64,
-  keccak,
-  OriginData,
-  SessionInfo,
-} from "@toruslabs/openlogin-jrpc";
+import { base64url, getRpcPromiseCallback, JRPCRequest, jsonToBase64, keccak, OriginData, SessionInfo } from "@toruslabs/openlogin-jrpc";
 import { randomId, URLWithHashParams } from "@toruslabs/openlogin-utils";
 
 import { UX_MODE, UX_MODE_TYPE } from "./constants";
@@ -52,11 +43,11 @@ export type OpenLoginState = {
   originData: OriginData;
 };
 
-export type BaseLoginParams = {
+export type BaseRedirectParams = {
   redirectUrl?: string;
 };
 
-export type LoginParams = BaseLoginParams & {
+export type LoginParams = BaseRedirectParams & {
   loginProvider: string;
   fastLogin?: boolean;
   relogin?: boolean;
@@ -118,7 +109,7 @@ class OpenLogin {
 
     this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
     const res = await this._check3PCSupport();
-    this.state.support3PC = !!res.result?.support3PC;
+    this.state.support3PC = !!res.support3PC;
     if (this.state.support3PC) {
       this._syncState(await this._getData());
     }
@@ -128,12 +119,12 @@ class OpenLogin {
     return this.state.privKey ? this.state.privKey.padStart(64, "0") : "";
   }
 
-  async fastLogin(params: Partial<BaseLoginParams>): Promise<{ privKey: string }> {
-    const defaultParams: BaseLoginParams = {
+  async fastLogin(params: Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
+    const defaultParams: BaseRedirectParams = {
       redirectUrl: this.state.redirectUrl,
     };
 
-    const loginParams: BaseLoginParams = {
+    const loginParams: BaseRedirectParams = {
       ...defaultParams,
       ...params,
     };
@@ -146,8 +137,8 @@ class OpenLogin {
     });
   }
 
-  async login(params?: LoginParams & Partial<BaseLoginParams>): Promise<{ privKey: string }> {
-    const defaultParams: BaseLoginParams = {
+  async login(params?: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
+    const defaultParams: BaseRedirectParams = {
       redirectUrl: this.state.redirectUrl,
     };
 
@@ -170,22 +161,31 @@ class OpenLogin {
     });
   }
 
-  async logout(logoutParams: Partial<BaseLogoutParams> = {}): Promise<void> {
+  async logout(logoutParams?: Partial<BaseLogoutParams> & Partial<BaseRedirectParams>): Promise<void> {
     const params: Record<string, unknown> = {};
+    // defaults
+    params.redirectUrl = this.state.redirectUrl;
+
     if (logoutParams.clientId) {
       params._clientId = logoutParams.clientId;
     }
     if (logoutParams.fastLogin !== undefined) {
       params.fastLogin = logoutParams.fastLogin;
     }
-    this.state.privKey = "";
-    if (!params.fastLogin) this.state.store.set("touchIDPreference", "disabled");
-    await this.request<void>({
+    if (logoutParams.redirectUrl !== undefined) {
+      params.redirectUrl = logoutParams.redirectUrl;
+    }
+
+    const res = await this.request<void>({
       method: "openlogin_logout",
       params: [params],
       url: this.state.logoutUrl,
       allowedInteractions: [ALLOWED_INTERACTIONS.JRPC, ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
     });
+
+    this.state.privKey = "";
+    if (!params.fastLogin) this.state.store.set("touchIDPreference", "disabled");
+    return res;
   }
 
   async request<T>(args: RequestParams): Promise<T> {
@@ -315,7 +315,7 @@ class OpenLogin {
     });
   }
 
-  async _check3PCSupport(): Promise<JRPCResponse<Record<string, boolean>>> {
+  async _check3PCSupport(): Promise<Record<string, boolean>> {
     return this._jrpcRequest<Record<string, unknown>[], Record<string, boolean>>({
       method: "openlogin_check_3PC_support",
       params: [{ _originData: this.state.originData }],
@@ -336,15 +336,11 @@ class OpenLogin {
   }
 
   async _getData(): Promise<Record<string, unknown>> {
-    const jrpcRes = await this.request<JRPCResponse<Record<string, unknown>>>({
+    return this.request<Record<string, unknown>>({
       allowedInteractions: [ALLOWED_INTERACTIONS.JRPC],
       method: "openlogin_get_data",
       params: [{}],
     });
-    if (jrpcRes.error) {
-      throw new Error(`get data error ${jrpcRes.error}`);
-    }
-    return jrpcRes.result;
   }
 
   _syncState(newState: Record<string, unknown>): void {
@@ -365,6 +361,7 @@ class OpenLogin {
   }> {
     return new Promise<{ privKey: string }>((resolve) => {
       this.modal._prompt(
+        this.state.clientId,
         async (chunk): Promise<void> => {
           resolve(await this.login({ ...chunk }));
         }
