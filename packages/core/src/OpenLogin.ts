@@ -165,6 +165,7 @@ class OpenLogin {
     const params: Record<string, unknown> = {};
     // defaults
     params.redirectUrl = this.state.redirectUrl;
+    params._clientId = this.state.clientId;
 
     if (logoutParams.clientId) {
       params._clientId = logoutParams.clientId;
