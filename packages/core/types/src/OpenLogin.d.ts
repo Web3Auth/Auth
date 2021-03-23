@@ -33,10 +33,10 @@ export declare type OpenLoginState = {
     replaceUrlOnRedirect: boolean;
     originData: OriginData;
 };
-export declare type BaseLoginParams = {
+export declare type BaseRedirectParams = {
     redirectUrl?: string;
 };
-export declare type LoginParams = BaseLoginParams & {
+export declare type LoginParams = BaseRedirectParams & {
     loginProvider: string;
     fastLogin?: boolean;
     relogin?: boolean;
@@ -60,13 +60,13 @@ declare class OpenLogin {
     initState(options: Required<OpenLoginOptions>): void;
     init(): Promise<void>;
     get privKey(): string;
-    fastLogin(params: Partial<BaseLoginParams>): Promise<{
+    fastLogin(params: Partial<BaseRedirectParams>): Promise<{
         privKey: string;
     }>;
-    login(params?: LoginParams & Partial<BaseLoginParams>): Promise<{
+    login(params?: LoginParams & Partial<BaseRedirectParams>): Promise<{
         privKey: string;
     }>;
-    logout(logoutParams?: Partial<BaseLogoutParams>): Promise<void>;
+    logout(logoutParams?: Partial<BaseLogoutParams> & Partial<BaseRedirectParams>): Promise<void>;
     request<T>(args: RequestParams): Promise<T>;
     _jrpcRequest<T, U>(args: JRPCRequest<T>): Promise<U>;
     _check3PCSupport(): Promise<Record<string, boolean>>;

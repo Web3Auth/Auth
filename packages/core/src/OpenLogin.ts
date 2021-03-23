@@ -82,7 +82,7 @@ class OpenLogin {
       redirectUrl: options.redirectUrl ?? `${window.location.protocol}//${window.location.host}${window.location.pathname}`,
       loginUrl: options.loginUrl ?? `${options.iframeUrl}/start`,
       webAuthnUrl: options.webAuthnUrl ?? `${options.iframeUrl}/start`,
-      logoutUrl: options.logoutUrl ?? `${options.iframeUrl}/logout`,
+      logoutUrl: options.logoutUrl ?? `${options.iframeUrl}/start`,
       uxMode: options.uxMode ?? UX_MODE.REDIRECT,
       replaceUrlOnRedirect: options.replaceUrlOnRedirect ?? true,
       originData: options.originData ?? { [window.location.origin]: "" },
@@ -359,11 +359,15 @@ class OpenLogin {
   async prompt(): Promise<{
     privKey: string;
   }> {
-    return new Promise<{ privKey: string }>((resolve) => {
+    return new Promise<{ privKey: string }>((resolve, reject) => {
       this.modal._prompt(
         this.state.clientId,
         async (chunk): Promise<void> => {
-          resolve(await this.login({ ...chunk }));
+          if (chunk.cancel) {
+            reject(new Error("user canceled login"));
+          } else {
+            resolve(await this.login({ ...chunk }));
+          }
         }
       );
     });
