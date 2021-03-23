@@ -1,5 +1,7 @@
 import { getPublic, sign } from "@toruslabs/eccrypto";
-import { base64url } from "@toruslabs/openlogin-jrpc";
+import { base64url } from "@toruslabs/openlogin-utils";
+
+import { PopupResponse } from "./constants";
 
 export async function documentReady(): Promise<void> {
   return new Promise<void>((resolve) => {
@@ -76,11 +78,6 @@ export function getHashQueryParams(replaceUrl = false): Record<string, string> {
   return result;
 }
 
-type PopupResponse<T> = {
-  pid: string;
-  data: T;
-};
-
 export async function awaitReq<T>(id: string): Promise<T> {
   return new Promise((resolve) => {
     const handler = (ev: MessageEvent<PopupResponse<T>>) => {
@@ -109,4 +106,36 @@ export function constructURL(params: { baseURL: string; query?: Record<string, u
   return url.toString();
 }
 
-export type Maybe<T> = Partial<T> | null | undefined;
+export function storageAvailable(type: string): boolean {
+  let storageExists = false;
+  let storageLength = 0;
+  let storage: Storage;
+  try {
+    storage = window[type];
+    storageExists = true;
+    storageLength = storage.length;
+    const x = "__storage_test__";
+    storage.setItem(x, x);
+    storage.removeItem(x);
+    return true;
+  } catch (error) {
+    return (
+      error &&
+      // everything except Firefox
+      (error.code === 22 ||
+        // Firefox
+        error.code === 1014 ||
+        // test name field too, because code might not be present
+        // everything except Firefox
+        error.name === "QuotaExceededErro r" ||
+        // Firefox
+        error.name === "NS_ERROR_DOM_QUOTA_REACHED") &&
+      // acknowledge QuotaExceededError only if there's something already stored
+      storageExists &&
+      storageLength !== 0
+    );
+  }
+}
+
+export const sessionStorageAvailable = storageAvailable("sessionStorage");
+export const localStorageAvailable = storageAvailable("localStorage");

@@ -1,32 +1,22 @@
 import { getPublic, sign } from "@toruslabs/eccrypto";
-import { base64url, getRpcPromiseCallback, JRPCRequest, jsonToBase64, keccak, OriginData, SessionInfo } from "@toruslabs/openlogin-jrpc";
-import { randomId, URLWithHashParams } from "@toruslabs/openlogin-utils";
+import { getRpcPromiseCallback, JRPCRequest, OriginData, SessionInfo } from "@toruslabs/openlogin-jrpc";
+import { base64url, jsonToBase64, keccak, randomId, URLWithHashParams } from "@toruslabs/openlogin-utils";
 
-import { UX_MODE, UX_MODE_TYPE } from "./constants";
+import {
+  ALLOWED_INTERACTIONS,
+  BaseLogoutParams,
+  BaseRedirectParams,
+  LoginParams,
+  OPENLOGIN_METHOD,
+  OpenLoginOptions,
+  RequestParams,
+  UX_MODE,
+  UX_MODE_TYPE,
+} from "./constants";
 import { Modal } from "./Modal";
 import OpenLoginStore from "./OpenLoginStore";
-import { Provider } from "./Provider";
+import Provider from "./Provider";
 import { awaitReq, constructURL, getHashQueryParams } from "./utils";
-
-export const ALLOWED_INTERACTIONS = {
-  POPUP: "popup",
-  REDIRECT: "redirect",
-  JRPC: "jrpc",
-};
-
-export type ALLOWED_INTERACTIONS_TYPE = typeof ALLOWED_INTERACTIONS[keyof typeof ALLOWED_INTERACTIONS];
-
-export type RequestParams = {
-  url?: string;
-  method: string;
-  params: Record<string, unknown>[];
-  allowedInteractions: ALLOWED_INTERACTIONS_TYPE[];
-};
-
-export type BaseLogoutParams = {
-  clientId: string;
-  fastLogin: boolean;
-};
 
 export type OpenLoginState = {
   loginUrl: string;
@@ -41,28 +31,6 @@ export type OpenLoginState = {
   uxMode: UX_MODE_TYPE;
   replaceUrlOnRedirect: boolean;
   originData: OriginData;
-};
-
-export type BaseRedirectParams = {
-  redirectUrl?: string;
-};
-
-export type LoginParams = BaseRedirectParams & {
-  loginProvider: string;
-  fastLogin?: boolean;
-  relogin?: boolean;
-};
-
-export type OpenLoginOptions = {
-  clientId: string;
-  iframeUrl: string;
-  redirectUrl?: string;
-  loginUrl?: string;
-  webAuthnUrl?: string;
-  logoutUrl?: string;
-  uxMode?: UX_MODE_TYPE;
-  replaceUrlOnRedirect?: boolean;
-  originData?: OriginData;
 };
 
 class OpenLogin {
@@ -131,7 +99,7 @@ class OpenLogin {
 
     return this.request({
       params: [{ ...loginParams, fastLogin: true }],
-      method: "openlogin_login",
+      method: OPENLOGIN_METHOD.LOGIN,
       url: this.state.webAuthnUrl,
       allowedInteractions: [ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
     });
@@ -154,7 +122,7 @@ class OpenLogin {
     }
 
     return this.request({
-      method: "openlogin_login",
+      method: OPENLOGIN_METHOD.LOGIN,
       allowedInteractions: [UX_MODE.REDIRECT, UX_MODE.POPUP],
       url: this.state.loginUrl,
       params: [loginParams],
@@ -178,7 +146,7 @@ class OpenLogin {
     }
 
     const res = await this.request<void>({
-      method: "openlogin_logout",
+      method: OPENLOGIN_METHOD.LOGOUT,
       params: [params],
       url: this.state.logoutUrl,
       allowedInteractions: [ALLOWED_INTERACTIONS.JRPC, ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
@@ -318,7 +286,7 @@ class OpenLogin {
 
   async _check3PCSupport(): Promise<Record<string, boolean>> {
     return this._jrpcRequest<Record<string, unknown>[], Record<string, boolean>>({
-      method: "openlogin_check_3PC_support",
+      method: OPENLOGIN_METHOD.CHECK_3PC,
       params: [{ _originData: this.state.originData }],
     });
   }
@@ -326,7 +294,7 @@ class OpenLogin {
   async _setPIDData(pid: string, data: Record<string, unknown>[]): Promise<void> {
     await this.request({
       allowedInteractions: [ALLOWED_INTERACTIONS.JRPC],
-      method: "openlogin_set_pid_data",
+      method: OPENLOGIN_METHOD.SET_PID_DATA,
       params: [
         {
           pid,
@@ -339,7 +307,7 @@ class OpenLogin {
   async _getData(): Promise<Record<string, unknown>> {
     return this.request<Record<string, unknown>>({
       allowedInteractions: [ALLOWED_INTERACTIONS.JRPC],
-      method: "openlogin_get_data",
+      method: OPENLOGIN_METHOD.GET_DATA,
       params: [{}],
     });
   }

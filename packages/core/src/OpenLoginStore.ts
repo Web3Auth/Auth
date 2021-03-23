@@ -1,6 +1,7 @@
-import { localStorageAvailable, storeKey } from "./constants";
+import { storeKey } from "./constants";
 import { IStore } from "./IStore";
 import { MemoryStore } from "./MemoryStore";
+import { localStorageAvailable } from "./utils";
 
 export default class OpenLoginStore {
   public storage: IStore;

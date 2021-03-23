@@ -1,1 +1,6 @@
-declare module "ffjavascript";
+declare module "ffjavascript" {
+    export class Scalar extends BigInt {
+
+    }
+}
+

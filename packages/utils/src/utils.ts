@@ -1,6 +1,7 @@
 import base64url from "base64url";
+import keccakLib from "keccak";
 
-export * as keccak from "keccak";
+export const keccak = keccakLib;
 
 export type BufferEncoding = "ascii" | "utf8" | "utf-8" | "utf16le" | "ucs2" | "ucs-2" | "base64" | "latin1" | "binary" | "hex";
 

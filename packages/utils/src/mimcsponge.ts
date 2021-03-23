@@ -16,7 +16,7 @@ export function keccak256(str: string): string {
   return data;
 }
 
-export function mimgGetIV(seed: string): any {
+export function mimgGetIV(seed: string): BigInt {
   let _seed = seed;
   if (typeof _seed === "undefined") _seed = SEED;
   const c = keccak256(`${_seed}_iv`);
@@ -25,7 +25,7 @@ export function mimgGetIV(seed: string): any {
   return iv;
 }
 
-export function mimcGetConstants(seed?: string, nRounds?: number): any[] {
+export function mimcGetConstants(seed?: string, nRounds?: number): BigInt[] {
   let _seed = seed;
   let _nRounds = nRounds;
   if (typeof _seed === "undefined") _seed = SEED;
@@ -74,7 +74,7 @@ export function mimcHash(
   };
 }
 
-export function mimcMultiHash(arr: any[], key: any, numOutputs: any): BigInt[] {
+export function mimcMultiHash(arr: any[], key: any, numOutputs: number): BigInt[] {
   let _key = key;
   let _numOutputs = numOutputs;
   if (typeof _numOutputs === "undefined") {
