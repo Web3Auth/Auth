@@ -8,4 +8,6 @@ export declare function constructURL(params: {
     query?: Record<string, unknown>;
     hash?: Record<string, unknown>;
 }): string;
-export declare type Maybe<T> = Partial<T> | null | undefined;
+export declare function storageAvailable(type: string): boolean;
+export declare const sessionStorageAvailable: boolean;
+export declare const localStorageAvailable: boolean;

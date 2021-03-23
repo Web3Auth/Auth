@@ -1,6 +1,6 @@
 /// <reference types="node" />
+import { BufferEncoding } from "@toruslabs/openlogin-utils";
 import { Duplex } from "stream";
-import { BufferEncoding } from "./utils";
 export default class Substream extends Duplex {
     private readonly _parent;
     private readonly _name;

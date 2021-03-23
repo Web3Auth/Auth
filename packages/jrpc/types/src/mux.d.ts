@@ -1,7 +1,7 @@
 /// <reference types="node" />
+import { BufferEncoding } from "@toruslabs/openlogin-utils";
 import { Duplex } from "stream";
 import Substream from "./substream";
-import { BufferEncoding } from "./utils";
 export declare const IGNORE_SUBSTREAM: unique symbol;
 interface Chunk {
     name: string;

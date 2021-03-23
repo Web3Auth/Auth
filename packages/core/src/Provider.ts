@@ -15,7 +15,7 @@ import pump from "pump";
 import { iframeDOMElementID } from "./constants";
 import { documentReady } from "./utils";
 
-export class Provider extends SafeEventEmitter {
+export default class Provider extends SafeEventEmitter {
   iframeElem: HTMLIFrameElement | null = null;
 
   rpcStream: PostMessageStream;
