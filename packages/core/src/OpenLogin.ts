@@ -137,7 +137,7 @@ class OpenLogin {
     });
   }
 
-  async login(params?: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
+  async login(params: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
     const defaultParams: BaseRedirectParams = {
       redirectUrl: this.state.redirectUrl,
     };
@@ -161,7 +161,7 @@ class OpenLogin {
     });
   }
 
-  async logout(logoutParams?: Partial<BaseLogoutParams> & Partial<BaseRedirectParams>): Promise<void> {
+  async logout(logoutParams: Partial<BaseLogoutParams> & Partial<BaseRedirectParams> = {}): Promise<void> {
     const params: Record<string, unknown> = {};
     // defaults
     params.redirectUrl = this.state.redirectUrl;
