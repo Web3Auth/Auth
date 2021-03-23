@@ -71,6 +71,7 @@ export class Modal {
     style.right = "0px";
     style.left = "0px";
     style.bottom = "0px";
+    style["z-index"] = this.modalZIndex;
     this.iframeElem.setAttribute(
       "style",
       Object.entries(style)
@@ -89,6 +90,7 @@ export class Modal {
     style.right = "0px";
     style.left = "0px";
     style.bottom = "0px";
+    style["z-index"] = this.modalZIndex;
     this.iframeElem.setAttribute(
       "style",
       Object.entries(style)
