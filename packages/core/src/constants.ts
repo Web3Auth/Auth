@@ -49,14 +49,15 @@ export type BaseLogoutParams = {
 
 export type BaseRedirectParams = {
   redirectUrl?: string;
-  appState?: Record<string, unknown>;
+  appState?: string;
 };
 
 export type LoginParams = BaseRedirectParams & {
   loginProvider: string;
   fastLogin?: boolean;
   relogin?: boolean;
-  optionalTKey?: boolean;
+  skipTKey?: boolean;
+  getWalletKey?: boolean;
 };
 
 export type OpenLoginOptions = {

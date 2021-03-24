@@ -37,13 +37,14 @@ export declare type BaseLogoutParams = {
 };
 export declare type BaseRedirectParams = {
     redirectUrl?: string;
-    appState?: Record<string, unknown>;
+    appState?: string;
 };
 export declare type LoginParams = BaseRedirectParams & {
     loginProvider: string;
     fastLogin?: boolean;
     relogin?: boolean;
-    optionalTKey?: boolean;
+    skipTKey?: boolean;
+    getWalletKey?: boolean;
 };
 export declare type OpenLoginOptions = {
     clientId: string;
