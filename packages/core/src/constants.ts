@@ -20,7 +20,7 @@ export type UX_MODE_TYPE = typeof UX_MODE[keyof typeof UX_MODE];
 export const OPENLOGIN_METHOD = {
   LOGIN: "openlogin_login",
   LOGOUT: "openlogin_logout",
-  CHECK_3PC: "openlogin_check_3PC_support",
+  CHECK_3PC_SUPPORT: "openlogin_check_3PC_support",
   SET_PID_DATA: "openlogin_set_pid_data",
   GET_DATA: "openlogin_get_data",
 };

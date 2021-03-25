@@ -14,7 +14,7 @@ export declare type UX_MODE_TYPE = typeof UX_MODE[keyof typeof UX_MODE];
 export declare const OPENLOGIN_METHOD: {
     LOGIN: string;
     LOGOUT: string;
-    CHECK_3PC: string;
+    CHECK_3PC_SUPPORT: string;
     SET_PID_DATA: string;
     GET_DATA: string;
 };

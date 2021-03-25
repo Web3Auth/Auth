@@ -286,7 +286,7 @@ class OpenLogin {
 
   async _check3PCSupport(): Promise<Record<string, boolean>> {
     return this._jrpcRequest<Record<string, unknown>[], Record<string, boolean>>({
-      method: OPENLOGIN_METHOD.CHECK_3PC,
+      method: OPENLOGIN_METHOD.CHECK_3PC_SUPPORT,
       params: [{ _originData: this.state.originData }],
     });
   }
