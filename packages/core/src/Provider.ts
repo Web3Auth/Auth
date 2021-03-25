@@ -1,5 +1,4 @@
 import {
-  createErrorMiddleware,
   createIdRemapMiddleware,
   createStreamMiddleware,
   JRPCEngine,
@@ -64,7 +63,6 @@ export default class Provider extends SafeEventEmitter {
 
     const rpcEngine = new JRPCEngine();
     rpcEngine.push(createIdRemapMiddleware());
-    rpcEngine.push(createErrorMiddleware(window.console));
     rpcEngine.push(JRPCConnection.middleware);
     this.rpcEngine = rpcEngine;
   }

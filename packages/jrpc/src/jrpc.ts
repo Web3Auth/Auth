@@ -59,20 +59,27 @@ interface IdMap {
 export type JRPCMiddleware<T, U> = (req: JRPCRequest<T>, res: JRPCResponse<U>, next: JRPCEngineNextCallback, end: JRPCEngineEndCallback) => void;
 
 export function createErrorMiddleware(log: ConsoleLike): JRPCMiddleware<unknown, unknown> {
-  return (req, res, next) => {
-    // json-rpc-engine will terminate the request when it notices this error
-    if (typeof req.method !== "string" || !req.method) {
-      res.error = new SerializableError({ code: -32603, message: "invalid method" });
-    }
-
-    next((done) => {
-      const { error } = res;
-      if (!error) {
-        return done();
+  return (req, res, next, end) => {
+    try {
+      // json-rpc-engine will terminate the request when it notices this error
+      if (typeof req.method !== "string" || !req.method) {
+        res.error = new SerializableError({ code: -32603, message: "invalid method" });
+        end();
+        return;
       }
-      log.error(`OpenLogin - RPC Error: ${error.message}`, error);
-      return done();
-    });
+      next((done) => {
+        const { error } = res;
+        if (!error) {
+          return done();
+        }
+        log.error(`OpenLogin - RPC Error: ${error.message}`, error);
+        return done();
+      });
+    } catch (error) {
+      log.error(`OpenLogin - RPC Error thrown: ${error.message}`, error);
+      res.error = new SerializableError({ code: -32603, message: error.message });
+      end();
+    }
   };
 }
 
