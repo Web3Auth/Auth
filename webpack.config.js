@@ -3,13 +3,18 @@ const path = require("path");
 const ESLintPlugin = require("eslint-webpack-plugin");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 
+function camelCase(input) {
+  return input.toLowerCase().replace(/-(.)/g, (_, group1) => group1.toUpperCase());
+}
+
 function generateLibraryName(pkgName) {
-  return pkgName.charAt(0).toUpperCase() + pkgName.slice(1);
+  const usableName = camelCase(pkgName);
+  return usableName.charAt(0).toUpperCase() + usableName.slice(1);
 }
 
 // loaders execute right to left
 
-const packagesToInclude = ["@toruslabs/eccrypto", "elliptic", "bip39", "hdkey"];
+const packagesToInclude = ["@toruslabs/eccrypto", "pump", "end-of-stream", "keccak"];
 
 const { NODE_ENV = "production" } = process.env;
 
@@ -123,6 +128,7 @@ function generateWebpackConfig({ pkg, pkgName, currentPath, alias }) {
   };
 
   return [umdPolyfilledConfig, umdConfig, cjsConfig, cjsBundledConfig];
+  // return [umdConfig];
 }
 
 module.exports = generateWebpackConfig;
