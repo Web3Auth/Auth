@@ -28,7 +28,10 @@ declare class OpenLogin {
     fastLogin(params: Partial<BaseRedirectParams>): Promise<{
         privKey: string;
     }>;
-    login(params: LoginParams & Partial<BaseRedirectParams>): Promise<{
+    login(params?: LoginParams & Partial<BaseRedirectParams>): Promise<{
+        privKey: string;
+    }>;
+    _selectedLogin(params: LoginParams & Partial<BaseRedirectParams>): Promise<{
         privKey: string;
     }>;
     logout(logoutParams?: Partial<BaseLogoutParams> & Partial<BaseRedirectParams>): Promise<void>;
@@ -38,7 +41,7 @@ declare class OpenLogin {
     _setPIDData(pid: string, data: Record<string, unknown>[]): Promise<void>;
     _getData(): Promise<Record<string, unknown>>;
     _syncState(newState: Record<string, unknown>): void;
-    prompt(): Promise<{
+    _modal(): Promise<{
         privKey: string;
     }>;
     _cleanup(): Promise<void>;

@@ -105,7 +105,14 @@ class OpenLogin {
     });
   }
 
-  async login(params: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
+  async login(params?: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
+    if (params) {
+      return this._selectedLogin(params);
+    }
+    return this._modal();
+  }
+
+  async _selectedLogin(params: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
     const defaultParams: BaseRedirectParams = {
       redirectUrl: this.state.redirectUrl,
     };
@@ -325,7 +332,7 @@ class OpenLogin {
     this.state = { ...this.state, ...newState, store };
   }
 
-  async prompt(): Promise<{
+  async _modal(): Promise<{
     privKey: string;
   }> {
     return new Promise<{ privKey: string }>((resolve, reject) => {
@@ -335,7 +342,7 @@ class OpenLogin {
           if (chunk.cancel) {
             reject(new Error("user canceled login"));
           } else {
-            resolve(await this.login({ ...chunk }));
+            resolve(await this._selectedLogin({ ...chunk }));
           }
         }
       );
