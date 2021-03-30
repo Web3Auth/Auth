@@ -8,6 +8,8 @@ import {
   BaseRedirectParams,
   LoginParams,
   OPENLOGIN_METHOD,
+  OPENLOGIN_NETWORK,
+  OPENLOGIN_NETWORK_TYPE,
   OpenLoginOptions,
   RequestParams,
   UX_MODE,
@@ -19,6 +21,7 @@ import Provider from "./Provider";
 import { awaitReq, constructURL, getHashQueryParams } from "./utils";
 
 export type OpenLoginState = {
+  network: OPENLOGIN_NETWORK_TYPE;
   loginUrl: string;
   privKey?: string;
   support3PC?: boolean;
@@ -45,8 +48,16 @@ class OpenLogin {
       deleteProperty: () => true, // work around for web3
     });
     this.modal = new Modal(`${options.iframeUrl}/sdk-modal`);
+    if (options.network === OPENLOGIN_NETWORK.MAINNET) {
+      options.iframeUrl = "https://manage.openlogin.com";
+    } else if (options.network === OPENLOGIN_NETWORK.TESTNET) {
+      options.iframeUrl = "https://beta.openlogin.com";
+    } else if (!options.iframeUrl) {
+      throw new Error("unspecified network and iframeUrl");
+    }
     this.initState({
       ...options,
+      iframeUrl: options.iframeUrl,
       redirectUrl: options.redirectUrl ?? `${window.location.protocol}//${window.location.host}${window.location.pathname}`,
       loginUrl: options.loginUrl ?? `${options.iframeUrl}/start`,
       webAuthnUrl: options.webAuthnUrl ?? `${options.iframeUrl}/start`,
@@ -60,6 +71,7 @@ class OpenLogin {
   initState(options: Required<OpenLoginOptions>): void {
     this.state = {
       uxMode: options.uxMode,
+      network: options.network,
       store: OpenLoginStore.getInstance(),
       iframeUrl: options.iframeUrl,
       loginUrl: options.loginUrl,

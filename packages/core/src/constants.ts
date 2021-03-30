@@ -53,9 +53,18 @@ export type BaseRedirectParams = {
   appState?: string;
 };
 
+export const OPENLOGIN_NETWORK = {
+  MAINNET: "mainnet",
+  TESTNET: "testnet",
+  DEVELOPMENT: "development",
+};
+
+export type OPENLOGIN_NETWORK_TYPE = typeof OPENLOGIN_NETWORK[keyof typeof OPENLOGIN_NETWORK];
+
 export type OpenLoginOptions = {
   clientId: string;
-  iframeUrl: string;
+  network: OPENLOGIN_NETWORK_TYPE;
+  iframeUrl?: string;
   redirectUrl?: string;
   loginUrl?: string;
   webAuthnUrl?: string;

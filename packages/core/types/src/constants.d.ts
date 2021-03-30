@@ -40,9 +40,16 @@ export declare type BaseRedirectParams = {
     redirectUrl?: string;
     appState?: string;
 };
+export declare const OPENLOGIN_NETWORK: {
+    MAINNET: string;
+    TESTNET: string;
+    DEVELOPMENT: string;
+};
+export declare type OPENLOGIN_NETWORK_TYPE = typeof OPENLOGIN_NETWORK[keyof typeof OPENLOGIN_NETWORK];
 export declare type OpenLoginOptions = {
     clientId: string;
-    iframeUrl: string;
+    network: OPENLOGIN_NETWORK_TYPE;
+    iframeUrl?: string;
     redirectUrl?: string;
     loginUrl?: string;
     webAuthnUrl?: string;

@@ -1,9 +1,10 @@
 import { JRPCRequest, OriginData } from "@toruslabs/openlogin-jrpc";
-import { BaseLogoutParams, BaseRedirectParams, LoginParams, OpenLoginOptions, RequestParams, UX_MODE_TYPE } from "./constants";
+import { BaseLogoutParams, BaseRedirectParams, LoginParams, OPENLOGIN_NETWORK_TYPE, OpenLoginOptions, RequestParams, UX_MODE_TYPE } from "./constants";
 import { Modal } from "./Modal";
 import OpenLoginStore from "./OpenLoginStore";
 import Provider from "./Provider";
 export declare type OpenLoginState = {
+    network: OPENLOGIN_NETWORK_TYPE;
     loginUrl: string;
     privKey?: string;
     support3PC?: boolean;
