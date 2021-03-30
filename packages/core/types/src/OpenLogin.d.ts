@@ -41,7 +41,7 @@ declare class OpenLogin {
     _setPIDData(pid: string, data: Record<string, unknown>[]): Promise<void>;
     _getData(): Promise<Record<string, unknown>>;
     _syncState(newState: Record<string, unknown>): void;
-    _modal(): Promise<{
+    _modal(params?: LoginParams & Partial<BaseRedirectParams>): Promise<{
         privKey: string;
     }>;
     _cleanup(): Promise<void>;
