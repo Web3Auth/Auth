@@ -178,7 +178,7 @@ class OpenLogin {
   }
 
   async request<T>(args: RequestParams): Promise<T> {
-    const pid = randomId().toString();
+    const pid = randomId();
     let { params } = args;
 
     // Note: _origin is added later in postMessageStream for jrpc requests

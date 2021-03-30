@@ -24,11 +24,13 @@
     "base64url": "^3.0.1",
     "bn.js": "^5.2.0",
     "ffjavascript": "^0.2.35",
-    "keccak": "^3.0.1"
+    "keccak": "^3.0.1",
+    "randombytes": "^2.1.0"
   },
   "devDependencies": {
     "@types/keccak": "^3.0.1",
-    "@types/node": "^14.14.25"
+    "@types/node": "^14.14.25",
+    "@types/randombytes": "^2.0.0"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"

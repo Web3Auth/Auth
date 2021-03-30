@@ -1,1 +1,1 @@
-export declare const randomId: () => number;
+export declare const randomId: () => string;
