@@ -24,9 +24,11 @@
     "@toruslabs/eccrypto": "^1.1.6",
     "@toruslabs/openlogin-jrpc": "^0.3.1",
     "@toruslabs/openlogin-utils": "^0.3.1",
+    "lodash.merge": "^4.6.2",
     "pump": "^3.0.0"
   },
   "devDependencies": {
+    "@types/lodash.merge": "^4.6.6",
     "@types/node": "^14.14.25",
     "@types/pump": "^1.1.1"
   },

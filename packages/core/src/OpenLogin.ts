@@ -1,6 +1,7 @@
 import { getPublic, sign } from "@toruslabs/eccrypto";
 import { getRpcPromiseCallback, JRPCRequest, OriginData, SessionInfo } from "@toruslabs/openlogin-jrpc";
 import { base64url, jsonToBase64, keccak, randomId, URLWithHashParams } from "@toruslabs/openlogin-utils";
+import merge from "lodash.merge";
 
 import {
   ALLOWED_INTERACTIONS,
@@ -356,7 +357,7 @@ class OpenLogin {
           if (chunk.cancel) {
             reject(new Error("user canceled login"));
           } else {
-            resolve(await this._selectedLogin({ ...params, ...chunk }));
+            resolve(await this._selectedLogin(merge(params, chunk)));
           }
         }
       );
