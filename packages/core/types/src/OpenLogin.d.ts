@@ -26,7 +26,7 @@ declare class OpenLogin {
     initState(options: Required<OpenLoginOptions>): void;
     init(): Promise<void>;
     get privKey(): string;
-    fastLogin(params: Partial<BaseRedirectParams>): Promise<{
+    _fastLogin(params: Partial<BaseRedirectParams>): Promise<{
         privKey: string;
     }>;
     login(params?: LoginParams & Partial<BaseRedirectParams>): Promise<{

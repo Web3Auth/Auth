@@ -100,7 +100,7 @@ class OpenLogin {
     return this.state.privKey ? this.state.privKey.padStart(64, "0") : "";
   }
 
-  async fastLogin(params: Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
+  async _fastLogin(params: Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
     const defaultParams: BaseRedirectParams = {
       redirectUrl: this.state.redirectUrl,
     };
@@ -138,7 +138,7 @@ class OpenLogin {
 
     // fast login flow
     if (this.state.store.get("touchIDPreference") === "enabled") {
-      return this.fastLogin(loginParams);
+      return this._fastLogin(loginParams);
     }
 
     return this.request({
