@@ -24,7 +24,10 @@ export const OPENLOGIN_METHOD = {
   CHECK_3PC_SUPPORT: "openlogin_check_3PC_support",
   SET_PID_DATA: "openlogin_set_pid_data",
   GET_DATA: "openlogin_get_data",
-};
+} as const;
+
+// autocomplete workaround https://github.com/microsoft/TypeScript/issues/29729
+export type CUSTOM_OPENLOGIN_METHOD_TYPE = string & { toString?: (radix?: number) => string };
 
 export type OPENLOGIN_METHOD_TYPE = typeof OPENLOGIN_METHOD[keyof typeof OPENLOGIN_METHOD];
 
@@ -32,13 +35,13 @@ export const ALLOWED_INTERACTIONS = {
   POPUP: "popup",
   REDIRECT: "redirect",
   JRPC: "jrpc",
-};
+} as const;
 
 export type ALLOWED_INTERACTIONS_TYPE = typeof ALLOWED_INTERACTIONS[keyof typeof ALLOWED_INTERACTIONS];
 
 export type RequestParams = {
   url?: string;
-  method: OPENLOGIN_METHOD_TYPE | string;
+  method: OPENLOGIN_METHOD_TYPE | CUSTOM_OPENLOGIN_METHOD_TYPE;
   params: Record<string, unknown>[];
   allowedInteractions: ALLOWED_INTERACTIONS_TYPE[];
 };
@@ -57,7 +60,7 @@ export const OPENLOGIN_NETWORK = {
   MAINNET: "mainnet",
   TESTNET: "testnet",
   DEVELOPMENT: "development",
-};
+} as const;
 
 export type OPENLOGIN_NETWORK_TYPE = typeof OPENLOGIN_NETWORK[keyof typeof OPENLOGIN_NETWORK];
 
@@ -74,8 +77,31 @@ export type OpenLoginOptions = {
   originData?: OriginData;
 };
 
+export const LOGIN_PROVIDER = {
+  GOOGLE: "google",
+  FACEBOOK: "facebook",
+  REDDIT: "reddit",
+  DISCORD: "discord",
+  TWITCH: "twitch",
+  APPLE: "apple",
+  LINE: "line",
+  GITHUB: "github",
+  KAKAO: "kakao",
+  LINKEDIN: "linkedin",
+  TWITTER: "twitter",
+  WEIBO: "weibo",
+  WECHAT: "wechat",
+  EMAIL_PASSWORDLESS: "email_passwordless",
+  WEBAUTHN: "webauthn",
+} as const;
+
+export type LOGIN_PROVIDER_TYPE = typeof LOGIN_PROVIDER[keyof typeof LOGIN_PROVIDER];
+
+// autocomplete workaround https://github.com/microsoft/TypeScript/issues/29729
+export type CUSTOM_LOGIN_PROVIDER_TYPE = string & { toString?: (radix?: number) => string };
+
 export type LoginParams = BaseRedirectParams & {
-  loginProvider: string;
+  loginProvider: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
   fastLogin?: boolean;
   relogin?: boolean;
   skipTKey?: boolean;
