@@ -1,4 +1,4 @@
-import { getPublic, sign } from "@toruslabs/eccrypto";
+import { decrypt, Ecies, encrypt, getPublic, sign } from "@toruslabs/eccrypto";
 import { getRpcPromiseCallback, JRPCRequest, OriginData, SessionInfo } from "@toruslabs/openlogin-jrpc";
 import { base64url, jsonToBase64, keccak, randomId, URLWithHashParams } from "@toruslabs/openlogin-utils";
 import merge from "lodash.merge";
@@ -367,6 +367,30 @@ class OpenLogin {
   async _cleanup(): Promise<void> {
     await this.provider.cleanup();
     await this.modal.cleanup();
+  }
+
+  async encrypt(message: Buffer, privateKey?: string): Promise<Ecies> {
+    let privKey = privateKey;
+    if (!privKey) {
+      privKey = this.privKey;
+    }
+    // validations
+    if (!/^[0-9a-fA-f]*$/.exec(privKey)) {
+      throw new Error("invalid private key");
+    }
+    return encrypt(getPublic(Buffer.from(privKey, "hex")), message);
+  }
+
+  async decrypt(ciphertext: Ecies, privateKey?: string): Promise<Buffer> {
+    let privKey = privateKey;
+    if (!privKey) {
+      privKey = this.privKey;
+    }
+    // validations
+    if (!/^[0-9a-fA-f]*$/.exec(privKey)) {
+      throw new Error("invalid private key");
+    }
+    return decrypt(Buffer.from(privKey, "hex"), ciphertext);
   }
 }
 
