@@ -48,7 +48,6 @@ class OpenLogin {
     this.provider = new Proxy(new Provider(), {
       deleteProperty: () => true, // work around for web3
     });
-    this.modal = new Modal(`${options.iframeUrl}/sdk-modal`);
     if (options.network === OPENLOGIN_NETWORK.MAINNET) {
       options.iframeUrl = "https://manage.openlogin.com";
     } else if (options.network === OPENLOGIN_NETWORK.TESTNET) {
@@ -56,6 +55,7 @@ class OpenLogin {
     } else if (!options.iframeUrl) {
       throw new Error("unspecified network and iframeUrl");
     }
+    this.modal = new Modal(`${options.iframeUrl}/sdk-modal`);
     this.initState({
       ...options,
       iframeUrl: options.iframeUrl,
