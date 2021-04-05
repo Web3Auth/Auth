@@ -101,7 +101,8 @@ typings/
 
 
 examples/
-toruslabs-torus-direct-web-sdk-*
+toruslabs-openlogin-*
+openlogin-*
 ssl/
 src/
 scripts/
