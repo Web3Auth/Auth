@@ -1,11 +1,11 @@
 {
-  "name": "openlogin",
+  "name": "@toruslabs/openlogin-subkey",
   "version": "0.4.0",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
-  "main": "dist/openlogin.cjs.js",
-  "unpkg": "dist/openlogin.umd.min.js",
-  "jsdelivr": "dist/openlogin.umd.min.js",
+  "main": "dist/openlogin-subkey.cjs.js",
+  "unpkg": "dist/openlogin-subkey.umd.min.js",
+  "jsdelivr": "dist/openlogin-subkey.umd.min.js",
   "types": "types/index.d.ts",
   "author": "Torus Labs",
   "scripts": {
@@ -21,8 +21,8 @@
     "pre-commit": "lint-staged"
   },
   "dependencies": {
-    "@toruslabs/openlogin": "^0.4.0",
-    "@toruslabs/openlogin-jrpc": "^0.4.0",
+    "bn.js": "^5.2.0",
+    "ffjavascript": "^0.2.35",
     "@toruslabs/openlogin-utils": "^0.4.0"
   },
   "peerDependencies": {
@@ -48,5 +48,6 @@
   "keywords": [],
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "gitHead": "3afc4036d406d8acde8a59c7fa1c8cd548f8712e"
 }

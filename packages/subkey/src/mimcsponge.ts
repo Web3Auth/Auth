@@ -1,20 +1,11 @@
+import { keccak256 } from "@toruslabs/openlogin-utils";
 import BN from "bn.js";
 import { Scalar, ZqField } from "ffjavascript";
-import keccak from "keccak";
 
 const F = new ZqField(Scalar.fromString("21888242871839275222246405745257275088548364400416034343698204186575808495617"));
 
 const SEED = "mimcsponge";
 const NROUNDS = 220;
-
-export function keccak256(str: string): string {
-  let input: string | Buffer = str;
-  if (typeof str === "string" && str.slice(0, 2) === "0x" && str.length === 66) {
-    input = Buffer.from(str.slice(2), "hex");
-  }
-  const data = `0x${keccak("keccak256").update(input).digest("hex").padStart(64, "0")}`;
-  return data;
-}
 
 export function mimgGetIV(seed: string): BigInt {
   let _seed = seed;

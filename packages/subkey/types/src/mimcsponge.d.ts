@@ -1,4 +1,3 @@
-export declare function keccak256(str: string): string;
 export declare function mimgGetIV(seed: string): BigInt;
 export declare function mimcGetConstants(seed?: string, nRounds?: number): BigInt[];
 export declare function mimcHash(_xL_in: any, _xR_in: any, _k: any): {
