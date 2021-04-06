@@ -1,5 +1,5 @@
 import { getPublic, sign } from "@toruslabs/eccrypto";
-import { base64url } from "@toruslabs/openlogin-utils";
+import { base64url, keccak } from "@toruslabs/openlogin-utils";
 
 import { PopupResponse } from "./constants";
 
@@ -25,7 +25,7 @@ export const htmlToElement = (html: string): Node => {
 export async function whitelistUrl(clientId: string, appKey: string, origin: string): Promise<string> {
   const appKeyBuf = Buffer.from(appKey.padStart(64, "0"), "hex");
   if (base64url.encode(getPublic(appKeyBuf)) !== clientId) throw new Error("appKey mismatch");
-  const sig = await sign(appKeyBuf, Buffer.from(origin, "utf-8"));
+  const sig = await sign(appKeyBuf, Buffer.from(keccak("keccak256").update(origin).digest("hex"), "hex"));
   return base64url.encode(sig);
 }
 
