@@ -41,6 +41,7 @@ const babelLoader = {
 };
 
 function generateWebpackConfig({ pkg, pkgName, currentPath, alias }) {
+  const depsList = Object.keys(pkg.dependencies);
   const baseConfig = {
     mode: NODE_ENV,
     devtool: NODE_ENV === "production" ? false : "source-map",
@@ -55,8 +56,8 @@ function generateWebpackConfig({ pkg, pkgName, currentPath, alias }) {
       plugins: [new TsconfigPathsPlugin()],
       extensions: [".ts", ".js", ".json"],
       alias: {
-        "bn.js": path.resolve(currentPath, "node_modules/bn.js"),
-        lodash: path.resolve(currentPath, "node_modules/lodash"),
+        ...(depsList.includes("bn.js") && { "bn.js": path.resolve(currentPath, "node_modules/bn.js") }),
+        ...(depsList.includes("lodash") && { lodash: path.resolve(currentPath, "node_modules/lodash") }),
         ...alias,
       },
     },

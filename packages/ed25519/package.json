@@ -1,11 +1,11 @@
 {
-  "name": "openlogin",
+  "name": "@toruslabs/openlogin-ed25519",
   "version": "0.4.0",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
-  "main": "dist/openlogin.cjs.js",
-  "unpkg": "dist/openlogin.umd.min.js",
-  "jsdelivr": "dist/openlogin.umd.min.js",
+  "main": "dist/openlogin-ed25519.cjs.js",
+  "unpkg": "dist/openlogin-ed25519.umd.min.js",
+  "jsdelivr": "dist/openlogin-ed25519.umd.min.js",
   "types": "types/index.d.ts",
   "author": "Torus Labs",
   "scripts": {
@@ -21,9 +21,7 @@
     "pre-commit": "lint-staged"
   },
   "dependencies": {
-    "@toruslabs/openlogin": "^0.4.0",
-    "@toruslabs/openlogin-jrpc": "^0.4.0",
-    "@toruslabs/openlogin-utils": "^0.4.0"
+    "@toruslabs/tweetnacl-js": "^1.0.3"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"
@@ -48,5 +46,6 @@
   "keywords": [],
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "gitHead": "3afc4036d406d8acde8a59c7fa1c8cd548f8712e"
 }
