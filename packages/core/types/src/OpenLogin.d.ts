@@ -7,14 +7,13 @@ import OpenLoginStore from "./OpenLoginStore";
 import Provider from "./Provider";
 export declare type OpenLoginState = {
     network: OPENLOGIN_NETWORK_TYPE;
-    loginUrl: string;
     privKey?: string;
     support3PC?: boolean;
     clientId: string;
     iframeUrl: string;
     redirectUrl: string;
-    webAuthnUrl: string;
-    logoutUrl: string;
+    startUrl: string;
+    popupUrl: string;
     store: OpenLoginStore;
     uxMode: UX_MODE_TYPE;
     replaceUrlOnRedirect: boolean;

@@ -8,11 +8,13 @@ export default class PostMessageStream extends Duplex {
     _targetWindow: Window;
     _origin: string;
     _onMessage: any;
+    _synIntervalId: ReturnType<typeof setTimeout>;
     constructor({ name, target, targetWindow }: {
         name: string;
         target: string;
         targetWindow: Window;
     });
+    _break(): void;
     _handShake(): void;
     _onData(data: unknown): void;
     _postMessage(data: unknown): void;

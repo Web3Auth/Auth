@@ -1,12 +1,13 @@
 import { decrypt, Ecies, encrypt, getPublic, sign } from "@toruslabs/eccrypto";
 import { getRpcPromiseCallback, JRPCRequest, OriginData, SessionInfo } from "@toruslabs/openlogin-jrpc";
-import { base64url, jsonToBase64, keccak, randomId, URLWithHashParams } from "@toruslabs/openlogin-utils";
+import { base64url, jsonToBase64, keccak, randomId } from "@toruslabs/openlogin-utils";
 import merge from "lodash.merge";
 
 import {
   ALLOWED_INTERACTIONS,
   BaseLogoutParams,
   BaseRedirectParams,
+  FEATURES_DEFAULT_POPUP_WINDOW,
   LoginParams,
   OPENLOGIN_METHOD,
   OPENLOGIN_NETWORK,
@@ -23,14 +24,13 @@ import { awaitReq, constructURL, getHashQueryParams } from "./utils";
 
 export type OpenLoginState = {
   network: OPENLOGIN_NETWORK_TYPE;
-  loginUrl: string;
   privKey?: string;
   support3PC?: boolean;
   clientId: string;
   iframeUrl: string;
   redirectUrl: string;
-  webAuthnUrl: string;
-  logoutUrl: string;
+  startUrl: string;
+  popupUrl: string;
   store: OpenLoginStore;
   uxMode: UX_MODE_TYPE;
   replaceUrlOnRedirect: boolean;
@@ -60,9 +60,8 @@ class OpenLogin {
       ...options,
       iframeUrl: options.iframeUrl,
       redirectUrl: options.redirectUrl ?? `${window.location.protocol}//${window.location.host}${window.location.pathname}`,
-      loginUrl: options.loginUrl ?? `${options.iframeUrl}/start`,
-      webAuthnUrl: options.webAuthnUrl ?? `${options.iframeUrl}/start`,
-      logoutUrl: options.logoutUrl ?? `${options.iframeUrl}/start`,
+      startUrl: options.startUrl ?? `${options.iframeUrl}/start`,
+      popupUrl: options.popupUrl ?? `${options.iframeUrl}/popup-window`,
       uxMode: options.uxMode ?? UX_MODE.REDIRECT,
       replaceUrlOnRedirect: options.replaceUrlOnRedirect ?? true,
       originData: options.originData ?? { [window.location.origin]: "" },
@@ -75,11 +74,10 @@ class OpenLogin {
       network: options.network,
       store: OpenLoginStore.getInstance(),
       iframeUrl: options.iframeUrl,
-      loginUrl: options.loginUrl,
       clientId: options.clientId,
       redirectUrl: options.redirectUrl,
-      webAuthnUrl: options.webAuthnUrl,
-      logoutUrl: options.logoutUrl,
+      startUrl: options.startUrl,
+      popupUrl: options.popupUrl,
       replaceUrlOnRedirect: options.replaceUrlOnRedirect,
       originData: options.originData,
     };
@@ -110,11 +108,15 @@ class OpenLogin {
       ...params,
     };
 
-    return this.request({
+    return this.request<{ privKey: string }>({
       params: [{ ...loginParams, fastLogin: true }],
       method: OPENLOGIN_METHOD.LOGIN,
-      url: this.state.webAuthnUrl,
+      startUrl: this.state.startUrl,
+      popupUrl: this.state.popupUrl,
       allowedInteractions: [ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
+    }).then((res) => {
+      this.state.privKey = res.privKey;
+      return res;
     });
   }
 
@@ -141,11 +143,15 @@ class OpenLogin {
       return this._fastLogin(loginParams);
     }
 
-    return this.request({
+    return this.request<{ privKey: string }>({
       method: OPENLOGIN_METHOD.LOGIN,
       allowedInteractions: [UX_MODE.REDIRECT, UX_MODE.POPUP],
-      url: this.state.loginUrl,
+      startUrl: this.state.startUrl,
+      popupUrl: this.state.popupUrl,
       params: [loginParams],
+    }).then((res) => {
+      this.state.privKey = res.privKey;
+      return res;
     });
   }
 
@@ -168,7 +174,8 @@ class OpenLogin {
     const res = await this.request<void>({
       method: OPENLOGIN_METHOD.LOGOUT,
       params: [params],
-      url: this.state.logoutUrl,
+      startUrl: this.state.startUrl,
+      popupUrl: this.state.popupUrl,
       allowedInteractions: [ALLOWED_INTERACTIONS.JRPC, ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
     });
 
@@ -185,7 +192,7 @@ class OpenLogin {
     // do not add it here since its used for checking postMessage constraints
     const session: Partial<SessionInfo> = {};
     if (params.length !== 1) throw new Error("request params array should have only one element");
-    const { url, method, allowedInteractions } = args;
+    const { startUrl, popupUrl, method, allowedInteractions } = args;
     if (allowedInteractions.length === 0) throw new Error("no allowed interactions");
 
     if (this.state.clientId) {
@@ -227,16 +234,12 @@ class OpenLogin {
       params = [{}];
     }
 
-    if (!url) {
+    if (!startUrl || !popupUrl) {
       throw new Error("no url for redirect / popup flow");
     }
 
     // method and pid are always in URL hash params
     // convert params from JSON to base64
-    const finalUrl = constructURL({
-      baseURL: url,
-      hash: { b64Params: jsonToBase64(params[0]), _pid: pid, _method: method },
-    });
 
     if (this.state.uxMode === UX_MODE.REDIRECT) {
       // if redirects preferred, check for redirect flows first, then check for popup flow
@@ -244,25 +247,37 @@ class OpenLogin {
       if (allowedInteractions.includes(ALLOWED_INTERACTIONS.REDIRECT)) {
         // give time for synchronous methods to complete before redirect
         setTimeout(() => {
-          window.location.href = finalUrl;
+          window.location.href = constructURL({
+            baseURL: startUrl,
+            hash: { b64Params: jsonToBase64(params[0]), _pid: pid, _method: method },
+          });
         }, 50);
         return {} as T;
       }
 
       if (allowedInteractions.includes(ALLOWED_INTERACTIONS.POPUP)) {
-        const u = new URLWithHashParams(finalUrl);
-        u.hashParams.append("_pid", pid);
-        window.open(u.toString());
+        const u = new URL(
+          constructURL({
+            baseURL: popupUrl,
+            hash: { b64Params: jsonToBase64(params[0]), _pid: pid, _method: method },
+          })
+        );
+        window.open(u.toString(), "_blank", FEATURES_DEFAULT_POPUP_WINDOW);
         // TODO: implement popup flow
+
         return awaitReq<T>(pid);
       }
     } else {
       // if popups preferred, check for popup flows first, then check for redirect flow
 
       if (allowedInteractions.includes(ALLOWED_INTERACTIONS.POPUP)) {
-        const u = new URLWithHashParams(finalUrl);
-        u.hashParams.append("_pid", pid);
-        window.open(u.toString());
+        const u = new URL(
+          constructURL({
+            baseURL: popupUrl,
+            hash: { b64Params: jsonToBase64(params[0]), _pid: pid, _method: method },
+          })
+        );
+        window.open(u.toString(), "_blank", FEATURES_DEFAULT_POPUP_WINDOW);
         // TODO: implement popup flow
         return awaitReq<T>(pid);
       }
@@ -270,7 +285,10 @@ class OpenLogin {
       if (allowedInteractions.includes(ALLOWED_INTERACTIONS.REDIRECT)) {
         // give time for synchronous methods to complete before redirect
         setTimeout(() => {
-          window.location.href = finalUrl;
+          window.location.href = constructURL({
+            baseURL: startUrl,
+            hash: { b64Params: jsonToBase64(params[0]), _pid: pid, _method: method },
+          });
         }, 50);
         return null;
       }

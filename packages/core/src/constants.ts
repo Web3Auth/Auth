@@ -4,6 +4,11 @@ import { ExtraLoginOptions } from "@toruslabs/openlogin-utils";
 export const iframeDOMElementID = "openlogin-iframe";
 export const storeKey = "openlogin_store";
 
+export const FEATURES_PROVIDER_CHANGE_WINDOW = "directories=0,titlebar=0,toolbar=0,status=0,location=0,menubar=0,height=660,width=375";
+export const FEATURES_DEFAULT_WALLET_WINDOW = "directories=0,titlebar=0,toolbar=0,status=0,location=0,menubar=0,height=740,width=1315";
+export const FEATURES_DEFAULT_POPUP_WINDOW = "directories=0,titlebar=0,toolbar=0,status=0,location=0,menubar=0,height=700,width=1200";
+export const FEATURES_CONFIRM_WINDOW = "directories=0,titlebar=0,toolbar=0,status=0,location=0,menubar=0,height=700,width=450";
+
 export type PopupResponse<T> = {
   pid: string;
   data: T;
@@ -40,7 +45,8 @@ export const ALLOWED_INTERACTIONS = {
 export type ALLOWED_INTERACTIONS_TYPE = typeof ALLOWED_INTERACTIONS[keyof typeof ALLOWED_INTERACTIONS];
 
 export type RequestParams = {
-  url?: string;
+  startUrl?: string;
+  popupUrl?: string;
   method: OPENLOGIN_METHOD_TYPE | CUSTOM_OPENLOGIN_METHOD_TYPE;
   params: Record<string, unknown>[];
   allowedInteractions: ALLOWED_INTERACTIONS_TYPE[];
@@ -69,9 +75,8 @@ export type OpenLoginOptions = {
   network: OPENLOGIN_NETWORK_TYPE;
   iframeUrl?: string;
   redirectUrl?: string;
-  loginUrl?: string;
-  webAuthnUrl?: string;
-  logoutUrl?: string;
+  startUrl?: string;
+  popupUrl?: string;
   uxMode?: UX_MODE_TYPE;
   replaceUrlOnRedirect?: boolean;
   originData?: OriginData;
