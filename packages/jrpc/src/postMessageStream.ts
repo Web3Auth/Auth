@@ -6,6 +6,7 @@ function noop(): void {
 
 const SYN = "SYN";
 const ACK = "ACK";
+const BRK = "BRK";
 
 export default class PostMessageStream extends Duplex {
   _init: boolean;
@@ -22,6 +23,8 @@ export default class PostMessageStream extends Duplex {
 
   _onMessage: any;
 
+  _synIntervalId: ReturnType<typeof setTimeout>;
+
   constructor({ name, target, targetWindow }: { name: string; target: string; targetWindow: Window }) {
     super({
       objectMode: true,
@@ -33,9 +36,16 @@ export default class PostMessageStream extends Duplex {
     this._targetWindow = targetWindow || window;
     this._origin = targetWindow ? "*" : window.location.origin;
     this._onMessage = this.onMessage.bind(this);
+    this._synIntervalId = null;
 
     window.addEventListener("message", this._onMessage, false);
     this._handShake();
+  }
+
+  _break(): void {
+    this._init = false;
+    this._haveSyn = false;
+    this.cork();
   }
 
   _handShake(): void {
@@ -56,6 +66,8 @@ export default class PostMessageStream extends Duplex {
         }
         this.uncork();
       }
+    } else if (data === BRK) {
+      this._break();
     } else {
       // forward message
       try {
