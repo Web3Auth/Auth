@@ -78,12 +78,13 @@ export function getHashQueryParams(replaceUrl = false): Record<string, string> {
   return result;
 }
 
-export async function awaitReq<T>(id: string): Promise<T> {
+export async function awaitReq<T>(id: string, windowRef: Window): Promise<T> {
   return new Promise((resolve) => {
     const handler = (ev: MessageEvent<PopupResponse<T>>) => {
       const { pid } = ev.data;
       if (id !== pid) return;
       window.removeEventListener("message", handler);
+      windowRef.close();
       resolve(ev.data.data);
     };
     window.addEventListener("message", handler);

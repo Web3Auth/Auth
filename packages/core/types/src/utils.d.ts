@@ -2,7 +2,7 @@ export declare function documentReady(): Promise<void>;
 export declare const htmlToElement: (html: string) => Node;
 export declare function whitelistUrl(clientId: string, appKey: string, origin: string): Promise<string>;
 export declare function getHashQueryParams(replaceUrl?: boolean): Record<string, string>;
-export declare function awaitReq<T>(id: string): Promise<T>;
+export declare function awaitReq<T>(id: string, windowRef: Window): Promise<T>;
 export declare function constructURL(params: {
     baseURL: string;
     query?: Record<string, unknown>;

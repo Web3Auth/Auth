@@ -262,10 +262,8 @@ class OpenLogin {
             hash: { b64Params: jsonToBase64(params[0]), _pid: pid, _method: method },
           })
         );
-        window.open(u.toString(), "_blank", FEATURES_DEFAULT_POPUP_WINDOW);
-        // TODO: implement popup flow
-
-        return awaitReq<T>(pid);
+        const windowRef = window.open(u.toString(), "_blank", FEATURES_DEFAULT_POPUP_WINDOW);
+        return awaitReq<T>(pid, windowRef);
       }
     } else {
       // if popups preferred, check for popup flows first, then check for redirect flow
@@ -277,9 +275,8 @@ class OpenLogin {
             hash: { b64Params: jsonToBase64(params[0]), _pid: pid, _method: method },
           })
         );
-        window.open(u.toString(), "_blank", FEATURES_DEFAULT_POPUP_WINDOW);
-        // TODO: implement popup flow
-        return awaitReq<T>(pid);
+        const windowRef = window.open(u.toString(), "_blank", FEATURES_DEFAULT_POPUP_WINDOW);
+        return awaitReq<T>(pid, windowRef);
       }
 
       if (allowedInteractions.includes(ALLOWED_INTERACTIONS.REDIRECT)) {
