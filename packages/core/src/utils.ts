@@ -79,14 +79,24 @@ export function getHashQueryParams(replaceUrl = false): Record<string, string> {
 }
 
 export async function awaitReq<T>(id: string, windowRef: Window): Promise<T> {
-  return new Promise((resolve) => {
-    const handler = (ev: MessageEvent<PopupResponse<T>>) => {
+  return new Promise((resolve, reject) => {
+    const handler = (ev: MessageEvent<PopupResponse<T & { error?: string }>>) => {
       const { pid } = ev.data;
       if (id !== pid) return;
       window.removeEventListener("message", handler);
       windowRef.close();
-      resolve(ev.data.data);
+      if (ev.data.data && ev.data.data.error) {
+        reject(new Error(ev.data.data.error));
+      } else {
+        resolve(ev.data.data);
+      }
     };
+
+    window.onclose = () => {
+      reject(new Error("window closed"));
+      window.removeEventListener("message", handler);
+    };
+
     window.addEventListener("message", handler);
   });
 }
