@@ -43,9 +43,10 @@ export default class PostMessageStream extends Duplex {
   }
 
   _break(): void {
-    this._init = false;
-    this._haveSyn = false;
     this.cork();
+    this._write(BRK, null, noop);
+    this._haveSyn = false;
+    this._init = false;
   }
 
   _handShake(): void {
