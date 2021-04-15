@@ -101,26 +101,31 @@ class OpenLogin {
   }
 
   async updateOriginData(): Promise<void> {
-    try {
-      const originData = await this.getWhitelist();
-      this._syncState({ ...originData, ...this.state.originData });
-    } catch (error) {
-      // fail silently
-    }
+    const filteredOriginData = JSON.parse(JSON.stringify(this.state.originData));
+    Object.keys(filteredOriginData).forEach((key) => {
+      if (filteredOriginData[key] === "") delete filteredOriginData[key];
+    });
+    const whitelist = await this.getWhitelist();
+    this._syncState({ ...whitelist, ...filteredOriginData });
   }
 
   async getWhitelist(): Promise<OriginData> {
-    const { clientId } = this.state;
-    if (!clientId) {
-      throw new Error("unspecified clientId");
+    try {
+      const { clientId } = this.state;
+      if (!clientId) {
+        throw new Error("unspecified clientId");
+      }
+      const data = await fetch("https://api.developer.tor.us/whitelist", {
+        method: "POST",
+        body: JSON.stringify({
+          project_id: this.state.clientId,
+        }),
+      }).then((res) => res.json());
+      return data.signed_urls as OriginData;
+    } catch (_) {
+      // fail silently
+      return {};
     }
-    const data = await fetch("https://api.developer.tor.us/whitelist", {
-      method: "POST",
-      body: JSON.stringify({
-        project_id: this.state.clientId,
-      }),
-    }).then((res) => res.json());
-    return data.signed_urls as OriginData;
   }
 
   async _fastLogin(params: Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
