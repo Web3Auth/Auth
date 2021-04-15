@@ -49,7 +49,7 @@ class OpenLogin {
       deleteProperty: () => true, // work around for web3
     });
     if (options.network === OPENLOGIN_NETWORK.MAINNET) {
-      options.iframeUrl = "https://manage.openlogin.com";
+      options.iframeUrl = "https://app.openlogin.com";
     } else if (options.network === OPENLOGIN_NETWORK.TESTNET) {
       options.iframeUrl = "https://beta.openlogin.com";
     } else if (!options.iframeUrl) {
