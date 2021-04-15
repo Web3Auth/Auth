@@ -103,7 +103,7 @@ class OpenLogin {
   async updateOriginData(): Promise<void> {
     try {
       const originData = await this.getWhitelist();
-      this._syncState({ ...this.state.originData, ...originData });
+      this._syncState({ ...originData, ...this.state.originData });
     } catch (error) {
       // fail silently
     }
