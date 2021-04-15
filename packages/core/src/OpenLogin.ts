@@ -86,7 +86,7 @@ class OpenLogin {
   }
 
   async init(): Promise<void> {
-    await Promise.all([this.provider.init({ iframeUrl: this.state.iframeUrl }), this.modal.init()]);
+    await Promise.all([this.provider.init({ iframeUrl: this.state.iframeUrl }), this.modal.init(), this.updateOriginData()]);
 
     this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
     const res = await this._check3PCSupport();
@@ -98,6 +98,24 @@ class OpenLogin {
 
   get privKey(): string {
     return this.state.privKey ? this.state.privKey.padStart(64, "0") : "";
+  }
+
+  async updateOriginData(): Promise<void> {
+    this._syncState({ originData: await this.getWhitelist() });
+  }
+
+  async getWhitelist(): Promise<OriginData> {
+    const { clientId } = this.state;
+    if (!clientId) {
+      throw new Error("unspecified clientId");
+    }
+    const data = await fetch("https://api.developer.tor.us/whitelist", {
+      method: "POST",
+      body: JSON.stringify({
+        project_id: this.state.clientId,
+      }),
+    }).then((res) => res.json());
+    return data.signed_urls as OriginData;
   }
 
   async _fastLogin(params: Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
