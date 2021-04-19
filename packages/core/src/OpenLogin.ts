@@ -167,7 +167,7 @@ class OpenLogin {
     };
 
     // fast login flow
-    if (this.state.store.get("touchIDPreference") === "enabled") {
+    if (this.state.store.get("touchIDPreference") === "enabled" && !loginParams.extraLoginOptions?.login_hint) {
       return this._fastLogin(loginParams);
     }
 
