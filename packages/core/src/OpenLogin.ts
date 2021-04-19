@@ -49,7 +49,7 @@ class OpenLogin {
       deleteProperty: () => true, // work around for web3
     });
     if (options.network === OPENLOGIN_NETWORK.MAINNET) {
-      options.iframeUrl = "https://manage.openlogin.com";
+      options.iframeUrl = "https://app.openlogin.com";
     } else if (options.network === OPENLOGIN_NETWORK.TESTNET) {
       options.iframeUrl = "https://beta.openlogin.com";
     } else if (!options.iframeUrl) {
@@ -84,7 +84,7 @@ class OpenLogin {
   }
 
   async init(): Promise<void> {
-    await Promise.all([this.provider.init({ iframeUrl: this.state.iframeUrl }), this.modal.init()]);
+    await Promise.all([this.provider.init({ iframeUrl: this.state.iframeUrl }), this.modal.init(), this.updateOriginData()]);
 
     this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
     const res = await this._check3PCSupport();
@@ -96,6 +96,34 @@ class OpenLogin {
 
   get privKey(): string {
     return this.state.privKey ? this.state.privKey.padStart(64, "0") : "";
+  }
+
+  async updateOriginData(): Promise<void> {
+    const filteredOriginData = JSON.parse(JSON.stringify(this.state.originData));
+    Object.keys(filteredOriginData).forEach((key) => {
+      if (filteredOriginData[key] === "") delete filteredOriginData[key];
+    });
+    const whitelist = await this.getWhitelist();
+    this._syncState({ ...whitelist, ...filteredOriginData });
+  }
+
+  async getWhitelist(): Promise<OriginData> {
+    try {
+      const { clientId } = this.state;
+      if (!clientId) {
+        throw new Error("unspecified clientId");
+      }
+      const data = await fetch("https://api.developer.tor.us/whitelist", {
+        method: "POST",
+        body: JSON.stringify({
+          project_id: this.state.clientId,
+        }),
+      }).then((res) => res.json());
+      return data.signed_urls as OriginData;
+    } catch (_) {
+      // fail silently
+      return {};
+    }
   }
 
   async _fastLogin(params: Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
