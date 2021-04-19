@@ -19,7 +19,10 @@ import {
 import { Modal } from "./Modal";
 import OpenLoginStore from "./OpenLoginStore";
 import Provider from "./Provider";
-import { awaitReq, constructURL, getHashQueryParams } from "./utils";
+import { awaitReq, constructURL, getHashQueryParams, preloadIframe } from "./utils";
+
+preloadIframe("https://app.openlogin.com/start");
+preloadIframe("https://app.openlogin.com/sdk-modal");
 
 export type OpenLoginState = {
   network: OPENLOGIN_NETWORK_TYPE;
@@ -87,7 +90,6 @@ class OpenLogin {
 
   async init(): Promise<void> {
     await Promise.all([this.provider.init({ iframeUrl: this.state.iframeUrl }), this.modal.init(), this.updateOriginData()]);
-
     this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
     const res = await this._check3PCSupport();
     this.state.support3PC = !!res.support3PC;

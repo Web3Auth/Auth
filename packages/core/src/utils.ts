@@ -139,3 +139,20 @@ export function storageAvailable(type: string): boolean {
 
 export const sessionStorageAvailable = storageAvailable("sessionStorage");
 export const localStorageAvailable = storageAvailable("localStorage");
+
+export function preloadIframe(url: string): void {
+  try {
+    const openloginIframeHtml = document.createElement("link");
+    openloginIframeHtml.href = url;
+    openloginIframeHtml.crossOrigin = "anonymous";
+    openloginIframeHtml.type = "text/html";
+    openloginIframeHtml.rel = "prefetch";
+    if (openloginIframeHtml.relList && openloginIframeHtml.relList.supports) {
+      if (openloginIframeHtml.relList.supports("prefetch")) {
+        document.head.appendChild(openloginIframeHtml);
+      }
+    }
+  } catch (error) {
+    window.console.error(error);
+  }
+}
