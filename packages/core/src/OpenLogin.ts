@@ -61,6 +61,7 @@ class OpenLogin {
     this.modal = new Modal(`${options.iframeUrl}/sdk-modal`);
     this.initState({
       ...options,
+      no3PC: options.no3PC ?? false,
       iframeUrl: options.iframeUrl,
       redirectUrl: options.redirectUrl ?? `${window.location.protocol}//${window.location.host}${window.location.pathname}`,
       loginUrl: options.loginUrl ?? `${options.iframeUrl}/start`,
@@ -85,16 +86,22 @@ class OpenLogin {
       logoutUrl: options.logoutUrl,
       replaceUrlOnRedirect: options.replaceUrlOnRedirect,
       originData: options.originData,
+      support3PC: !options.no3PC,
     };
   }
 
   async init(): Promise<void> {
-    await Promise.all([this.provider.init({ iframeUrl: this.state.iframeUrl }), this.modal.init(), this.updateOriginData()]);
-    this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
-    const res = await this._check3PCSupport();
-    this.state.support3PC = !!res.support3PC;
     if (this.state.support3PC) {
-      this._syncState(await this._getData());
+      await Promise.all([this.provider.init({ iframeUrl: this.state.iframeUrl }), this.modal.init(), this.updateOriginData()]);
+      this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
+      const res = await this._check3PCSupport();
+      this.state.support3PC = !!res.support3PC;
+      if (this.state.support3PC) {
+        this._syncState(await this._getData());
+      }
+    } else {
+      this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
+      await this.updateOriginData();
     }
   }
 

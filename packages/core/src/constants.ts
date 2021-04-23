@@ -67,6 +67,7 @@ export type OPENLOGIN_NETWORK_TYPE = typeof OPENLOGIN_NETWORK[keyof typeof OPENL
 export type OpenLoginOptions = {
   clientId: string;
   network: OPENLOGIN_NETWORK_TYPE;
+  no3PC?: boolean;
   iframeUrl?: string;
   redirectUrl?: string;
   loginUrl?: string;
