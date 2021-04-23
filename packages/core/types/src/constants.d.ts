@@ -52,6 +52,7 @@ export declare type OPENLOGIN_NETWORK_TYPE = typeof OPENLOGIN_NETWORK[keyof type
 export declare type OpenLoginOptions = {
     clientId: string;
     network: OPENLOGIN_NETWORK_TYPE;
+    no3PC?: boolean;
     iframeUrl?: string;
     redirectUrl?: string;
     loginUrl?: string;

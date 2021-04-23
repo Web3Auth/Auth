@@ -115,7 +115,7 @@ class OpenLogin {
       if (filteredOriginData[key] === "") delete filteredOriginData[key];
     });
     const whitelist = await this.getWhitelist();
-    this._syncState({ ...whitelist, ...filteredOriginData });
+    this._syncState({ originData: { ...whitelist, ...filteredOriginData } });
   }
 
   async getWhitelist(): Promise<OriginData> {
