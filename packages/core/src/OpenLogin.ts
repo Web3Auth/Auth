@@ -174,9 +174,9 @@ class OpenLogin {
     };
 
     // fast login flow
-    if (this.state.store.get("touchIDPreference") === "enabled" && !loginParams.extraLoginOptions?.login_hint) {
-      return this._fastLogin(loginParams);
-    }
+    // if (this.state.store.get("touchIDPreference") === "enabled" && !loginParams.extraLoginOptions?.login_hint) {
+    //   return this._fastLogin(loginParams);
+    // }
 
     return this.request({
       method: OPENLOGIN_METHOD.LOGIN,
@@ -210,7 +210,7 @@ class OpenLogin {
     });
 
     this.state.privKey = "";
-    if (!params.fastLogin) this.state.store.set("touchIDPreference", "disabled");
+    // if (!params.fastLogin) this.state.store.set("touchIDPreference", "disabled");
     return res;
   }
 
