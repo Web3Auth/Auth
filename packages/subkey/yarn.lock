@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@toruslabs/ffjavascript@^0.2.37":
-  version "0.2.37"
-  resolved "https://registry.yarnpkg.com/@toruslabs/ffjavascript/-/ffjavascript-0.2.37.tgz#091e8bf6a3bff53d81e9f98d8c0b615839cf2805"
-  integrity sha512-1A+AWmEAr1y3zRkWtxCVOAvBeoa6oivfOAeaU4R3t+utAC4RNFWlSkoD3GA1ZRCnEq4vTA9DWIdIAZcZEDykIQ==
+"@toruslabs/ffjavascript@^0.2.39":
+  version "0.2.39"
+  resolved "https://registry.yarnpkg.com/@toruslabs/ffjavascript/-/ffjavascript-0.2.39.tgz#50d7bd027f8782df161dcb9df08ce6259af6cfdd"
+  integrity sha512-xQTFsFnZrCyAhJp+aQLrPkayFwV8ipernBRCplVDsXT0pom9tzMZ+DMmnf4J8/fPjJdgk1k6xkayBAdTZDNqLA==
   dependencies:
     big-integer "^1.6.48"
     wasmcurves "0.0.14"
