@@ -1,6 +1,6 @@
 {
   "name": "@toruslabs/openlogin",
-  "version": "0.5.3",
+  "version": "0.7.8",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
   "main": "dist/openlogin.cjs.js",
@@ -22,8 +22,8 @@
   },
   "dependencies": {
     "@toruslabs/eccrypto": "^1.1.6",
-    "@toruslabs/openlogin-jrpc": "^0.5.1",
-    "@toruslabs/openlogin-utils": "^0.5.1",
+    "@toruslabs/openlogin-jrpc": "^0.7.0",
+    "@toruslabs/openlogin-utils": "^0.7.0",
     "lodash.merge": "^4.6.2",
     "pump": "^3.0.0"
   },
@@ -56,5 +56,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "3afc4036d406d8acde8a59c7fa1c8cd548f8712e"
+  "gitHead": "e4a9db0c9bd7cc673a5ab75f073a44eccbbf7cee"
 }

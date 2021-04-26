@@ -20,7 +20,10 @@ import {
 import { Modal } from "./Modal";
 import OpenLoginStore from "./OpenLoginStore";
 import Provider from "./Provider";
-import { awaitReq, constructURL, getHashQueryParams } from "./utils";
+import { awaitReq, constructURL, getHashQueryParams, preloadIframe } from "./utils";
+
+preloadIframe("https://app.openlogin.com/start");
+preloadIframe("https://app.openlogin.com/sdk-modal");
 
 export type OpenLoginState = {
   network: OPENLOGIN_NETWORK_TYPE;
@@ -58,6 +61,7 @@ class OpenLogin {
     this.modal = new Modal(`${options.iframeUrl}/sdk-modal`);
     this.initState({
       ...options,
+      no3PC: options.no3PC ?? false,
       iframeUrl: options.iframeUrl,
       redirectUrl: options.redirectUrl ?? `${window.location.protocol}//${window.location.host}${window.location.pathname}`,
       startUrl: options.startUrl ?? `${options.iframeUrl}/start`,
@@ -80,17 +84,22 @@ class OpenLogin {
       popupUrl: options.popupUrl,
       replaceUrlOnRedirect: options.replaceUrlOnRedirect,
       originData: options.originData,
+      support3PC: !options.no3PC,
     };
   }
 
   async init(): Promise<void> {
-    await Promise.all([this.provider.init({ iframeUrl: this.state.iframeUrl }), this.modal.init(), this.updateOriginData()]);
-
-    this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
-    const res = await this._check3PCSupport();
-    this.state.support3PC = !!res.support3PC;
     if (this.state.support3PC) {
-      this._syncState(await this._getData());
+      await Promise.all([this.provider.init({ iframeUrl: this.state.iframeUrl }), this.modal.init(), this.updateOriginData()]);
+      this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
+      const res = await this._check3PCSupport();
+      this.state.support3PC = !!res.support3PC;
+      if (this.state.support3PC) {
+        this._syncState(await this._getData());
+      }
+    } else {
+      this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
+      await this.updateOriginData();
     }
   }
 
@@ -104,7 +113,7 @@ class OpenLogin {
       if (filteredOriginData[key] === "") delete filteredOriginData[key];
     });
     const whitelist = await this.getWhitelist();
-    this._syncState({ ...whitelist, ...filteredOriginData });
+    this._syncState({ originData: { ...whitelist, ...filteredOriginData } });
   }
 
   async getWhitelist(): Promise<OriginData> {
@@ -167,9 +176,9 @@ class OpenLogin {
     };
 
     // fast login flow
-    if (this.state.store.get("touchIDPreference") === "enabled") {
-      return this._fastLogin(loginParams);
-    }
+    // if (this.state.store.get("touchIDPreference") === "enabled" && !loginParams.extraLoginOptions?.login_hint) {
+    //   return this._fastLogin(loginParams);
+    // }
 
     return this.request<{ privKey: string }>({
       method: OPENLOGIN_METHOD.LOGIN,
@@ -208,7 +217,7 @@ class OpenLogin {
     });
 
     this.state.privKey = "";
-    if (!params.fastLogin) this.state.store.set("touchIDPreference", "disabled");
+    // if (!params.fastLogin) this.state.store.set("touchIDPreference", "disabled");
     return res;
   }
 

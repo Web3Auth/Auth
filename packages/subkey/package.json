@@ -1,6 +1,6 @@
 {
   "name": "@toruslabs/openlogin-subkey",
-  "version": "0.5.1",
+  "version": "0.7.4",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
   "main": "dist/openlogin-subkey.cjs.js",
@@ -21,9 +21,9 @@
     "pre-commit": "lint-staged"
   },
   "dependencies": {
-    "@toruslabs/openlogin-utils": "^0.5.1",
-    "bn.js": "^5.2.0",
-    "ffjavascript": "^0.2.35"
+    "@toruslabs/ffjavascript": "^0.2.39",
+    "@toruslabs/openlogin-utils": "^0.7.0",
+    "bn.js": "^5.2.0"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"
@@ -49,5 +49,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "3afc4036d406d8acde8a59c7fa1c8cd548f8712e"
+  "gitHead": "e4a9db0c9bd7cc673a5ab75f073a44eccbbf7cee"
 }

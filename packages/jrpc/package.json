@@ -1,6 +1,6 @@
 {
   "name": "@toruslabs/openlogin-jrpc",
-  "version": "0.5.1",
+  "version": "0.7.0",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
   "main": "dist/openlogin-jrpc.cjs.js",
@@ -21,7 +21,7 @@
     "pre-commit": "lint-staged"
   },
   "dependencies": {
-    "@toruslabs/openlogin-utils": "^0.5.1",
+    "@toruslabs/openlogin-utils": "^0.7.0",
     "end-of-stream": "^1.4.4",
     "fast-safe-stringify": "^2.0.7",
     "once": "^1.4.0",
@@ -57,5 +57,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "3afc4036d406d8acde8a59c7fa1c8cd548f8712e"
+  "gitHead": "e4a9db0c9bd7cc673a5ab75f073a44eccbbf7cee"
 }
