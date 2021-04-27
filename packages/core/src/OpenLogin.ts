@@ -145,16 +145,16 @@ class OpenLogin {
       ...params,
     };
 
-    return this.request<{ privKey: string }>({
+    const res = await this.request<{ privKey: string }>({
       params: [{ ...loginParams, fastLogin: true }],
       method: OPENLOGIN_METHOD.LOGIN,
       startUrl: this.state.startUrl,
       popupUrl: this.state.popupUrl,
       allowedInteractions: [ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
-    }).then((res) => {
-      this.state.privKey = res.privKey;
-      return res;
     });
+
+    this.state.privKey = res.privKey;
+    return res;
   }
 
   async login(params?: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
@@ -180,16 +180,15 @@ class OpenLogin {
     //   return this._fastLogin(loginParams);
     // }
 
-    return this.request<{ privKey: string }>({
+    const res = await this.request<{ privKey: string }>({
       method: OPENLOGIN_METHOD.LOGIN,
       allowedInteractions: [UX_MODE.REDIRECT, UX_MODE.POPUP],
       startUrl: this.state.startUrl,
       popupUrl: this.state.popupUrl,
       params: [loginParams],
-    }).then((res) => {
-      this.state.privKey = res.privKey;
-      return res;
     });
+    this.state.privKey = res.privKey;
+    return res;
   }
 
   async logout(logoutParams: Partial<BaseLogoutParams> & Partial<BaseRedirectParams> = {}): Promise<void> {
