@@ -12,3 +12,4 @@ export declare function storageAvailable(type: string): boolean;
 export declare const sessionStorageAvailable: boolean;
 export declare const localStorageAvailable: boolean;
 export declare function preloadIframe(url: string): void;
+export declare function getPopupFeatures(): string;

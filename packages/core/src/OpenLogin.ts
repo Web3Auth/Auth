@@ -7,7 +7,6 @@ import {
   ALLOWED_INTERACTIONS,
   BaseLogoutParams,
   BaseRedirectParams,
-  FEATURES_DEFAULT_POPUP_WINDOW,
   LoginParams,
   OPENLOGIN_METHOD,
   OPENLOGIN_NETWORK,
@@ -20,7 +19,7 @@ import {
 import { Modal } from "./Modal";
 import OpenLoginStore from "./OpenLoginStore";
 import Provider from "./Provider";
-import { awaitReq, constructURL, getHashQueryParams, preloadIframe } from "./utils";
+import { awaitReq, constructURL, getHashQueryParams, getPopupFeatures, preloadIframe } from "./utils";
 
 preloadIframe("https://app.openlogin.com/start");
 preloadIframe("https://app.openlogin.com/sdk-modal");
@@ -298,7 +297,7 @@ class OpenLogin {
             hash: { b64Params: jsonToBase64(params[0]), _pid: pid, _method: method },
           })
         );
-        const windowRef = window.open(u.toString(), "_blank", FEATURES_DEFAULT_POPUP_WINDOW);
+        const windowRef = window.open(u.toString(), "_blank", getPopupFeatures());
         return awaitReq<T>(pid, windowRef);
       }
     } else {
@@ -311,7 +310,7 @@ class OpenLogin {
             hash: { b64Params: jsonToBase64(params[0]), _pid: pid, _method: method },
           })
         );
-        const windowRef = window.open(u.toString(), "_blank", FEATURES_DEFAULT_POPUP_WINDOW);
+        const windowRef = window.open(u.toString(), "_blank", getPopupFeatures());
         return awaitReq<T>(pid, windowRef);
       }
 

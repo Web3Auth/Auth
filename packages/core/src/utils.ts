@@ -170,3 +170,31 @@ export function preloadIframe(url: string): void {
     window.console.error(error);
   }
 }
+
+export function getPopupFeatures(): string {
+  // Fixes dual-screen position                             Most browsers      Firefox
+  const dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : window.screenX;
+  const dualScreenTop = window.screenTop !== undefined ? window.screenTop : window.screenY;
+
+  const w = 1200;
+  const h = 700;
+
+  const width = window.innerWidth
+    ? window.innerWidth
+    : document.documentElement.clientWidth
+    ? document.documentElement.clientWidth
+    : window.screen.width;
+
+  const height = window.innerHeight
+    ? window.innerHeight
+    : document.documentElement.clientHeight
+    ? document.documentElement.clientHeight
+    : window.screen.height;
+
+  const systemZoom = 1; // No reliable estimate
+
+  const left = Math.abs((width - w) / 2 / systemZoom + dualScreenLeft);
+  const top = Math.abs((height - h) / 2 / systemZoom + dualScreenTop);
+  const features = `titlebar=0,toolbar=0,status=0,location=0,menubar=0,height=${h / systemZoom},width=${w / systemZoom},top=${top},left=${left}`;
+  return features;
+}
