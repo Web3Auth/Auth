@@ -78,14 +78,28 @@ export function getHashQueryParams(replaceUrl = false): Record<string, string> {
   return result;
 }
 
-export async function awaitReq<T>(id: string): Promise<T> {
-  return new Promise((resolve) => {
-    const handler = (ev: MessageEvent<PopupResponse<T>>) => {
+export async function awaitReq<T>(id: string, windowRef: Window): Promise<T> {
+  return new Promise((resolve, reject) => {
+    let closedByHandler = false;
+    const closedMonitor = setInterval(() => {
+      if (!closedByHandler && windowRef.closed) {
+        reject(new Error("user closed popup"));
+      }
+    }, 500);
+    const handler = (ev: MessageEvent<PopupResponse<T & { error?: string }>>) => {
       const { pid } = ev.data;
       if (id !== pid) return;
       window.removeEventListener("message", handler);
-      resolve(ev.data.data);
+      closedByHandler = true;
+      clearInterval(closedMonitor);
+      windowRef.close();
+      if (ev.data.data && ev.data.data.error) {
+        reject(new Error(ev.data.data.error));
+      } else {
+        resolve(ev.data.data);
+      }
     };
+
     window.addEventListener("message", handler);
   });
 }
@@ -155,4 +169,32 @@ export function preloadIframe(url: string): void {
   } catch (error) {
     window.console.error(error);
   }
+}
+
+export function getPopupFeatures(): string {
+  // Fixes dual-screen position                             Most browsers      Firefox
+  const dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : window.screenX;
+  const dualScreenTop = window.screenTop !== undefined ? window.screenTop : window.screenY;
+
+  const w = 1200;
+  const h = 700;
+
+  const width = window.innerWidth
+    ? window.innerWidth
+    : document.documentElement.clientWidth
+    ? document.documentElement.clientWidth
+    : window.screen.width;
+
+  const height = window.innerHeight
+    ? window.innerHeight
+    : document.documentElement.clientHeight
+    ? document.documentElement.clientHeight
+    : window.screen.height;
+
+  const systemZoom = 1; // No reliable estimate
+
+  const left = Math.abs((width - w) / 2 / systemZoom + dualScreenLeft);
+  const top = Math.abs((height - h) / 2 / systemZoom + dualScreenTop);
+  const features = `titlebar=0,toolbar=0,status=0,location=0,menubar=0,height=${h / systemZoom},width=${w / systemZoom},top=${top},left=${left}`;
+  return features;
 }

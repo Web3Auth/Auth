@@ -30,7 +30,8 @@ export declare const ALLOWED_INTERACTIONS: {
 };
 export declare type ALLOWED_INTERACTIONS_TYPE = typeof ALLOWED_INTERACTIONS[keyof typeof ALLOWED_INTERACTIONS];
 export declare type RequestParams = {
-    url?: string;
+    startUrl?: string;
+    popupUrl?: string;
     method: OPENLOGIN_METHOD_TYPE | CUSTOM_OPENLOGIN_METHOD_TYPE;
     params: Record<string, unknown>[];
     allowedInteractions: ALLOWED_INTERACTIONS_TYPE[];
@@ -55,9 +56,8 @@ export declare type OpenLoginOptions = {
     no3PC?: boolean;
     iframeUrl?: string;
     redirectUrl?: string;
-    loginUrl?: string;
-    webAuthnUrl?: string;
-    logoutUrl?: string;
+    startUrl?: string;
+    popupUrl?: string;
     uxMode?: UX_MODE_TYPE;
     replaceUrlOnRedirect?: boolean;
     originData?: OriginData;
