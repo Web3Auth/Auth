@@ -1,5 +1,5 @@
 import { getPublic, sign } from "@toruslabs/eccrypto";
-import { base64url, keccak } from "@toruslabs/openlogin-utils";
+import { base64url, keccak, safeatob } from "@toruslabs/openlogin-utils";
 
 import { PopupResponse } from "./constants";
 
@@ -41,7 +41,7 @@ export function getHashQueryParams(replaceUrl = false): Record<string, string> {
   const queryResult = url.searchParams.get("result");
   if (queryResult) {
     try {
-      const queryParams = JSON.parse(atob(queryResult));
+      const queryParams = JSON.parse(safeatob(queryResult));
       Object.keys(queryParams).forEach((key) => {
         result[key] = queryParams[key];
       });
@@ -61,7 +61,7 @@ export function getHashQueryParams(replaceUrl = false): Record<string, string> {
 
   if (hashResult) {
     try {
-      const hashParams = JSON.parse(atob(hashResult));
+      const hashParams = JSON.parse(safeatob(hashResult));
       Object.keys(hashParams).forEach((key) => {
         result[key] = hashParams[key];
       });
