@@ -157,7 +157,7 @@ class OpenLogin {
   }
 
   async login(params?: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
-    if (params) {
+    if (params && params.loginProvider) {
       return this._selectedLogin(params);
     }
     return this._modal(params);
