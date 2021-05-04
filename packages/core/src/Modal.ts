@@ -1,4 +1,4 @@
-import { ObjectMultiplex, PostMessageStream, setupMultiplex, Substream } from "@toruslabs/openlogin-jrpc";
+import { ObjectMultiplex, PostMessageStream, setupMultiplex, Substream, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 
 import { documentReady } from "./utils";
 
@@ -71,6 +71,7 @@ export class Modal {
     style.right = "0px";
     style.left = "0px";
     style.bottom = "0px";
+    style.border = "0";
     style["z-index"] = this.modalZIndex;
     this.iframeElem.setAttribute(
       "style",
@@ -90,6 +91,7 @@ export class Modal {
     style.right = "0px";
     style.left = "0px";
     style.bottom = "0px";
+    style.border = "0";
     style["z-index"] = this.modalZIndex;
     this.iframeElem.setAttribute(
       "style",
@@ -99,7 +101,7 @@ export class Modal {
     );
   }
 
-  async _prompt(clientId: string, cb: (chunk: any) => Promise<void>): Promise<void> {
+  async _prompt(clientId: string, whiteLabel: WhiteLabelData, cb: (chunk: any) => Promise<void>): Promise<void> {
     this._showModal();
     const modalHandler = (chunk) => {
       this._hideModal();
@@ -109,6 +111,7 @@ export class Modal {
     this.verifierStream.write({
       name: "prompt",
       clientId,
+      whiteLabel,
     });
   }
 

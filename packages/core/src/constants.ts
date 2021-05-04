@@ -1,4 +1,4 @@
-import { OriginData } from "@toruslabs/openlogin-jrpc";
+import { OriginData, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 import { ExtraLoginOptions } from "@toruslabs/openlogin-utils";
 
 export const iframeDOMElementID = "openlogin-iframe";
@@ -76,6 +76,7 @@ export type OpenLoginOptions = {
   _iframeUrl?: string;
   _startUrl?: string;
   _popupUrl?: string;
+  whiteLabel?: WhiteLabelData;
 };
 
 export const LOGIN_PROVIDER = {

@@ -1,5 +1,5 @@
 import { decrypt, Ecies, encrypt, getPublic, sign } from "@toruslabs/eccrypto";
-import { getRpcPromiseCallback, JRPCRequest, OriginData, SessionInfo } from "@toruslabs/openlogin-jrpc";
+import { getRpcPromiseCallback, JRPCRequest, OriginData, SessionInfo, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 import { base64url, jsonToBase64, keccak, randomId } from "@toruslabs/openlogin-utils";
 import merge from "lodash.merge";
 
@@ -37,6 +37,7 @@ export type OpenLoginState = {
   uxMode: UX_MODE_TYPE;
   replaceUrlOnRedirect: boolean;
   originData: OriginData;
+  whiteLabel: WhiteLabelData;
 };
 
 class OpenLogin {
@@ -68,6 +69,7 @@ class OpenLogin {
       uxMode: options.uxMode ?? UX_MODE.REDIRECT,
       replaceUrlOnRedirect: options.replaceUrlOnRedirect ?? true,
       originData: options.originData ?? { [window.location.origin]: "" },
+      whiteLabel: options.whiteLabel ?? {},
     });
   }
 
@@ -84,6 +86,7 @@ class OpenLogin {
       replaceUrlOnRedirect: options.replaceUrlOnRedirect,
       originData: options.originData,
       support3PC: !options.no3PC,
+      whiteLabel: options.whiteLabel,
     };
   }
 
@@ -261,6 +264,7 @@ class OpenLogin {
 
     // set origin
     params[0]._origin = new URL((params[0].redirectUrl as string) ?? this.state.redirectUrl).origin;
+    params[0]._whiteLabelData = this.state.whiteLabel;
 
     // preset params
     if (this.state.support3PC) {
@@ -403,6 +407,7 @@ class OpenLogin {
     return new Promise<{ privKey: string }>((resolve, reject) => {
       this.modal._prompt(
         this.state.clientId,
+        this.state.whiteLabel,
         async (chunk): Promise<void> => {
           if (chunk.cancel) {
             reject(new Error("user canceled login"));
