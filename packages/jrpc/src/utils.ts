@@ -6,12 +6,8 @@ export type UserData = {
   [P in string]: string;
 };
 
-export declare type ThemeData = {
-  [P in string]: string;
-};
-
 export declare type WhiteLabelData = {
-  [P in string]: string | ThemeData;
+  [P in string]: unknown;
 };
 
 export type SessionInfo = {

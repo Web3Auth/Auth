@@ -115,7 +115,8 @@ class OpenLogin {
       if (filteredOriginData[key] === "") delete filteredOriginData[key];
     });
     const whitelist = await this.getWhitelist();
-    this._syncState({ originData: { ...whitelist, ...filteredOriginData } });
+    const whiteLabel = await this.getWhiteLabel();
+    this._syncState({ originData: { ...whitelist, ...whiteLabel, ...filteredOriginData } });
   }
 
   async getWhitelist(): Promise<OriginData> {
@@ -131,6 +132,25 @@ class OpenLogin {
         }),
       }).then((res) => res.json());
       return data.signed_urls as OriginData;
+    } catch (_) {
+      // fail silently
+      return {};
+    }
+  }
+
+  async getWhiteLabel(): Promise<WhiteLabelData> {
+    try {
+      const { clientId } = this.state;
+      if (!clientId) {
+        throw new Error("unspecified clientId");
+      }
+      const data = await fetch("https://api.developer.tor.us/whitelabel", {
+        method: "POST",
+        body: JSON.stringify({
+          project_id: this.state.clientId,
+        }),
+      }).then((res) => res.json());
+      return data.whitelabel as WhiteLabelData;
     } catch (_) {
       // fail silently
       return {};
@@ -252,6 +272,7 @@ class OpenLogin {
     }
 
     session._originData = this.state.originData;
+    session._whiteLabelData = this.state.whiteLabel;
 
     // add in session data (allow overrides)
     params = [{ ...session, ...params[0] }];
@@ -264,7 +285,6 @@ class OpenLogin {
 
     // set origin
     params[0]._origin = new URL((params[0].redirectUrl as string) ?? this.state.redirectUrl).origin;
-    params[0]._whiteLabelData = this.state.whiteLabel;
 
     // preset params
     if (this.state.support3PC) {
