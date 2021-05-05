@@ -69,13 +69,13 @@ export type OpenLoginOptions = {
   clientId: string;
   network: OPENLOGIN_NETWORK_TYPE;
   no3PC?: boolean;
-  iframeUrl?: string;
   redirectUrl?: string;
-  startUrl?: string;
-  popupUrl?: string;
   uxMode?: UX_MODE_TYPE;
   replaceUrlOnRedirect?: boolean;
   originData?: OriginData;
+  _iframeUrl?: string;
+  _startUrl?: string;
+  _popupUrl?: string;
 };
 
 export const LOGIN_PROVIDER = {

@@ -51,20 +51,20 @@ class OpenLogin {
       deleteProperty: () => true, // work around for web3
     });
     if (options.network === OPENLOGIN_NETWORK.MAINNET) {
-      options.iframeUrl = "https://app.openlogin.com";
+      options._iframeUrl = "https://app.openlogin.com";
     } else if (options.network === OPENLOGIN_NETWORK.TESTNET) {
-      options.iframeUrl = "https://beta.openlogin.com";
-    } else if (!options.iframeUrl) {
+      options._iframeUrl = "https://beta.openlogin.com";
+    } else if (!options._iframeUrl) {
       throw new Error("unspecified network and iframeUrl");
     }
-    this.modal = new Modal(`${options.iframeUrl}/sdk-modal`);
+    this.modal = new Modal(`${options._iframeUrl}/sdk-modal`);
     this.initState({
       ...options,
       no3PC: options.no3PC ?? false,
-      iframeUrl: options.iframeUrl,
+      _iframeUrl: options._iframeUrl,
+      _startUrl: options._startUrl ?? `${options._iframeUrl}/start`,
+      _popupUrl: options._popupUrl ?? `${options._iframeUrl}/popup-window`,
       redirectUrl: options.redirectUrl ?? `${window.location.protocol}//${window.location.host}${window.location.pathname}`,
-      startUrl: options.startUrl ?? `${options.iframeUrl}/start`,
-      popupUrl: options.popupUrl ?? `${options.iframeUrl}/popup-window`,
       uxMode: options.uxMode ?? UX_MODE.REDIRECT,
       replaceUrlOnRedirect: options.replaceUrlOnRedirect ?? true,
       originData: options.originData ?? { [window.location.origin]: "" },
@@ -76,11 +76,11 @@ class OpenLogin {
       uxMode: options.uxMode,
       network: options.network,
       store: OpenLoginStore.getInstance(),
-      iframeUrl: options.iframeUrl,
+      iframeUrl: options._iframeUrl,
+      startUrl: options._startUrl,
+      popupUrl: options._popupUrl,
       clientId: options.clientId,
       redirectUrl: options.redirectUrl,
-      startUrl: options.startUrl,
-      popupUrl: options.popupUrl,
       replaceUrlOnRedirect: options.replaceUrlOnRedirect,
       originData: options.originData,
       support3PC: !options.no3PC,
