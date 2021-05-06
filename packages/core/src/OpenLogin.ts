@@ -28,6 +28,9 @@ preloadIframe("https://app.openlogin.com/sdk-modal");
 export type OpenLoginState = {
   network: OPENLOGIN_NETWORK_TYPE;
   privKey?: string;
+  walletKey?: string;
+  tKey?: string;
+  oAuthPrivateKey?: string;
   support3PC?: boolean;
   clientId: string;
   iframeUrl: string;
