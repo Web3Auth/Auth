@@ -18,5 +18,5 @@ export type SessionInfo = {
   _origin: string;
   _originData: OriginData;
   _clientId: string;
-  _whiteLabelData: WhiteLabelData;
+  _whiteLabelData?: WhiteLabelData;
 };

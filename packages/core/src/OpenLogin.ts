@@ -1,4 +1,5 @@
 import { decrypt, Ecies, encrypt, getPublic, sign } from "@toruslabs/eccrypto";
+import { post } from "@toruslabs/http-helpers";
 import { getRpcPromiseCallback, JRPCRequest, OriginData, SessionInfo, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 import { base64url, jsonToBase64, keccak, randomId } from "@toruslabs/openlogin-utils";
 import merge from "lodash.merge";
@@ -125,13 +126,11 @@ class OpenLogin {
       if (!clientId) {
         throw new Error("unspecified clientId");
       }
-      const data = await fetch("https://api.developer.tor.us/whitelist", {
-        method: "POST",
-        body: JSON.stringify({
-          project_id: this.state.clientId,
-        }),
-      }).then((res) => res.json());
-      return data.signed_urls as OriginData;
+      return post("https://api.developer.tor.us/whitelist", {
+        project_id: this.state.clientId,
+      })
+        .then((res: { signed_urls: OriginData }) => res.signed_urls)
+        .catch((_) => ({}));
     } catch (_) {
       // fail silently
       return {};
@@ -144,13 +143,11 @@ class OpenLogin {
       if (!clientId) {
         throw new Error("unspecified clientId");
       }
-      const data = await fetch("https://api.developer.tor.us/whitelabel", {
-        method: "POST",
-        body: JSON.stringify({
-          project_id: this.state.clientId,
-        }),
-      }).then((res) => res.json());
-      return data.whitelabel as WhiteLabelData;
+      return post("https://api.developer.tor.us/whitelabel", {
+        project_id: this.state.clientId,
+      })
+        .then((res: { whitelabel: WhiteLabelData }) => res.whitelabel)
+        .catch((_) => ({}));
     } catch (_) {
       // fail silently
       return {};
