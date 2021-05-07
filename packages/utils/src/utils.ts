@@ -1,28 +1,20 @@
 import base64urlLib from "base64url";
 import keccakLib from "keccak";
 
+export const base64url = base64urlLib;
+
 export function safebtoa(str: string): string {
-  // first we use encodeURIComponent to get percent-encoded UTF-8,
-  // then we convert the percent encodings into raw bytes which
-  // can be fed into btoa.
-  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode(Number(`0x${p1}`))));
+  return base64url.encode(str);
 }
 
 export function safeatob(str: string): string {
   // Going backwards: from bytestream, to percent-encoding, to original string.
-  return decodeURIComponent(
-    atob(str)
-      .split("")
-      .map((c) => `%${`00${c.charCodeAt(0).toString(16)}`.slice(-2)}`)
-      .join("")
-  );
+  return base64url.decode(str);
 }
 
 export const keccak = keccakLib;
 
 export type BufferEncoding = "ascii" | "utf8" | "utf-8" | "utf16le" | "ucs2" | "ucs-2" | "base64" | "latin1" | "binary" | "hex";
-
-export const base64url = base64urlLib;
 
 export function base64toJSON(b64str: string): Record<string, unknown> {
   return JSON.parse(base64url.decode(b64str));
