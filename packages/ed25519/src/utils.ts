@@ -8,9 +8,7 @@ export type ED25519Key = Buffer;
 
 const l = (nacl as any).lowlevel;
 
-export function getED25519Key(
-  privateKey: string | Buffer
-): {
+export function getED25519Key(privateKey: string | Buffer): {
   sk: Buffer;
   pk: Buffer;
 } {
