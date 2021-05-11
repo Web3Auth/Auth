@@ -398,22 +398,17 @@ class OpenLogin {
     this.state = { ...this.state, ...newState, store };
   }
 
-  async _modal(
-    params?: LoginParams & Partial<BaseRedirectParams>
-  ): Promise<{
+  async _modal(params?: LoginParams & Partial<BaseRedirectParams>): Promise<{
     privKey: string;
   }> {
     return new Promise<{ privKey: string }>((resolve, reject) => {
-      this.modal._prompt(
-        this.state.clientId,
-        async (chunk): Promise<void> => {
-          if (chunk.cancel) {
-            reject(new Error("user canceled login"));
-          } else {
-            resolve(await this._selectedLogin(merge(params, chunk)));
-          }
+      this.modal._prompt(this.state.clientId, async (chunk): Promise<void> => {
+        if (chunk.cancel) {
+          reject(new Error("user canceled login"));
+        } else {
+          resolve(await this._selectedLogin(merge(params, chunk)));
         }
-      );
+      });
     });
   }
 

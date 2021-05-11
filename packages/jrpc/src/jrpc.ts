@@ -23,18 +23,17 @@ export interface JRPCResponse<T> extends JRPCBase {
   error?: any;
 }
 
-export const getRpcPromiseCallback = (resolve: (value?: any) => void, reject: (error?: Error) => void, unwrapResult = true) => (
-  error: Error,
-  response: JRPCResponse<unknown>
-): void => {
-  if (error || response.error) {
-    reject(error || response.error);
-  } else if (!unwrapResult || Array.isArray(response)) {
-    resolve(response);
-  } else {
-    resolve(response.result);
-  }
-};
+export const getRpcPromiseCallback =
+  (resolve: (value?: any) => void, reject: (error?: Error) => void, unwrapResult = true) =>
+  (error: Error, response: JRPCResponse<unknown>): void => {
+    if (error || response.error) {
+      reject(error || response.error);
+    } else if (!unwrapResult || Array.isArray(response)) {
+      resolve(response);
+    } else {
+      resolve(response.result);
+    }
+  };
 
 export interface JRPCRequest<T> extends JRPCBase {
   method: string;
@@ -93,12 +92,12 @@ export function createStreamMiddleware(): { events: SafeEventEmitter; middleware
   const events = new SafeEventEmitter();
 
   function processResponse(res: JRPCResponse<unknown>) {
-    const context = idMap[(res.id as unknown) as string];
+    const context = idMap[res.id as unknown as string];
     if (!context) {
       throw new Error(`StreamMiddleware - Unknown response id "${res.id}"`);
     }
 
-    delete idMap[(res.id as unknown) as string];
+    delete idMap[res.id as unknown as string];
     // copy whole res onto original res
     Object.assign(context.res, res);
     // run callback on empty stack,
@@ -115,7 +114,7 @@ export function createStreamMiddleware(): { events: SafeEventEmitter; middleware
     try {
       const isNotification = !res.id;
       if (isNotification) {
-        processNotification((res as unknown) as JRPCRequest<unknown>);
+        processNotification(res as unknown as JRPCRequest<unknown>);
       } else {
         processResponse(res);
       }
@@ -136,7 +135,7 @@ export function createStreamMiddleware(): { events: SafeEventEmitter; middleware
     // write req to stream
     stream.push(req);
     // register request on id map
-    idMap[(req.id as unknown) as string] = { req, res, next, end };
+    idMap[req.id as unknown as string] = { req, res, next, end };
   };
 
   return { events, middleware, stream };
