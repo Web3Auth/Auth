@@ -2,6 +2,9 @@
 const path = require("path");
 const ESLintPlugin = require("eslint-webpack-plugin");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
+const { ProvidePlugin } = require("webpack");
+const TerserPlugin = require("terser-webpack-plugin");
+// const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 
 function camelCase(input) {
   return input.toLowerCase().replace(/-(.)/g, (_, group1) => group1.toUpperCase());
@@ -21,6 +24,11 @@ const { NODE_ENV = "production" } = process.env;
 const optimization = {
   optimization: {
     minimize: false,
+    minimizer: [
+      new TerserPlugin({
+        extractComments: false,
+      }),
+    ],
   },
 };
 
@@ -49,8 +57,9 @@ function generateWebpackConfig({ pkg, pkgName, currentPath, alias }) {
     target: "web",
     output: {
       path: path.resolve(currentPath, "dist"),
-      library: generateLibraryName(pkgName),
-      // libraryExport: "default",
+      library: {
+        name: generateLibraryName(pkgName),
+      },
     },
     resolve: {
       plugins: [new TsconfigPathsPlugin()],
@@ -60,9 +69,31 @@ function generateWebpackConfig({ pkg, pkgName, currentPath, alias }) {
         ...(depsList.includes("lodash") && { lodash: path.resolve(currentPath, "node_modules/lodash") }),
         ...alias,
       },
+      fallback: {
+        buffer: require.resolve("buffer/"),
+        http: require.resolve("stream-http"),
+        https: require.resolve("https-browserify"),
+        url: require.resolve("url/"),
+        os: require.resolve("os-browserify/browser"),
+        stream: require.resolve("stream-browserify"),
+        crypto: require.resolve("crypto-browserify"),
+      },
     },
     module: {
       rules: [],
+    },
+    plugins: [
+      new ProvidePlugin({
+        process: "process/browser",
+      }),
+    ],
+    optimization: {
+      minimize: true,
+      minimizer: [
+        new TerserPlugin({
+          extractComments: false,
+        }),
+      ],
     },
   };
 
@@ -71,7 +102,10 @@ function generateWebpackConfig({ pkg, pkgName, currentPath, alias }) {
     output: {
       ...baseConfig.output,
       filename: `${pkgName}.polyfill.umd.min.js`,
-      libraryTarget: "umd",
+      library: {
+        ...baseConfig.output.library,
+        type: "umd",
+      },
     },
     module: {
       rules: [babelLoaderWithPolyfills],
@@ -83,11 +117,15 @@ function generateWebpackConfig({ pkg, pkgName, currentPath, alias }) {
     output: {
       ...baseConfig.output,
       filename: `${pkgName}.umd.min.js`,
-      libraryTarget: "umd",
+      library: {
+        ...baseConfig.output.library,
+        type: "umd",
+      },
     },
     module: {
       rules: [babelLoader],
     },
+    // plugins: [...baseConfig.plugins, new BundleAnalyzerPlugin({ analyzerMode: "static" })],
   };
 
   const cjsConfig = {
@@ -96,7 +134,10 @@ function generateWebpackConfig({ pkg, pkgName, currentPath, alias }) {
     output: {
       ...baseConfig.output,
       filename: `${pkgName}.cjs.js`,
-      libraryTarget: "commonjs2",
+      library: {
+        ...baseConfig.output.library,
+        type: "commonjs2",
+      },
     },
     module: {
       rules: [babelLoader],
@@ -108,10 +149,6 @@ function generateWebpackConfig({ pkg, pkgName, currentPath, alias }) {
         cwd: path.resolve(currentPath, "../../"),
       }),
     ],
-    node: {
-      ...baseConfig.node,
-      Buffer: false,
-    },
   };
 
   const cjsBundledConfig = {
@@ -120,7 +157,10 @@ function generateWebpackConfig({ pkg, pkgName, currentPath, alias }) {
     output: {
       ...baseConfig.output,
       filename: `${pkgName}-bundled.cjs.js`,
-      libraryTarget: "commonjs2",
+      library: {
+        ...baseConfig.output.library,
+        type: "commonjs2",
+      },
     },
     module: {
       rules: [babelLoader],
