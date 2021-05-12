@@ -1,6 +1,6 @@
 {
   "name": "openlogin",
-  "version": "0.8.0",
+  "version": "0.8.2",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
   "main": "dist/openlogin.cjs.js",
@@ -21,9 +21,9 @@
     "pre-commit": "lint-staged"
   },
   "dependencies": {
-    "@toruslabs/openlogin": "^0.8.0",
-    "@toruslabs/openlogin-jrpc": "^0.8.0",
-    "@toruslabs/openlogin-utils": "^0.8.0"
+    "@toruslabs/openlogin": "^0.8.2",
+    "@toruslabs/openlogin-jrpc": "^0.8.2",
+    "@toruslabs/openlogin-utils": "^0.8.2"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"
@@ -49,5 +49,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "a5124d979d447d1223b51cdebb09857fc59819e0"
+  "gitHead": "2d61b7f1967ecd704470c46ff7c30c47d240f4a4"
 }

@@ -1,6 +1,6 @@
 {
   "name": "@toruslabs/openlogin-utils",
-  "version": "0.8.0",
+  "version": "0.8.2",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
   "main": "dist/openlogin-utils.cjs.js",
@@ -54,5 +54,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "a5124d979d447d1223b51cdebb09857fc59819e0"
+  "gitHead": "2d61b7f1967ecd704470c46ff7c30c47d240f4a4"
 }
