@@ -5,7 +5,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "publish:lerna": "yarn clean && yarn bootstrap && lerna publish",
-    "clean": "lerna clean --yes && lerna exec -- rimraf package-lock.json yarn.lock dist/ .rts2_cache_{cjs,esm}/ toruslabs-*.tgz",
+    "clean": "lerna clean --yes && lerna exec -- rimraf package-lock.json yarn.lock dist/ .rts2_cache_{cjs,esm}/ toruslabs-*.tgz .eslintcache",
     "build": "lerna run build",
     "dev": "lerna run dev",
     "test": "lerna run test --parallel",
@@ -41,7 +41,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-config-standard": "^16.0.2",
     "eslint-plugin-babel": "^5.3.1",
-    "eslint-plugin-import": "^2.23.0",
+    "eslint-plugin-import": "~2.22.1",
     "eslint-plugin-mocha": "^8.1.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.4.0",
