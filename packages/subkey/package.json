@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@toruslabs/ffjavascript": "^0.2.39",
-    "@toruslabs/openlogin-utils": "^0.8.2",
+    "@toruslabs/openlogin-utils": "0.8.2",
     "bn.js": "^5.2.0"
   },
   "peerDependencies": {

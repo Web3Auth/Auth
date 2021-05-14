@@ -21,9 +21,9 @@
     "pre-commit": "lint-staged"
   },
   "dependencies": {
-    "@toruslabs/openlogin": "^0.8.2",
-    "@toruslabs/openlogin-jrpc": "^0.8.2",
-    "@toruslabs/openlogin-utils": "^0.8.2"
+    "@toruslabs/openlogin": "0.8.2",
+    "@toruslabs/openlogin-jrpc": "0.8.2",
+    "@toruslabs/openlogin-utils": "0.8.2"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"
