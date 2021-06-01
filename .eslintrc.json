@@ -8,10 +8,11 @@
     "plugin:import/warnings",
     "plugin:import/typescript",
     "plugin:promise/recommended",
+    "plugin:mocha/recommended",
     "airbnb-base",
     "prettier"
   ],
-  "plugins": ["prettier", "babel", "promise", "import", "simple-import-sort", "@typescript-eslint"],
+  "plugins": ["prettier", "@babel", "promise", "import", "simple-import-sort", "mocha", "@typescript-eslint"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "sourceType": "module",

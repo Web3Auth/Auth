@@ -4,5 +4,6 @@
     "emitDeclarationOnly": true,
     "declarationDir": "types",
     "paths": {}
-  }
+  },
+  "exclude": ["test"]
 }
