@@ -91,3 +91,12 @@ export declare type LoginParams = BaseRedirectParams & {
     getWalletKey?: boolean;
     extraLoginOptions?: ExtraLoginOptions;
 };
+export declare type OpenloginUserInfo = {
+    email: string;
+    name: string;
+    profileImage: string;
+    aggregateVerifier: string;
+    verifier: string;
+    verifierId: string;
+    typeOfLogin: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
+};

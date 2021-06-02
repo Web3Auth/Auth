@@ -109,3 +109,13 @@ export type LoginParams = BaseRedirectParams & {
   getWalletKey?: boolean;
   extraLoginOptions?: ExtraLoginOptions;
 };
+
+export type OpenloginUserInfo = {
+  email: string;
+  name: string;
+  profileImage: string;
+  aggregateVerifier: string;
+  verifier: string;
+  verifierId: string;
+  typeOfLogin: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
+};

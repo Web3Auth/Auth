@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { Ecies } from "@toruslabs/eccrypto";
 import { JRPCRequest, OriginData } from "@toruslabs/openlogin-jrpc";
-import { BaseLogoutParams, BaseRedirectParams, LoginParams, OPENLOGIN_NETWORK_TYPE, OpenLoginOptions, RequestParams, UX_MODE_TYPE } from "./constants";
+import { BaseLogoutParams, BaseRedirectParams, LoginParams, OPENLOGIN_NETWORK_TYPE, OpenLoginOptions, OpenloginUserInfo, RequestParams, UX_MODE_TYPE } from "./constants";
 import { Modal } from "./Modal";
 import OpenLoginStore from "./OpenLoginStore";
 import Provider from "./Provider";
@@ -54,5 +54,6 @@ declare class OpenLogin {
     _cleanup(): Promise<void>;
     encrypt(message: Buffer, privateKey?: string): Promise<Ecies>;
     decrypt(ciphertext: Ecies, privateKey?: string): Promise<Buffer>;
+    getUserInfo(): Promise<OpenloginUserInfo>;
 }
 export default OpenLogin;
