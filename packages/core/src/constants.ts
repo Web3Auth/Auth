@@ -1,4 +1,4 @@
-import { OriginData } from "@toruslabs/openlogin-jrpc";
+import { LoginConfig, OriginData } from "@toruslabs/openlogin-jrpc";
 import { ExtraLoginOptions } from "@toruslabs/openlogin-utils";
 
 export const iframeDOMElementID = "openlogin-iframe";
@@ -56,42 +56,6 @@ export type BaseRedirectParams = {
   redirectUrl?: string;
   appState?: string;
 };
-
-export type TypeOfLogin =
-  | "google"
-  | "facebook"
-  | "reddit"
-  | "discord"
-  | "twitch"
-  | "apple"
-  | "github"
-  | "linkedin"
-  | "twitter"
-  | "weibo"
-  | "line"
-  | "email_password"
-  | "passwordless"
-  | "jwt"
-  | "webauthn";
-
-export type LoginConfig = Record<
-  string,
-  {
-    verifier: string;
-    typeOfLogin: TypeOfLogin;
-    name: string;
-    description: string;
-    clientId: string;
-    verifierSubIdentifier: string;
-    logoHover: string;
-    logoLight: string;
-    logoDark: string;
-    mainOption: boolean;
-    showOnModal: boolean;
-    showOnDesktop: boolean;
-    showOnMobile: boolean;
-  }
->;
 
 export const OPENLOGIN_NETWORK = {
   MAINNET: "mainnet",

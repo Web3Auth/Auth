@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { Ecies } from "@toruslabs/eccrypto";
-import { JRPCRequest, OriginData } from "@toruslabs/openlogin-jrpc";
-import { BaseLogoutParams, BaseRedirectParams, LoginConfig, LoginParams, OPENLOGIN_NETWORK_TYPE, OpenLoginOptions, RequestParams, UX_MODE_TYPE } from "./constants";
+import { JRPCRequest, LoginConfig, OriginData } from "@toruslabs/openlogin-jrpc";
+import { BaseLogoutParams, BaseRedirectParams, LoginParams, OPENLOGIN_NETWORK_TYPE, OpenLoginOptions, RequestParams, UX_MODE_TYPE } from "./constants";
 import { Modal } from "./Modal";
 import OpenLoginStore from "./OpenLoginStore";
 import Provider from "./Provider";

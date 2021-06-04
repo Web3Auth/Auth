@@ -1,5 +1,5 @@
 import { decrypt, Ecies, encrypt, getPublic, sign } from "@toruslabs/eccrypto";
-import { getRpcPromiseCallback, JRPCRequest, OriginData, SessionInfo } from "@toruslabs/openlogin-jrpc";
+import { getRpcPromiseCallback, JRPCRequest, LoginConfig, OriginData, SessionInfo } from "@toruslabs/openlogin-jrpc";
 import { base64url, jsonToBase64, keccak, randomId } from "@toruslabs/openlogin-utils";
 import merge from "lodash.merge";
 
@@ -7,7 +7,6 @@ import {
   ALLOWED_INTERACTIONS,
   BaseLogoutParams,
   BaseRedirectParams,
-  LoginConfig,
   LoginParams,
   OPENLOGIN_METHOD,
   OPENLOGIN_NETWORK,
@@ -256,6 +255,7 @@ class OpenLogin {
     }
 
     session._originData = this.state.originData;
+    session._loginConfig = this.state.loginConfig;
 
     // add in session data (allow overrides)
     params = [{ ...session, ...{ _loginConfig: this.state.loginConfig }, ...params[0] }];
