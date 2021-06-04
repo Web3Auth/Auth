@@ -9,16 +9,16 @@ export declare type LoginConfig = Record<string, {
     verifier: string;
     typeOfLogin: TypeOfLogin;
     name: string;
-    description: string;
-    clientId: string;
-    verifierSubIdentifier: string;
-    logoHover: string;
-    logoLight: string;
-    logoDark: string;
-    mainOption: boolean;
-    showOnModal: boolean;
-    showOnDesktop: boolean;
-    showOnMobile: boolean;
+    description?: string;
+    clientId?: string;
+    verifierSubIdentifier?: string;
+    logoHover?: string;
+    logoLight?: string;
+    logoDark?: string;
+    mainOption?: boolean;
+    showOnModal?: boolean;
+    showOnDesktop?: boolean;
+    showOnMobile?: boolean;
 }>;
 export declare type SessionInfo = {
     _pid: string;
