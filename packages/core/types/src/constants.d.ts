@@ -44,6 +44,22 @@ export declare type BaseRedirectParams = {
     redirectUrl?: string;
     appState?: string;
 };
+export declare type TypeOfLogin = "google" | "facebook" | "reddit" | "discord" | "twitch" | "apple" | "github" | "linkedin" | "twitter" | "weibo" | "line" | "email_password" | "passwordless" | "jwt" | "webauthn";
+export declare type LoginConfig = Record<string, {
+    verifier: string;
+    typeOfLogin: TypeOfLogin;
+    name: string;
+    description: string;
+    clientId: string;
+    verifierSubIdentifier: string;
+    logoHover: string;
+    logoLight: string;
+    logoDark: string;
+    mainOption: boolean;
+    showOnModal: boolean;
+    showOnDesktop: boolean;
+    showOnMobile: boolean;
+}>;
 export declare const OPENLOGIN_NETWORK: {
     readonly MAINNET: "mainnet";
     readonly TESTNET: "testnet";
@@ -58,6 +74,7 @@ export declare type OpenLoginOptions = {
     uxMode?: UX_MODE_TYPE;
     replaceUrlOnRedirect?: boolean;
     originData?: OriginData;
+    loginConfig?: LoginConfig;
     _iframeUrl?: string;
     _startUrl?: string;
     _popupUrl?: string;

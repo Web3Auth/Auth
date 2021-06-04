@@ -7,6 +7,7 @@ import {
   ALLOWED_INTERACTIONS,
   BaseLogoutParams,
   BaseRedirectParams,
+  LoginConfig,
   LoginParams,
   OPENLOGIN_METHOD,
   OPENLOGIN_NETWORK,
@@ -40,6 +41,7 @@ export type OpenLoginState = {
   uxMode: UX_MODE_TYPE;
   replaceUrlOnRedirect: boolean;
   originData: OriginData;
+  loginConfig: LoginConfig;
 };
 
 class OpenLogin {
@@ -71,6 +73,7 @@ class OpenLogin {
       uxMode: options.uxMode ?? UX_MODE.REDIRECT,
       replaceUrlOnRedirect: options.replaceUrlOnRedirect ?? true,
       originData: options.originData ?? { [window.location.origin]: "" },
+      loginConfig: options.loginConfig ?? {},
     });
   }
 
@@ -86,6 +89,7 @@ class OpenLogin {
       redirectUrl: options.redirectUrl,
       replaceUrlOnRedirect: options.replaceUrlOnRedirect,
       originData: options.originData,
+      loginConfig: options.loginConfig,
       support3PC: !options.no3PC,
     };
   }
@@ -254,7 +258,7 @@ class OpenLogin {
     session._originData = this.state.originData;
 
     // add in session data (allow overrides)
-    params = [{ ...session, ...params[0] }];
+    params = [{ ...session, ...{ _loginConfig: this.state.loginConfig }, ...params[0] }];
 
     // use JRPC where possible
 
