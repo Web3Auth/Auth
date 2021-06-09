@@ -1,5 +1,6 @@
 import { decrypt, Ecies, encrypt, getPublic, sign } from "@toruslabs/eccrypto";
-import { getRpcPromiseCallback, JRPCRequest, OriginData, SessionInfo } from "@toruslabs/openlogin-jrpc";
+import { post } from "@toruslabs/http-helpers";
+import { getRpcPromiseCallback, JRPCRequest, LoginConfig, OriginData, SessionInfo, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 import { base64url, jsonToBase64, keccak, randomId } from "@toruslabs/openlogin-utils";
 import merge from "lodash.merge";
 
@@ -43,6 +44,8 @@ export type OpenLoginState = {
   uxMode: UX_MODE_TYPE;
   replaceUrlOnRedirect: boolean;
   originData: OriginData;
+  whiteLabel: WhiteLabelData;
+  loginConfig: LoginConfig;
 };
 
 class OpenLogin {
@@ -74,6 +77,8 @@ class OpenLogin {
       uxMode: options.uxMode ?? UX_MODE.REDIRECT,
       replaceUrlOnRedirect: options.replaceUrlOnRedirect ?? true,
       originData: options.originData ?? { [window.location.origin]: "" },
+      whiteLabel: options.whiteLabel ?? {},
+      loginConfig: options.loginConfig ?? {},
     });
   }
 
@@ -89,7 +94,9 @@ class OpenLogin {
       redirectUrl: options.redirectUrl,
       replaceUrlOnRedirect: options.replaceUrlOnRedirect,
       originData: options.originData,
+      loginConfig: options.loginConfig,
       support3PC: !options.no3PC,
+      whiteLabel: options.whiteLabel,
     };
   }
 
@@ -103,8 +110,8 @@ class OpenLogin {
         this._syncState(await this._getData());
       }
     } else {
-      this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
       await this.updateOriginData();
+      this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
     }
   }
 
@@ -117,8 +124,8 @@ class OpenLogin {
     Object.keys(filteredOriginData).forEach((key) => {
       if (filteredOriginData[key] === "") delete filteredOriginData[key];
     });
-    const whitelist = await this.getWhitelist();
-    this._syncState({ originData: { ...whitelist, ...filteredOriginData } });
+    const [whitelist, whiteLabel] = await Promise.all([this.getWhitelist(), this.getWhiteLabel()]);
+    this._syncState({ originData: { ...whitelist, ...filteredOriginData }, whiteLabel: { ...whiteLabel, ...this.state.whiteLabel } });
   }
 
   async getWhitelist(): Promise<OriginData> {
@@ -127,13 +134,26 @@ class OpenLogin {
       if (!clientId) {
         throw new Error("unspecified clientId");
       }
-      const data = await fetch("https://api.developer.tor.us/whitelist", {
-        method: "POST",
-        body: JSON.stringify({
-          project_id: this.state.clientId,
-        }),
-      }).then((res) => res.json());
-      return data.signed_urls as OriginData;
+      const res = await post<{ signed_urls: OriginData }>("https://api.developer.tor.us/whitelist", {
+        project_id: this.state.clientId,
+      });
+      return res.signed_urls;
+    } catch (_) {
+      // fail silently
+      return {};
+    }
+  }
+
+  async getWhiteLabel(): Promise<WhiteLabelData> {
+    try {
+      const { clientId } = this.state;
+      if (!clientId) {
+        throw new Error("unspecified clientId");
+      }
+      const res = await post<{ whiteLabel: WhiteLabelData }>("https://api.developer.tor.us/whitelabel", {
+        project_id: this.state.clientId,
+      });
+      return res.whiteLabel;
     } catch (_) {
       // fail silently
       return {};
@@ -255,6 +275,8 @@ class OpenLogin {
     }
 
     session._originData = this.state.originData;
+    session._whiteLabelData = this.state.whiteLabel;
+    session._loginConfig = this.state.loginConfig;
 
     // add in session data (allow overrides)
     params = [{ ...session, ...params[0] }];
@@ -405,7 +427,7 @@ class OpenLogin {
     privKey: string;
   }> {
     return new Promise<{ privKey: string }>((resolve, reject) => {
-      this.modal._prompt(this.state.clientId, async (chunk): Promise<void> => {
+      this.modal._prompt(this.state.clientId, this.state.whiteLabel, async (chunk): Promise<void> => {
         if (chunk.cancel) {
           reject(new Error("user canceled login"));
         } else {
