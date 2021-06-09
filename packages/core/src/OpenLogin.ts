@@ -1,5 +1,5 @@
 import { decrypt, Ecies, encrypt, getPublic, sign } from "@toruslabs/eccrypto";
-import { getRpcPromiseCallback, JRPCRequest, OriginData, SessionInfo } from "@toruslabs/openlogin-jrpc";
+import { getRpcPromiseCallback, JRPCRequest, LoginConfig, OriginData, SessionInfo } from "@toruslabs/openlogin-jrpc";
 import { base64url, jsonToBase64, keccak, randomId } from "@toruslabs/openlogin-utils";
 import merge from "lodash.merge";
 
@@ -40,6 +40,7 @@ export type OpenLoginState = {
   uxMode: UX_MODE_TYPE;
   replaceUrlOnRedirect: boolean;
   originData: OriginData;
+  loginConfig: LoginConfig;
 };
 
 class OpenLogin {
@@ -71,6 +72,7 @@ class OpenLogin {
       uxMode: options.uxMode ?? UX_MODE.REDIRECT,
       replaceUrlOnRedirect: options.replaceUrlOnRedirect ?? true,
       originData: options.originData ?? { [window.location.origin]: "" },
+      loginConfig: options.loginConfig ?? {},
     });
   }
 
@@ -86,6 +88,7 @@ class OpenLogin {
       redirectUrl: options.redirectUrl,
       replaceUrlOnRedirect: options.replaceUrlOnRedirect,
       originData: options.originData,
+      loginConfig: options.loginConfig,
       support3PC: !options.no3PC,
     };
   }
@@ -252,6 +255,7 @@ class OpenLogin {
     }
 
     session._originData = this.state.originData;
+    session._loginConfig = this.state.loginConfig;
 
     // add in session data (allow overrides)
     params = [{ ...session, ...params[0] }];
