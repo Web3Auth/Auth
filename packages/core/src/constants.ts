@@ -1,7 +1,9 @@
-import { OriginData, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
+import { LoginConfig, OriginData, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 import { ExtraLoginOptions } from "@toruslabs/openlogin-utils";
 
 export const iframeDOMElementID = "openlogin-iframe";
+export const modalDOMElementID = "openlogin-modal";
+
 export const storeKey = "openlogin_store";
 
 export type PopupResponse<T> = {
@@ -73,6 +75,7 @@ export type OpenLoginOptions = {
   uxMode?: UX_MODE_TYPE;
   replaceUrlOnRedirect?: boolean;
   originData?: OriginData;
+  loginConfig?: LoginConfig;
   _iframeUrl?: string;
   _startUrl?: string;
   _popupUrl?: string;

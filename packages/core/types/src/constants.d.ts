@@ -1,6 +1,7 @@
-import { OriginData } from "@toruslabs/openlogin-jrpc";
+import { LoginConfig, OriginData } from "@toruslabs/openlogin-jrpc";
 import { ExtraLoginOptions } from "@toruslabs/openlogin-utils";
 export declare const iframeDOMElementID = "openlogin-iframe";
+export declare const modalDOMElementID = "openlogin-modal";
 export declare const storeKey = "openlogin_store";
 export declare type PopupResponse<T> = {
     pid: string;
@@ -58,6 +59,7 @@ export declare type OpenLoginOptions = {
     uxMode?: UX_MODE_TYPE;
     replaceUrlOnRedirect?: boolean;
     originData?: OriginData;
+    loginConfig?: LoginConfig;
     _iframeUrl?: string;
     _startUrl?: string;
     _popupUrl?: string;

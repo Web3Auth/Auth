@@ -1,8 +1,7 @@
 import { ObjectMultiplex, PostMessageStream, setupMultiplex, Substream, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 
+import { modalDOMElementID } from "./constants";
 import { documentReady } from "./utils";
-
-export const modalDOMElementID = "openlogin-modal";
 
 export const handleStream = (handle: Substream, eventName: string, handler: (chunk: any) => void): void => {
   const handlerWrapper = (chunk) => {
@@ -50,15 +49,15 @@ export class Modal {
     await documentReady();
     const documentIFrameElem = document.getElementById(modalDOMElementID) as HTMLIFrameElement;
     if (documentIFrameElem) {
-      throw new Error("already initialized");
-    } else {
-      const iframeElem = document.createElement("iframe");
-      iframeElem.src = src;
-      iframeElem.id = modalDOMElementID;
-      this.iframeElem = iframeElem;
-      this._hideModal();
-      document.body.appendChild(this.iframeElem);
+      documentIFrameElem.remove();
+      window.console.log("already initialized, removing previous modal iframe");
     }
+    const iframeElem = document.createElement("iframe");
+    iframeElem.src = src;
+    iframeElem.id = modalDOMElementID;
+    this.iframeElem = iframeElem;
+    this._hideModal();
+    document.body.appendChild(this.iframeElem);
   }
 
   _showModal(): void {
@@ -116,7 +115,12 @@ export class Modal {
   }
 
   async cleanup(): Promise<void> {
-    this.iframeElem.remove();
+    await documentReady();
+    const documentIFrameElem = document.getElementById(modalDOMElementID) as HTMLIFrameElement;
+    if (documentIFrameElem) {
+      documentIFrameElem.remove();
+      this.iframeElem = null;
+    }
     this.initialized = false;
   }
 }

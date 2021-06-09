@@ -21,10 +21,10 @@ export function getED25519Key(privateKey: string | Buffer): {
   // Implementation copied from tweetnacl
 
   const d = new Uint8Array(64);
+  const p = [l.gf(), l.gf(), l.gf(), l.gf()];
   const sk = new Uint8Array([...new Uint8Array(privKey), ...new Uint8Array(32)]);
   const pk = new Uint8Array(32);
-  const p = [l.gf(), l.gf(), l.gf(), l.gf()];
-  for (let i = 0; i < 32; i += 1) d[i] = sk[i];
+  l.crypto_hash(d, sk, 32);
   // eslint-disable-next-line no-bitwise
   d[0] &= 248;
   // eslint-disable-next-line no-bitwise
