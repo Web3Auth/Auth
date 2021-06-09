@@ -107,8 +107,8 @@ class OpenLogin {
         this._syncState(await this._getData());
       }
     } else {
-      this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
       await this.updateOriginData();
+      this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
     }
   }
 
@@ -121,9 +121,8 @@ class OpenLogin {
     Object.keys(filteredOriginData).forEach((key) => {
       if (filteredOriginData[key] === "") delete filteredOriginData[key];
     });
-    const whitelist = await this.getWhitelist();
-    const whiteLabel = await this.getWhiteLabel();
-    this._syncState({ originData: { ...whitelist, ...whiteLabel, ...filteredOriginData } });
+    const [whitelist, whiteLabel] = await Promise.all([this.getWhitelist(), this.getWhiteLabel()]);
+    this._syncState({ originData: { ...whitelist, ...filteredOriginData }, whiteLabel });
   }
 
   async getWhitelist(): Promise<OriginData> {
@@ -132,11 +131,10 @@ class OpenLogin {
       if (!clientId) {
         throw new Error("unspecified clientId");
       }
-      return post("https://api.developer.tor.us/whitelist", {
+      const res = await post<{ signed_urls: OriginData }>("https://api.developer.tor.us/whitelist", {
         project_id: this.state.clientId,
-      })
-        .then((res: { signed_urls: OriginData }) => res.signed_urls)
-        .catch((_) => ({}));
+      });
+      return res.signed_urls;
     } catch (_) {
       // fail silently
       return {};
@@ -149,11 +147,10 @@ class OpenLogin {
       if (!clientId) {
         throw new Error("unspecified clientId");
       }
-      return post("https://api.developer.tor.us/whitelabel", {
+      const res = await post<{ whiteLabel: WhiteLabelData }>("https://api.developer.tor.us/whitelabel", {
         project_id: this.state.clientId,
-      })
-        .then((res: { whitelabel: WhiteLabelData }) => res.whitelabel)
-        .catch((_) => ({}));
+      });
+      return res.whiteLabel;
     } catch (_) {
       // fail silently
       return {};

@@ -6,7 +6,7 @@ export type UserData = {
   [P in string]: string;
 };
 
-export declare type WhiteLabelData = {
+export type WhiteLabelData = {
   [P in string]: unknown;
 };
 

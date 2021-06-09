@@ -1,4 +1,4 @@
-import { LoginConfig, OriginData } from "@toruslabs/openlogin-jrpc";
+import { LoginConfig, OriginData, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 import { ExtraLoginOptions } from "@toruslabs/openlogin-utils";
 export declare const iframeDOMElementID = "openlogin-iframe";
 export declare const modalDOMElementID = "openlogin-modal";
@@ -63,6 +63,7 @@ export declare type OpenLoginOptions = {
     _iframeUrl?: string;
     _startUrl?: string;
     _popupUrl?: string;
+    whiteLabel?: WhiteLabelData;
 };
 export declare const LOGIN_PROVIDER: {
     readonly GOOGLE: "google";

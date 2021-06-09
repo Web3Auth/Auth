@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { Ecies } from "@toruslabs/eccrypto";
-import { JRPCRequest, LoginConfig, OriginData } from "@toruslabs/openlogin-jrpc";
+import { JRPCRequest, LoginConfig, OriginData, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 import { BaseLogoutParams, BaseRedirectParams, LoginParams, OPENLOGIN_NETWORK_TYPE, OpenLoginOptions, RequestParams, UX_MODE_TYPE } from "./constants";
 import { Modal } from "./Modal";
 import OpenLoginStore from "./OpenLoginStore";
@@ -21,6 +21,7 @@ export declare type OpenLoginState = {
     uxMode: UX_MODE_TYPE;
     replaceUrlOnRedirect: boolean;
     originData: OriginData;
+    whiteLabel: WhiteLabelData;
     loginConfig: LoginConfig;
 };
 declare class OpenLogin {
@@ -33,6 +34,7 @@ declare class OpenLogin {
     get privKey(): string;
     updateOriginData(): Promise<void>;
     getWhitelist(): Promise<OriginData>;
+    getWhiteLabel(): Promise<WhiteLabelData>;
     _fastLogin(params: Partial<BaseRedirectParams>): Promise<{
         privKey: string;
     }>;
