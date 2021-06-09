@@ -258,7 +258,7 @@ class OpenLogin {
     session._loginConfig = this.state.loginConfig;
 
     // add in session data (allow overrides)
-    params = [{ ...session, ...{ _loginConfig: this.state.loginConfig }, ...params[0] }];
+    params = [{ ...session, ...params[0] }];
 
     // use JRPC where possible
 
