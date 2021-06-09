@@ -8,11 +8,14 @@ import {
   ALLOWED_INTERACTIONS,
   BaseLogoutParams,
   BaseRedirectParams,
+  CUSTOM_LOGIN_PROVIDER_TYPE,
+  LOGIN_PROVIDER_TYPE,
   LoginParams,
   OPENLOGIN_METHOD,
   OPENLOGIN_NETWORK,
   OPENLOGIN_NETWORK_TYPE,
   OpenLoginOptions,
+  OpenloginUserInfo,
   RequestParams,
   UX_MODE,
   UX_MODE_TYPE,
@@ -461,6 +464,24 @@ class OpenLogin {
       throw new Error("invalid private key");
     }
     return decrypt(Buffer.from(privKey, "hex"), ciphertext);
+  }
+
+  async getUserInfo(): Promise<OpenloginUserInfo> {
+    if (this.state.privKey) {
+      const storeData = this.state.store.getStore();
+      const userInfo: OpenloginUserInfo = {
+        email: (storeData.email as string) || "",
+        name: (storeData.name as string) || "",
+        profileImage: (storeData.profileImage as string) || "",
+        aggregateVerifier: (storeData.aggregateVerifier as string) || "",
+        verifier: (storeData.verifier as string) || "",
+        verifierId: (storeData.verifierId as string) || "",
+        typeOfLogin: (storeData.typeOfLogin as LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE) || "",
+      };
+
+      return userInfo;
+    }
+    throw new Error("user should be logged in to fetch userInfo");
   }
 }
 
