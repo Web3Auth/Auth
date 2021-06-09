@@ -445,18 +445,21 @@ class OpenLogin {
   }
 
   async getUserInfo(): Promise<OpenloginUserInfo> {
-    const storeData = this.state.store.getStore();
-    const userInfo: OpenloginUserInfo = {
-      email: (storeData.email as string) || "",
-      name: (storeData.name as string) || "",
-      profileImage: (storeData.profileImage as string) || "",
-      aggregateVerifier: (storeData.aggregateVerifier as string) || "",
-      verifier: (storeData.verifier as string) || "",
-      verifierId: (storeData.verifierId as string) || "",
-      typeOfLogin: (storeData.typeOfLogin as LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE) || "",
-    };
+    if (this.state.privKey) {
+      const storeData = this.state.store.getStore();
+      const userInfo: OpenloginUserInfo = {
+        email: (storeData.email as string) || "",
+        name: (storeData.name as string) || "",
+        profileImage: (storeData.profileImage as string) || "",
+        aggregateVerifier: (storeData.aggregateVerifier as string) || "",
+        verifier: (storeData.verifier as string) || "",
+        verifierId: (storeData.verifierId as string) || "",
+        typeOfLogin: (storeData.typeOfLogin as LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE) || "",
+      };
 
-    return userInfo;
+      return userInfo;
+    }
+    throw new Error("user should be logged in to fetch userInfo");
   }
 }
 
