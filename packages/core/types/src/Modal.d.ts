@@ -1,5 +1,4 @@
 import { ObjectMultiplex, Substream } from "@toruslabs/openlogin-jrpc";
-export declare const modalDOMElementID = "openlogin-modal";
 export declare const handleStream: (handle: Substream, eventName: string, handler: (chunk: any) => void) => void;
 export declare class Modal {
     modalUrl: string;

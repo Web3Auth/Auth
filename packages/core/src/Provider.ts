@@ -35,15 +35,15 @@ export default class Provider extends SafeEventEmitter {
     await documentReady();
     const documentIFrameElem = document.getElementById(iframeDOMElementID) as HTMLIFrameElement;
     if (documentIFrameElem) {
-      throw new Error("already initialized");
-    } else {
-      const iframeElem = document.createElement("iframe");
-      iframeElem.src = src;
-      iframeElem.id = iframeDOMElementID;
-      iframeElem.setAttribute("style", "display:none; position:fixed; top: 0; left: 0; width: 100%");
-      document.body.appendChild(iframeElem);
-      this.iframeElem = iframeElem;
+      documentIFrameElem.remove();
+      window.console.log("already initialized, removing previous provider iframe");
     }
+    const iframeElem = document.createElement("iframe");
+    iframeElem.src = src;
+    iframeElem.id = iframeDOMElementID;
+    iframeElem.setAttribute("style", "display:none; position:fixed; top: 0; left: 0; width: 100%");
+    document.body.appendChild(iframeElem);
+    this.iframeElem = iframeElem;
   }
 
   async setupStream(): Promise<void> {
@@ -68,7 +68,12 @@ export default class Provider extends SafeEventEmitter {
   }
 
   async cleanup(): Promise<void> {
-    this.iframeElem.remove();
+    await documentReady();
+    const documentIFrameElem = document.getElementById(iframeDOMElementID) as HTMLIFrameElement;
+    if (documentIFrameElem) {
+      documentIFrameElem.remove();
+      this.iframeElem = null;
+    }
     this.initialized = false;
   }
 
