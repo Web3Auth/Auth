@@ -9,6 +9,7 @@
     "plugin:import/typescript",
     "plugin:promise/recommended",
     "airbnb-base",
+    "plugin:mocha/recommended",
     "prettier"
   ],
   "plugins": ["prettier", "@babel", "promise", "import", "simple-import-sort", "mocha", "@typescript-eslint"],
