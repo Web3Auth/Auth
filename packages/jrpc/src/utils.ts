@@ -6,6 +6,10 @@ export type UserData = {
   [P in string]: string;
 };
 
+export type WhiteLabelData = {
+  [P in string]: unknown;
+};
+
 export type TypeOfLogin =
   | "google"
   | "facebook"
@@ -50,5 +54,6 @@ export type SessionInfo = {
   _origin: string;
   _originData: OriginData;
   _clientId: string;
+  _whiteLabelData?: WhiteLabelData;
   _loginConfig: LoginConfig;
 };
