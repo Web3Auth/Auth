@@ -448,8 +448,12 @@ class OpenLogin {
       privKey = this.privKey;
     }
     // validations
-    if (!/^[0-9a-fA-f]*$/.exec(privKey)) {
-      throw new Error("invalid private key");
+    if (!/^[0-9a-fA-f]{64}$/.exec(privKey)) {
+      if (privKey === "" || privKey === undefined) {
+        throw new Error("private key cannot be empty");
+      } else {
+        throw new Error("invalid private key in encrypt");
+      }
     }
     return encrypt(getPublic(Buffer.from(privKey, "hex")), message);
   }
@@ -460,8 +464,12 @@ class OpenLogin {
       privKey = this.privKey;
     }
     // validations
-    if (!/^[0-9a-fA-f]*$/.exec(privKey)) {
-      throw new Error("invalid private key");
+    if (!/^[0-9a-fA-f]{64}$/.exec(privKey)) {
+      if (privKey === "" || privKey === undefined) {
+        throw new Error("private key cannot be empty");
+      } else {
+        throw new Error("invalid private key in decrypt");
+      }
     }
     return decrypt(Buffer.from(privKey, "hex"), ciphertext);
   }
