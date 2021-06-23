@@ -294,6 +294,7 @@ class OpenLogin {
     if (this.state.support3PC) {
       // set params first if 3PC supported
       await this._setPIDData(pid, params);
+      // eslint-disable-next-line require-atomic-updates
       params = [{}];
     }
 
