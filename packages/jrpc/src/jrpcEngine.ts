@@ -354,6 +354,7 @@ export function createEngineStream(opts: EngineStreamOptions): Duplex {
   }
 
   const { engine } = opts;
+  // eslint-disable-next-line prefer-const
   let stream: Duplex;
 
   function read() {

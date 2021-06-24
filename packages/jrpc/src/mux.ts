@@ -41,7 +41,7 @@ export class ObjectMultiplex extends Duplex {
     this._substreams[name] = substream;
 
     // listen for parent stream to end
-    // eslint-disable-next-line no-use-before-define
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     anyStreamEnd(this, (_error?: Error | null) => substream.destroy(_error || undefined));
 
     return substream;

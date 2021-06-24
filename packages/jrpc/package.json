@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@types/end-of-stream": "^1.4.0",
-    "@types/node": "^15.0.3",
+    "@types/node": "^15.12.4",
     "@types/once": "^1.4.0",
     "@types/pump": "^1.1.1",
     "lint-staged": "^11.0.0"

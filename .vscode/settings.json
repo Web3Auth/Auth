@@ -7,6 +7,8 @@
   ],
   "eslint.options": {
     "extends": [
+      "airbnb-typescript/base",
+      "problems",
       "plugin:@typescript-eslint/recommended",
       "standard",
       "eslint:recommended",
@@ -16,10 +18,9 @@
       "plugin:import/typescript",
       "plugin:promise/recommended",
       "plugin:mocha/recommended",
-      "airbnb-base",
       "prettier"
     ],
-    "plugins": ["prettier", "@babel", "promise", "import", "simple-import-sort", "mocha", "@typescript-eslint"],
+    "plugins": ["prettier", "promise", "import", "simple-import-sort", "mocha", "@typescript-eslint"],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
       "sourceType": "module",
@@ -40,6 +41,13 @@
       }
     ],
     "rules": {
+      "@typescript-eslint/naming-convention": [
+        "error",
+        {
+          "selector": "typeLike",
+          "format": ["camelCase", "UPPER_CASE", "PascalCase"]
+        }
+      ],
       "no-console": 2,
       "no-bitwise": [2, { "allow": ["~"] }],
       "camelcase": 0,

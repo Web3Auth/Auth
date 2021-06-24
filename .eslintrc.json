@@ -1,5 +1,7 @@
 {
   "extends": [
+    "airbnb-typescript/base",
+    "problems",
     "plugin:@typescript-eslint/recommended",
     "standard",
     "eslint:recommended",
@@ -8,11 +10,10 @@
     "plugin:import/warnings",
     "plugin:import/typescript",
     "plugin:promise/recommended",
-    "airbnb-base",
     "plugin:mocha/recommended",
     "prettier"
   ],
-  "plugins": ["prettier", "@babel", "promise", "import", "simple-import-sort", "mocha", "@typescript-eslint"],
+  "plugins": ["prettier", "promise", "import", "simple-import-sort", "mocha", "@typescript-eslint"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "sourceType": "module",
@@ -20,6 +21,13 @@
     "project": "./tsconfig.json"
   },
   "rules": {
+    "@typescript-eslint/naming-convention": [
+      "error",
+      {
+        "selector": "typeLike",
+        "format": ["camelCase", "UPPER_CASE", "PascalCase"]
+      }
+    ],
     "no-console": 2,
     "no-bitwise": [2, { "allow": ["~"] }],
     "camelcase": 0,
