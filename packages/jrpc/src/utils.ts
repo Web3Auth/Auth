@@ -7,7 +7,10 @@ export type UserData = {
 };
 
 export type WhiteLabelData = {
-  [P in string]: unknown;
+  dark?: boolean;
+  theme?: {
+    [P in string]: string;
+  };
 };
 
 export type TypeOfLogin =
