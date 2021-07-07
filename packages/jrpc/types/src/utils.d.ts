@@ -5,7 +5,10 @@ export declare type UserData = {
     [P in string]: string;
 };
 export declare type WhiteLabelData = {
-    [P in string]: unknown;
+    dark?: boolean;
+    theme?: {
+        [P in string]: string;
+    };
 };
 export declare type TypeOfLogin = "google" | "facebook" | "reddit" | "discord" | "twitch" | "apple" | "github" | "linkedin" | "twitter" | "weibo" | "line" | "email_password" | "passwordless" | "jwt" | "webauthn";
 export declare type LoginConfig = Record<string, {
