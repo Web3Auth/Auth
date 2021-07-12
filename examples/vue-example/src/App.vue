@@ -35,7 +35,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import Vue from 'vue';
 import OpenLogin from 'openlogin';
 import * as bs58 from 'bs58';
@@ -118,7 +118,7 @@ export default Vue.extend({
       this.privKey = openlogin.privKey
 
     },
-    printToConsole(...args){
+    printToConsole(...args: unknown[]){
       const el = document.querySelector('#console>p');
       if (el) {
         el.innerHTML = JSON.stringify(args || {}, null, 2);

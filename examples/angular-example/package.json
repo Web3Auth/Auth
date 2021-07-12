@@ -20,8 +20,10 @@
     "@angular/router": "~12.1.1",
     "@toruslabs/openlogin-ed25519": "^0.9.1",
     "bs58": "^4.0.1",
+    "crypto-browserify": "^3.12.0",
     "openlogin": "^0.9.1",
     "rxjs": "~6.6.0",
+    "stream-browserify": "^3.0.0",
     "tslib": "^2.2.0",
     "zone.js": "~0.11.4"
   },

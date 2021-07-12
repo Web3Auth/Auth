@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
-// @ts-ignore
-import OpenLogin from 'openlogin/dist/openlogin.umd.min.js'
+import OpenLogin from 'openlogin'
 import * as bs58 from 'bs58';
 import { getED25519Key } from '@toruslabs/openlogin-ed25519';
 const openlogin = new OpenLogin({
@@ -90,7 +89,7 @@ export class AppComponent {
     this.loading=false;
   };
 
-  printToConsole = (...args: any[]): void => {
+  printToConsole = (...args: unknown[]): void => {
     const el = document.querySelector('#console>p');
     if (el) {
       el.innerHTML = JSON.stringify(args || {}, null, 2);

@@ -20,5 +20,5 @@
     },
     "include": ["src/*.vue", "src/*.ts", "src/*.tsx"],
     "exclude": ["node_modules"]
-  }
+}
   
