@@ -106,12 +106,51 @@ export type LOGIN_PROVIDER_TYPE = typeof LOGIN_PROVIDER[keyof typeof LOGIN_PROVI
 export type CUSTOM_LOGIN_PROVIDER_TYPE = string & { toString?: (radix?: number) => string };
 
 export type LoginParams = BaseRedirectParams & {
-  loginProvider: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
-  fastLogin?: boolean;
-  relogin?: boolean;
-  skipTKey?: boolean;
-  getWalletKey?: boolean;
-  extraLoginOptions?: ExtraLoginOptions;
+   /**
+     * loginProvider sets the oauth login method to be used.
+     * You can use any of the valid loginProvider from this list.
+     * 
+     * If this param is not passed then it will show all the available
+     * login methods to user in a modal.
+     * 
+     */
+    loginProvider: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
+
+    /**
+     * Setting fastLogin to `true` will force user to login with webauthn if
+     * webauthn is available on device. 
+     * 
+     * Defaults to false
+     * @default false
+     *
+     * @remarks
+     * Use this option with caution only when you are sure about that user has enabled
+     * webauthn while registeration, else don't use this option. Openlogin will itself
+     * take care of detecting and handling webauthn. In general you may not need to use 
+     * this option.
+     */
+    fastLogin?: boolean;
+
+    /**
+     * Setting relogin to `true` will force user to relogin when login 
+     * method is called even if user is already logged in. By default login
+     * method call skips login process if user is already logged in. 
+     * 
+     * * Defaults to false
+     * @default false
+     */
+    relogin?: boolean;
+
+    /**
+     * Skips TKey onboarding for new users, whereas old users will be 
+     * presented with an option to skip tKey in UI if this option is enabled.
+     * 
+     * Defaults to false
+     * @default false
+     */
+    skipTKey?: boolean;
+    getWalletKey?: boolean;
+    extraLoginOptions?: ExtraLoginOptions;
 };
 
 export type OpenloginUserInfo = {
