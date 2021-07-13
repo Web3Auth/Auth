@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import * as bs58 from "bs58";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 
+const YOUR_PROJECT_ID = "BOUSb58ft1liq2tSVGafkYohnNPgnl__vAlYSk3JnpfW281kApYsw30BG1-nGpmy8wK-gT3dHw2D_xRXpTEdDBE"
+
 const openlogin = new OpenLogin({
   // your clientId aka projectId , get it from https://developer.tor.us
   // clientId is not required for localhost, you can set it to any string
   // for development
-  clientId: "YOUR_PROJECT_ID",
+  clientId: YOUR_PROJECT_ID,
   network: "testnet",
 });
 function App() {
@@ -17,12 +19,23 @@ function App() {
   useEffect(() => {
     setLoading(true);
     async function initializeOpenlogin() {
-      await openlogin.init();
-      setLoading(false);
+      try {
+        await openlogin.init();
+      } catch (error) {
+        console.log("error while initialization", error);
+      } finally {
+        setLoading(false);
+      }
     }
     initializeOpenlogin();
   }, []);
 
+  const printToConsole = (...args: unknown[]): void => {
+    const el = document.querySelector("#console>p");
+    if (el) {
+      el.innerHTML = JSON.stringify(args || {}, null, 2);
+    }
+  };
   async function login() {
     setLoading(true);
     try {
@@ -32,7 +45,7 @@ function App() {
         // login provider from available list to set as default.
         // for ex: google, facebook, twitter etc
         loginProvider: "",
-        redirectUrl: `${window.origin}`,
+        redirectUrl: `${window.location.origin}`,
         relogin: true,
         // setting it true will force user to use touchid/faceid (if available on device)
         // while doing login again
@@ -76,15 +89,13 @@ function App() {
   };
 
   const logout = async () => {
-    setLoading(true);
-    await openlogin.logout({});
-    setLoading(false);
-  };
-
-  const printToConsole = (...args: unknown[]): void => {
-    const el = document.querySelector("#console>p");
-    if (el) {
-      el.innerHTML = JSON.stringify(args || {}, null, 2);
+    try {
+      setLoading(true);
+      await openlogin.logout({});
+    } catch (error) {
+      printToConsole("error while logout", error);
+    } finally {
+      setLoading(false);
     }
   };
 

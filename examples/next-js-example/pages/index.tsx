@@ -1,23 +1,23 @@
-
-import type OpenLogin from 'openlogin';
-import { useEffect, useState } from 'react';
-import * as bs58 from 'bs58';
-import { getED25519Key } from '@toruslabs/openlogin-ed25519';
+import type OpenLogin from "openlogin";
+import { useEffect, useState } from "react";
+import * as bs58 from "bs58";
+import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 
 let openlogin: OpenLogin;
+const YOUR_PROJECT_ID = "BOUSb58ft1liq2tSVGafkYohnNPgnl__vAlYSk3JnpfW281kApYsw30BG1-nGpmy8wK-gT3dHw2D_xRXpTEdDBE"
 function App() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setLoading(true);
     async function initializeOpenlogin() {
-      const OpenLogin = (await import("@toruslabs/openlogin")).default;
-      openlogin = new OpenLogin({
+      const OpenloginSdk = (await import("openlogin")).default;
+      openlogin = new OpenloginSdk({
         // your clientId aka projectId , get it from https://developer.tor.us
         // clientId is not required for localhost, you can set it to any string
         // for development
-        clientId: 'YOUR_PROJECT_ID',
-        network: 'testnet',
+        clientId: YOUR_PROJECT_ID,
+        network: "testnet",
       });
       await openlogin.init();
       setLoading(false);
@@ -25,6 +25,12 @@ function App() {
     initializeOpenlogin();
   }, []);
 
+  const printToConsole = (...args: unknown[]): void => {
+    const el = document.querySelector("#console>p");
+    if (el) {
+      el.innerHTML = JSON.stringify(args || {}, null, 2);
+    }
+  };
   async function login() {
     setLoading(true);
     try {
@@ -33,7 +39,7 @@ function App() {
         // with all default supported login providers or you can pass specific
         // login provider from available list to set as default.
         // for ex: google, facebook, twitter etc
-        loginProvider: '',
+        loginProvider: "",
         redirectUrl: `${window.origin}`,
         relogin: true,
         // setting it true will force user to use touchid/faceid (if available on device)
@@ -54,14 +60,14 @@ function App() {
         //   login_hint: 'hello@yourapp.com',
         // },
       });
-      if (privKey && typeof privKey === 'string') {
+      if (privKey && typeof privKey === "string") {
         const userInfo = await openlogin.getUserInfo();
-        console.log('user info', userInfo);
+        console.log("user info", userInfo);
       }
 
       setLoading(false);
     } catch (error) {
-      console.log('error', error);
+      console.log("error", error);
       setLoading(false);
     }
   }
@@ -83,64 +89,53 @@ function App() {
     setLoading(false);
   };
 
-  const printToConsole = (...args: unknown[]): void => {
-    const el = document.querySelector('#console>p');
-    if (el) {
-      el.innerHTML = JSON.stringify(args || {}, null, 2);
-    }
-  };
-
   return (
     <>
-      {
-      loading
-        ? (
-          <div>
-            <div style={{
-              display: 'flex', flexDirection: 'column', width: '100%', justifyContent: 'center', alignItems: 'center', margin: 20,
+      {loading ? (
+        <div>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              width: "100%",
+              justifyContent: "center",
+              alignItems: "center",
+              margin: 20,
             }}
-            >
-              <h1>....loading</h1>
+          >
+            <h1>....loading</h1>
+          </div>
+        </div>
+      ) : (
+        <div className="App">
+          {!openlogin?.privKey ? (
+            <div>
+              <h3>Login With Openlogin</h3>
+              <button onClick={login}>login</button>
             </div>
-          </div>
-        )
-        : (
-          <div className="App">
-            {!openlogin?.privKey
-              ? (
+          ) : (
+            <div>
+              <section>
                 <div>
-                  <h3>Login With Openlogin</h3>
-                  <button onClick={login}>login</button>
-
+                  Private key:
+                  <i>{openlogin.privKey}</i>
+                  <button onClick={() => logout()}>Logout</button>
                 </div>
-              )
-
-              : (
                 <div>
-                  <section>
-                    <div>
-                      Private key:
-                      <i>{openlogin.privKey}</i>
-                      <button onClick={() => logout()}>Logout</button>
+                  <button onClick={getUserInfo}>Get User Info</button>
+                  <button onClick={getEd25519Key}>Get Ed25519Key </button>
 
-                    </div>
-                    <div>
-                      <button onClick={getUserInfo}>Get User Info</button>
-                      <button onClick={getEd25519Key}>Get Ed25519Key </button>
-
-                      <div id="console" style={{ whiteSpace: 'pre-line' }}>
-                        <p style={{ whiteSpace: 'pre-line' }} />
-                      </div>
-                    </div>
-                  </section>
+                  <div id="console" style={{ whiteSpace: "pre-line" }}>
+                    <p style={{ whiteSpace: "pre-line" }} />
+                  </div>
                 </div>
-              )}
-          </div>
-        )
-    }
+              </section>
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 }
 
 export default App;
-

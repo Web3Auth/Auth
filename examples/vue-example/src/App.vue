@@ -33,17 +33,18 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import OpenLogin from "openlogin";
-import * as bs58 from "bs58";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
+import * as bs58 from "bs58";
+import OpenLogin from "openlogin";
+import Vue from "vue";
+const YOUR_PROJECT_ID = "BOUSb58ft1liq2tSVGafkYohnNPgnl__vAlYSk3JnpfW281kApYsw30BG1-nGpmy8wK-gT3dHw2D_xRXpTEdDBE"
 
 const openlogin = new OpenLogin({
   // your clientId aka projectId , get it from https://developer.tor.us
   // clientId is not required for localhost, you can set it to any string
   // for development
-  clientId: "YOUR_PROJECT_ID",
-  network: "testnet",
+  clientId: YOUR_PROJECT_ID,
+  network: "testnet"
 });
 
 export default Vue.extend({
@@ -51,7 +52,7 @@ export default Vue.extend({
   data() {
     return {
       loading: false,
-      privKey: "",
+      privKey: ""
     };
   },
   async mounted() {
@@ -80,7 +81,7 @@ export default Vue.extend({
           // openlogin security while login.
           // But caveat here is that user will be get different keys if user is skipping tkey
           // so use this option with care in your app or make sure user knows about this.
-          skipTKey: false,
+          skipTKey: false
 
           // you can pass standard oauth parameter in extralogin options
           // for ex: in case of passwordless login, you have to pass user's email as login_hint
@@ -117,8 +118,8 @@ export default Vue.extend({
       if (el) {
         el.innerHTML = JSON.stringify(args || {}, null, 2);
       }
-    },
-  },
+    }
+  }
 });
 </script>
 
