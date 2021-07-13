@@ -2,7 +2,7 @@ import { Component } from "@angular/core";
 import OpenLogin from "openlogin";
 import * as bs58 from "bs58";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
-const YOUR_PROJECT_ID = "BOUSb58ft1liq2tSVGafkYohnNPgnl__vAlYSk3JnpfW281kApYsw30BG1-nGpmy8wK-gT3dHw2D_xRXpTEdDBE"
+const YOUR_PROJECT_ID = "BOUSb58ft1liq2tSVGafkYohnNPgnl__vAlYSk3JnpfW281kApYsw30BG1-nGpmy8wK-gT3dHw2D_xRXpTEdDBE";
 
 const openlogin = new OpenLogin({
   // your clientId aka projectId , get it from https://developer.tor.us
