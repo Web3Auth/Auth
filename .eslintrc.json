@@ -13,7 +13,7 @@
     "plugin:mocha/recommended",
     "prettier"
   ],
-  "plugins": ["prettier", "promise", "import", "simple-import-sort", "mocha", "@typescript-eslint"],
+  "plugins": ["prettier", "promise", "import", "simple-import-sort", "mocha", "@typescript-eslint","eslint-plugin-tsdoc"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "sourceType": "module",
@@ -67,6 +67,7 @@
         "props": false
       }
     ],
+    "tsdoc/syntax": "warn",
     "prettier/prettier": [
       "error",
       {
