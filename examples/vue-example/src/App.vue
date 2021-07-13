@@ -1,8 +1,7 @@
 <template>
   <div id="app">
     <div v-if="loading">
-      <div class="loader-wrap"
-      >
+      <div class="loader-wrap">
         <h1>....loading</h1>
       </div>
     </div>
@@ -10,22 +9,20 @@
       <div v-if="!privKey && !loading">
         <h3>Login With Openlogin</h3>
         <button @click="login">login</button>
-
       </div>
-    
+
       <div v-if="privKey">
         <section>
           <div>
             Private key:
-            <i>{{this.privKey}}</i>
+            <i>{{ this.privKey }}</i>
             <button @click="logout">Logout</button>
-
           </div>
           <div>
             <button @click="getUserInfo">Get User Info</button>
-            <button @click="getEd25519Key">Get Ed25519Key </button>
+            <button @click="getEd25519Key">Get Ed25519Key</button>
 
-            <div id="console" >
+            <div id="console">
               <p />
             </div>
           </div>
@@ -36,31 +33,31 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import OpenLogin from 'openlogin';
-import * as bs58 from 'bs58';
-import { getED25519Key } from '@toruslabs/openlogin-ed25519';
+import Vue from "vue";
+import OpenLogin from "openlogin";
+import * as bs58 from "bs58";
+import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 
 const openlogin = new OpenLogin({
   // your clientId aka projectId , get it from https://developer.tor.us
   // clientId is not required for localhost, you can set it to any string
   // for development
-  clientId: 'YOUR_PROJECT_ID',
-  network: 'testnet',
+  clientId: "YOUR_PROJECT_ID",
+  network: "testnet",
 });
 
 export default Vue.extend({
-  name: 'App',
+  name: "App",
   data() {
     return {
       loading: false,
-      privKey: ''
-    }
+      privKey: "",
+    };
   },
   async mounted() {
     this.loading = true;
     await openlogin.init();
-    this.privKey = openlogin.privKey
+    this.privKey = openlogin.privKey;
     this.loading = false;
   },
   methods: {
@@ -72,7 +69,7 @@ export default Vue.extend({
           // with all default supported login providers or you can pass specific
           // login provider from available list to set as default.
           // for ex: google, facebook, twitter etc
-          loginProvider: '',
+          loginProvider: "",
           redirectUrl: `${window.origin}`,
           relogin: true,
           // setting it true will force user to use touchid/faceid (if available on device)
@@ -93,21 +90,19 @@ export default Vue.extend({
           //   login_hint: 'hello@yourapp.com',
           // },
         });
-      
-
       } catch (error) {
-        console.log('error', error);
+        console.log("error", error);
       } finally {
         this.loading = false;
       }
     },
 
-    async getUserInfo(){
+    async getUserInfo() {
       const userInfo = await openlogin.getUserInfo();
       this.printToConsole(userInfo);
     },
 
-    getEd25519Key (){
+    getEd25519Key() {
       const { sk } = getED25519Key(openlogin.privKey);
       const base58Key = bs58.encode(sk);
       this.printToConsole(base58Key);
@@ -115,22 +110,21 @@ export default Vue.extend({
 
     async logout() {
       await openlogin.logout({});
-      this.privKey = openlogin.privKey
-
+      this.privKey = openlogin.privKey;
     },
-    printToConsole(...args: unknown[]){
-      const el = document.querySelector('#console>p');
+    printToConsole(...args: unknown[]) {
+      const el = document.querySelector("#console>p");
       if (el) {
         el.innerHTML = JSON.stringify(args || {}, null, 2);
       }
-    }
-  }
-})
+    },
+  },
+});
 </script>
 
 <style>
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
