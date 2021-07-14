@@ -44,7 +44,7 @@ const openlogin = new OpenLogin({
   // clientId is not required for localhost, you can set it to any string
   // for development
   clientId: YOUR_PROJECT_ID,
-  network: "testnet"
+  network: "testnet",
 });
 
 export default Vue.extend({
@@ -52,7 +52,7 @@ export default Vue.extend({
   data() {
     return {
       loading: false,
-      privKey: ""
+      privKey: "",
     };
   },
   async mounted() {
@@ -81,7 +81,7 @@ export default Vue.extend({
           // openlogin security while login.
           // But caveat here is that user will be get different keys if user is skipping tkey
           // so use this option with care in your app or make sure user knows about this.
-          skipTKey: false
+          skipTKey: false,
 
           // you can pass standard oauth parameter in extralogin options
           // for ex: in case of passwordless login, you have to pass user's email as login_hint
@@ -118,8 +118,8 @@ export default Vue.extend({
       if (el) {
         el.innerHTML = JSON.stringify(args || {}, null, 2);
       }
-    }
-  }
+    },
+  },
 });
 </script>
 
