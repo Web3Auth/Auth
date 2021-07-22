@@ -21,16 +21,16 @@
   "dependencies": {
     "@toruslabs/openlogin-utils": "^0.9.1",
     "end-of-stream": "^1.4.4",
-    "fast-safe-stringify": "^2.0.7",
+    "fast-safe-stringify": "^2.0.8",
     "once": "^1.4.0",
     "pump": "^3.0.0"
   },
   "devDependencies": {
     "@types/end-of-stream": "^1.4.1",
-    "@types/node": "^16.0.0",
+    "@types/node": "^16.4.0",
     "@types/once": "^1.4.0",
     "@types/pump": "^1.1.1",
-    "lint-staged": "^11.0.0"
+    "lint-staged": "^11.0.1"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"
