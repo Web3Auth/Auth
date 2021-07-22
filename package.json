@@ -12,7 +12,7 @@
     "test-debugger": "lerna run test-debugger --parallel",
     "build:types": "lerna run build:types",
     "lint": "lerna run lint --parallel",
-    "pack:lerna": "lerna exec -- yarn pack",
+    "pack:lerna": "lerna exec --since -- 'yarn pack'",
     "pre-commit": "lerna run pre-commit",
     "prepare": "husky install"
   },

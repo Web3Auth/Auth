@@ -45,6 +45,12 @@ const openlogin = new OpenLogin({
   // for development
   clientId: YOUR_PROJECT_ID,
   network: "testnet",
+  whiteLabel: {
+    dark: true,
+    theme: {
+      primary: "#ffa500",
+    },
+  },
 });
 
 export default Vue.extend({
