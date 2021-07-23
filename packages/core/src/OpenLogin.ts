@@ -435,7 +435,12 @@ class OpenLogin {
         if (chunk.cancel) {
           reject(new Error("user canceled login"));
         } else {
-          resolve(await this._selectedLogin(merge(params, chunk)));
+          try {
+            const selectedLoginResponse = await this._selectedLogin(merge(params, chunk));
+            resolve(selectedLoginResponse);
+          } catch (error) {
+            reject(error);
+          }
         }
       });
     });
