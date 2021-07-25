@@ -7,7 +7,17 @@ export type UserData = {
 };
 
 export type WhiteLabelData = {
+  /**
+   * Whether to enable dark mode
+   *
+   * @defaultValue false
+   */
   dark?: boolean;
+
+  /**
+   * Used to customize theme of the login modal with following options
+   * `'primary'` - To customize primary color of modal's content.
+   */
   theme?: {
     [P in string]: string;
   };
@@ -34,17 +44,62 @@ export type LoginConfig = Record<
   string,
   {
     verifier: string;
+
+    /**
+     * The type of login. Refer to enum `LOGIN_TYPE`
+     */
     typeOfLogin: TypeOfLogin;
+
+    /**
+     * Display Name. If not provided, we use the default for openlogin app
+     */
     name: string;
+
+    /**
+     * Description for button. If provided, it renders as a full length button. else, icon button
+     */
     description?: string;
+
+    /**
+     * Custom client_id. If not provided, we use the default for openlogin app
+     */
     clientId?: string;
+
     verifierSubIdentifier?: string;
+
+    /**
+     * Logo to be shown on mouse hover. If not provided, we use the default for openlogin app
+     */
     logoHover?: string;
+
+    /**
+     * Logo to be shown on dark background (dark theme). If not provided, we use the default for openlogin app
+     */
     logoLight?: string;
+
+    /**
+     * Logo to be shown on light background (light theme). If not provided, we use the default for openlogin app
+     */
     logoDark?: string;
+
+    /**
+     * Show login button on the main list
+     */
     mainOption?: boolean;
+
+    /**
+     * Whether to show the login button on modal or not
+     */
     showOnModal?: boolean;
+
+    /**
+     * Whether to show the login button on desktop
+     */
     showOnDesktop?: boolean;
+
+    /**
+     * Whether to show the login button on mobile
+     */
     showOnMobile?: boolean;
   }
 >;
