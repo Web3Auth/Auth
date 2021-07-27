@@ -7,6 +7,10 @@ export type UserData = {
 };
 
 export type WhiteLabelData = {
+  name?: string;
+  logoLight?: string;
+  logoDark?: string;
+  defaultLanguage?: string;
   dark?: boolean;
   theme?: {
     [P in string]: string;
