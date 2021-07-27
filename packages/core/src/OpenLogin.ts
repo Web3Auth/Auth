@@ -216,7 +216,7 @@ class OpenLogin {
       params: [loginParams],
     });
     this.state.privKey = res.privKey;
-    return res;
+    return { privKey: this.privKey };
   }
 
   async logout(logoutParams: Partial<BaseLogoutParams> & Partial<BaseRedirectParams> = {}): Promise<void> {
@@ -263,16 +263,16 @@ class OpenLogin {
       session._clientId = this.state.clientId;
     }
 
-    if (this.state.privKey) {
+    if (this.privKey) {
       const userData = {
         clientId: session._clientId,
         timestamp: Date.now().toString(),
       };
       const sig = await sign(
-        Buffer.from(this.state.privKey.padStart(64, "0"), "hex"),
+        Buffer.from(this.privKey, "hex"),
         Buffer.from(keccak("keccak256").update(JSON.stringify(userData)).digest("hex"), "hex")
       );
-      session._user = getPublic(Buffer.from(this.state.privKey.padStart(64, "0"), "hex")).toString("hex");
+      session._user = getPublic(Buffer.from(this.privKey, "hex")).toString("hex");
       session._userSig = base64url.encode(sig);
       session._userData = userData;
     }
@@ -484,7 +484,7 @@ class OpenLogin {
   }
 
   async getUserInfo(): Promise<OpenloginUserInfo> {
-    if (this.state.privKey) {
+    if (this.privKey) {
       const storeData = this.state.store.getStore();
       const userInfo: OpenloginUserInfo = {
         email: (storeData.email as string) || "",
