@@ -46,6 +46,7 @@
     "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-promise": "^5.1.0",
     "eslint-plugin-simple-import-sort": "^7.0.0",
+    "eslint-plugin-tsdoc": "^0.2.14",
     "eslint-webpack-plugin": "^2.5.4",
     "husky": "^7.0.1",
     "jsdom": "^16.6.0",
