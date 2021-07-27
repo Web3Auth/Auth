@@ -38,11 +38,37 @@ export declare type RequestParams = {
     allowedInteractions: ALLOWED_INTERACTIONS_TYPE[];
 };
 export declare type BaseLogoutParams = {
+    /**
+     * You can get your clientId/projectId by registering your
+     * dapp on {@link "https://developer.tor.us"| developer dashbaord}
+     */
     clientId: string;
+    /**
+     * Setting fastLogin to `true` will disable fast login for the user on this dapp.
+     *
+     * Defaults to false
+     * @defaultValue false
+     * @experimental
+     *
+     * @remarks
+     * Use this option with caution only when you are sure that you wish to disable fast login for the user on this dapp.
+     * In general you may not need to use this option.
+     */
     fastLogin: boolean;
 };
 export declare type BaseRedirectParams = {
+    /**
+     * redirectUrl is the dapp's url where user will be redirected after login.
+     *
+     * @remarks
+     * Register this url at {@link "https://developer.tor.us"| developer dashbaord}
+     * else initialization will give error.
+     */
     redirectUrl?: string;
+    /**
+     * Any custom state you wish to pass along. This will be returned to you post redirect.
+     * Use this to store data that you want to be available to the dapp after login.
+     */
     appState?: string;
 };
 export declare const OPENLOGIN_NETWORK: {
@@ -193,7 +219,7 @@ export declare type LoginParams = BaseRedirectParams & {
      *
      * @remarks
      * Use this option with caution only when you are sure about that user has
-     * enabled webauthn while registeration, else don't use this option.
+     * enabled webauthn while registration, else don't use this option.
      * Openlogin will itself take care of detecting and handling webauthn.
      * In general you may not need to use this option.
      */
