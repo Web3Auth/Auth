@@ -59,11 +59,14 @@ class OpenLogin {
     this.provider = new Proxy(new Provider(), {
       deleteProperty: () => true, // work around for web3
     });
-    if (options.network === OPENLOGIN_NETWORK.MAINNET) {
-      options._iframeUrl = "https://app.openlogin.com";
-    } else if (options.network === OPENLOGIN_NETWORK.TESTNET) {
-      options._iframeUrl = "https://beta.openlogin.com";
-    } else if (!options._iframeUrl) {
+    if (!options._iframeUrl) {
+      if (options.network === OPENLOGIN_NETWORK.MAINNET) {
+        options._iframeUrl = "https://app.openlogin.com";
+      } else if (options.network === OPENLOGIN_NETWORK.TESTNET) {
+        options._iframeUrl = "https://beta.openlogin.com";
+      }
+    }
+    if (!options._iframeUrl) {
       throw new Error("unspecified network and iframeUrl");
     }
     this.modal = new Modal(`${options._iframeUrl}/sdk-modal`);
@@ -183,7 +186,7 @@ class OpenLogin {
   }
 
   async login(params?: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
-    if (params && params.loginProvider) {
+    if (params?.loginProvider) {
       return this._selectedLogin(params);
     }
     return this._modal(params);
@@ -432,7 +435,12 @@ class OpenLogin {
         if (chunk.cancel) {
           reject(new Error("user canceled login"));
         } else {
-          resolve(await this._selectedLogin(merge(params, chunk)));
+          try {
+            const selectedLoginResponse = await this._selectedLogin(merge(params, chunk));
+            resolve(selectedLoginResponse);
+          } catch (error) {
+            reject(error);
+          }
         }
       });
     });

@@ -1,6 +1,6 @@
 {
   "name": "@toruslabs/openlogin-ed25519",
-  "version": "0.9.1",
+  "version": "0.9.3",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
   "main": "dist/openlogin-ed25519.cjs.js",
@@ -47,6 +47,6 @@
   },
   "gitHead": "2d61b7f1967ecd704470c46ff7c30c47d240f4a4",
   "devDependencies": {
-    "lint-staged": "^11.0.0"
+    "lint-staged": "^11.0.1"
   }
 }

@@ -1,0 +1,56 @@
+{
+  "root": true,
+  "ignorePatterns": ["projects/**/*"],
+  "overrides": [
+    {
+      "files": ["*.ts"],
+      "parserOptions": {
+        "project": ["tsconfig.json"],
+        "createDefaultProgram": true
+      },
+      "extends": [
+        "plugin:@angular-eslint/recommended",
+        "plugin:@angular-eslint/template/process-inline-templates",
+        "plugin:prettier/recommended",
+        "prettier"
+      ],
+      "plugins": ["prettier", "@typescript-eslint"],
+      "rules": {
+        "@angular-eslint/directive-selector": [
+          "error",
+          {
+            "type": "attribute",
+            "prefix": "app",
+            "style": "camelCase"
+          }
+        ],
+        "@angular-eslint/component-selector": [
+          "error",
+          {
+            "type": "element",
+            "prefix": "app",
+            "style": "kebab-case"
+          }
+        ],
+        "no-console": 0,
+        "import/prefer-default-export": 0,
+        "no-use-before-define": 0,
+        "promise/always-return": 0,
+        "simple-import-sort/imports": 0,
+        "simple-import-sort/exports": 0,
+        "sort-imports": 0,
+        "import/order": 0,
+        "no-param-reassign": [2, { "props": false }],
+        "no-unused-vars": 0,
+        "@typescript-eslint/no-unused-vars": 0,
+        "no-restricted-syntax": 0,
+        "max-len": [2, { "code": 150, "ignoreComments": true }]
+      }
+    },
+    {
+      "files": ["*.html"],
+      "extends": ["plugin:@angular-eslint/template/recommended"],
+      "rules": {}
+    }
+  ]
+}
