@@ -8,6 +8,24 @@ export type UserData = {
 
 export type WhiteLabelData = {
   /**
+   * App name to display in the UI
+   */
+  name?: string;
+  /**
+   * App logo to use in light mode
+   */
+  logoLight?: string;
+  /**
+   * App logo to use in dark mode
+   */
+  logoDark?: string;
+  /**
+   * Default language to use
+   *
+   * @defaultValue en
+   */
+  defaultLanguage?: string;
+  /**
    * Whether to enable dark mode
    *
    * @defaultValue false
