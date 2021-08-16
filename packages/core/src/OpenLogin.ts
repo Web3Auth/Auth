@@ -9,6 +9,7 @@ import {
   BaseLogoutParams,
   BaseRedirectParams,
   CUSTOM_LOGIN_PROVIDER_TYPE,
+  LOGIN_PROVIDER,
   LOGIN_PROVIDER_TYPE,
   LoginParams,
   OPENLOGIN_METHOD,
@@ -187,6 +188,17 @@ class OpenLogin {
 
   async login(params?: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
     if (params?.loginProvider) {
+      if (params.loginProvider === LOGIN_PROVIDER.CUSTOM_JWT) {
+        const { customJwtParams } = params;
+        if (!customJwtParams) throw new Error(`customJwtParams are required if loginProvider is : ${LOGIN_PROVIDER.CUSTOM_JWT}`);
+        if (!customJwtParams.verifierId) throw new Error(`customJwtParams must contain verifierId field`);
+        if (!customJwtParams.verifierIdField) throw new Error(`customJwtParams must contain verifierIdField field`);
+        if (!customJwtParams.idToken) throw new Error(`customJwtParams must contain idToken field`);
+        const loginConfig = this.state.loginConfig[LOGIN_PROVIDER.CUSTOM_JWT];
+        if (!loginConfig.verifier) {
+          throw new Error(`verifier field should be availble in ${LOGIN_PROVIDER.CUSTOM_JWT} login config, check loginConfig passed in constructor`);
+        }
+      }
       return this._selectedLogin(params);
     }
     return this._modal(params);

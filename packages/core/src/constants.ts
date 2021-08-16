@@ -218,7 +218,35 @@ export const LOGIN_PROVIDER = {
   WECHAT: "wechat",
   EMAIL_PASSWORDLESS: "email_passwordless",
   WEBAUTHN: "webauthn",
+  CUSTOM_JWT: "custom_jwt",
 } as const;
+
+export type CUSTOM_JWT_PARAMS = {
+  verifierIdField: string;
+
+  /**
+   * verifierId is the `value` of the jwt verifier id field which you will define
+   * while deploying your verifier. More details about custom  verifier are given
+   * {@link "https://docs.tor.us/customauth/setting-up-verifiers/custom-verifier" | here}
+   *
+   * It should be unique identifier field for a user, this field must also be
+   * encoded in your jwt token.
+   *
+   */
+  verifierId: string;
+
+  /**
+   * id token associated with verifierId.
+   */
+  idToken: string;
+
+  /**
+   * access token associated with verifierId.
+   */
+  accessToken?: string;
+
+  userInfoRoute?: string;
+};
 
 /**
  * {@label loginProviderType}
@@ -238,6 +266,14 @@ export type LoginParams = BaseRedirectParams & {
    *
    */
   loginProvider?: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
+
+  /**
+   * customJwtParams are required if you are using `custom_jwt` as your
+   * login provider. You can obtain your verifier by deploying your verifier
+   * from {@link "https://developer.tor.us"| developer dashbaord}. Please
+   * contact torus support if you face any difficulty in deploying verifiers
+   */
+  customJwtParams?: CUSTOM_JWT_PARAMS;
 
   /**
    * Setting fastLogin to `true` will force user to login with webauthn if
