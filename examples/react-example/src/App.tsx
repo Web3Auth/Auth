@@ -11,31 +11,23 @@ const openlogin = new OpenLogin({
   // clientId is not required for localhost, you can set it to any string
   // for development
   clientId: YOUR_PROJECT_ID,
-  network: "testnet",
+  network: "development",
+  _iframeUrl: "http://localhost:3000",
 });
 function App() {
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    setLoading(true);
-    async function initializeOpenlogin() {
-      try {
-        await openlogin.init();
-      } catch (error) {
-        console.log("error while initialization", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    initializeOpenlogin();
-  }, []);
-
   const printToConsole = (...args: unknown[]): void => {
     const el = document.querySelector("#console>p");
     if (el) {
       el.innerHTML = JSON.stringify(args || {}, null, 2);
     }
   };
+
+  const printUserInfo = async () => {
+    const userInfo = await openlogin.getUserInfo();
+    printToConsole(userInfo);
+  };
+
   async function login() {
     setLoading(true);
     try {
@@ -44,7 +36,12 @@ function App() {
         // with all default supported login providers or you can pass specific
         // login provider from available list to set as default.
         // for ex: google, facebook, twitter etc
-        loginProvider: "",
+        loginProvider: "custom_jwt",
+        verifierParams: {
+          verifier: "testing",
+          verifierId: "himanshuchawla2014@gmail.com",
+          jwtToken: "ksksmmmmmmmmm",
+        },
         redirectUrl: `${window.location.origin}`,
         relogin: true,
         // setting it true will force user to use touchid/faceid (if available on device)
@@ -66,8 +63,7 @@ function App() {
         // },
       });
       if (privKey && typeof privKey === "string") {
-        const userInfo = await openlogin.getUserInfo();
-        console.log("user info", userInfo);
+        await printUserInfo();
       }
 
       setLoading(false);
@@ -77,10 +73,23 @@ function App() {
     }
   }
 
-  const getUserInfo = async () => {
-    const userInfo = await openlogin.getUserInfo();
-    printToConsole(userInfo);
-  };
+  useEffect(() => {
+    setLoading(true);
+    async function initializeOpenlogin() {
+      try {
+        await openlogin.init();
+        if (openlogin.privKey) {
+          await printUserInfo();
+        }
+        setLoading(false);
+      } catch (error) {
+        console.log("error while initialization", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    initializeOpenlogin();
+  }, []);
 
   const getEd25519Key = async () => {
     const { sk } = getED25519Key(openlogin.privKey);
@@ -132,7 +141,7 @@ function App() {
                   <button onClick={() => logout()}>Logout</button>
                 </div>
                 <div>
-                  <button onClick={getUserInfo}>Get User Info</button>
+                  <button onClick={printUserInfo}>Get User Info</button>
                   <button onClick={getEd25519Key}>Get Ed25519Key </button>
 
                   <div id="console" style={{ whiteSpace: "pre-line" }}>

@@ -1,0 +1,60 @@
+{
+  "name": "@toruslabs/openlogin",
+  "version": "0.9.5",
+  "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
+  "license": "ISC",
+  "main": "dist/openlogin.cjs.js",
+  "unpkg": "dist/openlogin.umd.min.js",
+  "jsdelivr": "dist/openlogin.umd.min.js",
+  "types": "types/index.d.ts",
+  "author": "Torus Labs",
+  "scripts": {
+    "test": "mocha --config ../../.mocharc.json test/**.ts",
+    "test-debugger": "mocha --config ../../.mocharc.json --inspect-brk test/**.ts",
+    "dev": "rimraf dist/ && cross-env NODE_ENV=development parallel-webpack --no-stats",
+    "build": "rimraf dist/ && cross-env NODE_ENV=production parallel-webpack --no-stats",
+    "build:types": "rimraf types/ && tsc --project tsconfig.types.json",
+    "lint": "eslint --fix 'src/**/*.ts' 'index.ts'",
+    "prepack": "yarn run build && yarn run build:types",
+    "pre-commit": "lint-staged"
+  },
+  "dependencies": {
+    "@toruslabs/eccrypto": "^1.1.7",
+    "@toruslabs/http-helpers": "^1.4.0",
+    "@toruslabs/openlogin-jrpc": "^0.9.5",
+    "@toruslabs/openlogin-utils": "^0.9.5",
+    "lodash.merge": "^4.6.2",
+    "pump": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/lodash.merge": "^4.6.6",
+    "@types/node": "^16.4.0",
+    "@types/pump": "^1.1.1",
+    "lint-staged": "^11.0.1"
+  },
+  "peerDependencies": {
+    "@babel/runtime": "7.x"
+  },
+  "files": [
+    "dist",
+    "types"
+  ],
+  "lint-staged": {
+    "!(*d).ts": [
+      "eslint --cache --fix",
+      "prettier --write"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/torusresearch/OpenLoginSdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/torusresearch/OpenLoginSdk/issues"
+  },
+  "keywords": [],
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "2d61b7f1967ecd704470c46ff7c30c47d240f4a4"
+}
