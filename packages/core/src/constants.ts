@@ -245,6 +245,10 @@ export type CUSTOM_JWT_PARAMS = {
    */
   accessToken?: string;
 
+  /**
+   * optional rest endpoint for fetching user's info with accessToken
+   * accessToken should be passed if this param is being passed
+   */
   userInfoRoute?: string;
 };
 
