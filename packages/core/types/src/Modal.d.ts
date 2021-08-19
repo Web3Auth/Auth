@@ -1,4 +1,4 @@
-import { ObjectMultiplex, Substream, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
+import { LoginConfig, ObjectMultiplex, Substream, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 export declare const handleStream: (handle: Substream, eventName: string, handler: (chunk: any) => void) => void;
 export declare class Modal {
     modalUrl: string;
@@ -13,6 +13,6 @@ export declare class Modal {
     initIFrame(src: string): Promise<void>;
     _showModal(): void;
     _hideModal(): void;
-    _prompt(clientId: string, whiteLabel: WhiteLabelData, cb: (chunk: any) => Promise<void>): Promise<void>;
+    _prompt(clientId: string, whiteLabel: WhiteLabelData, loginConfig: LoginConfig, cb: (chunk: any) => Promise<void>): Promise<void>;
     cleanup(): Promise<void>;
 }
