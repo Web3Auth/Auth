@@ -48,11 +48,6 @@ const SignIn: React.FunctionComponent<{}> = () => {
       }
     }
   };
-
-  const passwordResetClicked = async () => {
-    history.push("requestcode");
-  };
-
   return (
     <Grid className={classes.root} container direction="row" justify="center" alignItems="center">
       <Grid xs={11} sm={6} lg={4} container direction="row" justify="center" alignItems="center" item>
@@ -70,13 +65,6 @@ const SignIn: React.FunctionComponent<{}> = () => {
             </Box>
             <Box width="80%" m={1}>
               <Password label="Password" passwordIsValid={passwordIsValid} setPassword={setPassword} />
-              <Grid container direction="row" justify="flex-start" alignItems="center">
-                <Box onClick={passwordResetClicked} mt={2}>
-                  <Typography className={classes.hover} variant="body2">
-                    Forgot Password?
-                  </Typography>
-                </Box>
-              </Grid>
             </Box>
 
             {/* Error */}

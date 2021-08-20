@@ -10,15 +10,15 @@ export enum AuthStatus {
 }
 
 export interface IAuth {
-  sessionInfo?: {
+  sessionInfo: {
     username?: string;
     email?: string;
     sub?: string;
     accessToken?: string;
     idToken?: string;
     refreshToken?: string;
-    privateKey?: string;
   };
+  privateKey?: string;
   attrInfo?: any;
   authStatus?: AuthStatus;
   signInWithEmail?: any;
@@ -32,6 +32,7 @@ export interface IAuth {
   getAttributes?: any;
   setAttribute?: any;
   setSessionInfo?: any;
+  setOpenloginKey?: any;
 }
 
 const defaultState: IAuth = {
@@ -57,6 +58,7 @@ const AuthProvider: React.FunctionComponent = ({ children }) => {
   const [authStatus, setAuthStatus] = useState(AuthStatus.Loading);
   const [sessionInfo, setSessionInfo] = useState({});
   const [attrInfo, setAttrInfo] = useState([]);
+  const [privateKey, setOpenloginKey] = useState("");
 
   useEffect(() => {
     async function getSessionInfo() {
@@ -71,7 +73,6 @@ const AuthProvider: React.FunctionComponent = ({ children }) => {
         });
         window.localStorage.setItem("accessToken", `${session.accessToken.jwtToken}`);
         window.localStorage.setItem("refreshToken", `${session.refreshToken.token}`);
-        await setAttribute({ Name: "website", Value: "https://github.com/dbroadhurst/aws-cognito-react" });
         const attr: any = await getAttributes();
         setAttrInfo(attr);
         setAuthStatus(AuthStatus.SignedIn);
@@ -139,7 +140,9 @@ const AuthProvider: React.FunctionComponent = ({ children }) => {
   const state: IAuth = {
     authStatus,
     sessionInfo,
+    privateKey,
     attrInfo,
+    setOpenloginKey,
     signUpWithEmail,
     signInWithEmail,
     setSessionInfo,

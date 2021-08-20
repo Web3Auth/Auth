@@ -10,7 +10,6 @@ import Grid from "@material-ui/core/Grid";
 import Box from "@material-ui/core/Box";
 import Button from "@material-ui/core/Button";
 import GitHubIcon from "@material-ui/icons/GitHub";
-import Link from "@material-ui/core/Link";
 
 import { AuthContext } from "../contexts/authContext";
 import openlogin, { loginWithOpenlogin } from "../openlogin";
@@ -34,31 +33,35 @@ const useStyles = makeStyles(() => ({
 
 export default function Home() {
   const auth = useContext(AuthContext);
-
-  useEffect(() => {
-    async function doLogin() {
-      await openlogin.init();
-      if (openlogin.privKey) {
-        auth.setSessionInfo({ ...auth.sessionInfo, privateKey: openlogin.privKey });
-      } else if (auth.sessionInfo?.idToken && !openlogin.privKey) {
-        await loginWithOpenlogin(auth.sessionInfo.idToken, auth.sessionInfo.email as string);
-      }
-    }
-    doLogin();
-  }, []);
-
+  const history = useHistory();
   const classes = useStyles();
 
-  const history = useHistory();
-
-  function signOutClicked() {
+  async function handleSignout() {
+    if (openlogin.privKey) {
+      await openlogin.logout({ fastLogin: true });
+    }
+    auth.setSessionInfo({});
     auth.signOut();
     history.push("/");
   }
-
-  function changePasswordClicked() {
-    history.push("changepassword");
-  }
+  useEffect(() => {
+    async function doLogin() {
+      try {
+        if (auth.sessionInfo?.idToken) {
+          await openlogin.init();
+          if (openlogin.privKey) {
+            auth.setOpenloginKey(openlogin.privKey);
+          } else {
+            await loginWithOpenlogin(auth.sessionInfo.idToken, auth.sessionInfo.email as string);
+          }
+        }
+      } catch (error) {
+        console.log("error while login", error);
+        await handleSignout();
+      }
+    }
+    doLogin();
+  }, [auth.sessionInfo.idToken]);
 
   return (
     <Grid container>
@@ -66,28 +69,25 @@ export default function Home() {
         <Box className={classes.hero} p={4}>
           <Grid className={classes.root} container direction="column" justify="center" alignItems="center">
             <Box m={2}>
-              <Link underline="none" color="inherit" href="https://github.com/dbroadhurst/aws-cognito-react">
-                <Grid container direction="row" justify="center" alignItems="center">
-                  <Box mr={3}>
-                    <GitHubIcon fontSize="large" />
-                  </Box>
-                  <Typography className={classes.title} variant="h3">
-                    AWS Cognito Starter Home
-                  </Typography>
-                </Grid>
-              </Link>
+              <Grid container direction="row" justify="center" alignItems="center">
+                <Box mr={3}>
+                  <GitHubIcon fontSize="large" />
+                </Box>
+                <Typography className={classes.title} variant="h3">
+                  AWS Cognito Starter X Openlogin
+                </Typography>
+              </Grid>
             </Box>
             <Box m={2}>
-              <Button onClick={signOutClicked} variant="contained" color="primary">
+              <Button onClick={handleSignout} variant="contained" color="primary">
                 Sign Out
               </Button>
             </Box>
-            <Box m={2}>
-              <Button onClick={changePasswordClicked} variant="contained" color="primary">
-                Change Password
-              </Button>
-            </Box>
           </Grid>
+        </Box>
+        <Box m={2}>
+          <Typography variant="h5">Openlogin Key</Typography>
+          <pre className={classes.session}>{auth.privateKey}</pre>
         </Box>
         <Box m={2}>
           <Typography variant="h5">Session Info</Typography>

@@ -45,10 +45,6 @@ const VerifyCode: React.FunctionComponent<{}> = () => {
     }
   };
 
-  const passwordResetClicked = async () => {
-    history.push("/resetpassword");
-  };
-
   return (
     <Grid className={classes.root} container direction="row" justify="center" alignItems="center">
       <Grid xs={11} sm={6} lg={4} container direction="row" justify="center" alignItems="center" item>
@@ -56,7 +52,7 @@ const VerifyCode: React.FunctionComponent<{}> = () => {
           <Grid container direction="column" justify="center" alignItems="center">
             {/* Title */}
             <Box m={2}>
-              <Typography variant="h3">Send Code</Typography>
+              <Typography variant="h3">Submit Code</Typography>
             </Box>
 
             {/* Sign In Form */}
@@ -67,15 +63,10 @@ const VerifyCode: React.FunctionComponent<{}> = () => {
             <Box width="80%" m={1}>
               <Code codeIsValid={codeIsValid} setCode={setCode} />
               <Grid container direction="row" justify="flex-start" alignItems="center">
-                <Box onClick={passwordResetClicked} mt={2}>
-                  <Typography className={classes.hover} variant="body2">
-                    Resend Code
+                <Box mt={2}>
+                  <Typography color="error" variant="body2">
+                    {error}
                   </Typography>
-                  <Box mt={2}>
-                    <Typography color="error" variant="body2">
-                      {error}
-                    </Typography>
-                  </Box>
                 </Box>
               </Grid>
             </Box>

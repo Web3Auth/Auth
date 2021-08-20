@@ -33,13 +33,13 @@ const Landing: React.FunctionComponent = () => {
     <Grid container>
       <Grid className={classes.root} container direction="column" justify="center" alignItems="center">
         <Box m={2}>
-          <Link underline="none" color="inherit" href="https://github.com/dbroadhurst/aws-cognito-react">
+          <Link underline="none" color="inherit" href="https://github.com/torusresearch/OpenLoginSdk/tree/master/examples/aws-cognito-custom-ui">
             <Grid container direction="row" justify="center" alignItems="center">
               <Box mr={3}>
                 <GitHubIcon fontSize="large" />
               </Box>
               <Typography className={classes.title} variant="h3">
-                AWS Cognito Starter
+                AWS Cognito X Openlogin
               </Typography>
             </Grid>
           </Link>
