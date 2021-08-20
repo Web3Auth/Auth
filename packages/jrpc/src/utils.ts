@@ -56,8 +56,7 @@ export type TypeOfLogin =
   | "email_password"
   | "passwordless"
   | "jwt"
-  | "webauthn"
-  | "custom_jwt";
+  | "webauthn";
 
 export type LoginConfig = Record<
   string,

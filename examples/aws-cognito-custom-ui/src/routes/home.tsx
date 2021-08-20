@@ -36,7 +36,6 @@ export default function Home() {
   const auth = useContext(AuthContext);
 
   useEffect(() => {
-    console.log("auth ", auth.sessionInfo);
     async function doLogin() {
       await openlogin.init();
       if (openlogin.privKey) {
@@ -46,7 +45,7 @@ export default function Home() {
       }
     }
     doLogin();
-  }, [auth.sessionInfo?.idToken]);
+  }, []);
 
   const classes = useStyles();
 

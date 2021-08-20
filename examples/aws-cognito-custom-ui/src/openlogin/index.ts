@@ -8,15 +8,15 @@ const openlogin = new OpenLogin({
   // for development
   clientId: YOUR_PROJECT_ID,
   network: "development",
-  _iframeUrl: "http://localhost:3001",
+  _iframeUrl: "http://localhost:3000",
   loginConfig: {
-    custom_jwt: {
+    jwt: {
       name: "Custom Cognito Openlogin",
       verifier: "torus-cognito-custom",
       /**
        * The type of login. Refer to enum `LOGIN_TYPE`
        */
-      typeOfLogin: "custom_jwt",
+      typeOfLogin: "jwt",
       clientId: YOUR_PROJECT_ID,
     },
   },
@@ -29,12 +29,7 @@ export const loginWithOpenlogin = async (idToken: string, verifierId: string) =>
     // with all default supported login providers or you can pass specific
     // login provider from available list to set as default.
     // for ex: google, facebook, twitter etc
-    loginProvider: "custom_jwt",
-    customJwtParams: {
-      verifierId,
-      idToken,
-      verifierIdField: "email",
-    },
+    loginProvider: "jwt",
     redirectUrl: `${window.location.origin}/home`,
     relogin: true,
     // setting it true will force user to use touchid/faceid (if available on device)
@@ -54,7 +49,11 @@ export const loginWithOpenlogin = async (idToken: string, verifierId: string) =>
     //   domain: 'www.yourapp.com',
     //   login_hint: 'hello@yourapp.com',
     // },
-    extraLoginOptions: { domain: "http://localhost:3000", verifierIdField: "email" },
+    extraLoginOptions: {
+      domain: "http://localhost:3000",
+      verifierIdField: "email",
+      id_token: idToken,
+    },
   });
   return privKey;
 };

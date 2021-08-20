@@ -37,7 +37,7 @@ export declare type WhiteLabelData = {
         [P in string]: string;
     };
 };
-export declare type TypeOfLogin = "google" | "facebook" | "reddit" | "discord" | "twitch" | "apple" | "github" | "linkedin" | "twitter" | "weibo" | "line" | "email_password" | "passwordless" | "jwt" | "webauthn" | "custom_jwt";
+export declare type TypeOfLogin = "google" | "facebook" | "reddit" | "discord" | "twitch" | "apple" | "github" | "linkedin" | "twitter" | "weibo" | "line" | "email_password" | "passwordless" | "jwt" | "webauthn";
 export declare type LoginConfig = Record<string, {
     verifier: string;
     /**
