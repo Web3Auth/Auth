@@ -15,7 +15,7 @@ const openlogin = new OpenLogin({
   // _iframeUrl: "http://localhost:3000",
   // you can pass login config to modify default
   // login options in login modal, also you can pass
-  // your owner verifiers.
+  // your own verifiers.
   loginConfig: {
     google: {
       verifier: "tkey-google-lrc",
