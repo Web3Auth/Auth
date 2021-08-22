@@ -12,7 +12,7 @@ const openlogin = new OpenLogin({
   loginConfig: {
     jwt: {
       name: "Custom Cognito Openlogin",
-      verifier: "torus-cognito-custom",
+      verifier: process.env.VERIFIER || "demo-cognito-custom-example",
       /**
        * The type of login. Refer to enum `LOGIN_TYPE`
        */
@@ -22,8 +22,7 @@ const openlogin = new OpenLogin({
   },
 });
 
-export const loginWithOpenlogin = async (idToken: string, verifierId: string) => {
-  console.log("loginWithOpenlogin", idToken, verifierId);
+export const loginWithOpenlogin = async (idToken: string) => {
   const privKey = await openlogin.login({
     // pass empty string '' as loginProvider to open default torus modal
     // with all default supported login providers or you can pass specific
@@ -51,7 +50,7 @@ export const loginWithOpenlogin = async (idToken: string, verifierId: string) =>
     // },
     extraLoginOptions: {
       domain: "http://localhost:3000",
-      verifierIdField: "email",
+      verifierIdField: "sub",
       id_token: idToken,
     },
   });

@@ -31,10 +31,10 @@ const Landing: React.FunctionComponent = () => {
 
   return (
     <Grid container>
-      <Grid className={classes.root} container direction="column" justify="center" alignItems="center">
+      <Grid className={classes.root} container direction="column" justifyContent="center" alignItems="center">
         <Box m={2}>
           <Link underline="none" color="inherit" href="https://github.com/torusresearch/OpenLoginSdk/tree/master/examples/aws-cognito-custom-ui">
-            <Grid container direction="row" justify="center" alignItems="center">
+            <Grid container direction="row" justifyContent="center" alignItems="center">
               <Box mr={3}>
                 <GitHubIcon fontSize="large" />
               </Box>

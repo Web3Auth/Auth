@@ -1,7 +1,7 @@
 import { AuthenticationDetails, CognitoUser, CognitoUserAttribute, CognitoUserPool } from "amazon-cognito-identity-js";
 
-const userPoolId = process.env.REACT_APP_USERPOOL_ID;
-const clientId = process.env.REACT_APP_CLIENT_ID;
+const userPoolId = process.env.REACT_APP_USERPOOL_ID || "ap-southeast-1_2fuGnyeib";
+const clientId = process.env.REACT_APP_CLIENT_ID || "hqhct77454uj63961rcqeu4u7";
 
 console.log(`userpool id=${userPoolId}`);
 console.log(`client id=${clientId}`);
@@ -47,16 +47,9 @@ export async function getSession() {
   });
 }
 
-export async function signUpUserWithEmail(username: string, email: string, password: string) {
+export async function signUpUserWithEmail(email: string, password: string) {
   return new Promise((resolve, reject) => {
-    const attributeList = [
-      new CognitoUserAttribute({
-        Name: "email",
-        Value: email,
-      }),
-    ];
-
-    userPool.signUp(username, password, attributeList, [], (err, res) => {
+    userPool.signUp(email, password, [], [], (err, res) => {
       if (err) {
         reject(err);
       } else {
@@ -64,6 +57,7 @@ export async function signUpUserWithEmail(username: string, email: string, passw
       }
     });
   }).catch((err) => {
+    console.log("error", err);
     throw err;
   });
 }

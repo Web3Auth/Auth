@@ -9,7 +9,7 @@ import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
 
-import { useValidUsername } from "../../hooks/useAuthHooks";
+import { useValidEmail } from "../../hooks/useAuthHooks";
 import { Username } from "../../components/authComponents";
 
 import { AuthContext } from "../../contexts/authContext";
@@ -29,11 +29,11 @@ const useStyles = makeStyles({
 export default function RequestCode() {
   const classes = useStyles();
 
-  const { username, setUsername, usernameIsValid } = useValidUsername("");
+  const { email, setEmail, emailIsValid } = useValidEmail("");
   const [error, setError] = useState("");
   const [resetSent, setResetSent] = useState(false);
 
-  const isValid = !usernameIsValid || username.length === 0;
+  const isValid = !emailIsValid || email.length === 0;
 
   const history = useHistory();
 
@@ -41,7 +41,7 @@ export default function RequestCode() {
 
   const sendCodeClicked = async () => {
     try {
-      await authContext.sendCode(username);
+      await authContext.sendCode(email);
       setResetSent(true);
     } catch (err) {
       setError("Unknown user");
@@ -51,7 +51,7 @@ export default function RequestCode() {
   const emailSent = (
     <>
       <Box mt={1}>
-        <Typography className={classes.text} variant="h5">{`Reset Code Sent to ${username}`}</Typography>
+        <Typography className={classes.text} variant="h5">{`Reset Code Sent to ${email}`}</Typography>
       </Box>
       <Box mt={4}>
         <Button onClick={() => history.push("forgotpassword")} color="primary" variant="contained">
@@ -64,7 +64,7 @@ export default function RequestCode() {
   const sendCode = (
     <>
       <Box width="80%" m={1}>
-        <Username usernameIsValid={usernameIsValid} setUsername={setUsername} />
+        <Username usernameIsValid={emailIsValid} setUsername={setEmail} />
       </Box>
       <Box mt={2}>
         <Typography color="error" variant="body2">

@@ -1,6 +1,6 @@
 # Aws cognito custom ui with openlogin
 
-## Create .env file with following variables:-
+## If you want to use your own verifier then create .env file with following variables:-
 
 ```
 // your aws cognito user pool id
@@ -8,7 +8,12 @@ REACT_APP_USERPOOL_ID=
 
 // your aws cognito app client id
 REACT_APP_CLIENT_ID=
+
+// your custom jwt verifier
+REACT_APP_VERIFIER=
 ```
+
+- Note: By default torus demo verifier and aws cognito config is being used.
 ## Available Scripts
 
 In the project directory, you can run:

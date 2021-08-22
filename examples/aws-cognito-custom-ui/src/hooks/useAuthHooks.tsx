@@ -46,28 +46,6 @@ export const useValidPassword = (initialValue: string) => {
   return { password, setPassword, passwordIsValid };
 };
 
-export const useValidUsername = (initialValue: string) => {
-  const [username, setUsername] = useState(initialValue);
-  const [usernameIsValid, setUsernameIsValid] = useState(true);
-
-  useEffect(() => {
-    const usernameSchema = yup.object().shape({
-      username: yup.string().min(8).required(),
-    });
-
-    if (username.length === 0) {
-      setUsernameIsValid(true);
-      return;
-    }
-
-    const isValid = usernameSchema.isValidSync({ username });
-
-    setUsernameIsValid(isValid);
-  }, [username]);
-
-  return { username, setUsername, usernameIsValid };
-};
-
 export const useValidCode = (initialValue: string) => {
   const [code, setCode] = useState(initialValue);
   const [codeIsValid, setCodeIsValid] = useState(true);

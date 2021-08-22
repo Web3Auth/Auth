@@ -87,9 +87,9 @@ const AuthProvider: React.FunctionComponent = ({ children }) => {
     return null;
   }
 
-  async function signInWithEmail(username: string, password: string) {
+  async function signInWithEmail(email: string, password: string) {
     try {
-      await cognito.signInWithEmail(username, password);
+      await cognito.signInWithEmail(email, password);
       setAuthStatus(AuthStatus.SignedIn);
     } catch (err) {
       setAuthStatus(AuthStatus.SignedOut);
@@ -97,8 +97,8 @@ const AuthProvider: React.FunctionComponent = ({ children }) => {
     }
   }
 
-  async function signUpWithEmail(username: string, email: string, password: string) {
-    await cognito.signUpUserWithEmail(username, email, password);
+  async function signUpWithEmail(email: string, password: string) {
+    await cognito.signUpUserWithEmail(email, password);
   }
 
   function signOut() {
@@ -106,8 +106,8 @@ const AuthProvider: React.FunctionComponent = ({ children }) => {
     setAuthStatus(AuthStatus.SignedOut);
   }
 
-  async function verifyCode(username: string, code: string) {
-    await cognito.verifyCode(username, code);
+  async function verifyCode(email: string, code: string) {
+    await cognito.verifyCode(email, code);
   }
 
   async function getSession() {
@@ -125,16 +125,8 @@ const AuthProvider: React.FunctionComponent = ({ children }) => {
     return res;
   }
 
-  async function sendCode(username: string) {
-    await cognito.sendCode(username);
-  }
-
-  async function forgotPassword(username: string, code: string, password: string) {
-    await cognito.forgotPassword(username, code, password);
-  }
-
-  async function changePassword(oldPassword: string, newPassword: string) {
-    await cognito.changePassword(oldPassword, newPassword);
+  async function sendCode(email: string) {
+    await cognito.sendCode(email);
   }
 
   const state: IAuth = {
@@ -150,8 +142,6 @@ const AuthProvider: React.FunctionComponent = ({ children }) => {
     verifyCode,
     getSession,
     sendCode,
-    forgotPassword,
-    changePassword,
     getAttributes,
     setAttribute,
   };
