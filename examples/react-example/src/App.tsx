@@ -12,30 +12,55 @@ const openlogin = new OpenLogin({
   // for development
   clientId: YOUR_PROJECT_ID,
   network: "testnet",
+  // _iframeUrl: "http://localhost:3000",
+  // you can pass login config to modify default
+  // login options in login modal, also you can pass
+  // your own verifiers.
+  loginConfig: {
+    google: {
+      verifier: "tkey-google-lrc",
+      name: "google",
+      typeOfLogin: "google",
+      showOnModal: true,
+      showOnDesktop: true,
+      showOnMobile: true,
+    },
+    facebook: {
+      verifier: "tkey-facebook-lrc",
+      name: "facebook",
+      typeOfLogin: "facebook",
+      showOnModal: true,
+      showOnDesktop: false,
+      showOnMobile: true,
+      mainOption: true,
+      description: "facebook social login",
+    },
+    // twitter: {
+    //   verifier: "YOUR_CUSTOM_VERIFIER",
+    //   name: "facebook",
+    //   typeOfLogin: "facebook",
+    //   showOnModal: true,
+    //   showOnDesktop: true,
+    //   showOnMobile: false,
+    //   mainOption: true,
+    //   description: "any description",
+    // },
+  },
 });
 function App() {
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    setLoading(true);
-    async function initializeOpenlogin() {
-      try {
-        await openlogin.init();
-      } catch (error) {
-        console.log("error while initialization", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    initializeOpenlogin();
-  }, []);
-
   const printToConsole = (...args: unknown[]): void => {
     const el = document.querySelector("#console>p");
     if (el) {
       el.innerHTML = JSON.stringify(args || {}, null, 2);
     }
   };
+
+  const printUserInfo = async () => {
+    const userInfo = await openlogin.getUserInfo();
+    printToConsole(userInfo);
+  };
+
   async function login() {
     setLoading(true);
     try {
@@ -66,8 +91,7 @@ function App() {
         // },
       });
       if (privKey && typeof privKey === "string") {
-        const userInfo = await openlogin.getUserInfo();
-        console.log("user info", userInfo);
+        await printUserInfo();
       }
 
       setLoading(false);
@@ -77,10 +101,23 @@ function App() {
     }
   }
 
-  const getUserInfo = async () => {
-    const userInfo = await openlogin.getUserInfo();
-    printToConsole(userInfo);
-  };
+  useEffect(() => {
+    setLoading(true);
+    async function initializeOpenlogin() {
+      try {
+        await openlogin.init();
+        if (openlogin.privKey) {
+          await printUserInfo();
+        }
+        setLoading(false);
+      } catch (error) {
+        console.log("error while initialization", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    initializeOpenlogin();
+  }, []);
 
   const getEd25519Key = async () => {
     const { sk } = getED25519Key(openlogin.privKey);
@@ -132,7 +169,7 @@ function App() {
                   <button onClick={() => logout()}>Logout</button>
                 </div>
                 <div>
-                  <button onClick={getUserInfo}>Get User Info</button>
+                  <button onClick={printUserInfo}>Get User Info</button>
                   <button onClick={getEd25519Key}>Get Ed25519Key </button>
 
                   <div id="console" style={{ whiteSpace: "pre-line" }}>

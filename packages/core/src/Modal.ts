@@ -1,4 +1,4 @@
-import { ObjectMultiplex, PostMessageStream, setupMultiplex, Substream, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
+import { LoginConfig, ObjectMultiplex, PostMessageStream, setupMultiplex, Substream, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 
 import { modalDOMElementID } from "./constants";
 import { documentReady } from "./utils";
@@ -100,7 +100,7 @@ export class Modal {
     );
   }
 
-  async _prompt(clientId: string, whiteLabel: WhiteLabelData, cb: (chunk: any) => Promise<void>): Promise<void> {
+  async _prompt(clientId: string, whiteLabel: WhiteLabelData, loginConfig: LoginConfig, cb: (chunk: any) => Promise<void>): Promise<void> {
     this._showModal();
     const modalHandler = (chunk) => {
       this._hideModal();
@@ -111,6 +111,7 @@ export class Modal {
       name: "prompt",
       clientId,
       whiteLabel,
+      loginConfig,
     });
   }
 
