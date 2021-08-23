@@ -49,6 +49,6 @@
   },
   "gitHead": "2d61b7f1967ecd704470c46ff7c30c47d240f4a4",
   "devDependencies": {
-    "lint-staged": "^11.0.1"
+    "lint-staged": "^11.1.2"
   }
 }
