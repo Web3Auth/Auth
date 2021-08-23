@@ -11,8 +11,40 @@ const openlogin = new OpenLogin({
   // clientId is not required for localhost, you can set it to any string
   // for development
   clientId: YOUR_PROJECT_ID,
-  network: "development",
-  _iframeUrl: "http://localhost:3000",
+  network: "testnet",
+  // you can pass login config to modify default
+  // login options in login modal, also you can pass
+  // your own verifiers.
+  loginConfig: {
+    google: {
+      verifier: "tkey-google-lrc",
+      name: "google",
+      typeOfLogin: "google",
+      showOnModal: true,
+      showOnDesktop: true,
+      showOnMobile: true,
+    },
+    facebook: {
+      verifier: "tkey-facebook-lrc",
+      name: "facebook",
+      typeOfLogin: "facebook",
+      showOnModal: true,
+      showOnDesktop: false,
+      showOnMobile: true,
+      mainOption: true,
+      description: "facebook social login",
+    },
+    // twitter: {
+    //   verifier: "YOUR_CUSTOM_VERIFIER",
+    //   name: "facebook",
+    //   typeOfLogin: "facebook",
+    //   showOnModal: true,
+    //   showOnDesktop: true,
+    //   showOnMobile: false,
+    //   mainOption: true,
+    //   description: "any description",
+    // },
+  },
 });
 function App() {
   const [loading, setLoading] = useState(false);
@@ -36,12 +68,7 @@ function App() {
         // with all default supported login providers or you can pass specific
         // login provider from available list to set as default.
         // for ex: google, facebook, twitter etc
-        loginProvider: "custom_jwt",
-        verifierParams: {
-          verifier: "testing",
-          verifierId: "himanshuchawla2014@gmail.com",
-          jwtToken: "ksksmmmmmmmmm",
-        },
+        loginProvider: "",
         redirectUrl: `${window.location.origin}`,
         relogin: true,
         // setting it true will force user to use touchid/faceid (if available on device)

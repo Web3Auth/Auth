@@ -47,8 +47,10 @@ export default function Home() {
   useEffect(() => {
     async function doLogin() {
       try {
+        console.log("auth.sessionInfo.idToken", auth.sessionInfo.idToken);
         if (auth.sessionInfo?.idToken) {
           await openlogin.init();
+          console.log("openlogin.privKey", openlogin.privKey);
           if (openlogin.privKey) {
             auth.setOpenloginKey(openlogin.privKey);
           } else {
