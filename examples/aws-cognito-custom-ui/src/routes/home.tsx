@@ -40,6 +40,7 @@ export default function Home() {
     if (openlogin.privKey) {
       await openlogin.logout({ fastLogin: true });
     }
+    auth.setOpenloginKey("");
     auth.setSessionInfo({});
     auth.signOut();
     history.push("/");

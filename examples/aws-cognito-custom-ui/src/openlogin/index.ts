@@ -7,12 +7,11 @@ const openlogin = new OpenLogin({
   // clientId is not required for localhost, you can set it to any string
   // for development
   clientId: YOUR_PROJECT_ID,
-  network: "development",
-  _iframeUrl: "http://localhost:3000",
+  network: "testnet",
   loginConfig: {
     jwt: {
       name: "Custom Cognito Openlogin",
-      verifier: process.env.VERIFIER || "demo-cognito-custom-example",
+      verifier: process.env.REACT_APP_VERIFIER || "demo-cognito-custom-example",
       /**
        * The type of login. Refer to enum `LOGIN_TYPE`
        */
