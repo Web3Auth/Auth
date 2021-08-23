@@ -20,6 +20,9 @@ function App() {
         network: "testnet",
       });
       await openlogin.init();
+      if (openlogin.privKey) {
+        await printUserInfo()
+      }
       setLoading(false);
     }
     initializeOpenlogin();
@@ -61,8 +64,7 @@ function App() {
         // },
       });
       if (privKey && typeof privKey === "string") {
-        const userInfo = await openlogin.getUserInfo();
-        console.log("user info", userInfo);
+        await printUserInfo();
       }
 
       setLoading(false);
@@ -72,7 +74,7 @@ function App() {
     }
   }
 
-  const getUserInfo = async () => {
+  const printUserInfo = async () => {
     const userInfo = await openlogin.getUserInfo();
     printToConsole(userInfo);
   };

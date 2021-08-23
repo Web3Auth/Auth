@@ -218,6 +218,7 @@ export const LOGIN_PROVIDER = {
   WECHAT: "wechat",
   EMAIL_PASSWORDLESS: "email_passwordless",
   WEBAUTHN: "webauthn",
+  JWT: "jwt",
 } as const;
 
 /**
