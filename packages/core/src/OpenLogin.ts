@@ -64,6 +64,8 @@ class OpenLogin {
         options._iframeUrl = "https://app.openlogin.com";
       } else if (options.network === OPENLOGIN_NETWORK.TESTNET) {
         options._iframeUrl = "https://beta.openlogin.com";
+      } else if (options.network === OPENLOGIN_NETWORK.DEVELOPMENT) {
+        options._iframeUrl = "http://localhost:3000";
       }
     }
     if (!options._iframeUrl) {
