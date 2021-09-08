@@ -38,4 +38,24 @@ export declare function createScaffoldMiddleware(handlers: {
 }): JRPCMiddleware<unknown, unknown>;
 export declare function createIdRemapMiddleware(): JRPCMiddleware<unknown, unknown>;
 export declare function createLoggerMiddleware(logger: ConsoleLike): JRPCMiddleware<unknown, unknown>;
+export declare type AsyncJRPCEngineNextCallback = () => Promise<void>;
+declare type Maybe<T> = Partial<T> | null | undefined;
+export interface JRPCSuccess<T> extends JRPCBase {
+    result: Maybe<T>;
+}
+export interface JRPCError {
+    code: number;
+    message: string;
+    data?: unknown;
+    stack?: string;
+}
+export interface PendingJRPCResponse<T> extends JRPCBase {
+    result?: T;
+    error?: Error | JRPCError;
+}
+export interface JRPCFailure extends JRPCBase {
+    error: JRPCError;
+}
+export declare type AsyncJRPCMiddleware<T, U> = (req: JRPCRequest<T>, res: PendingJRPCResponse<U>, next: AsyncJRPCEngineNextCallback) => Promise<void>;
+export declare function createAsyncMiddleware<T, U>(asyncMiddleware: AsyncJRPCMiddleware<T, U>): JRPCMiddleware<T, U>;
 export {};
