@@ -103,7 +103,7 @@ export interface ExtraLoginOptions extends BaseLoginOptions {
    * `'example.eu.auth0.com'` or , `'example.mycompany.com'`
    * (when using [custom domains](https://auth0.com/docs/custom-domains))
    */
-  domain: string;
+  domain?: string;
   /**
    * The Client ID found on your Application settings page
    */
