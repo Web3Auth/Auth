@@ -1,4 +1,4 @@
-import { Duplex } from "stream";
+import { Duplex } from "readable-stream";
 
 function noop(): void {
   return undefined;
@@ -23,7 +23,7 @@ export default class PostMessageStream extends Duplex {
 
   _onMessage: any;
 
-  _synIntervalId: ReturnType<typeof setTimeout>;
+  _synIntervalId: ReturnType<typeof window.setTimeout>;
 
   constructor({ name, target, targetWindow }: { name: string; target: string; targetWindow: Window }) {
     super({

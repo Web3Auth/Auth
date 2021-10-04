@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "@types/keccak": "^3.0.1",
-    "@types/node": "^16.7.1",
+    "@types/node": "^14.17.20",
     "@types/randombytes": "^2.0.0",
     "lint-staged": "^11.1.2"
   },

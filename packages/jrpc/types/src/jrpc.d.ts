@@ -1,5 +1,4 @@
-/// <reference types="node" />
-import { Duplex } from "stream";
+import { Duplex } from "readable-stream";
 import SafeEventEmitter from "./safeEventEmitter";
 import SerializableError from "./serializableError";
 export declare type Json = boolean | number | string | null | {

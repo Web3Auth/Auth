@@ -1,5 +1,4 @@
-/// <reference types="node" />
-import { Duplex } from "stream";
+import { Duplex } from "readable-stream";
 export default class PostMessageStream extends Duplex {
     _init: boolean;
     _haveSyn: boolean;
@@ -8,7 +7,7 @@ export default class PostMessageStream extends Duplex {
     _targetWindow: Window;
     _origin: string;
     _onMessage: any;
-    _synIntervalId: ReturnType<typeof setTimeout>;
+    _synIntervalId: ReturnType<typeof window.setTimeout>;
     constructor({ name, target, targetWindow }: {
         name: string;
         target: string;

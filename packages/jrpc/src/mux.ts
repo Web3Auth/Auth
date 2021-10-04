@@ -2,11 +2,14 @@ import { BufferEncoding } from "@toruslabs/openlogin-utils";
 import eos from "end-of-stream";
 import once from "once";
 import pump from "pump";
-import { Duplex } from "stream";
+import { Duplex } from "readable-stream";
+import type { Readable, Writable } from "stream";
 
 import Substream from "./substream";
 
 export const IGNORE_SUBSTREAM = Symbol("IGNORE_SUBSTREAM");
+
+export type Stream = Readable | Writable;
 
 interface Chunk {
   name: string;
@@ -92,8 +95,8 @@ export class ObjectMultiplex extends Duplex {
 // util
 function anyStreamEnd(stream: ObjectMultiplex, _cb: (error?: Error | null) => void) {
   const cb = once(_cb);
-  eos(stream, { readable: false }, cb);
-  eos(stream, { writable: false }, cb);
+  eos(stream as unknown as Stream, { readable: false }, cb);
+  eos(stream as unknown as Stream, { writable: false }, cb);
 }
 
 export function setupMultiplex(stream: Duplex): ObjectMultiplex {
@@ -105,7 +108,7 @@ export function setupMultiplex(stream: Duplex): ObjectMultiplex {
     return this.createStream(name);
   };
 
-  pump(stream, mux, stream, (err) => {
+  pump(stream as unknown as Stream, mux as unknown as Stream, stream as unknown as Stream, (err) => {
     if (err) window.console.error(err);
   });
   return mux;
