@@ -15,6 +15,6 @@
     "paths": {
       "@toruslabs/*": ["*/index.ts"]
     },
-    "skipLibCheck": true,
+    "skipLibCheck": true
   }
 }

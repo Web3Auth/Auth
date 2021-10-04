@@ -16,13 +16,10 @@
     "importHelpers": true,
     "target": "es2017",
     "module": "es2020",
-    "lib": [
-      "es2018",
-      "dom"
-    ],
+    "lib": ["es2018", "dom"],
     "paths": {
       "crypto": ["./node_modules/crypto-browserify"],
-      "stream": ["./node_modules/stream-browserify"],
+      "readable-stream": ["./node_modules/stream-browserify"],
       "process": ["./node_modules/process/browser"]
     }
   },

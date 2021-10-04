@@ -1,5 +1,4 @@
-/// <reference types="node" />
-import { Duplex } from "stream";
+import { Duplex } from "readable-stream";
 import { JRPCMiddleware, JRPCRequest, JRPCResponse } from "./jrpc";
 import SafeEventEmitter from "./safeEventEmitter";
 /**

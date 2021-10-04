@@ -1,8 +1,10 @@
 /// <reference types="node" />
 import { BufferEncoding } from "@toruslabs/openlogin-utils";
-import { Duplex } from "stream";
+import { Duplex } from "readable-stream";
+import type { Readable, Writable } from "stream";
 import Substream from "./substream";
 export declare const IGNORE_SUBSTREAM: unique symbol;
+export declare type Stream = Readable | Writable;
 interface Chunk {
     name: string;
     data: unknown;

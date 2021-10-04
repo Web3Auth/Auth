@@ -7,6 +7,7 @@ import {
   PostMessageStream,
   SafeEventEmitter,
   setupMultiplex,
+  Stream,
 } from "@toruslabs/openlogin-jrpc";
 import { randomId } from "@toruslabs/openlogin-utils";
 import pump from "pump";
@@ -57,9 +58,14 @@ export default class Provider extends SafeEventEmitter {
     this.mux = setupMultiplex(this.rpcStream);
 
     const JRPCConnection = createStreamMiddleware();
-    pump(JRPCConnection.stream, this.mux.createStream("jrpc"), JRPCConnection.stream, (error) => {
-      window.console.log(`JRPC connection broken`, error);
-    });
+    pump(
+      JRPCConnection.stream as unknown as Stream,
+      this.mux.createStream("jrpc") as unknown as Stream,
+      JRPCConnection.stream as unknown as Stream,
+      (error) => {
+        window.console.log(`JRPC connection broken`, error);
+      }
+    );
 
     const rpcEngine = new JRPCEngine();
     rpcEngine.push(createIdRemapMiddleware());

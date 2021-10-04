@@ -21,13 +21,15 @@
   "dependencies": {
     "@toruslabs/openlogin-utils": "^0.10.2",
     "end-of-stream": "^1.4.4",
-    "fast-safe-stringify": "^2.0.8",
+    "fast-safe-stringify": "^2.1.1",
     "once": "^1.4.0",
-    "pump": "^3.0.0"
+    "pump": "^3.0.0",
+    "readable-stream": "^3.6.0"
   },
   "devDependencies": {
     "@types/end-of-stream": "^1.4.1",
-    "@types/node": "^16.7.1",
+    "@types/readable-stream": "^2.3.11",
+    "@types/node": "^14.17.20",
     "@types/once": "^1.4.0",
     "@types/pump": "^1.1.1",
     "lint-staged": "^11.1.2"
