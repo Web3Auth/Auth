@@ -1,3 +1,4 @@
+export { default as BasePostMessageStream } from "./src/basePostMessageStream";
 export * from "./src/jrpc";
 export * from "./src/jrpcEngine";
 export * from "./src/mux";
