@@ -5,7 +5,12 @@ const fetch = require("node-fetch");
 require("jsdom-global")("<!doctype html><html><body></body></html>", {
   url: "https://example.com",
 });
-require("ts-node").register({ project: path.resolve("tsconfig.json"), require: ["tsconfig-paths/register"], transpileOnly: true });
+require("ts-node").register({
+  project: path.resolve("tsconfig.json"),
+  require: ["tsconfig-paths/register"],
+  transpileOnly: true,
+  compilerOptions: { module: "commonjs" },
+});
 
 const register = require("@babel/register").default;
 

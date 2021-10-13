@@ -1,7 +1,7 @@
 import { sign } from "@toruslabs/tweetnacl-js";
 import { strictEqual } from "assert";
 
-import { getED25519Key } from "../index";
+import { getED25519Key } from "../src/index";
 
 const hex = "464482ca33a3bbc47278deab1f5b896a28d36fa509b65cde837f871f3253c5ba";
 
