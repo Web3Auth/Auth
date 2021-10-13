@@ -43,6 +43,3 @@ jobs:
 
       - name: Build
         run: yarn run build
-
-      - name: Build Types
-        run: yarn run build:types
