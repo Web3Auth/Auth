@@ -26,7 +26,7 @@
     "@babel/preset-env": "^7.15.8",
     "@babel/preset-typescript": "^7.15.0",
     "@babel/register": "^7.15.3",
-    "@babel/runtime-corejs3": "^7.15.4",
+    "@babel/runtime": "^7.15.4",
     "@rollup/plugin-typescript": "^8.2.5",
     "@types/bn.js": "^5.1.0",
     "@types/mocha": "^9.0.0",
