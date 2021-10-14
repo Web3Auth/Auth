@@ -33,7 +33,7 @@
     "@types/once": "^1.4.0",
     "@types/pump": "^1.1.1",
     "@types/readable-stream": "^2.3.11",
-    "lint-staged": "^11.1.2"
+    "lint-staged": "^11.2.3"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"
