@@ -2,10 +2,17 @@
 
 const path = require("path");
 const fetch = require("node-fetch");
-require("jsdom-global")("<!doctype html><html><body></body></html>", {
-  url: "https://example.com",
+// require("jsdom-global")("<!doctype html><html><body></body></html>", {
+//   url: "https://example.com",
+// });
+const tsConfigPath = path.resolve(".", "tsconfig.json");
+
+require("ts-node").register({
+  project: tsConfigPath,
+  require: ["tsconfig-paths/register"],
+  transpileOnly: true,
+  compilerOptions: { module: "commonjs" },
 });
-require("ts-node").register({ project: path.resolve("tsconfig.json"), require: ["tsconfig-paths/register"], transpileOnly: true });
 
 const register = require("@babel/register").default;
 

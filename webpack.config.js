@@ -44,8 +44,8 @@ function generateWebpackConfig({ pkg, pkgName, currentPath, alias }) {
   const depsList = Object.keys(pkg.dependencies);
   const baseConfig = {
     mode: NODE_ENV,
-    devtool: NODE_ENV === "production" ? false : "source-map",
-    entry: path.resolve(currentPath, "index.ts"),
+    devtool: "source-map",
+    entry: path.resolve(currentPath, "src", "index.ts"),
     target: "web",
     output: {
       path: path.resolve(currentPath, "dist"),

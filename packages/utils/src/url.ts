@@ -1,5 +1,3 @@
-import { URLSearchParams } from "url";
-
 import { HashParams } from "./hashParams";
 
 export class URLWithHashParams extends URL {

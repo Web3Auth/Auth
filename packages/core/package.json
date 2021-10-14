@@ -4,18 +4,18 @@
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
   "main": "dist/openlogin.cjs.js",
+  "module": "dist/openlogin.esm.js",
   "unpkg": "dist/openlogin.umd.min.js",
   "jsdelivr": "dist/openlogin.umd.min.js",
-  "types": "types/index.d.ts",
+  "types": "dist/types/index.d.ts",
   "author": "Torus Labs",
   "scripts": {
     "test": "mocha --config ../../.mocharc.json test/**.ts",
     "test-debugger": "mocha --config ../../.mocharc.json --inspect-brk test/**.ts",
-    "dev": "rimraf dist/ && cross-env NODE_ENV=development parallel-webpack --no-stats",
-    "build": "rimraf dist/ && cross-env NODE_ENV=production parallel-webpack --no-stats",
-    "build:types": "rimraf types/ && tsc --project tsconfig.types.json",
-    "lint": "eslint --fix 'src/**/*.ts' 'index.ts'",
-    "prepack": "yarn run build && yarn run build:types",
+    "dev": "rimraf dist/ && cross-env NODE_ENV=development rollup -c && parallel-webpack --no-stats",
+    "build": "rimraf dist/ && cross-env NODE_ENV=production rollup -c && parallel-webpack --no-stats",
+    "lint": "eslint --fix 'src/**/*.ts'",
+    "prepack": "yarn run build",
     "pre-commit": "lint-staged"
   },
   "dependencies": {
@@ -30,7 +30,7 @@
     "@types/lodash.merge": "^4.6.6",
     "@types/node": "^14.17.20",
     "@types/pump": "^1.1.1",
-    "lint-staged": "^11.1.2"
+    "lint-staged": "^11.2.3"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"
