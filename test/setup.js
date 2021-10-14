@@ -5,8 +5,10 @@ const fetch = require("node-fetch");
 // require("jsdom-global")("<!doctype html><html><body></body></html>", {
 //   url: "https://example.com",
 // });
+const tsConfigPath = path.resolve(".", "tsconfig.json");
+
 require("ts-node").register({
-  project: path.resolve("tsconfig.json"),
+  project: tsConfigPath,
   require: ["tsconfig-paths/register"],
   transpileOnly: true,
   compilerOptions: { module: "commonjs" },
