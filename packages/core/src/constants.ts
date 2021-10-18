@@ -1,5 +1,6 @@
 import { LoginConfig, OriginData, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 import { ExtraLoginOptions } from "@toruslabs/openlogin-utils";
+import { gql } from "graphql-request";
 
 export const iframeDOMElementID = "openlogin-iframe";
 export const modalDOMElementID = "openlogin-modal";
@@ -306,3 +307,30 @@ export type OpenloginUserInfo = {
   verifierId: string;
   typeOfLogin: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
 };
+
+export type MfaRequest = {
+  required: boolean;
+  message: string;
+};
+
+export const ADD_MFA_REQ = gql`
+  mutation AddOrUpdateMfaRequest(
+    $required: Boolean!
+    $message: String!
+    $client_id: String!
+    $hostname: String!
+    $dapp_public_key: String!
+    $signature: String!
+  ) {
+    msg: addOrUpdateMfaRequest(
+      payload: {
+        required: $required
+        message: $message
+        client_id: $client_id
+        hostname: $hostname
+        dapp_public_key: $dapp_public_key
+        signature: $signature
+      }
+    )
+  }
+`;

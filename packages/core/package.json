@@ -23,6 +23,7 @@
     "@toruslabs/http-helpers": "^1.4.0",
     "@toruslabs/openlogin-jrpc": "^1.0.0",
     "@toruslabs/openlogin-utils": "^1.0.0",
+    "graphql-request": "^3.6.0",
     "lodash.merge": "^4.6.2",
     "pump": "^3.0.0"
   },

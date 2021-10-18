@@ -200,3 +200,10 @@ export function getPopupFeatures(): string {
   const features = `titlebar=0,toolbar=0,status=0,location=0,menubar=0,height=${h / systemZoom},width=${w / systemZoom},top=${top},left=${left}`;
   return features;
 }
+
+export const stripHexPrefix = (str: string): string => {
+  if (str.startsWith("0x")) {
+    return str.substring(2);
+  }
+  return str;
+};

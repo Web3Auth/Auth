@@ -1,16 +1,19 @@
-import { decrypt, Ecies, encrypt, getPublic, sign } from "@toruslabs/eccrypto";
+import { decrypt, Ecies, encrypt, getPublic, getPublicCompressed, sign } from "@toruslabs/eccrypto";
 import { post } from "@toruslabs/http-helpers";
 import { getRpcPromiseCallback, JRPCRequest, LoginConfig, OriginData, SessionInfo, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
-import { base64url, jsonToBase64, keccak, randomId } from "@toruslabs/openlogin-utils";
+import { base64url, jsonToBase64, keccak, keccak256, randomId } from "@toruslabs/openlogin-utils";
+import { request } from "graphql-request";
 import merge from "lodash.merge";
 
 import {
+  ADD_MFA_REQ,
   ALLOWED_INTERACTIONS,
   BaseLogoutParams,
   BaseRedirectParams,
   CUSTOM_LOGIN_PROVIDER_TYPE,
   LOGIN_PROVIDER_TYPE,
   LoginParams,
+  MfaRequest,
   OPENLOGIN_METHOD,
   OPENLOGIN_NETWORK,
   OPENLOGIN_NETWORK_TYPE,
@@ -23,7 +26,7 @@ import {
 import { Modal } from "./Modal";
 import OpenLoginStore from "./OpenLoginStore";
 import Provider from "./Provider";
-import { awaitReq, constructURL, getHashQueryParams, getPopupFeatures, preloadIframe } from "./utils";
+import { awaitReq, constructURL, getHashQueryParams, getPopupFeatures, preloadIframe, stripHexPrefix } from "./utils";
 
 preloadIframe("https://app.openlogin.com/start");
 preloadIframe("https://app.openlogin.com/sdk-modal");
@@ -147,6 +150,22 @@ class OpenLogin {
       // fail silently
       return {};
     }
+  }
+
+  async addMfaRequest(mfaReq: MfaRequest): Promise<void> {
+    const req = {
+      message: mfaReq.message,
+      required: mfaReq.required,
+    };
+    const signedReq = await sign(Buffer.from(this.state.privKey, "hex"), Buffer.from(stripHexPrefix(keccak256(JSON.stringify(req))), "hex"));
+    await request("https://api.openlogin.com/graphql", ADD_MFA_REQ, {
+      message: mfaReq.message,
+      required: mfaReq.required,
+      hostname: window.location.origin,
+      client_id: this.state.clientId,
+      dapp_public_key: getPublicCompressed(Buffer.from(this.state.privKey, "hex")).toString("hex"),
+      signature: signedReq.toString("hex"),
+    });
   }
 
   async getWhiteLabel(): Promise<WhiteLabelData> {
