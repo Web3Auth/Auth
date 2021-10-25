@@ -1,0 +1,55 @@
+{
+  "name": "@toruslabs/openlogin-starkkey",
+  "version": "1.0.0",
+  "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
+  "license": "ISC",
+  "main": "dist/openlogin-starkkey.cjs.js",
+  "module": "dist/openlogin-starkkey.esm.js",
+  "unpkg": "dist/openlogin-starkkey.umd.min.js",
+  "jsdelivr": "dist/openlogin-starkkey.umd.min.js",
+  "types": "dist/types/index.d.ts",
+  "author": "Torus Labs",
+  "scripts": {
+    "test": "mocha --config ../../.mocharc.json test/**.ts",
+    "test-debugger": "mocha --config ../../.mocharc.json --inspect-brk test/**.ts",
+    "dev": "rimraf dist/ && cross-env NODE_ENV=development rollup -c && parallel-webpack --no-stats",
+    "build": "rimraf dist/ && cross-env NODE_ENV=production rollup -c && parallel-webpack --no-stats",
+    "lint": "eslint --fix 'src/**/*.ts'",
+    "prepack": "yarn run build",
+    "pre-commit": "lint-staged"
+  },
+  "dependencies": {
+    "@toruslabs/starkware-crypto": "file:./toruslabs-starkware-crypto-1.0.0.tgz",
+    "bip39": "^3.0.4",
+    "ethereumjs-util": "^7.1.3"
+  },
+  "peerDependencies": {
+    "@babel/runtime": "7.x"
+  },
+  "files": [
+    "dist",
+    "types"
+  ],
+  "lint-staged": {
+    "!(*d).ts": [
+      "eslint --cache --fix",
+      "prettier --write"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/torusresearch/OpenLoginSdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/torusresearch/OpenLoginSdk/issues"
+  },
+  "keywords": [],
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "2d61b7f1967ecd704470c46ff7c30c47d240f4a4",
+  "devDependencies": {
+    "lint-staged": "^11.2.3",
+    "hash.js": "^1.1.7"
+  }
+}
