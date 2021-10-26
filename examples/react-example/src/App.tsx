@@ -3,18 +3,17 @@ import OpenLogin from "openlogin";
 import { useEffect, useState } from "react";
 import * as bs58 from "bs58";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
-import { getStarkHDAccount, starkEc } from "@toruslabs/openlogin-starkkey";
-import hash from "hash.js";
+import { getStarkHDAccount, starkEc, sign, verify, pedersen } from "@toruslabs/openlogin-starkkey";
+import { binaryToHex, binaryToUtf8, bufferToBinary, bufferToHex, hexToBinary } from "enc-utils";
+import type { ec } from "elliptic";
 
 const YOUR_PROJECT_ID = "BOUSb58ft1liq2tSVGafkYohnNPgnl__vAlYSk3JnpfW281kApYsw30BG1-nGpmy8wK-gT3dHw2D_xRXpTEdDBE";
-
 const openlogin = new OpenLogin({
   // your clientId aka projectId , get it from https://developer.tor.us
   // clientId is not required for localhost, you can set it to any string
   // for development
   clientId: YOUR_PROJECT_ID,
-  network: "development",
-  _iframeUrl: "http://localhost:3000",
+  network: "testnet",
   // you can pass login config to modify default
   // login options in login modal, also you can pass
   // your own verifiers.
@@ -52,7 +51,7 @@ const openlogin = new OpenLogin({
 function App() {
   const [loading, setLoading] = useState(false);
   const [signingMessage, setSigningMesssage] = useState("");
-  const [signedMessage, setSignedMesssage] = useState(null);
+  const [signedMessage, setSignedMesssage] = useState<ec.Signature | null>(null);
   const printToConsole = (...args: unknown[]): void => {
     const el = document.querySelector("#console>p");
     if (el) {
@@ -129,8 +128,8 @@ function App() {
     printToConsole(base58Key);
   };
 
-  const getStarkAccount = (index: number): { pubKey?: string; privKey?: string } => {
-    const account = getStarkHDAccount(openlogin.privKey, "starkex", "applicationId", index);
+  const getStarkAccount = (index: number): { pubKey: string; privKey: string } => {
+    const account = getStarkHDAccount(openlogin.privKey, index);
     return account;
   };
 
@@ -144,26 +143,53 @@ function App() {
     return account;
   };
 
+  /**
+   *
+   * @param str utf 8 string to be signed
+   * @param prefix hex prefix padded to 252 bits (optional)
+   * @returns
+   */
+  const getPedersenHashRecursively = (str: string, prefix?: string): string => {
+    const TEST_MESSAGE_SUFFIX = prefix || "OPENLOGIN STARKWARE-";
+    const x = Buffer.from(str, "utf8");
+    const binaryStr = hexToBinary(bufferToHex(x));
+    const rounds = Math.ceil(binaryStr.length / 252);
+    if (rounds > 1) {
+      const currentChunkHex = binaryToHex(binaryStr.substring(0, 252));
+      if (prefix) {
+        const hash = pedersen([prefix, currentChunkHex]);
+        const pendingStr = binaryToUtf8(binaryStr.substring(252));
+        return getPedersenHashRecursively(pendingStr.replace("\n", ""), hash);
+      }
+      // send again with default prefix,
+      // this prefix is only relevant for this example and
+      // has no relevance with starkware message encoding.
+      return getPedersenHashRecursively(str, binaryToHex(bufferToBinary(Buffer.from(TEST_MESSAGE_SUFFIX, "utf8")).padEnd(252, "0")));
+    }
+    const currentChunkHex = binaryToHex(binaryStr.padEnd(252, "0"));
+    return pedersen([prefix, currentChunkHex]);
+  };
+
   const signMessageWithStarkKey = (e: any) => {
     e.preventDefault();
     const accIndex = e.target[0].value;
     const message = e.target[1].value;
     const account = getStarkAccount(accIndex);
     const keyPair = starkEc.keyFromPrivate(account.privKey);
-    const testMessageHash = hash.sha256().update(message).digest("hex");
-    const signedMesssage = keyPair.sign(testMessageHash);
-    setSignedMesssage(signedMesssage.toDER());
+    const hash = getPedersenHashRecursively(message);
+    const signedMesssage = sign(keyPair, hash);
+    setSignedMesssage(signedMesssage);
     setSigningMesssage(message);
-    printToConsole("Message signed successfully");
+    printToConsole(`Message signed successfully: OPENLOGIN STARKWARE- ${message}`);
   };
 
   const validateStarkMessage = (e: any) => {
     e.preventDefault();
     const signingAccountIndex = e.target[0].value;
     const account = getStarkAccount(signingAccountIndex);
-    const keyPair = starkEc.keyFromPrivate(account.privKey);
-    const testMessageHash = hash.sha256().update(signingMessage).digest("hex");
-    const isVerified = keyPair.verify(testMessageHash, signedMessage);
+    const keyPair = starkEc.keyFromPublic(account.pubKey, "hex");
+    const hash = getPedersenHashRecursively(signingMessage);
+    const isVerified = verify(keyPair, hash, signedMessage as unknown as ec.Signature);
     printToConsole(`Message is verified: ${isVerified}`);
   };
   const logout = async () => {
