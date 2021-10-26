@@ -2,28 +2,35 @@
 # yarn lockfile v1
 
 
-"@toruslabs/starkware-crypto@file:./toruslabs-starkware-crypto-1.0.6.tgz":
-  version "1.0.6"
-  resolved "file:./toruslabs-starkware-crypto-1.0.6.tgz#9cd3106218e14b7ff97d44fd5c2bcb39a9515fba"
+"@toruslabs/starkware-crypto@file:./toruslabs-starkware-crypto-1.0.8.tgz":
+  version "1.0.8"
+  resolved "file:./toruslabs-starkware-crypto-1.0.8.tgz#4ad573ce7a768ccdd9f4c786280779a4ea16ece6"
   dependencies:
     bip39 "^3.0.4"
     bn.js "^5.2.0"
-    elliptic "git://github.com/indutny/elliptic.git#v6.5.4"
+    elliptic "~6.5.4"
     enc-utils "^3.0.0"
     ethereumjs-wallet "^1.0.2"
     hash.js "^1.1.7"
 
-"@types/bn.js@^5.1.0":
+"@types/bn.js@*", "@types/bn.js@^5.1.0":
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/@types/bn.js/-/bn.js-5.1.0.tgz#32c5d271503a12653c62cf4d2b45e6eab8cebc68"
   integrity sha512-QSSVYj7pYFN49kW77o2s9xTCwZ8F2xLbjLLSEVh8D2F4JUhZtPAGOFLTD+ffqksBx/u4cE/KImFjyhqCjn/LIA==
   dependencies:
     "@types/node" "*"
 
+"@types/elliptic@^6.4.13":
+  version "6.4.13"
+  resolved "https://registry.yarnpkg.com/@types/elliptic/-/elliptic-6.4.13.tgz#7e8ac814f748deb01a712e5147b128caf9dffa2d"
+  integrity sha512-e8iyLJ8vMLpWxXpVWrIt0ujqsfHWgVe5XAz9IMhBYoDirK6th7J+mHjzp797OLc62ZX419nrlwwzsNAA0a0mKg==
+  dependencies:
+    "@types/bn.js" "*"
+
 "@types/node@*":
-  version "16.11.5"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-16.11.5.tgz#e91be5ba4ab88c06095e7b61f9ad1767a1093faf"
-  integrity sha512-NyUV2DGcqYIx9op++MG2+Z4Nhw1tPhi0Wfs81TgncuX1aJC4zf2fgCJlJhl4BW9bCSS04e34VkqmOS96w0XQdg==
+  version "16.11.6"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-16.11.6.tgz#6bef7a2a0ad684cf6e90fcfe31cecabd9ce0a3ae"
+  integrity sha512-ua7PgUoeQFjmWPcoo9khiPum3Pd60k4/2ZGXt18sm2Slk0W0xZTqt5Y0Ny1NyBiN1EVQ/+FaF9NcY4Qe6rwk5w==
 
 "@types/node@11.11.6":
   version "11.11.6"
@@ -262,20 +269,7 @@ debug@^4.3.2:
   dependencies:
     ms "2.1.2"
 
-elliptic@^6.5.2:
-  version "6.5.4"
-  resolved "https://registry.yarnpkg.com/elliptic/-/elliptic-6.5.4.tgz#da37cebd31e79a1367e941b592ed1fbebd58abbb"
-  integrity sha512-iLhC6ULemrljPZb+QutR5TQGB+pdW6KGD5RSegS+8sorOZT+rdQFbsQFJgvN3eRqNALqJer4oQ16YvJHlU8hzQ==
-  dependencies:
-    bn.js "^4.11.9"
-    brorand "^1.1.0"
-    hash.js "^1.0.0"
-    hmac-drbg "^1.0.1"
-    inherits "^2.0.4"
-    minimalistic-assert "^1.0.1"
-    minimalistic-crypto-utils "^1.0.1"
-
-"elliptic@git://github.com/indutny/elliptic.git#v6.5.4":
+elliptic@^6.5.2, elliptic@~6.5.4:
   version "6.5.4"
   resolved "git://github.com/indutny/elliptic.git#43ac7f230069bd1575e1e4a58394a512303ba803"
   dependencies:

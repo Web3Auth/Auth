@@ -19,7 +19,7 @@
     "pre-commit": "lint-staged"
   },
   "dependencies": {
-    "@toruslabs/starkware-crypto": "file:./toruslabs-starkware-crypto-1.0.0.tgz",
+    "@toruslabs/starkware-crypto": "file:./toruslabs-starkware-crypto-1.0.8.tgz",
     "bip39": "^3.0.4",
     "ethereumjs-util": "^7.1.3"
   },
@@ -50,6 +50,7 @@
   "gitHead": "2d61b7f1967ecd704470c46ff7c30c47d240f4a4",
   "devDependencies": {
     "lint-staged": "^11.2.3",
-    "hash.js": "^1.1.7"
+    "hash.js": "^1.1.7",
+    "@types/elliptic": "^6.4.13"
   }
 }

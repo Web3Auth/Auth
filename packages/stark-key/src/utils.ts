@@ -1,7 +1,8 @@
-import { getAccountPath, getKeyPairFromPath } from "@toruslabs/starkware-crypto";
+import { ec, getAccountPath, getKeyPairFromPath } from "@toruslabs/starkware-crypto";
 import { entropyToMnemonic } from "bip39";
 import { privateToAddress } from "ethereumjs-util";
 
+export const starkEc = ec;
 function isHexPrefixed(str: string): boolean {
   return (str || "").substring(0, 2) === "0x";
 }
@@ -22,7 +23,7 @@ interface KeyPair {
 export function getStarkHDAccount(privKey: string, layer: string, application: string, index: number): KeyPair {
   const privKeyBuffer = Buffer.from(privKey, "hex");
   if (privKeyBuffer.length !== 32) {
-    throw new Error("Invalid entropy size");
+    throw new Error("Invalid privKey size");
   }
   const ethAddress = privateToAddress(privKeyBuffer).toString("hex");
   const sanitizedEthAddr = isHexPrefixed(ethAddress) ? ethAddress : `0x${ethAddress}`;

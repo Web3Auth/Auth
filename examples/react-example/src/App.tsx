@@ -3,6 +3,8 @@ import OpenLogin from "openlogin";
 import { useEffect, useState } from "react";
 import * as bs58 from "bs58";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
+import { getStarkHDAccount, starkEc } from "@toruslabs/openlogin-starkkey";
+import hash from "hash.js";
 
 const YOUR_PROJECT_ID = "BOUSb58ft1liq2tSVGafkYohnNPgnl__vAlYSk3JnpfW281kApYsw30BG1-nGpmy8wK-gT3dHw2D_xRXpTEdDBE";
 
@@ -49,6 +51,8 @@ const openlogin = new OpenLogin({
 });
 function App() {
   const [loading, setLoading] = useState(false);
+  const [signingMessage, setSigningMesssage] = useState("");
+  const [signedMessage, setSignedMesssage] = useState(null);
   const printToConsole = (...args: unknown[]): void => {
     const el = document.querySelector("#console>p");
     if (el) {
@@ -125,6 +129,43 @@ function App() {
     printToConsole(base58Key);
   };
 
+  const getStarkAccount = (index: number): { pubKey?: string; privKey?: string } => {
+    const account = getStarkHDAccount(openlogin.privKey, "starkex", "applicationId", index);
+    return account;
+  };
+
+  const starkHdAccount = (e: any): { pubKey?: string; privKey?: string } => {
+    e.preventDefault();
+    const accIndex = e.target[0].value;
+    const account = getStarkAccount(accIndex);
+    printToConsole({
+      ...account,
+    });
+    return account;
+  };
+
+  const signMessageWithStarkKey = (e: any) => {
+    e.preventDefault();
+    const accIndex = e.target[0].value;
+    const message = e.target[1].value;
+    const account = getStarkAccount(accIndex);
+    const keyPair = starkEc.keyFromPrivate(account.privKey);
+    const testMessageHash = hash.sha256().update(message).digest("hex");
+    const signedMesssage = keyPair.sign(testMessageHash);
+    setSignedMesssage(signedMesssage.toDER());
+    setSigningMesssage(message);
+    printToConsole("Message signed successfully");
+  };
+
+  const validateStarkMessage = (e: any) => {
+    e.preventDefault();
+    const signingAccountIndex = e.target[0].value;
+    const account = getStarkAccount(signingAccountIndex);
+    const keyPair = starkEc.keyFromPrivate(account.privKey);
+    const testMessageHash = hash.sha256().update(signingMessage).digest("hex");
+    const isVerified = keyPair.verify(testMessageHash, signedMessage);
+    printToConsole(`Message is verified: ${isVerified}`);
+  };
   const logout = async () => {
     try {
       setLoading(true);
@@ -171,6 +212,34 @@ function App() {
                 <div>
                   <button onClick={printUserInfo}>Get User Info</button>
                   <button onClick={getEd25519Key}>Get Ed25519Key </button>
+                  <form onSubmit={starkHdAccount}>
+                    <input id="accountIndex" type="number" required />
+                    <button type="submit">Get Stark HD account </button>
+                  </form>
+                  <br />
+                  <br />
+                  <hr />
+                  <form
+                    onSubmit={signMessageWithStarkKey}
+                    style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}
+                  >
+                    <input id="accountIndex" type="number" placeholder="HD account index" required />
+                    <input id="message" type="textarea" placeholder="Enter message" required />
+                    <button type="submit">Sign Message with StarkKey </button>
+                  </form>
+                  <br />
+                  <br />
+                  <hr />
+
+                  <form
+                    onSubmit={validateStarkMessage}
+                    style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}
+                  >
+                    <input id="accountIndex" type="number" placeholder="Enter account index" required />
+                    <button type="submit" disabled={!signingMessage}>
+                      Validate Stark Message
+                    </button>
+                  </form>
 
                   <div id="console" style={{ whiteSpace: "pre-line" }}>
                     <p style={{ whiteSpace: "pre-line" }} />
