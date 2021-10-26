@@ -1,5 +1,4 @@
-/* eslint-disable no-console */
-import { ec as starkEc, getAccountPath, getKeyPairFromPath } from "@toruslabs/starkware-crypto";
+import { getAccountPath, getKeyPairFromPath } from "@toruslabs/starkware-crypto";
 import { entropyToMnemonic } from "bip39";
 import { privateToAddress } from "ethereumjs-util";
 
@@ -30,17 +29,6 @@ export function getStarkHDAccount(privKey: string, layer: string, application: s
   const mnemonic = entropyToMnemonic(privKey);
   const accountPath = getAccountPath(layer, application, sanitizedEthAddr, index);
   const keyPair = getKeyPairFromPath(mnemonic, accountPath);
-  return {
-    pubKey: keyPair.getPublic("hex"),
-    privKey: keyPair.getPrivate("hex"),
-  };
-}
-/**
- * @param privateKey secp256k1 private key in hex format
- * @returns derives the stark key pair from stark friendly ec curve from provided hex private key
- */
-export function getStarkKeyPair(privateKey: string): KeyPair {
-  const keyPair = starkEc.keyFromPrivate(privateKey, "hex");
   return {
     pubKey: keyPair.getPublic("hex"),
     privKey: keyPair.getPrivate("hex"),
