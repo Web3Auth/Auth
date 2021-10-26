@@ -1,8 +1,7 @@
-import { ec, getAccountPath, getKeyPairFromPath } from "@toruslabs/starkware-crypto";
+import { getAccountPath, getKeyPairFromPath } from "@toruslabs/starkware-crypto";
 import { entropyToMnemonic } from "bip39";
 import { privateToAddress } from "ethereumjs-util";
 
-export const starkEc = ec;
 function isHexPrefixed(str: string): boolean {
   return (str || "").substring(0, 2) === "0x";
 }
