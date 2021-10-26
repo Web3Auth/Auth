@@ -13,14 +13,11 @@ interface KeyPair {
 }
 /**
  * @param privKey secp256k1 private key in hex format
- * @param layer layer is a string representing the operating layer (usually 'starkex').
- * @param application  application is a string representing the relevant application.
- * Serve as a domain separator between different applications
  * @param index index represents an index of the possible associated wallets derived from the seed.
  * @returns Calculates the stark key pair based on the layer, application and a given index.
  layer is a string representing the operating layer (usually 'starkex').
  */
-export function getStarkHDAccount(privKey: string, layer: string, application: string, index: number): KeyPair {
+export function getStarkHDAccount(privKey: string, index: number): KeyPair {
   const privKeyBuffer = Buffer.from(privKey, "hex");
   if (privKeyBuffer.length !== 32) {
     throw new Error("Invalid privKey size");
@@ -28,7 +25,7 @@ export function getStarkHDAccount(privKey: string, layer: string, application: s
   const ethAddress = privateToAddress(privKeyBuffer).toString("hex");
   const sanitizedEthAddr = isHexPrefixed(ethAddress) ? ethAddress : `0x${ethAddress}`;
   const mnemonic = entropyToMnemonic(privKey);
-  const accountPath = getAccountPath(layer, application, sanitizedEthAddr, index);
+  const accountPath = getAccountPath("starkex", "starknet", sanitizedEthAddr, index);
   const keyPair = getKeyPairFromPath(mnemonic, accountPath);
   return {
     pubKey: keyPair.getPublic("hex"),
