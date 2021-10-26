@@ -2,9 +2,9 @@
 # yarn lockfile v1
 
 
-"@toruslabs/starkware-crypto@file:./toruslabs-starkware-crypto-1.0.8.tgz":
-  version "1.0.8"
-  resolved "file:./toruslabs-starkware-crypto-1.0.8.tgz#4ad573ce7a768ccdd9f4c786280779a4ea16ece6"
+"@toruslabs/starkware-crypto@file:./toruslabs-starkware-crypto-1.1.0.tgz":
+  version "1.1.0"
+  resolved "file:./toruslabs-starkware-crypto-1.1.0.tgz#d9d413cfbbf53a22476686fd7580a5d7775cf5e1"
   dependencies:
     bip39 "^3.0.4"
     bn.js "^5.2.0"

@@ -2,13 +2,13 @@ import { ec as starkEc, pedersen, sign, verify } from "@toruslabs/starkware-cryp
 import { strictEqual } from "assert";
 
 // import hash from "hash.js";
-import { getStarkHDAccount } from "../src/utils";
+import { getStarkHDAccount, STARKNET_NETWORKS } from "../src/utils";
 const openloginPrivKey = "464482ca33a3bbc47278deab1f5b896a28d36fa509b65cde837f871f3253c5ba";
 
 describe("stark key", function () {
   it("#signing should be done using derived stark key", async function () {
     // to derive hd account
-    const account = getStarkHDAccount(openloginPrivKey, 1);
+    const account = getStarkHDAccount(openloginPrivKey, 1, STARKNET_NETWORKS.testnet);
     const keyPair = starkEc.keyFromPrivate(account.privKey);
 
     // pre generated hex inputs for pedersen hash input.

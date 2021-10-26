@@ -3,7 +3,7 @@ import OpenLogin from "openlogin";
 import { useEffect, useState } from "react";
 import * as bs58 from "bs58";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
-import { getStarkHDAccount, starkEc, sign, verify, pedersen } from "@toruslabs/openlogin-starkkey";
+import { getStarkHDAccount, starkEc, sign, verify, pedersen, STARKNET_NETWORKS } from "@toruslabs/openlogin-starkkey";
 import { binaryToHex, binaryToUtf8, bufferToBinary, bufferToHex, hexToBinary } from "enc-utils";
 import type { ec } from "elliptic";
 
@@ -129,7 +129,7 @@ function App() {
   };
 
   const getStarkAccount = (index: number): { pubKey: string; privKey: string } => {
-    const account = getStarkHDAccount(openlogin.privKey, index);
+    const account = getStarkHDAccount(openlogin.privKey, index, STARKNET_NETWORKS.testnet);
     return account;
   };
 
