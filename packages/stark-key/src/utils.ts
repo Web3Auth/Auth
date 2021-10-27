@@ -53,9 +53,10 @@ export function getStarkHDAccount(privKey: string, accountIndex: number, starkne
   const ethAddress = privateToAddress(privKeyBuffer).toString("hex");
   const sanitizedEthAddr = isHexPrefixed(ethAddress) ? ethAddress : `0x${ethAddress}`;
   const mnemonic = entropyToMnemonic(privKey);
+  const application = STARKNET_NETWORK_ID_MAP[starknetType];
+
   // Draws the 31 LSBs of the eth address.
   const ethAddressInt1 = getIntFromBits(sanitizedEthAddr, -31);
-  const application = STARKNET_NETWORK_ID_MAP[starknetType];
   // Draws the following 31 LSBs of the eth address.
   const ethAddressInt2 = getIntFromBits(sanitizedEthAddr, -62, -31);
   const accountPath = `m/2645'/1195502025'/${application}'/${ethAddressInt1}'/${ethAddressInt2}'/${accountIndex}`;
