@@ -5,8 +5,8 @@ OpenLogin is a plug & play authentication suite that combines the simplicity of 
 OpenLogin Starkkey helps developers generate stark curve friendly key
 
 ## Installation:-
-npm i @toruslabs/openlogin-starkkey
-npm i openlogin
+- npm i @toruslabs/openlogin-starkkey
+- npm i openlogin
 
 ## Usage
 
