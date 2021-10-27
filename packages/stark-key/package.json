@@ -19,7 +19,7 @@
     "pre-commit": "lint-staged"
   },
   "dependencies": {
-    "@toruslabs/starkware-crypto": "file:./toruslabs-starkware-crypto-1.1.0.tgz",
+    "@toruslabs/starkware-crypto": "^1.0.0",
     "bip39": "^3.0.4",
     "enc-utils": "^3.0.0",
     "ethereumjs-util": "^7.1.3"
