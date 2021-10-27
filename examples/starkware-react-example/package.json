@@ -1,13 +1,14 @@
 {
-  "name": "react-example",
+  "name": "starkware-openlogin-react-example",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
-    "@toruslabs/openlogin-ed25519": "^0.9.1",
-    "bs58": "^4.0.1",
+    "@toruslabs/openlogin-starkkey": "file:./../../packages/stark-key/toruslabs-openlogin-starkkey-v1.0.0.tgz",
+    "@types/elliptic": "^6.4.13",
+    "enc-utils": "^3.0.0",
     "openlogin": "file:./../../packages/core/toruslabs-openlogin-v1.0.0.tgz",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
