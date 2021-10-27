@@ -170,9 +170,14 @@ function App() {
     const keyPair = starkEc.keyFromPrivate(account.privKey);
     const hash = getPedersenHashRecursively(message);
     const signedMesssage = sign(keyPair, hash);
+
     setSignedMesssage(signedMesssage);
     setSigningMesssage(message);
-    printToConsole(`Message signed successfully: OPENLOGIN STARKWARE- ${message}`);
+    printToConsole({
+      pedersenHash: hash,
+      info: `Message signed successfully: OPENLOGIN STARKWARE- ${message}`,
+      signedMesssage,
+    });
   };
 
   const validateStarkMessage = (e: any) => {
