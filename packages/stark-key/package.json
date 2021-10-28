@@ -1,6 +1,6 @@
 {
   "name": "@toruslabs/openlogin-starkkey",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
   "main": "dist/openlogin-starkkey.cjs.js",
