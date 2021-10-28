@@ -1,7 +1,6 @@
 import { ec as starkEc, pedersen, sign, verify } from "@toruslabs/starkware-crypto";
 import { strictEqual } from "assert";
 
-// import hash from "hash.js";
 import { getStarkHDAccount, STARKNET_NETWORKS } from "../src/utils";
 const openloginPrivKey = "464482ca33a3bbc47278deab1f5b896a28d36fa509b65cde837f871f3253c5ba";
 

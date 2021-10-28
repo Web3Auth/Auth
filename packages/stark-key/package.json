@@ -50,8 +50,6 @@
   },
   "gitHead": "2d61b7f1967ecd704470c46ff7c30c47d240f4a4",
   "devDependencies": {
-    "@types/elliptic": "^6.4.13",
-    "hash.js": "^1.1.7",
     "lint-staged": "^11.2.3"
   }
 }
