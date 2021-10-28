@@ -60,8 +60,6 @@ export function getStarkHDAccount(privKey: string, accountIndex: number, starkne
   // Draws the following 31 LSBs of the eth address.
   const ethAddressInt2 = getIntFromBits(sanitizedEthAddr, -62, -31);
   const accountPath = `m/2645'/1195502025'/${application}'/${ethAddressInt1}'/${ethAddressInt2}'/${accountIndex}`;
-  // eslint-disable-next-line no-console
-  console.log("accountPath", accountPath, sanitizedEthAddr);
   const keyPair = getKeyPairFromPath(mnemonic, accountPath);
   return {
     pubKey: keyPair.getPublic("hex"),
