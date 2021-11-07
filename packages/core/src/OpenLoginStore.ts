@@ -10,8 +10,12 @@ export default class OpenLoginStore {
 
   private constructor(storage: IStore) {
     this.storage = storage;
-    if (!storage.getItem(storeKey)) {
-      this.resetStore();
+    try {
+      if (!storage.getItem(storeKey)) {
+        this.resetStore();
+      }
+    } catch (error) {
+      // Storage is not available
     }
   }
 
