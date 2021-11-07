@@ -1,13 +1,14 @@
 import "./App.css";
 import OpenLogin from "openlogin";
 import { useEffect, useState } from "react";
-import { getStarkHDAccount, starkEc, sign, verify, pedersen, STARKNET_NETWORKS } from "@toruslabs/openlogin-starkkey";
-import { binaryToHex, binaryToUtf8, bufferToBinary, bufferToHex, hexToBinary, addHexPrefix, sanitizeBytes } from "enc-utils";
-import { privateToAddress } from "ethereumjs-util";
+import { getStarkHDAccount, starkEc, STARKNET_NETWORKS, sign, verify } from "@toruslabs/openlogin-starkkey";
+import { binaryToHex, binaryToUtf8, bufferToBinary, bufferToHex, hexToBinary } from "enc-utils";
+// import { privateToAddress } from "ethereumjs-util";
 import type { ec } from "elliptic";
-import { deployContract, CompiledContract, waitForTx, Contract, Abi } from "starknet";
+import { deployContract, CompiledContract, waitForTx, Contract, Abi, utils, hashMessage, pedersen } from "starknet";
 import CompiledAccountContractAbi from "./contracts/account_abi.json";
 import { BN } from "bn.js";
+import { removeHexPrefix } from "starknet/dist/utils/encode";
 
 const YOUR_PROJECT_ID = "BLTJPXxanIYyNTauQRb0dLJBYClvh6nU8G1SPct3K0ZUDksMgs1B5Sb-q533ng7a_owi4gHj1nvZZ_sK79b2Juw";
 const openlogin = new OpenLogin({
@@ -53,6 +54,7 @@ const openlogin = new OpenLogin({
 function App() {
   const [loading, setLoading] = useState(false);
   const [CompiledAccountContract, setCompiledAccountContract] = useState<CompiledContract | null>(null);
+  const [contractAddress, setContractAddress] = useState<string | null>(null);
   const printToConsole = (...args: unknown[]): void => {
     const el = document.querySelector("#console>p");
     if (el) {
@@ -146,10 +148,14 @@ function App() {
     return account;
   };
 
+  const strToHex = (str: string): string => {
+    return binaryToHex(bufferToBinary(Buffer.from(str, "utf8")).padEnd(252, "0"));
+  };
+
   /**
    *
    * @param str utf 8 string to be signed
-   * @param prefix hex prefix padded to 252 bits (optional)
+   * @param prefix utf-8 prefix padded to 252 bits (optional)
    * @returns
    */
   const getPedersenHashRecursively = (str: string, prefix?: string): string => {
@@ -159,18 +165,12 @@ function App() {
     const rounds = Math.ceil(binaryStr.length / 252);
     if (rounds > 1) {
       const currentChunkHex = binaryToHex(binaryStr.substring(0, 252));
-      if (prefix) {
-        const hash = pedersen([prefix, currentChunkHex]);
-        const pendingStr = binaryToUtf8(binaryStr.substring(252));
-        return getPedersenHashRecursively(pendingStr.replace("\n", ""), hash);
-      }
-      // send again with default prefix,
-      // this prefix is only relevant for this example and
-      // has no relevance with starkware message encoding.
-      return getPedersenHashRecursively(str, binaryToHex(bufferToBinary(Buffer.from(TEST_MESSAGE_SUFFIX, "utf8")).padEnd(252, "0")));
+      const hash = pedersen([strToHex(TEST_MESSAGE_SUFFIX), new BN(currentChunkHex, "hex").toString(16)]);
+      const pendingStr = binaryToUtf8(binaryStr.substring(252));
+      return getPedersenHashRecursively(pendingStr.replace("\n", ""), hash);
     }
     const currentChunkHex = binaryToHex(binaryStr.padEnd(252, "0"));
-    return pedersen([prefix, currentChunkHex]);
+    return pedersen([utils.number.toBN(strToHex(TEST_MESSAGE_SUFFIX), "hex"), utils.number.toBN(currentChunkHex, "hex")]);
   };
 
   const signMessageWithStarkKey = (e: any) => {
@@ -180,7 +180,7 @@ function App() {
     const account = getStarkAccount(accIndex);
     const keyPair = starkEc.keyFromPrivate(account.privKey);
     const hash = getPedersenHashRecursively(message);
-    const signed = sign(keyPair, hash);
+    const signed = sign(keyPair, removeHexPrefix(hash));
     printToConsole({
       pedersenHash: hash,
       info: `Message signed successfully: OPENLOGIN STARKWARE- ${message}`,
@@ -205,7 +205,7 @@ function App() {
     const account = getStarkAccount(signingAccountIndex);
     const keyPair = starkEc.keyFromPublic(account.pubKey, "hex");
     const hash = getPedersenHashRecursively(originalMessage);
-    const isVerified = verify(keyPair, hash, finalSignature as unknown as ec.Signature);
+    const isVerified = verify(keyPair, removeHexPrefix(hash), finalSignature as unknown as ec.Signature);
     printToConsole(`Message is verified: ${isVerified}`);
   };
 
@@ -215,7 +215,12 @@ function App() {
         printToConsole("Compiled contract is not downloaded, plz try again");
         return;
       }
-      const txRes = await deployContract(JSON.parse(JSON.stringify(CompiledAccountContract)) as CompiledContract);
+      const accountIndex = 1;
+      const starkAccount = getStarkAccount(accountIndex);
+      const compressedPubKey = starkEc.keyFromPrivate(starkAccount.privKey).getPublic().getX().toString(16, 64);
+      const txRes = await deployContract(JSON.parse(JSON.stringify(CompiledAccountContract)) as CompiledContract, [
+        new BN(compressedPubKey, 16).toString(),
+      ]);
       printToConsole("deployed account contract,", {
         contractRes: txRes,
         l2AccountAddress: txRes.address,
@@ -230,38 +235,123 @@ function App() {
     }
   };
 
-  const initializeAccountContract = async (e: any) => {
-    e.preventDefault();
+  const onContractAddressChange = (e: any) => {
+    setContractAddress(e.target.value);
+  };
+
+  const initializeAccountContract = async () => {
     try {
-      const l1Address = `0x${privateToAddress(Buffer.from(openlogin.privKey, "hex")).toString("hex")}`;
-      const accountIndex = 1;
-      const contractAddress = e.target[0].value;
-      const starkAccount = getStarkAccount(accountIndex);
-      const compressedPubKey = starkEc.keyFromPrivate(starkAccount.privKey).getPublic().getX().toString(16);
-      const sanitizedPubKey = addHexPrefix(sanitizeBytes(compressedPubKey, 2));
+      // const l1Address = `0x${privateToAddress(Buffer.from(openlogin.privKey, "hex")).toString("hex")}`;
+      if (!contractAddress) {
+        printToConsole("PLease input contract/account address");
+        return;
+      }
       const contract = new Contract(CompiledAccountContractAbi as Abi[], contractAddress);
 
       // const isInitialized = await contract.call("assert_initialized", {});
       const txRes = await contract.invoke("initialize", {
-        _public_key: sanitizedPubKey,
-        _address: l1Address,
+        _address: contractAddress,
       });
 
       printToConsole("deployed account contract,", {
         // isInitialized,
         contractRes: txRes,
-        l1accountAddress: l1Address,
         txStatusLink: `https://voyager.online/tx/${txRes.transaction_hash}`,
       });
       await waitForTx(txRes.transaction_hash);
       printToConsole("successfully included in a block", {
-        l1accountAddress: l1Address,
         txStatusLink: `https://voyager.online/tx/${txRes.transaction_hash}`,
       });
     } catch (error) {
       printToConsole(error);
     }
   };
+
+  const getPublickeyFromContract = async () => {
+    try {
+      if (!contractAddress) {
+        printToConsole("PLease input contract/account address");
+        return;
+      }
+      const account = new Contract(CompiledAccountContractAbi as Abi[], contractAddress);
+      const res = await account.call("get_public_key", {});
+      printToConsole(res);
+    } catch (error) {
+      printToConsole((error as Error).toString());
+    }
+  };
+
+  const getAddressFromContract = async () => {
+    try {
+      if (!contractAddress) {
+        printToConsole("PLease input contract/account address");
+        return;
+      }
+      const account = new Contract(CompiledAccountContractAbi as Abi[], contractAddress);
+
+      const res = await account.call("get_address", {});
+      printToConsole(res);
+    } catch (error) {
+      printToConsole(error);
+    }
+  };
+
+  // Note: this function is inputting same public key which is already initialized in constructor.
+  // However you can use a different publicKey, this is just for demonstration purpose.
+  const updatePublickeyInContract = async () => {
+    try {
+      if (!contractAddress) {
+        printToConsole("PLease input contract/account address");
+        return;
+      }
+      const accountIndex = 1;
+      const starkAccount = getStarkAccount(accountIndex);
+      const keyPair = starkEc.keyFromPrivate(starkAccount.privKey);
+      const compressedPubKey = keyPair.getPublic().getX().toString(16, 64);
+      const account = new Contract(CompiledAccountContractAbi as Abi[], contractAddress);
+
+      // const l1Address = `0x${privateToAddress(Buffer.from(openlogin.privKey, "hex")).toString("hex")}`;
+
+      const { res: nonceRes } = await account.call("get_nonce");
+      const msgHash = removeHexPrefix(
+        hashMessage(
+          contractAddress,
+          contractAddress,
+          utils.starknet.getSelectorFromName("set_public_key"),
+          [
+            new BN(compressedPubKey, 16).toString(),
+            // contractAddress,
+          ],
+          nonceRes.toString()
+        )
+      );
+
+      const { r, s } = sign(keyPair, msgHash);
+      console.log("utils.number.toHex(r)", utils.number.toHex(r));
+      const res = await account.invoke(
+        "execute",
+        {
+          to: contractAddress,
+          selector: utils.starknet.getSelectorFromName("set_public_key"),
+          calldata: [
+            new BN(compressedPubKey, 16).toString(),
+            // contractAddress,
+          ],
+        },
+        [utils.number.toHex(r), utils.number.toHex(s)]
+      );
+
+      printToConsole(res);
+      await waitForTx(res.transaction_hash);
+      printToConsole("transaction successfully included in a block", {
+        txStatusLink: `https://voyager.online/tx/${res.transaction_hash}`,
+      });
+    } catch (error) {
+      console.log(error);
+      printToConsole((error as Error).toString());
+    }
+  };
+
   const logout = async () => {
     try {
       setLoading(true);
@@ -306,18 +396,29 @@ function App() {
                   <button onClick={() => logout()}>Logout</button>
                 </div>
                 <div>
-                  <button onClick={printUserInfo}>Get User Info</button>
-                  <form onSubmit={starkHdAccount}>
-                    <button type="submit">Get Stark Account </button>
-                  </form>
-                  <button onClick={deployAccountContract}>Deploy Account Contract</button>
-                  <form
-                    onSubmit={initializeAccountContract}
-                    style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}
-                  >
-                    <textarea id="contractAddress" rows={3} cols={50} placeholder="Enter Contract/L2 account address" required />
-                    <button type="submit">Initialize Account Contract </button>
-                  </form>
+                  <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+                    <button onClick={printUserInfo}>Get User Info</button>
+                    <form onSubmit={starkHdAccount}>
+                      <button type="submit">Get Stark Account </button>
+                    </form>
+                    <button onClick={deployAccountContract}>Deploy Account Contract (Step 1)</button>
+                  </div>
+                  <br />
+                  <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+                    <textarea
+                      id="contractAddress"
+                      rows={3}
+                      cols={50}
+                      placeholder="Enter Contract/L2 account address"
+                      onChange={onContractAddressChange}
+                    />
+                    <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+                      <button onClick={initializeAccountContract}>Initialize Account Contract (Step 2) </button>
+                      <button onClick={getPublickeyFromContract}>Get Publickey From Contract (Step 3)</button>
+                      <button onClick={getAddressFromContract}>Get Address From Contract (Step 3)</button>
+                      <button onClick={updatePublickeyInContract}>Update Publickey In Contract (Step 3)</button>
+                    </div>
+                  </div>
 
                   <br />
                   <br />
@@ -341,7 +442,6 @@ function App() {
                     <textarea id="signedMessage" cols={100} rows={5} placeholder="Enter Signed Message" required />
                     <button type="submit">Validate Stark Message</button>
                   </form>
-
                   <div id="console" style={{ whiteSpace: "pre-line" }}>
                     <p style={{ whiteSpace: "pre-line" }} />
                   </div>

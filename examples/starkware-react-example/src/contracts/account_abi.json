@@ -65,7 +65,14 @@
             {
                 "name": "_public_key",
                 "type": "felt"
-            },
+            }
+        ],
+        "name": "constructor",
+        "outputs": [],
+        "type": "constructor"
+    },
+    {
+        "inputs": [
             {
                 "name": "_address",
                 "type": "felt"
@@ -111,14 +118,6 @@
             },
             {
                 "name": "calldata",
-                "type": "felt*"
-            },
-            {
-                "name": "signature_len",
-                "type": "felt"
-            },
-            {
-                "name": "signature",
                 "type": "felt*"
             }
         ],
