@@ -1,7 +1,7 @@
 import "./App.css";
 import OpenLogin from "openlogin";
 import { useEffect, useState } from "react";
-import { getStarkHDAccount, starkEc, STARKNET_NETWORKS, sign, verify } from "@toruslabs/openlogin-starkkey";
+import { getStarkHDAccount, STARKNET_NETWORKS, sign, verify } from "@toruslabs/openlogin-starkkey";
 import { binaryToHex, binaryToUtf8, bufferToBinary, bufferToHex, hexToBinary } from "enc-utils";
 // import { privateToAddress } from "ethereumjs-util";
 import type { ec } from "elliptic";
@@ -133,17 +133,18 @@ function App() {
     initializeOpenlogin();
   }, []);
 
-  const getStarkAccount = (index: number): { pubKey: string; privKey: string } => {
+  const getStarkAccount = (index: number): ec.KeyPair => {
     const account = getStarkHDAccount(openlogin.privKey, index, STARKNET_NETWORKS.testnet);
     return account;
   };
 
-  const starkHdAccount = (e: any): { pubKey?: string; privKey?: string } => {
+  const starkHdAccount = (e: any): ec.KeyPair => {
     e.preventDefault();
     const accIndex = 1;
     const account = getStarkAccount(accIndex);
     printToConsole({
-      ...account,
+      privKey: account.getPrivate("hex"),
+      pubKey: account.getPublic("hex"),
     });
     return account;
   };
@@ -177,8 +178,7 @@ function App() {
     e.preventDefault();
     const accIndex = 1;
     const message = e.target[0].value;
-    const account = getStarkAccount(accIndex);
-    const keyPair = starkEc.keyFromPrivate(account.privKey);
+    const keyPair = getStarkAccount(accIndex);
     const hash = getPedersenHashRecursively(message);
     const signed = sign(keyPair, removeHexPrefix(hash));
     printToConsole({
@@ -202,8 +202,7 @@ function App() {
       s: new BN(signedMessage.s, "hex"),
       recoveryParam: signedMessage.recoveryParam,
     };
-    const account = getStarkAccount(signingAccountIndex);
-    const keyPair = starkEc.keyFromPublic(account.pubKey, "hex");
+    const keyPair = getStarkAccount(signingAccountIndex);
     const hash = getPedersenHashRecursively(originalMessage);
     const isVerified = verify(keyPair, removeHexPrefix(hash), finalSignature as unknown as ec.Signature);
     printToConsole(`Message is verified: ${isVerified}`);
@@ -216,8 +215,8 @@ function App() {
         return;
       }
       const accountIndex = 1;
-      const starkAccount = getStarkAccount(accountIndex);
-      const compressedPubKey = starkEc.keyFromPrivate(starkAccount.privKey).getPublic().getX().toString(16, 64);
+      const keyPair = getStarkAccount(accountIndex);
+      const compressedPubKey = keyPair.getPublic().getX().toString(16, 64);
       const txRes = await deployContract(JSON.parse(JSON.stringify(CompiledAccountContract)) as CompiledContract, [
         new BN(compressedPubKey, 16).toString(),
       ]);
@@ -305,8 +304,7 @@ function App() {
         return;
       }
       const accountIndex = 1;
-      const starkAccount = getStarkAccount(accountIndex);
-      const keyPair = starkEc.keyFromPrivate(starkAccount.privKey);
+      const keyPair = getStarkAccount(accountIndex);
       const compressedPubKey = keyPair.getPublic().getX().toString(16, 64);
       const account = new Contract(CompiledAccountContractAbi as Abi[], contractAddress);
 
