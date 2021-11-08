@@ -2,13 +2,11 @@ import "./App.css";
 import OpenLogin from "openlogin";
 import { useEffect, useState } from "react";
 import { getStarkHDAccount, STARKNET_NETWORKS, sign, verify } from "@toruslabs/openlogin-starkkey";
-import { binaryToHex, binaryToUtf8, bufferToBinary, bufferToHex, hexToBinary } from "enc-utils";
-// import { privateToAddress } from "ethereumjs-util";
+import { binaryToHex, binaryToUtf8, bufferToBinary, bufferToHex, hexToBinary, removeHexPrefix } from "enc-utils";
 import type { ec } from "elliptic";
 import { deployContract, CompiledContract, waitForTx, Contract, Abi, utils, hashMessage, pedersen } from "starknet";
 import CompiledAccountContractAbi from "./contracts/account_abi.json";
 import { BN } from "bn.js";
-import { removeHexPrefix } from "starknet/dist/utils/encode";
 
 const YOUR_PROJECT_ID = "BLTJPXxanIYyNTauQRb0dLJBYClvh6nU8G1SPct3K0ZUDksMgs1B5Sb-q533ng7a_owi4gHj1nvZZ_sK79b2Juw";
 const openlogin = new OpenLogin({
@@ -240,20 +238,17 @@ function App() {
 
   const initializeAccountContract = async () => {
     try {
-      // const l1Address = `0x${privateToAddress(Buffer.from(openlogin.privKey, "hex")).toString("hex")}`;
       if (!contractAddress) {
         printToConsole("PLease input contract/account address");
         return;
       }
       const contract = new Contract(CompiledAccountContractAbi as Abi[], contractAddress);
 
-      // const isInitialized = await contract.call("assert_initialized", {});
       const txRes = await contract.invoke("initialize", {
         _address: contractAddress,
       });
 
       printToConsole("deployed account contract,", {
-        // isInitialized,
         contractRes: txRes,
         txStatusLink: `https://voyager.online/tx/${txRes.transaction_hash}`,
       });
@@ -295,20 +290,19 @@ function App() {
     }
   };
 
-  // Note: this function is inputting same public key which is already initialized in constructor.
-  // However you can use a different publicKey, this is just for demonstration purpose.
+  // Note: this function is setting a new public key for the account that belong to account index 2
+  // of this hd account, once this transaction is successful, you can only using account index 2 for
+  // executing future transactions.
   const updatePublickeyInContract = async () => {
     try {
       if (!contractAddress) {
         printToConsole("PLease input contract/account address");
         return;
       }
-      const accountIndex = 1;
-      const keyPair = getStarkAccount(accountIndex);
+      const newAccountIndex = 3;
+      const keyPair = getStarkAccount(newAccountIndex);
       const compressedPubKey = keyPair.getPublic().getX().toString(16, 64);
       const account = new Contract(CompiledAccountContractAbi as Abi[], contractAddress);
-
-      // const l1Address = `0x${privateToAddress(Buffer.from(openlogin.privKey, "hex")).toString("hex")}`;
 
       const { res: nonceRes } = await account.call("get_nonce");
       const msgHash = removeHexPrefix(
@@ -324,8 +318,10 @@ function App() {
         )
       );
 
-      const { r, s } = sign(keyPair, msgHash);
-      console.log("utils.number.toHex(r)", utils.number.toHex(r));
+      const signingAccountIndex = 1;
+      const signingKeyPair = getStarkAccount(signingAccountIndex);
+
+      const { r, s } = sign(signingKeyPair, msgHash);
       const res = await account.invoke(
         "execute",
         {
