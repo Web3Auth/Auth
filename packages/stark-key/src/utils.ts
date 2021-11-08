@@ -1,5 +1,6 @@
 import { getKeyPairFromPath } from "@toruslabs/starkware-crypto";
 import { entropyToMnemonic } from "bip39";
+import type { ec as EllipticCurve } from "elliptic";
 import { binaryToNumber, hexToBinary } from "enc-utils";
 import { privateToAddress } from "ethereumjs-util";
 
@@ -31,18 +32,13 @@ function getIntFromBits(hex: string, start?: number, end?: number): number {
   return int;
 }
 
-interface KeyPair {
-  pubKey: string;
-  privKey: string;
-}
 /**
  * param- privKey secp256k1 private key in hex format
  * param- accountIndex accountIndex represents an index of the possible associated wallets derived from the seed.
- * param- starknetType corresponding startnet network (refer to STARKNET_NETWORKS type for possible values) 
- * returns Calculates the stark key pair based on the layer, application and a given index.
- layer is a string representing the operating layer (usually 'starkex').
+ * param- starknetType corresponding startnet network (refer to STARKNET_NETWORKS type for possible values)
+ * returns Calculates the stark key pair based on the STARTNET_NETWORK_TYPE and a given index.
  */
-export function getStarkHDAccount(privKey: string, accountIndex: number, starknetType: STARTNET_NETWORK_TYPE): KeyPair {
+export function getStarkHDAccount(privKey: string, accountIndex: number, starknetType: STARTNET_NETWORK_TYPE): EllipticCurve.KeyPair {
   if (!STARKNET_NETWORK_ID_MAP[starknetType]) {
     throw new Error(`Invalid starknet network specified:- ${starknetType}`);
   }
@@ -61,8 +57,5 @@ export function getStarkHDAccount(privKey: string, accountIndex: number, starkne
   const ethAddressInt2 = getIntFromBits(sanitizedEthAddr, -62, -31);
   const accountPath = `m/2645'/1195502025'/${application}'/${ethAddressInt1}'/${ethAddressInt2}'/${accountIndex}`;
   const keyPair = getKeyPairFromPath(mnemonic, accountPath);
-  return {
-    pubKey: keyPair.getPublic("hex"),
-    privKey: keyPair.getPrivate("hex"),
-  };
+  return keyPair;
 }
