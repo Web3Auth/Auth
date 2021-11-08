@@ -299,7 +299,7 @@ function App() {
         printToConsole("PLease input contract/account address");
         return;
       }
-      const newAccountIndex = 3;
+      const newAccountIndex = 2;
       const keyPair = getStarkAccount(newAccountIndex);
       const compressedPubKey = keyPair.getPublic().getX().toString(16, 64);
       const account = new Contract(CompiledAccountContractAbi as Abi[], contractAddress);
