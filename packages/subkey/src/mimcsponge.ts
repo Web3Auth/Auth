@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { Scalar, ZqField } from "@toruslabs/ffjavascript";
 import { keccak256 } from "@toruslabs/openlogin-utils";
 import BN from "bn.js";
