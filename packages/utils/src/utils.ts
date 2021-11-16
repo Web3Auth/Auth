@@ -33,8 +33,12 @@ export function keccak256(str: string): string {
   return data;
 }
 
-// TODO: not all of the options are implemented
 export interface BaseLoginOptions {
+  /**
+   * If you need to send custom parameters to the Authorization Server,
+   * make sure to use the original parameter name.
+   */
+  [key: string]: unknown;
   /**
    * - `'page'`: displays the UI with a full page view
    * - `'popup'`: displays the UI with a popup window
@@ -43,16 +47,16 @@ export interface BaseLoginOptions {
    */
   display?: "page" | "popup" | "touch" | "wap" | string;
   /**
-   * - `'none'`: do not prompt user for login or consent on reauthentication
-   * - `'login'`: prompt user for reauthentication
+   * - `'none'`: do not prompt user for login or consent on re-authentication
+   * - `'login'`: prompt user for re-authentication
    * - `'consent'`: prompt user for consent before processing request
    * - `'select_account'`: prompt user to select an account
    */
   prompt?: "none" | "login" | "consent" | "select_account" | string;
   /**
-   * Maximum allowable elasped time (in seconds) since authentication.
+   * Maximum allowable elapsed time (in seconds) since authentication.
    * If the last time the user authenticated is greater than this value,
-   * the user must be reauthenticated.
+   * the user must be re-authenticated.
    */
   max_age?: string | number;
   /**
@@ -89,12 +93,6 @@ export interface BaseLoginOptions {
    * the Login Widget.
    */
   connection?: string;
-
-  /**
-   * If you need to send custom parameters to the Authorization Server,
-   * make sure to use the original parameter name.
-   */
-  [key: string]: unknown;
 }
 
 export interface ExtraLoginOptions extends BaseLoginOptions {
@@ -128,7 +126,7 @@ export interface ExtraLoginOptions extends BaseLoginOptions {
   verifierIdField?: string;
   /**
    * Whether the verifier id field is case sensitive
-   * @default true
+   * @defaultValue true
    */
   isVerifierIdCaseSensitive?: boolean;
 }

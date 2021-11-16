@@ -4,9 +4,10 @@ import { MemoryStore } from "./MemoryStore";
 import { localStorageAvailable } from "./utils";
 
 export default class OpenLoginStore {
-  public storage: IStore;
-
+  // eslint-disable-next-line no-use-before-define
   private static instance: OpenLoginStore;
+
+  public storage: IStore;
 
   private constructor(storage: IStore) {
     this.storage = storage;

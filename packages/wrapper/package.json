@@ -21,7 +21,8 @@
   "dependencies": {
     "@toruslabs/openlogin": "^1.1.0",
     "@toruslabs/openlogin-jrpc": "^1.1.0",
-    "@toruslabs/openlogin-utils": "^1.1.0"
+    "@toruslabs/openlogin-utils": "^1.1.0",
+    "bn.js": "^5.2.0"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"
