@@ -45,6 +45,7 @@ const openlogin = new OpenLogin({
   // for development
   clientId: YOUR_PROJECT_ID,
   network: "testnet",
+  uxMode: "redirect",
   whiteLabel: {
     dark: true,
     theme: {
@@ -71,7 +72,10 @@ export default Vue.extend({
     async login() {
       this.loading = true;
       try {
-        await openlogin.login({
+        // in popup mode (with third party cookies available) or if user is already logged in this function will
+        // return priv key , in redirect mode or if third party cookies are blocked then priv key be injected to
+        // sdk instance after calling init on redirect url page.
+        const privKey = await openlogin.login({
           // pass empty string '' as loginProvider to open default torus modal
           // with all default supported login providers or you can pass specific
           // login provider from available list to set as default.
@@ -97,6 +101,9 @@ export default Vue.extend({
           //   login_hint: 'hello@yourapp.com',
           // },
         });
+        if (privKey) {
+          this.privKey = openlogin.privKey;
+        }
       } catch (error) {
         console.log("error", error);
       } finally {
