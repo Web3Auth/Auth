@@ -1,5 +1,3 @@
 {
-  "compilerOptions": {
-    "rootDir": "../../"
-  }
+  "include": ["src"]
 }
