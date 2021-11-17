@@ -1,12 +1,12 @@
 {
-  "name": "openlogin",
+  "name": "@toruslabs/openlogin-starkkey",
   "version": "1.1.0",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
-  "main": "dist/openlogin.cjs.js",
-  "module": "dist/openlogin.esm.js",
-  "unpkg": "dist/openlogin.umd.min.js",
-  "jsdelivr": "dist/openlogin.umd.min.js",
+  "main": "dist/openloginStarkkey.cjs.js",
+  "module": "dist/openloginStarkkey.esm.js",
+  "unpkg": "dist/openloginStarkkey.umd.min.js",
+  "jsdelivr": "dist/openloginStarkkey.umd.min.js",
   "types": "dist/types/index.d.ts",
   "author": "Torus Labs",
   "scripts": {
@@ -19,10 +19,10 @@
     "pre-commit": "lint-staged"
   },
   "dependencies": {
-    "@toruslabs/openlogin": "^1.1.0",
-    "@toruslabs/openlogin-jrpc": "^1.1.0",
-    "@toruslabs/openlogin-utils": "^1.1.0",
-    "bn.js": "^5.2.0"
+    "@toruslabs/starkware-crypto": "^1.0.0",
+    "bip39": "^3.0.4",
+    "enc-utils": "^3.0.0",
+    "ethereumjs-util": "^7.1.3"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"
@@ -50,6 +50,7 @@
   },
   "gitHead": "2d61b7f1967ecd704470c46ff7c30c47d240f4a4",
   "devDependencies": {
+    "@types/elliptic": "^6.4.14",
     "lint-staged": "^11.2.3"
   }
 }

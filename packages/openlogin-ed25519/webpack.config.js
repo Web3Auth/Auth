@@ -8,4 +8,4 @@ const currentPath = path.resolve(".");
 
 const config = generateWebpackConfig({ currentPath, pkg });
 
-module.exports = config;
+exports.baseConfig = config.baseConfig;
