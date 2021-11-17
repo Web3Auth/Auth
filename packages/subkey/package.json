@@ -19,7 +19,7 @@
     "pre-commit": "lint-staged"
   },
   "dependencies": {
-    "@toruslabs/ffjavascript": "^0.2.40",
+    "ffjavascript": "^0.2.39",
     "@toruslabs/openlogin-utils": "^1.1.0",
     "bn.js": "^5.2.0"
   },

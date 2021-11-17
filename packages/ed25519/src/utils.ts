@@ -25,11 +25,11 @@ export function getED25519Key(privateKey: string | Buffer): {
   const sk = new Uint8Array([...new Uint8Array(privKey), ...new Uint8Array(32)]);
   const pk = new Uint8Array(32);
   l.crypto_hash(d, sk, 32);
-  // eslint-disable-next-line no-bitwise
+
   d[0] &= 248;
-  // eslint-disable-next-line no-bitwise
+
   d[31] &= 127;
-  // eslint-disable-next-line no-bitwise
+
   d[31] |= 64;
   l.scalarbase(p, d);
   l.pack(pk, p);

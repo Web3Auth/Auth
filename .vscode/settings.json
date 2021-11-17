@@ -1,9 +1,30 @@
 {
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  },
   "eslint.workingDirectories": [
     {
       "directory": "packages/*",
       "changeProcessCWD": true
     }
   ],
-  "cSpell.words": ["toruslabs"]
+  "cSpell.words": [
+    "bowser",
+    "eslintcache",
+    "JRPC",
+    "keccak",
+    "localstorage",
+    "loglevel",
+    "mimc",
+    "mimcsponge",
+    "mutex",
+    "openlogin",
+    "SECP",
+    "sendemail",
+    "Swappable",
+    "Topup",
+    "toruslabs",
+    "tsbuildinfo",
+    "umod"
+  ]
 }

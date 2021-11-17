@@ -1,1 +1,1 @@
-declare module "@toruslabs/ffjavascript";
+declare module "ffjavascript";

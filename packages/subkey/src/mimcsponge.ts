@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
-import { Scalar, ZqField } from "@toruslabs/ffjavascript";
 import { keccak256 } from "@toruslabs/openlogin-utils";
 import BN from "bn.js";
+import { Scalar, ZqField } from "ffjavascript";
 
 const F = new ZqField(Scalar.fromString("21888242871839275222246405745257275088548364400416034343698204186575808495617"));
 

@@ -21,12 +21,5 @@
     "chrome": true,
     "FileSystem": true,
     "FileEntry": true
-  },
-  "settings": {
-    "import/resolver": {
-      "typescript": {
-        "project": "packages/*/tsconfig.json"
-      }
-    }
   }
 }

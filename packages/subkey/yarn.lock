@@ -23,15 +23,6 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
-"@toruslabs/ffjavascript@^0.2.40":
-  version "0.2.40"
-  resolved "https://registry.yarnpkg.com/@toruslabs/ffjavascript/-/ffjavascript-0.2.40.tgz#3d65358c79fe947511db0dca8f2c348520af2d40"
-  integrity sha512-NyuNwlpWA4WGgZHkqQrwIMTScTwLWIqm3QG4QKg5rjGIAVywKvl4osj7uCtGkHUtPacy3PxabaP8FReh0Xh9Ww==
-  dependencies:
-    big-integer "^1.6.48"
-    wasmcurves "0.0.14"
-    web-worker "^1.0.0"
-
 "@types/parse-json@^4.0.0":
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/@types/parse-json/-/parse-json-4.0.0.tgz#2f8bb441434d163b35fb8ffdccd7138927ffb8c0"
@@ -246,6 +237,15 @@ execa@^5.1.1:
     onetime "^5.1.2"
     signal-exit "^3.0.3"
     strip-final-newline "^2.0.0"
+
+ffjavascript@^0.2.39:
+  version "0.2.39"
+  resolved "https://registry.yarnpkg.com/ffjavascript/-/ffjavascript-0.2.39.tgz#15acd07e0b4cfb323b9a84446a9bea5ca103f591"
+  integrity sha512-9ewb5keKHL1owKTxCK7sDuA34SPJxnznWqdJgwBW51moCvg+wf9L0W5mcxm8qMUxt2OE/KjBQUKmYLaKyNNrPw==
+  dependencies:
+    big-integer "^1.6.48"
+    wasmcurves "0.0.14"
+    web-worker "^1.0.0"
 
 fill-range@^7.0.1:
   version "7.0.1"
