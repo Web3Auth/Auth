@@ -107,7 +107,6 @@ export default class BasePostMessageStream extends Duplex {
     this._onData(message.data);
   }
 
-  // eslint-disable-next-line class-methods-use-this
   _read(): void {
     return undefined;
   }

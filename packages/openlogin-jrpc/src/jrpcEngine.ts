@@ -25,6 +25,109 @@ export class JRPCEngine extends SafeEventEmitter {
   }
 
   /**
+   * Serially executes the given stack of middleware.
+   *
+   * @returns An array of any error encountered during middleware execution,
+   * a boolean indicating whether the request was completed, and an array of
+   * middleware-defined return handlers.
+   */
+  private static async _runAllMiddleware(
+    req: JRPCRequest<unknown>,
+    res: JRPCResponse<unknown>,
+    middlewareStack: JRPCMiddleware<unknown, unknown>[]
+  ): Promise<
+    [
+      unknown, // error
+      boolean, // isComplete
+      JRPCEngineReturnHandler[]
+    ]
+  > {
+    const returnHandlers: JRPCEngineReturnHandler[] = [];
+    let error = null;
+    let isComplete = false;
+
+    // Go down stack of middleware, call and collect optional returnHandlers
+    for (const middleware of middlewareStack) {
+      [error, isComplete] = await JRPCEngine._runMiddleware(req, res, middleware, returnHandlers);
+      if (isComplete) {
+        break;
+      }
+    }
+    return [error, isComplete, returnHandlers.reverse()];
+  }
+
+  /**
+   * Runs an individual middleware.
+   *
+   * @returns An array of any error encountered during middleware exection,
+   * and a boolean indicating whether the request should end.
+   */
+  private static _runMiddleware(
+    req: JRPCRequest<unknown>,
+    res: JRPCResponse<unknown>,
+    middleware: JRPCMiddleware<unknown, unknown>,
+    returnHandlers: JRPCEngineReturnHandler[]
+  ): Promise<[unknown, boolean]> {
+    return new Promise((resolve) => {
+      const end: JRPCEngineEndCallback = (err?: unknown) => {
+        const error = err || res.error;
+        if (error) {
+          res.error = serializeError(error);
+        }
+        // True indicates that the request should end
+        resolve([error, true]);
+      };
+
+      const next: JRPCEngineNextCallback = (returnHandler?: JRPCEngineReturnHandler) => {
+        if (res.error) {
+          end(res.error);
+        } else {
+          if (returnHandler) {
+            if (typeof returnHandler !== "function") {
+              end(new SerializableError({ code: -32603, message: "JRPCEngine: 'next' return handlers must be functions" }));
+            }
+            returnHandlers.push(returnHandler);
+          }
+
+          // False indicates that the request should not end
+          resolve([null, false]);
+        }
+      };
+
+      try {
+        middleware(req, res, next, end);
+      } catch (error) {
+        end(error);
+      }
+    });
+  }
+
+  /**
+   * Serially executes array of return handlers. The request and response are
+   * assumed to be in their scope.
+   */
+  private static async _runReturnHandlers(handlers: JRPCEngineReturnHandler[]): Promise<void> {
+    for (const handler of handlers) {
+      await new Promise<void>((resolve, reject) => {
+        handler((err) => (err ? reject(err) : resolve()));
+      });
+    }
+  }
+
+  /**
+   * Throws an error if the response has neither a result nor an error, or if
+   * the "isComplete" flag is falsy.
+   */
+  private static _checkForCompletion(req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, isComplete: boolean): void {
+    if (!("result" in res) && !("error" in res)) {
+      throw new SerializableError({ code: -32603, message: "Response has no error or result for request" });
+    }
+    if (!isComplete) {
+      throw new SerializableError({ code: -32603, message: "Nothing ended request" });
+    }
+  }
+
+  /**
    * Add a middleware function to the engine's middleware stack.
    *
    * @param middleware - The middleware function to add.
@@ -229,111 +332,6 @@ export class JRPCEngine extends SafeEventEmitter {
     // further up the call chain.
     if (error) {
       throw error;
-    }
-  }
-
-  /**
-   * Serially executes the given stack of middleware.
-   *
-   * @returns An array of any error encountered during middleware execution,
-   * a boolean indicating whether the request was completed, and an array of
-   * middleware-defined return handlers.
-   */
-  private static async _runAllMiddleware(
-    req: JRPCRequest<unknown>,
-    res: JRPCResponse<unknown>,
-    middlewareStack: JRPCMiddleware<unknown, unknown>[]
-  ): Promise<
-    [
-      unknown, // error
-      boolean, // isComplete
-      JRPCEngineReturnHandler[]
-    ]
-  > {
-    const returnHandlers: JRPCEngineReturnHandler[] = [];
-    let error = null;
-    let isComplete = false;
-
-    // Go down stack of middleware, call and collect optional returnHandlers
-    for (const middleware of middlewareStack) {
-      // eslint-disable-next-line no-await-in-loop
-      [error, isComplete] = await JRPCEngine._runMiddleware(req, res, middleware, returnHandlers);
-      if (isComplete) {
-        break;
-      }
-    }
-    return [error, isComplete, returnHandlers.reverse()];
-  }
-
-  /**
-   * Runs an individual middleware.
-   *
-   * @returns An array of any error encountered during middleware exection,
-   * and a boolean indicating whether the request should end.
-   */
-  private static _runMiddleware(
-    req: JRPCRequest<unknown>,
-    res: JRPCResponse<unknown>,
-    middleware: JRPCMiddleware<unknown, unknown>,
-    returnHandlers: JRPCEngineReturnHandler[]
-  ): Promise<[unknown, boolean]> {
-    return new Promise((resolve) => {
-      const end: JRPCEngineEndCallback = (err?: unknown) => {
-        const error = err || res.error;
-        if (error) {
-          res.error = serializeError(error);
-        }
-        // True indicates that the request should end
-        resolve([error, true]);
-      };
-
-      const next: JRPCEngineNextCallback = (returnHandler?: JRPCEngineReturnHandler) => {
-        if (res.error) {
-          end(res.error);
-        } else {
-          if (returnHandler) {
-            if (typeof returnHandler !== "function") {
-              end(new SerializableError({ code: -32603, message: "JRPCEngine: 'next' return handlers must be functions" }));
-            }
-            returnHandlers.push(returnHandler);
-          }
-
-          // False indicates that the request should not end
-          resolve([null, false]);
-        }
-      };
-
-      try {
-        middleware(req, res, next, end);
-      } catch (error) {
-        end(error);
-      }
-    });
-  }
-
-  /**
-   * Serially executes array of return handlers. The request and response are
-   * assumed to be in their scope.
-   */
-  private static async _runReturnHandlers(handlers: JRPCEngineReturnHandler[]): Promise<void> {
-    for (const handler of handlers) {
-      // eslint-disable-next-line no-await-in-loop
-      await new Promise<void>((resolve, reject) => {
-        handler((err) => (err ? reject(err) : resolve()));
-      });
-    }
-  }
-
-  /**
-   * Throws an error if the response has neither a result nor an error, or if
-   * the "isComplete" flag is falsy.
-   */
-  private static _checkForCompletion(req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, isComplete: boolean): void {
-    if (!("result" in res) && !("error" in res)) {
-      throw new SerializableError({ code: -32603, message: "Response has no error or result for request" });
-    }
-    if (!isComplete) {
-      throw new SerializableError({ code: -32603, message: "Nothing ended request" });
     }
   }
 }

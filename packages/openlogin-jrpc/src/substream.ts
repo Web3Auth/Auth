@@ -15,7 +15,6 @@ export default class Substream extends Duplex {
   /**
    * Explicitly sets read operations to a no-op.
    */
-  // eslint-disable-next-line class-methods-use-this
   _read(): void {
     return undefined;
   }

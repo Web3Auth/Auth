@@ -63,7 +63,6 @@ export class ObjectMultiplex extends Duplex {
     this._substreams[name] = IGNORE_SUBSTREAM;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   _read(): void {
     return undefined;
   }
