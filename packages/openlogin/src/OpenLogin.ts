@@ -25,7 +25,6 @@ import OpenLoginStore from "./OpenLoginStore";
 import Provider from "./Provider";
 import { awaitReq, constructURL, getHashQueryParams, getPopupFeatures, preloadIframe } from "./utils";
 
-preloadIframe("https://app.openlogin.com/start");
 preloadIframe("https://app.openlogin.com/sdk-modal");
 
 export type OpenLoginState = {
@@ -87,6 +86,10 @@ class OpenLogin {
     });
   }
 
+  get privKey(): string {
+    return this.state.privKey ? this.state.privKey.padStart(64, "0") : "";
+  }
+
   initState(options: Required<OpenLoginOptions>): void {
     this.state = {
       uxMode: options.uxMode,
@@ -107,7 +110,8 @@ class OpenLogin {
 
   async init(): Promise<void> {
     if (this.state.support3PC) {
-      await Promise.all([this.provider.init({ iframeUrl: this.state.iframeUrl }), this.modal.init(), this.updateOriginData()]);
+      await Promise.all([this.modal.init(), this.updateOriginData()]);
+      this.provider.init({ iframeElem: this.modal.iframeElem });
       this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
       const res = await this._check3PCSupport();
       this.state.support3PC = !!res.support3PC;
@@ -118,10 +122,6 @@ class OpenLogin {
       await this.updateOriginData();
       this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
     }
-  }
-
-  get privKey(): string {
-    return this.state.privKey ? this.state.privKey.padStart(64, "0") : "";
   }
 
   async updateOriginData(): Promise<void> {
@@ -449,8 +449,8 @@ class OpenLogin {
   }
 
   async _cleanup(): Promise<void> {
-    await this.provider.cleanup();
     await this.modal.cleanup();
+    this.provider.cleanup();
   }
 
   async encrypt(message: Buffer, privateKey?: string): Promise<Ecies> {

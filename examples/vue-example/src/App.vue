@@ -15,7 +15,7 @@
         <section>
           <div>
             Private key:
-            <i>{{ this.privKey }}</i>
+            <i>{{ privKey }}</i>
             <button @click="logout">Logout</button>
           </div>
           <div>

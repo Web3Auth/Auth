@@ -12,9 +12,6 @@ import {
 import { randomId } from "@toruslabs/openlogin-utils";
 import pump from "pump";
 
-import { iframeDOMElementID } from "./constants";
-import { documentReady } from "./utils";
-
 export default class Provider extends SafeEventEmitter {
   iframeElem: HTMLIFrameElement | null = null;
 
@@ -26,28 +23,13 @@ export default class Provider extends SafeEventEmitter {
 
   mux: ObjectMultiplex;
 
-  async init({ iframeUrl }: { iframeUrl: string }): Promise<void> {
-    await this.initIFrame(iframeUrl);
-    await this.setupStream();
+  init({ iframeElem }: { iframeElem: HTMLIFrameElement }): void {
+    this.iframeElem = iframeElem;
+    this.setupStream();
     this.initialized = true;
   }
 
-  async initIFrame(src: string): Promise<void> {
-    await documentReady();
-    const documentIFrameElem = document.getElementById(iframeDOMElementID) as HTMLIFrameElement;
-    if (documentIFrameElem) {
-      documentIFrameElem.remove();
-      window.console.log("already initialized, removing previous provider iframe");
-    }
-    const iframeElem = document.createElement("iframe");
-    iframeElem.src = src;
-    iframeElem.id = iframeDOMElementID;
-    iframeElem.setAttribute("style", "display:none; position:fixed; top: 0; left: 0; width: 100%");
-    document.body.appendChild(iframeElem);
-    this.iframeElem = iframeElem;
-  }
-
-  async setupStream(): Promise<void> {
+  setupStream(): void {
     if (this.iframeElem === null) throw new Error("iframe is null");
     this.rpcStream = new PostMessageStream({
       name: "embed_rpc",
@@ -73,13 +55,8 @@ export default class Provider extends SafeEventEmitter {
     this.rpcEngine = rpcEngine;
   }
 
-  async cleanup(): Promise<void> {
-    await documentReady();
-    const documentIFrameElem = document.getElementById(iframeDOMElementID) as HTMLIFrameElement;
-    if (documentIFrameElem) {
-      documentIFrameElem.remove();
-      this.iframeElem = null;
-    }
+  cleanup(): void {
+    this.iframeElem = null;
     this.initialized = false;
   }
 
