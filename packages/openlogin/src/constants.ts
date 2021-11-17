@@ -1,7 +1,6 @@
 import { LoginConfig, OriginData, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 import { ExtraLoginOptions } from "@toruslabs/openlogin-utils";
 
-export const iframeDOMElementID = "openlogin-iframe";
 export const modalDOMElementID = "openlogin-modal";
 
 export const storeKey = "openlogin_store";
