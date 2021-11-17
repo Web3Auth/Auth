@@ -1,6 +1,6 @@
 {
   "name": "@toruslabs/openlogin-utils",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
   "main": "dist/openloginUtils.cjs.js",
