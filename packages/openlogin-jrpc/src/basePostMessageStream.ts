@@ -23,9 +23,9 @@ export default class BasePostMessageStream extends Duplex {
 
   _onMessage: any;
 
-  _synIntervalId: ReturnType<typeof window.setTimeout>;
+  _synIntervalId: number;
 
-  constructor({ name, target, targetWindow }: { name: string; target: string; targetWindow: Window }) {
+  constructor({ name, target, targetWindow, targetOrigin }: { name: string; target: string; targetWindow?: Window; targetOrigin?: string }) {
     super({
       objectMode: true,
     });
@@ -34,7 +34,7 @@ export default class BasePostMessageStream extends Duplex {
     this._name = name;
     this._target = target; // target origin
     this._targetWindow = targetWindow || window;
-    this._origin = targetWindow ? "*" : window.location.origin;
+    this._origin = targetOrigin || this._targetWindow?.location.origin || "*";
     this._onMessage = this.onMessage.bind(this);
     this._synIntervalId = null;
 
