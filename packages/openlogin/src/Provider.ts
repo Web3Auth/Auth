@@ -17,14 +17,17 @@ export default class Provider extends SafeEventEmitter {
 
   rpcStream: PostMessageStream;
 
+  iframeUrl: string;
+
   rpcEngine: JRPCEngine;
 
   initialized: boolean;
 
   mux: ObjectMultiplex;
 
-  init({ iframeElem }: { iframeElem: HTMLIFrameElement }): void {
+  init({ iframeElem, iframeUrl }: { iframeElem: HTMLIFrameElement; iframeUrl: string }): void {
     this.iframeElem = iframeElem;
+    this.iframeUrl = iframeUrl;
     this.setupStream();
     this.initialized = true;
   }
@@ -35,6 +38,7 @@ export default class Provider extends SafeEventEmitter {
       name: "embed_rpc",
       target: "iframe_rpc",
       targetWindow: this.iframeElem.contentWindow,
+      targetOrigin: this.iframeUrl,
     });
 
     this.mux = setupMultiplex(this.rpcStream);

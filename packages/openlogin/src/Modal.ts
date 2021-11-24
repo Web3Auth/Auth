@@ -40,6 +40,7 @@ export class Modal {
         name: "modal_iframe_rpc",
         target: "modal_rpc",
         targetWindow: this.iframeElem.contentWindow,
+        targetOrigin: this.modalUrl,
       })
     );
     this.verifierStream = this.mux.createStream("verifier");
@@ -58,6 +59,12 @@ export class Modal {
     this.iframeElem = iframeElem;
     this._hideModal();
     document.body.appendChild(this.iframeElem);
+    return new Promise<void>((resolve) => {
+      iframeElem.onload = () => {
+        this.initialized = true;
+        resolve();
+      };
+    });
   }
 
   _showModal(): void {
