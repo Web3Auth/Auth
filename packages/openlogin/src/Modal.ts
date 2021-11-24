@@ -1,7 +1,7 @@
 import { LoginConfig, ObjectMultiplex, PostMessageStream, setupMultiplex, Substream, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 
 import { modalDOMElementID } from "./constants";
-import { documentReady } from "./utils";
+import { documentReady, htmlToElement } from "./utils";
 
 export const handleStream = (handle: Substream, eventName: string, handler: (chunk: any) => void): void => {
   const handlerWrapper = (chunk) => {
@@ -40,6 +40,7 @@ export class Modal {
         name: "modal_iframe_rpc",
         target: "modal_rpc",
         targetWindow: this.iframeElem.contentWindow,
+        targetOrigin: new URL(this.modalUrl).origin,
       })
     );
     this.verifierStream = this.mux.createStream("verifier");
@@ -52,12 +53,23 @@ export class Modal {
       documentIFrameElem.remove();
       window.console.log("already initialized, removing previous modal iframe");
     }
-    const iframeElem = document.createElement("iframe");
-    iframeElem.src = src;
-    iframeElem.id = modalDOMElementID;
-    this.iframeElem = iframeElem;
+    this.iframeElem = htmlToElement<HTMLIFrameElement>(
+      `<iframe
+        id=${modalDOMElementID}
+        class="torusIframe"
+        src="${src}"
+        style="display: none; position: fixed; top: 0; right: 0; width: 100%;
+        height: 100%; border: none; border-radius: 0; z-index: ${this.modalZIndex.toString()}"
+      ></iframe>`
+    );
     this._hideModal();
     document.body.appendChild(this.iframeElem);
+    return new Promise<void>((resolve) => {
+      this.iframeElem.onload = () => {
+        this.initialized = true;
+        resolve();
+      };
+    });
   }
 
   _showModal(): void {
