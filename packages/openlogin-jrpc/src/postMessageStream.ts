@@ -2,7 +2,7 @@ import BasePostMessageStream from "./basePostMessageStream";
 
 export default class PostMessageStream extends BasePostMessageStream {
   _postMessage(data: unknown): void {
-    let originConstraint = this._origin;
+    let originConstraint = this._targetOrigin;
     if (typeof data === "object") {
       const dataObj = data as Record<string, unknown>;
       if (typeof dataObj.data === "object") {

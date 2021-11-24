@@ -19,22 +19,35 @@ export default class BasePostMessageStream extends Duplex {
 
   _targetWindow: Window;
 
-  _origin: string;
+  _targetOrigin: string;
 
   _onMessage: any;
 
   _synIntervalId: number;
 
-  constructor({ name, target, targetWindow, targetOrigin }: { name: string; target: string; targetWindow?: Window; targetOrigin?: string }) {
+  constructor({
+    name,
+    target,
+    targetWindow = window,
+    targetOrigin = window.location.origin,
+  }: {
+    name: string;
+    target: string;
+    targetWindow?: Window;
+    targetOrigin?: string;
+  }) {
     super({
       objectMode: true,
     });
+    if (!name || !target) {
+      throw new Error("Invalid input.");
+    }
     this._init = false;
     this._haveSyn = false;
     this._name = name;
     this._target = target; // target origin
-    this._targetWindow = targetWindow || window;
-    this._origin = targetOrigin || this._targetWindow?.location.origin || "*";
+    this._targetWindow = targetWindow;
+    this._targetOrigin = targetOrigin;
     this._onMessage = this.onMessage.bind(this);
     this._synIntervalId = null;
 
@@ -80,7 +93,7 @@ export default class BasePostMessageStream extends Duplex {
   }
 
   _postMessage(data: unknown): void {
-    const originConstraint = this._origin;
+    const originConstraint = this._targetOrigin;
     this._targetWindow.postMessage(
       {
         target: this._target,
@@ -95,7 +108,7 @@ export default class BasePostMessageStream extends Duplex {
 
     // validate message
     if (
-      (this._origin !== "*" && event.origin !== this._origin) ||
+      (this._targetOrigin !== "*" && event.origin !== this._targetOrigin) ||
       event.source !== this._targetWindow ||
       typeof message !== "object" ||
       message.target !== this._name ||
@@ -114,5 +127,9 @@ export default class BasePostMessageStream extends Duplex {
   _write(data: unknown, _, cb: () => void): void {
     this._postMessage(data);
     cb();
+  }
+
+  _destroy(): void {
+    window.removeEventListener("message", this._onMessage, false);
   }
 }
