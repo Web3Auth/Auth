@@ -40,7 +40,7 @@ export class Modal {
         name: "modal_iframe_rpc",
         target: "modal_rpc",
         targetWindow: this.iframeElem.contentWindow,
-        targetOrigin: this.modalUrl,
+        targetOrigin: new URL(this.modalUrl).origin,
       })
     );
     this.verifierStream = this.mux.createStream("verifier");

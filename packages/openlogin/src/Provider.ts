@@ -38,7 +38,7 @@ export default class Provider extends SafeEventEmitter {
       name: "embed_rpc",
       target: "iframe_rpc",
       targetWindow: this.iframeElem.contentWindow,
-      targetOrigin: this.iframeUrl,
+      targetOrigin: new URL(this.iframeUrl).origin,
     });
 
     this.mux = setupMultiplex(this.rpcStream);
