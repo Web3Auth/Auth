@@ -3,20 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "update": "export OPENLOGIN_VERSION=1.3.1 && npm i file:../../packages/wrapper/openlogin-v\"$OPENLOGIN_VERSION\".tgz file:../../packages/openlogin/toruslabs-openlogin-v\"$OPENLOGIN_VERSION\".tgz file:../../packages/openlogin-jrpc/toruslabs-openlogin-jrpc-v\"$OPENLOGIN_VERSION\".tgz file:../../packages/openlogin-utils/toruslabs-openlogin-utils-v\"$OPENLOGIN_VERSION\".tgz file:../../packages/openlogin-ed25519/toruslabs-openlogin-ed25519-v\"$OPENLOGIN_VERSION\".tgz file:../../packages/openlogin-subkey/toruslabs-openlogin-subkey-v\"$OPENLOGIN_VERSION\".tgz",
+    "update": "export OPENLOGIN_VERSION=1.3.2 && npm i file:../../packages/wrapper/openlogin-v\"$OPENLOGIN_VERSION\".tgz file:../../packages/openlogin/toruslabs-openlogin-v\"$OPENLOGIN_VERSION\".tgz file:../../packages/openlogin-jrpc/toruslabs-openlogin-jrpc-v\"$OPENLOGIN_VERSION\".tgz file:../../packages/openlogin-utils/toruslabs-openlogin-utils-v\"$OPENLOGIN_VERSION\".tgz file:../../packages/openlogin-ed25519/toruslabs-openlogin-ed25519-v\"$OPENLOGIN_VERSION\".tgz file:../../packages/openlogin-subkey/toruslabs-openlogin-subkey-v\"$OPENLOGIN_VERSION\".tgz",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@toruslabs/openlogin": "file:../../packages/openlogin/toruslabs-openlogin-v1.3.1.tgz",
-    "@toruslabs/openlogin-ed25519": "file:../../packages/openlogin-ed25519/toruslabs-openlogin-ed25519-v1.3.0.tgz",
-    "@toruslabs/openlogin-jrpc": "file:../../packages/openlogin-jrpc/toruslabs-openlogin-jrpc-v1.3.1.tgz",
-    "@toruslabs/openlogin-subkey": "file:../../packages/openlogin-subkey/toruslabs-openlogin-subkey-v1.3.0.tgz",
-    "@toruslabs/openlogin-utils": "file:../../packages/openlogin-utils/toruslabs-openlogin-utils-v1.3.0.tgz",
+    "@toruslabs/openlogin": "file:../../packages/openlogin/toruslabs-openlogin-v1.3.2.tgz",
+    "@toruslabs/openlogin-ed25519": "file:../../packages/openlogin-ed25519/toruslabs-openlogin-ed25519-v1.3.2.tgz",
+    "@toruslabs/openlogin-jrpc": "file:../../packages/openlogin-jrpc/toruslabs-openlogin-jrpc-v1.3.2.tgz",
+    "@toruslabs/openlogin-subkey": "file:../../packages/openlogin-subkey/toruslabs-openlogin-subkey-v1.3.2.tgz",
+    "@toruslabs/openlogin-utils": "file:../../packages/openlogin-utils/toruslabs-openlogin-utils-v1.3.2.tgz",
     "bs58": "^4.0.1",
     "core-js": "^3.15.2",
-    "openlogin": "file:../../packages/wrapper/openlogin-v1.3.1.tgz",
+    "openlogin": "file:../../packages/wrapper/openlogin-v1.3.2.tgz",
     "vue": "^2.6.14"
   },
   "devDependencies": {
@@ -37,20 +37,6 @@
     "prettier": "^2.3.2",
     "typescript": "~4.3.5",
     "vue-template-compiler": "^2.6.14"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/essential",
-      "eslint:recommended"
-    ],
-    "parserOptions": {
-      "parser": "babel-eslint"
-    },
-    "rules": {}
   },
   "browserslist": [
     "> 1%",
