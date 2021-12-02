@@ -29,7 +29,7 @@ export default class BasePostMessageStream extends Duplex {
     name,
     target,
     targetWindow = window,
-    targetOrigin = window.location.origin,
+    targetOrigin = "*",
   }: {
     name: string;
     target: string;

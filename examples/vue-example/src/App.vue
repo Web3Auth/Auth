@@ -37,7 +37,7 @@ import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import * as bs58 from "bs58";
 import OpenLogin from "openlogin";
 import Vue from "vue";
-const YOUR_PROJECT_ID = "BOUSb58ft1liq2tSVGafkYohnNPgnl__vAlYSk3JnpfW281kApYsw30BG1-nGpmy8wK-gT3dHw2D_xRXpTEdDBE";
+const YOUR_PROJECT_ID = "BCtbnOamqh0cJFEUYA0NB5YkvBECZ3HLZsKfvSRBvew2EiiKW3UxpyQASSR0artjQkiUOCHeZ_ZeygXpYpxZjOs";
 
 const openlogin = new OpenLogin({
   // your clientId aka projectId , get it from https://developer.tor.us
