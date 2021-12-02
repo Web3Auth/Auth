@@ -25,9 +25,9 @@
   },
   "devDependencies": {
     "@types/keccak": "^3.0.1",
-    "@types/node": "^14.17.20",
+    "@types/node": "^16.11.11",
     "@types/randombytes": "^2.0.0",
-    "lint-staged": "^11.2.3"
+    "lint-staged": "^12.1.2"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"
