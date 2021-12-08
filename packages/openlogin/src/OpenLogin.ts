@@ -218,6 +218,9 @@ class OpenLogin {
       params: [loginParams],
     });
     this.state.privKey = res.privKey;
+    if (this.state.privKey && this.state.support3PC) {
+      this._syncState(await this._getData());
+    }
     return { privKey: this.privKey };
   }
 
