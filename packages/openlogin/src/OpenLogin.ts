@@ -210,7 +210,7 @@ class OpenLogin {
     //   return this._fastLogin(loginParams);
     // }
 
-    const res = await this.request<{ privKey: string }>({
+    const res = await this.request<{ privKey: string; store?: Record<string, string> }>({
       method: OPENLOGIN_METHOD.LOGIN,
       allowedInteractions: [UX_MODE.REDIRECT, UX_MODE.POPUP],
       startUrl: this.state.startUrl,
@@ -218,6 +218,11 @@ class OpenLogin {
       params: [loginParams],
     });
     this.state.privKey = res.privKey;
+    if (res.store) {
+      this._syncState(res);
+    } else if (this.state.privKey && this.state.support3PC) {
+      this._syncState(await this._getData());
+    }
     return { privKey: this.privKey };
   }
 
@@ -422,7 +427,16 @@ class OpenLogin {
         throw new Error("expected store to be an object");
       }
       Object.keys(newState.store).forEach((key) => {
-        this.state.store.set(key, newState.store[key]);
+        // if privKey is available then user is not logged out, but in popup mode store info is not available.
+        // so we don't want to overwrite the local store if privKey is available
+        // and if latest iframe store data is not available
+        if (newState.privKey) {
+          if (newState.store[key]) {
+            this.state.store.set(key, newState.store[key]);
+          }
+        } else {
+          this.state.store.set(key, newState.store[key]);
+        }
       });
     }
     const { store } = this.state;
