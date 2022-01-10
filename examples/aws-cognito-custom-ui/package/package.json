@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@types/lodash.merge": "^4.6.6",
-    "@types/node": "^16.4.0",
+    "@types/node": "^16",
     "@types/pump": "^1.1.1",
     "lint-staged": "^11.0.1"
   },
