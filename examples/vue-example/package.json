@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "install:local": "npm i ../../packages/wrapper/openlogin-*.tgz ../../packages/openlogin/toruslabs-openlogin-*.tgz ../../packages/openlogin-jrpc/toruslabs-openlogin-jrpc-*.tgz ../../packages/openlogin-utils/toruslabs-openlogin-utils-*.tgz ../../packages/openlogin-ed25519/toruslabs-openlogin-ed25519-*.tgz ../../packages/openlogin-subkey/toruslabs-openlogin-subkey-*.tgz",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "install:local": "npm i ../../packages/wrapper/openlogin-*.tgz ../../packages/openlogin/toruslabs-openlogin-*.tgz ../../packages/openlogin-jrpc/toruslabs-openlogin-jrpc-*.tgz ../../packages/openlogin-utils/toruslabs-openlogin-utils-*.tgz ../../packages/openlogin-ed25519/toruslabs-openlogin-ed25519-*.tgz ../../packages/openlogin-subkey/toruslabs-openlogin-subkey-*.tgz"
   },
   "dependencies": {
     "@toruslabs/openlogin": "file:../../packages/openlogin/toruslabs-openlogin-v1.3.4.tgz",
@@ -23,10 +23,10 @@
     "@types/bs58": "^4.0.1",
     "@typescript-eslint/eslint-plugin": "^4.28.3",
     "@typescript-eslint/parser": "^4.28.3",
-    "@vue/cli-plugin-babel": "~4.5.13",
-    "@vue/cli-plugin-eslint": "~4.5.13",
-    "@vue/cli-plugin-typescript": "~4.5.13",
-    "@vue/cli-service": "~4.5.13",
+    "@vue/cli-plugin-babel": "~5.0.0-rc.1",
+    "@vue/cli-plugin-eslint": "~5.0.0-rc.1",
+    "@vue/cli-plugin-typescript": "~5.0.0-rc.1",
+    "@vue/cli-service": "~5.0.0-rc.1",
     "@vue/eslint-config-prettier": "^6.0.0",
     "@vue/eslint-config-typescript": "^7.0.0",
     "babel-eslint": "^10.1.0",
