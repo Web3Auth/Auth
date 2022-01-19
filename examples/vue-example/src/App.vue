@@ -43,7 +43,7 @@
 
 <script lang="ts">
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
-import { DEFAULT_INFURA_ID } from "@web3auth/base";
+import { DEFAULT_INFURA_ID, SafeEventEmitterProvider } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import * as bs58 from "bs58";
 import OpenLogin from "openlogin";
@@ -51,7 +51,6 @@ import Vue from "vue";
 
 import * as ethWeb3 from "./lib/ethWeb3";
 const YOUR_PROJECT_ID = "BCtbnOamqh0cJFEUYA0NB5YkvBECZ3HLZsKfvSRBvew2EiiKW3UxpyQASSR0artjQkiUOCHeZ_ZeygXpYpxZjOs";
-
 const openlogin = new OpenLogin({
   // your clientId aka projectId , get it from https://developer.tor.us
   // clientId is not required for localhost, you can set it to any string
@@ -79,7 +78,7 @@ export default Vue.extend({
     this.loading = true;
     await openlogin.init();
     this.privKey = openlogin.privKey;
-    await this.setProvider(this.privKey);
+    if (this.privKey) await this.setProvider(this.privKey);
 
     this.loading = false;
   },
@@ -98,16 +97,6 @@ export default Vue.extend({
           loginProvider: "",
           redirectUrl: `${window.origin}`,
           relogin: true,
-          // setting it true will force user to use touchid/faceid (if available on device)
-          // while doing login again
-          fastLogin: false,
-
-          // setting skipTKey to true will display a button to user to skip
-          // openlogin security while login.
-          // But caveat here is that user will be get different keys if user is skipping tkey
-          // so use this option with care in your app or make sure user knows about this.
-          skipTKey: false,
-
           // you can pass standard oauth parameter in extralogin options
           // for ex: in case of passwordless login, you have to pass user's email as login_hint
           // and your app domain.
@@ -128,7 +117,7 @@ export default Vue.extend({
     },
 
     async setProvider(privKey: string) {
-      (this.ethereumPrivateKeyProvider = new EthereumPrivateKeyProvider({
+      this.ethereumPrivateKeyProvider = new EthereumPrivateKeyProvider({
         config: {
           chainConfig: {
             chainId: "0x3",
@@ -139,8 +128,8 @@ export default Vue.extend({
             tickerName: "Ethereum",
           },
         },
-      })),
-        await this.ethereumPrivateKeyProvider.setupProvider(privKey);
+      });
+      await this.ethereumPrivateKeyProvider.setupProvider(privKey);
     },
 
     async getUserInfo() {
@@ -154,23 +143,23 @@ export default Vue.extend({
       this.printToConsole(base58Key);
     },
     async signMessage() {
-      if (!this.ethereumPrivateKeyProvider) throw new Error("provider not set");
+      if (!this.ethereumPrivateKeyProvider?._providerProxy) throw new Error("provider not set");
       const signedMessage = await ethWeb3.signEthMessage(this.ethereumPrivateKeyProvider._providerProxy);
       this.printToConsole("signedMessage", signedMessage);
     },
     async signV1Message() {
-      if (!this.ethereumPrivateKeyProvider) throw new Error("provider not set");
+      if (!this.ethereumPrivateKeyProvider?._providerProxy) throw new Error("provider not set");
       const signedMessage = await ethWeb3.signTypedData_v1(this.ethereumPrivateKeyProvider._providerProxy);
       this.printToConsole("signedMessage", signedMessage);
     },
     async latestBlock() {
-      if (!this.ethereumPrivateKeyProvider) throw new Error("provider not set");
+      if (!this.ethereumPrivateKeyProvider?._providerProxy) throw new Error("provider not set");
 
       const block = await ethWeb3.fetchLatestBlock(this.ethereumPrivateKeyProvider._providerProxy);
       this.printToConsole("latest block", block);
     },
     async switchChain() {
-      if (!this.ethereumPrivateKeyProvider) throw new Error("provider not set");
+      if (!this.ethereumPrivateKeyProvider?._providerProxy) throw new Error("provider not set");
       try {
         await this.ethereumPrivateKeyProvider._providerProxy.sendAsync({
           method: "wallet_switchEthereumChain",
@@ -184,7 +173,7 @@ export default Vue.extend({
     },
 
     async addChain() {
-      if (!this.ethereumPrivateKeyProvider) throw new Error("provider not set");
+      if (!this.ethereumPrivateKeyProvider?._providerProxy) throw new Error("provider not set");
       try {
         await this.ethereumPrivateKeyProvider._providerProxy.sendAsync({
           method: "wallet_addEthereumChain",
