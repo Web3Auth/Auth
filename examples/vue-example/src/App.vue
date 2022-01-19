@@ -16,11 +16,20 @@
           <div>
             Private key:
             <i>{{ privKey }}</i>
+          </div>
+          <div>
+            Connected ChainId
+            <i>{{ ethereumPrivateKeyProvider.state.chainId }}</i>
             <button @click="logout">Logout</button>
           </div>
           <div>
             <button @click="getUserInfo">Get User Info</button>
             <button @click="getEd25519Key">Get Ed25519Key</button>
+            <button @click="signMessage" :disabled="!ethereumPrivateKeyProvider._providerProxy">Sign Test Eth Message</button>
+            <button @click="signV1Message" :disabled="!ethereumPrivateKeyProvider._providerProxy">Sign Typed data v1 test message</button>
+            <button @click="latestBlock" :disabled="!ethereumPrivateKeyProvider._providerProxy">Fetch Latest Block</button>
+            <button @click="switchChain" :disabled="!ethereumPrivateKeyProvider._providerProxy">Switch to rinkeby</button>
+            <button @click="addChain" :disabled="!ethereumPrivateKeyProvider._providerProxy">Add Rinkeby Chain</button>
 
             <div id="console">
               <p />
@@ -34,9 +43,13 @@
 
 <script lang="ts">
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
+import { DEFAULT_INFURA_ID } from "@web3auth/base";
+import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import * as bs58 from "bs58";
 import OpenLogin from "openlogin";
 import Vue from "vue";
+
+import * as ethWeb3 from "./lib/ethWeb3";
 const YOUR_PROJECT_ID = "BCtbnOamqh0cJFEUYA0NB5YkvBECZ3HLZsKfvSRBvew2EiiKW3UxpyQASSR0artjQkiUOCHeZ_ZeygXpYpxZjOs";
 
 const openlogin = new OpenLogin({
@@ -53,19 +66,21 @@ const openlogin = new OpenLogin({
     },
   },
 });
-
 export default Vue.extend({
   name: "App",
   data() {
     return {
       loading: false,
       privKey: "",
+      ethereumPrivateKeyProvider: null as EthereumPrivateKeyProvider | null,
     };
   },
   async mounted() {
     this.loading = true;
     await openlogin.init();
     this.privKey = openlogin.privKey;
+    await this.setProvider(this.privKey);
+
     this.loading = false;
   },
   methods: {
@@ -103,12 +118,29 @@ export default Vue.extend({
         });
         if (privKey) {
           this.privKey = openlogin.privKey;
+          await this.setProvider(this.privKey);
         }
       } catch (error) {
         console.log("error", error);
       } finally {
         this.loading = false;
       }
+    },
+
+    async setProvider(privKey: string) {
+      (this.ethereumPrivateKeyProvider = new EthereumPrivateKeyProvider({
+        config: {
+          chainConfig: {
+            chainId: "0x3",
+            rpcTarget: `https://ropsten.infura.io/v3/${DEFAULT_INFURA_ID}`,
+            displayName: "ropsten",
+            blockExplorer: "https://ropsten.etherscan.io/",
+            ticker: "ETH",
+            tickerName: "Ethereum",
+          },
+        },
+      })),
+        await this.ethereumPrivateKeyProvider.setupProvider(privKey);
     },
 
     async getUserInfo() {
@@ -121,10 +153,66 @@ export default Vue.extend({
       const base58Key = bs58.encode(sk);
       this.printToConsole(base58Key);
     },
+    async signMessage() {
+      if (!this.ethereumPrivateKeyProvider) throw new Error("provider not set");
+      const signedMessage = await ethWeb3.signEthMessage(this.ethereumPrivateKeyProvider._providerProxy);
+      this.printToConsole("signedMessage", signedMessage);
+    },
+    async signV1Message() {
+      if (!this.ethereumPrivateKeyProvider) throw new Error("provider not set");
+      const signedMessage = await ethWeb3.signTypedData_v1(this.ethereumPrivateKeyProvider._providerProxy);
+      this.printToConsole("signedMessage", signedMessage);
+    },
+    async latestBlock() {
+      if (!this.ethereumPrivateKeyProvider) throw new Error("provider not set");
+
+      const block = await ethWeb3.fetchLatestBlock(this.ethereumPrivateKeyProvider._providerProxy);
+      this.printToConsole("latest block", block);
+    },
+    async switchChain() {
+      if (!this.ethereumPrivateKeyProvider) throw new Error("provider not set");
+      try {
+        await this.ethereumPrivateKeyProvider._providerProxy.sendAsync({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: "0x4" }],
+        });
+        this.printToConsole("switchedChain", this.ethereumPrivateKeyProvider.state, this.ethereumPrivateKeyProvider.config);
+      } catch (error) {
+        console.log("error while switching chain", error);
+        this.printToConsole("switchedChain error", error);
+      }
+    },
+
+    async addChain() {
+      if (!this.ethereumPrivateKeyProvider) throw new Error("provider not set");
+      try {
+        await this.ethereumPrivateKeyProvider._providerProxy.sendAsync({
+          method: "wallet_addEthereumChain",
+          params: [
+            {
+              chainId: "0x4",
+              chainName: "rinkeby",
+              nativeCurrency: {
+                name: "ether",
+                symbol: "ETH",
+                decimals: 18,
+              },
+              rpcUrls: [`https://rinkeby.infura.io/v3/${DEFAULT_INFURA_ID}`],
+              blockExplorerUrls: [`https://rinkeby.etherscan.io/`],
+            },
+          ],
+        });
+        this.printToConsole("added chain", this.ethereumPrivateKeyProvider.state, this.ethereumPrivateKeyProvider.config);
+      } catch (error) {
+        console.log("error while adding chain", error);
+        this.printToConsole("add chain error", error);
+      }
+    },
 
     async logout() {
       await openlogin.logout({});
       this.privKey = openlogin.privKey;
+      this.ethereumPrivateKeyProvider = null;
     },
     printToConsole(...args: unknown[]) {
       const el = document.querySelector("#console>p");
