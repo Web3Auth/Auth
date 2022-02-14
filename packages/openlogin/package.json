@@ -24,13 +24,14 @@
     "@toruslabs/openlogin-jrpc": "^1.4.0",
     "@toruslabs/openlogin-utils": "^1.4.0",
     "lodash.merge": "^4.6.2",
-    "pump": "^3.0.0"
+    "pump": "^3.0.0",
+    "loglevel": "^1.8.0"
   },
   "devDependencies": {
     "@types/lodash.merge": "^4.6.6",
     "@types/node": "^16",
     "@types/pump": "^1.1.1",
-    "lint-staged": "^12.3.2"
+    "lint-staged": "^12.3.4"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"

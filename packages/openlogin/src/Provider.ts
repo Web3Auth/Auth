@@ -12,6 +12,8 @@ import {
 import { randomId } from "@toruslabs/openlogin-utils";
 import pump from "pump";
 
+import log from "./loglevel";
+
 export default class Provider extends SafeEventEmitter {
   iframeElem: HTMLIFrameElement | null = null;
 
@@ -49,7 +51,7 @@ export default class Provider extends SafeEventEmitter {
       this.mux.createStream("jrpc") as unknown as Stream,
       JRPCConnection.stream as unknown as Stream,
       (error) => {
-        window.console.log(`JRPC connection broken`, error);
+        log.error(`JRPC connection broken`, error);
       }
     );
 
@@ -64,7 +66,7 @@ export default class Provider extends SafeEventEmitter {
     this.initialized = false;
   }
 
-  _rpcRequest(payload: JRPCRequest<unknown>, callback: (...args: any[]) => void): void {
+  _rpcRequest(payload: JRPCRequest<unknown>, callback: (...args: unknown[]) => void): void {
     if (!payload.jsonrpc) {
       payload.jsonrpc = "2.0";
     }
