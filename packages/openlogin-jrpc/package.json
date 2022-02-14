@@ -40,7 +40,7 @@
   },
   "files": [
     "dist",
-    "types"
+    "src"
   ],
   "lint-staged": {
     "!(*d).ts": [
