@@ -16,7 +16,7 @@
     "build:types": "rimraf types/ && tsc --project tsconfig.types.json",
     "lint": "eslint --fix 'src/**/*.ts' 'index.ts'",
     "prepack": "yarn run build && yarn run build:types",
-    "pre-commit": "lint-staged"
+    "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
     "@toruslabs/eccrypto": "^1.1.7",
