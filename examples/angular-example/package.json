@@ -51,7 +51,7 @@
     "eslint-plugin-angular": "^4.0.1",
     "eslint-plugin-prettier": "^3.4.0",
     "jasmine-core": "~3.7.0",
-    "karma": "~6.3.0",
+    "karma": "~6.3.14",
     "karma-chrome-launcher": "~3.1.0",
     "karma-coverage": "~2.0.3",
     "karma-jasmine": "~4.0.0",
