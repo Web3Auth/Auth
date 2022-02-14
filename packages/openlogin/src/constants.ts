@@ -87,6 +87,7 @@ export type BaseRedirectParams = {
 export const OPENLOGIN_NETWORK = {
   MAINNET: "mainnet",
   TESTNET: "testnet",
+  CYAN: "cyan",
   DEVELOPMENT: "development",
 } as const;
 
@@ -103,6 +104,7 @@ export type OpenLoginOptions = {
    * network specifies the openlogin iframe url url to be used.
    *
    * - `'mainnet'`: https://app.openlogin.com will be used which is the production version.
+   * - `'cyan'`: https://cyan.openlogin.com will be used which is the production cyan version.
    * - `'testnet'`: https://beta.openlogin.com will be used which is the beta version.
    * - `'development'`: http://localhost:3000 will be used for development purpose.
    */

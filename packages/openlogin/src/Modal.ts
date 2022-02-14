@@ -1,10 +1,11 @@
 import { LoginConfig, ObjectMultiplex, PostMessageStream, setupMultiplex, Substream, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 
 import { modalDOMElementID } from "./constants";
+import log from "./loglevel";
 import { documentReady, htmlToElement } from "./utils";
 
-export const handleStream = (handle: Substream, eventName: string, handler: (chunk: any) => void): void => {
-  const handlerWrapper = (chunk) => {
+export const handleStream = (handle: Substream, eventName: string, handler: (chunk: unknown) => void): void => {
+  const handlerWrapper = (chunk: unknown) => {
     handler(chunk);
     handle.removeListener(eventName, handlerWrapper);
   };
@@ -51,7 +52,7 @@ export class Modal {
     const documentIFrameElem = document.getElementById(modalDOMElementID) as HTMLIFrameElement;
     if (documentIFrameElem) {
       documentIFrameElem.remove();
-      window.console.log("already initialized, removing previous modal iframe");
+      log.info("already initialized, removing previous modal iframe");
     }
     this.iframeElem = htmlToElement<HTMLIFrameElement>(
       `<iframe
@@ -112,7 +113,7 @@ export class Modal {
     );
   }
 
-  async _prompt(clientId: string, whiteLabel: WhiteLabelData, loginConfig: LoginConfig, cb: (chunk: any) => Promise<void>): Promise<void> {
+  async _prompt(clientId: string, whiteLabel: WhiteLabelData, loginConfig: LoginConfig, cb: (chunk: unknown) => Promise<void>): Promise<void> {
     this._showModal();
     const modalHandler = (chunk) => {
       this._hideModal();

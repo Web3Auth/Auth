@@ -61,6 +61,8 @@ class OpenLogin {
     if (!options._iframeUrl) {
       if (options.network === OPENLOGIN_NETWORK.MAINNET) {
         options._iframeUrl = "https://app.openlogin.com";
+      } else if (options.network === OPENLOGIN_NETWORK.CYAN) {
+        options._iframeUrl = "https://cyan.openlogin.com";
       } else if (options.network === OPENLOGIN_NETWORK.TESTNET) {
         options._iframeUrl = "https://beta.openlogin.com";
       } else if (options.network === OPENLOGIN_NETWORK.DEVELOPMENT) {
@@ -447,7 +449,7 @@ class OpenLogin {
     privKey: string;
   }> {
     return new Promise<{ privKey: string }>((resolve, reject) => {
-      this.modal._prompt(this.state.clientId, this.state.whiteLabel, this.state.loginConfig, async (chunk): Promise<void> => {
+      this.modal._prompt(this.state.clientId, this.state.whiteLabel, this.state.loginConfig, async (chunk: { cancel?: boolean }): Promise<void> => {
         if (chunk.cancel) {
           reject(new Error("user canceled login"));
         } else {
