@@ -25,11 +25,11 @@
           <div>
             <button @click="getUserInfo">Get User Info</button>
             <button @click="getEd25519Key">Get Ed25519Key</button>
-            <button @click="signMessage" :disabled="!ethereumPrivateKeyProvider._providerProxy">Sign Test Eth Message</button>
-            <button @click="signV1Message" :disabled="!ethereumPrivateKeyProvider._providerProxy">Sign Typed data v1 test message</button>
-            <button @click="latestBlock" :disabled="!ethereumPrivateKeyProvider._providerProxy">Fetch Latest Block</button>
-            <button @click="switchChain" :disabled="!ethereumPrivateKeyProvider._providerProxy">Switch to rinkeby</button>
-            <button @click="addChain" :disabled="!ethereumPrivateKeyProvider._providerProxy">Add Rinkeby Chain</button>
+            <button @click="signMessage" :disabled="!ethereumPrivateKeyProvider.provider">Sign Test Eth Message</button>
+            <button @click="signV1Message" :disabled="!ethereumPrivateKeyProvider.provider">Sign Typed data v1 test message</button>
+            <button @click="latestBlock" :disabled="!ethereumPrivateKeyProvider.provider">Fetch Latest Block</button>
+            <button @click="switchChain" :disabled="!ethereumPrivateKeyProvider.provider">Switch to rinkeby</button>
+            <button @click="addChain" :disabled="!ethereumPrivateKeyProvider.provider">Add Rinkeby Chain</button>
 
             <div id="console">
               <p />
@@ -143,25 +143,25 @@ export default Vue.extend({
       this.printToConsole(base58Key);
     },
     async signMessage() {
-      if (!this.ethereumPrivateKeyProvider?._providerProxy) throw new Error("provider not set");
-      const signedMessage = await ethWeb3.signEthMessage(this.ethereumPrivateKeyProvider._providerProxy);
+      if (!this.ethereumPrivateKeyProvider?.provider) throw new Error("provider not set");
+      const signedMessage = await ethWeb3.signEthMessage(this.ethereumPrivateKeyProvider.provider);
       this.printToConsole("signedMessage", signedMessage);
     },
     async signV1Message() {
-      if (!this.ethereumPrivateKeyProvider?._providerProxy) throw new Error("provider not set");
-      const signedMessage = await ethWeb3.signTypedData_v1(this.ethereumPrivateKeyProvider._providerProxy);
+      if (!this.ethereumPrivateKeyProvider?.provider) throw new Error("provider not set");
+      const signedMessage = await ethWeb3.signTypedData_v1(this.ethereumPrivateKeyProvider.provider);
       this.printToConsole("signedMessage", signedMessage);
     },
     async latestBlock() {
-      if (!this.ethereumPrivateKeyProvider?._providerProxy) throw new Error("provider not set");
+      if (!this.ethereumPrivateKeyProvider?.provider) throw new Error("provider not set");
 
-      const block = await ethWeb3.fetchLatestBlock(this.ethereumPrivateKeyProvider._providerProxy);
+      const block = await ethWeb3.fetchLatestBlock(this.ethereumPrivateKeyProvider.provider);
       this.printToConsole("latest block", block);
     },
     async switchChain() {
-      if (!this.ethereumPrivateKeyProvider?._providerProxy) throw new Error("provider not set");
+      if (!this.ethereumPrivateKeyProvider?.provider) throw new Error("provider not set");
       try {
-        await this.ethereumPrivateKeyProvider._providerProxy.sendAsync({
+        await this.ethereumPrivateKeyProvider.provider.sendAsync({
           method: "wallet_switchEthereumChain",
           params: [{ chainId: "0x4" }],
         });
@@ -173,9 +173,9 @@ export default Vue.extend({
     },
 
     async addChain() {
-      if (!this.ethereumPrivateKeyProvider?._providerProxy) throw new Error("provider not set");
+      if (!this.ethereumPrivateKeyProvider?.provider) throw new Error("provider not set");
       try {
-        await this.ethereumPrivateKeyProvider._providerProxy.sendAsync({
+        await this.ethereumPrivateKeyProvider.provider.sendAsync({
           method: "wallet_addEthereumChain",
           params: [
             {
