@@ -19,5 +19,14 @@ module.exports = {
     };
     config.plugins.push(new ProvidePlugin({ Buffer: ["buffer", "Buffer"] }));
     config.plugins.push(new ProvidePlugin({ process: ["process/browser"] }));
+    config.resolve.fallback = {
+      ...(config.resolve.fallback || {}),
+      http: require.resolve("stream-http"),
+      https: require.resolve("https-browserify"),
+      os: require.resolve("os-browserify/browser"),
+      crypto: require.resolve("crypto-browserify"),
+      assert: require.resolve("assert/"),
+      stream: require.resolve("stream-browserify"),
+    };
   },
 };
