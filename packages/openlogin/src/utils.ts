@@ -2,6 +2,7 @@ import { getPublic, sign } from "@toruslabs/eccrypto";
 import { base64url, keccak, safeatob } from "@toruslabs/openlogin-utils";
 
 import { PopupResponse } from "./constants";
+import log from "./loglevel";
 
 export async function documentReady(): Promise<void> {
   return new Promise<void>((resolve) => {
@@ -46,11 +47,11 @@ export function getHashQueryParams(replaceUrl = false): Record<string, string> {
         result[key] = queryParams[key];
       });
     } catch (error) {
-      window.console.error(error);
+      log.error(error);
     }
   }
 
-  const hash = url.hash.substr(1);
+  const hash = url.hash.substring(1);
   const hashUrl = new URL(`${window.location.origin}/?${hash}`);
   hashUrl.searchParams.forEach((value, key) => {
     if (key !== "result") {
@@ -66,7 +67,7 @@ export function getHashQueryParams(replaceUrl = false): Record<string, string> {
         result[key] = hashParams[key];
       });
     } catch (error) {
-      window.console.error(error);
+      log.error(error);
     }
   }
 
@@ -158,6 +159,7 @@ export const localStorageAvailable = storageAvailable("localStorage");
 
 export function preloadIframe(url: string): void {
   try {
+    if (typeof document === "undefined") return;
     const openloginIframeHtml = document.createElement("link");
     openloginIframeHtml.href = url;
     openloginIframeHtml.crossOrigin = "anonymous";
@@ -169,7 +171,7 @@ export function preloadIframe(url: string): void {
       }
     }
   } catch (error) {
-    window.console.error(error);
+    log.error(error);
   }
 }
 

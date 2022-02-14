@@ -449,7 +449,7 @@ class OpenLogin {
     privKey: string;
   }> {
     return new Promise<{ privKey: string }>((resolve, reject) => {
-      this.modal._prompt(this.state.clientId, this.state.whiteLabel, this.state.loginConfig, async (chunk): Promise<void> => {
+      this.modal._prompt(this.state.clientId, this.state.whiteLabel, this.state.loginConfig, async (chunk: { cancel?: boolean }): Promise<void> => {
         if (chunk.cancel) {
           reject(new Error("user canceled login"));
         } else {
