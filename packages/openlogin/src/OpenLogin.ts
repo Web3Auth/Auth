@@ -529,7 +529,6 @@ class OpenLogin {
       _clientId: clientId,
       _origin: new URL(redirectUrl).origin,
       _originData: this.state.originData,
-      _redirect: true,
       redirectUrl,
       ...loginParams,
     };
