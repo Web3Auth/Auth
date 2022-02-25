@@ -518,6 +518,30 @@ class OpenLogin {
     }
     throw new Error("user should be logged in to fetch userInfo");
   }
+
+  async getEncodedLoginUrl(loginParams: LoginParams & Partial<BaseRedirectParams>): Promise<string> {
+    const { redirectUrl } = loginParams;
+    const { clientId } = this.state;
+    if (!this.state.originData[origin]) {
+      await this.updateOriginData();
+    }
+    const dataObject = {
+      _clientId: clientId,
+      _origin: new URL(redirectUrl).origin,
+      _originData: this.state.originData,
+      _redirect: true,
+      redirectUrl,
+      ...loginParams,
+    };
+
+    const b64Params = jsonToBase64(dataObject);
+    const hashParams = {
+      b64Params,
+      _method: "openlogin_login",
+    };
+
+    return constructURL({ baseURL: `${this.state.iframeUrl}/start`, hash: hashParams });
+  }
 }
 
 export default OpenLogin;
