@@ -22,7 +22,7 @@
   "dependencies": {
     "@toruslabs/openlogin-utils": "^1.5.0",
     "bn.js": "^5.2.0",
-    "ffjavascript": "^0.2.48"
+    "ffjavascript": "^0.2.51"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"
@@ -50,6 +50,6 @@
   },
   "gitHead": "2d61b7f1967ecd704470c46ff7c30c47d240f4a4",
   "devDependencies": {
-    "lint-staged": "^12.3.4"
+    "lint-staged": "^12.3.5"
   }
 }

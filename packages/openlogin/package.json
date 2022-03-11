@@ -32,7 +32,7 @@
     "@types/lodash.merge": "^4.6.6",
     "@types/node": "^16",
     "@types/pump": "^1.1.1",
-    "lint-staged": "^12.3.4"
+    "lint-staged": "^12.3.5"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"
