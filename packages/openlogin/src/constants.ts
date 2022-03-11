@@ -230,6 +230,14 @@ export type LOGIN_PROVIDER_TYPE = typeof LOGIN_PROVIDER[keyof typeof LOGIN_PROVI
 // autocomplete workaround https://github.com/microsoft/TypeScript/issues/29729
 export type CUSTOM_LOGIN_PROVIDER_TYPE = string & { toString?: (radix?: number) => string };
 
+export const MFA_LEVELS = {
+  DEFAULT: "default",
+  OPTIONAL: "optional",
+  MANDATORY: "mandatory",
+} as const;
+
+export type MfaLevelType = typeof MFA_LEVELS[keyof typeof MFA_LEVELS];
+
 export type LoginParams = BaseRedirectParams & {
   /**
    * loginProvider sets the oauth login method to be used.
@@ -276,6 +284,18 @@ export type LoginParams = BaseRedirectParams & {
    * @defaultValue false
    */
   skipTKey?: boolean;
+
+  /**
+   * You can set the `mfaLevel` to customize when mfa screen should be shown to user.
+   * It currently accepts 3 values:-
+   * - `'default'`: Setting mfa level to `default` will present mfa screen to user on every third login.
+   * - `'optional'`: Setting mfa level to `default` will present mfa screen to user on every login but user can skip it.
+   * - `'mandatory'`: Setting mfa level to `mandatory` will make it mandatory for user to setup mfa after login.
+   *
+   * Defaults to `default`
+   * @defaultValue `default`
+   */
+  mfaLevel?: MfaLevelType;
 
   /**
    * This option is for internal use only in torus wallet and has not effect

@@ -58,12 +58,6 @@ const openlogin = new OpenLogin({
   clientId: YOUR_PROJECT_ID,
   network: "testnet",
   uxMode: "redirect",
-  whiteLabel: {
-    dark: true,
-    theme: {
-      primary: "#ffa500",
-    },
-  },
 });
 export default Vue.extend({
   name: "App",
@@ -90,6 +84,7 @@ export default Vue.extend({
         // return priv key , in redirect mode or if third party cookies are blocked then priv key be injected to
         // sdk instance after calling init on redirect url page.
         const privKey = await openlogin.login({
+          mfaLevel: "mandatory",
           // pass empty string '' as loginProvider to open default torus modal
           // with all default supported login providers or you can pass specific
           // login provider from available list to set as default.
