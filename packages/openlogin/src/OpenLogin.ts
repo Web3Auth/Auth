@@ -512,6 +512,7 @@ class OpenLogin {
         verifier: (storeData.verifier as string) || "",
         verifierId: (storeData.verifierId as string) || "",
         typeOfLogin: (storeData.typeOfLogin as LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE) || "",
+        dappShare: (storeData.dappShare as string) || "",
       };
 
       return userInfo;
