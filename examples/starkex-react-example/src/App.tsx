@@ -148,19 +148,51 @@ function App() {
     return account;
   };
 
+  const onMintRequest = async () => {
+    const txId = await starkExAPI.gateway.getFirstUnusedTxId();
+    const account = getStarkAccount();
+    const starkKey = account.getPrivate("hex");
+    const request = {
+      txId,
+      vaultId: 1654615998,
+      amount: "6",
+      tokenId: "0x400de4b5a92118719c78df48f4ff31e78de58575487ce1eaf19922ad9b8a714",
+      starkKey: `0x${starkKey}`,
+    };
+    const response = await starkExAPI.gateway.mint(request);
+    console.log("---response", response);
+    printToConsole({ response });
+  };
+
   const onDepositRequest = async () => {
     const txId = await starkExAPI.gateway.getFirstUnusedTxId();
     const account = getStarkAccount();
     const starkKey = account.getPrivate("hex");
     const request = {
       txId,
-      amount: 4029557120079369747,
+      amount: 8,
       starkKey: `0x${starkKey}`,
-      tokenId: "0x2dd48fd7a024204f7c1bd874da5e709d4713d60c8a70639eb1167b367a9c378",
-      vaultId: 1654615998,
+      tokenId: "0x3ef811e040c4bc9f9eee715441cee470f5d5aff69b9cd9aca7884f5a442a890",
+      vaultId: 1924014660,
     };
     const response = await starkExAPI.gateway.deposit(request);
-    console.log("---response", response); // {txId: 10234993, "code": "TRANSACTION_PENDING"}
+    console.log("---response", response);
+    printToConsole({ response });
+  };
+
+  const onWithdrawalRequest = async () => {
+    const txId = await starkExAPI.gateway.getFirstUnusedTxId();
+    const account = getStarkAccount();
+    const starkKey = account.getPrivate("hex");
+    const request = {
+      txId,
+      amount: 8,
+      starkKey: `0x${starkKey}`,
+      tokenId: "0x2dd48fd7a024204f7c1bd874da5e709d4713d60c8a70639eb1167b367a9c378",
+      vaultId: 612008755,
+    };
+    const response = await starkExAPI.gateway.withdrawal(request);
+    console.log("---response", response);
     printToConsole({ response });
   };
 
@@ -240,7 +272,9 @@ function App() {
                       <div>{starkIsAlive ? "Gateway is alive" : "Gateway is not live"}</div>
                     </h3>
                     <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+                      <button onClick={onMintRequest}>Mint Request</button>
                       <button onClick={onDepositRequest}>Deposit Request</button>
+                      <button onClick={onWithdrawalRequest}>Withdrawal Request</button>
                       <button onClick={onGetBatchIDs}>Get Batch IDs</button>
                       <button onClick={onGetBatchData}>Get Batch Data</button>
                     </div>
