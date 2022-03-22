@@ -148,10 +148,14 @@ function App() {
     return account;
   };
 
+  const getStarkKey = (): string => {
+    const account = getStarkAccount();
+    return account.getPrivate("hex");
+  };
+
   const onMintRequest = async () => {
     const txId = await starkExAPI.gateway.getFirstUnusedTxId();
-    const account = getStarkAccount();
-    const starkKey = account.getPrivate("hex");
+    const starkKey = getStarkKey();
     const request = {
       txId,
       vaultId: 1654615998,
@@ -166,8 +170,7 @@ function App() {
 
   const onDepositRequest = async () => {
     const txId = await starkExAPI.gateway.getFirstUnusedTxId();
-    const account = getStarkAccount();
-    const starkKey = account.getPrivate("hex");
+    const starkKey = getStarkKey();
     const request = {
       txId,
       amount: 8,
@@ -182,8 +185,7 @@ function App() {
 
   const onWithdrawalRequest = async () => {
     const txId = await starkExAPI.gateway.getFirstUnusedTxId();
-    const account = getStarkAccount();
-    const starkKey = account.getPrivate("hex");
+    const starkKey = getStarkKey();
     const request = {
       txId,
       amount: 8,
@@ -194,27 +196,6 @@ function App() {
     const response = await starkExAPI.gateway.withdrawal(request);
     console.log("---response", response);
     printToConsole({ response });
-  };
-
-  const onGetBatchIDs = async () => {
-    try {
-      const batchIds = await starkExAPI.feederGateway.getBatchIds();
-      console.log("---batchIds", batchIds); // [10000, 12345]
-      printToConsole({ batchIds });
-    } catch (error) {
-      printToConsole(error);
-    }
-  };
-
-  const onGetBatchData = async () => {
-    try {
-      const batchId = 5678;
-      const batchData = await starkExAPI.availabilityGateway.getBatchData(batchId);
-      console.log("---batchData", batchData);
-      printToConsole({ batchData });
-    } catch (error) {
-      printToConsole(error);
-    }
   };
 
   const logout = async () => {
@@ -275,8 +256,6 @@ function App() {
                       <button onClick={onMintRequest}>Mint Request</button>
                       <button onClick={onDepositRequest}>Deposit Request</button>
                       <button onClick={onWithdrawalRequest}>Withdrawal Request</button>
-                      <button onClick={onGetBatchIDs}>Get Batch IDs</button>
-                      <button onClick={onGetBatchData}>Get Batch Data</button>
                     </div>
                   </div>
                   <div id="console" style={{ whiteSpace: "pre-line" }}>
