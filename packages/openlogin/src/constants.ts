@@ -316,6 +316,13 @@ export type LoginParams = BaseRedirectParams & {
    * loginProvider
    */
   extraLoginOptions?: ExtraLoginOptions;
+
+  /**
+   * Custom Logins can get a dapp share returned to them post successful login.
+   * This is useful if the dapps want to use this share to allow users to login seamlessly
+   * dappShare is a 24 word seed phrase
+   */
+  dappShare?: string;
 };
 
 export type OpenloginUserInfo = {
@@ -326,4 +333,5 @@ export type OpenloginUserInfo = {
   verifier: string;
   verifierId: string;
   typeOfLogin: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
+  dappShare?: string;
 };
