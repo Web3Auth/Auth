@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { grindKey, starkEc } from "@toruslabs/openlogin-starkkey";
 import { ec as elliptic } from "elliptic";
 import StarkExAPI from "@starkware-industries/starkex-js/dist/browser";
+import BN from "bn.js";
 
-const YOUR_PROJECT_ID = "BLTJPXxanIYyNTauQRb0dLJBYClvh6nU8G1SPct3K0ZUDksMgs1B5Sb-q533ng7a_owi4gHj1nvZZ_sK79b2Juw";
+const YOUR_PROJECT_ID = "BMrx-qoWCSt7_GWC1T0QUKEbM0EPb4V0W5uTyjxaIZNpjT14_8ySznR1wVqZggE2DMKW-7xPSGcXEydFdkPGemM";
 const openlogin = new OpenLogin({
   // your clientId aka projectId , get it from https://developer.tor.us
   // clientId is not required for localhost, you can set it to any string
@@ -134,7 +135,7 @@ function App() {
   const getStarkAccount = (): elliptic.KeyPair => {
     const starkEcOrder = starkEc.n;
 
-    const account = starkEc.keyFromPrivate(grindKey(openlogin.privKey, starkEcOrder), "hex");
+    const account = starkEc.keyFromPrivate(grindKey(openlogin.privKey, starkEcOrder as BN), "hex");
     return account;
   };
 

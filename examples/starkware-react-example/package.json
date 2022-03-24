@@ -6,7 +6,7 @@
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
-    "@toruslabs/openlogin-starkkey": "file:./../../packages/stark-key/toruslabs-openlogin-starkkey-v1.0.2.tgz",
+    "@toruslabs/openlogin-starkkey": "file:../../packages/openlogin-starkkey/toruslabs-openlogin-starkkey-v1.6.0.tgz",
     "bn.js": "^5.2.0",
     "elliptic": "^6.5.4",
     "enc-utils": "^3.0.0",
