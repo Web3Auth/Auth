@@ -1,7 +1,7 @@
-import { ec, pedersen, sign, verify } from "@toruslabs/starkware-crypto";
+import { ec, grindKey, pedersen, sign, verify } from "@toruslabs/starkware-crypto";
 
 const starkEc = ec;
 
-export { pedersen, sign, starkEc, verify };
+export { grindKey, pedersen, sign, starkEc, verify };
 
 export * from "./utils";
