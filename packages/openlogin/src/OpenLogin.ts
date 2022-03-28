@@ -1,5 +1,5 @@
 import { decrypt, Ecies, encrypt, getPublic, sign } from "@toruslabs/eccrypto";
-import { post } from "@toruslabs/http-helpers";
+import { get } from "@toruslabs/http-helpers";
 import { getRpcPromiseCallback, JRPCRequest, LoginConfig, OriginData, SessionInfo, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 import { base64url, jsonToBase64, keccak, randomId } from "@toruslabs/openlogin-utils";
 import merge from "lodash.merge";
@@ -141,9 +141,9 @@ class OpenLogin {
       if (!clientId) {
         throw new Error("unspecified clientId");
       }
-      const res = await post<{ signed_urls: OriginData }>("https://api.developer.tor.us/whitelist", {
-        project_id: this.state.clientId,
-      });
+      const url = new URL("https://api.developer.tor.us/whitelist");
+      url.searchParams.append("project_id", this.state.clientId);
+      const res = await get<{ signed_urls: OriginData }>(url.href);
       return res.signed_urls;
     } catch (_) {
       // fail silently
@@ -157,9 +157,9 @@ class OpenLogin {
       if (!clientId) {
         throw new Error("unspecified clientId");
       }
-      const res = await post<{ whiteLabel: WhiteLabelData }>("https://api.developer.tor.us/whitelabel", {
-        project_id: this.state.clientId,
-      });
+      const url = new URL("https://api.developer.tor.us/whitelabel");
+      url.searchParams.append("project_id", this.state.clientId);
+      const res = await get<{ whiteLabel: WhiteLabelData }>(url.href);
       return res.whiteLabel;
     } catch (_) {
       // fail silently
