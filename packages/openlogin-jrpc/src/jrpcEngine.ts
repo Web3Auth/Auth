@@ -1,14 +1,7 @@
+import { serializeError } from "eth-rpc-errors";
 import { Duplex } from "readable-stream";
 
-import {
-  JRPCEngineEndCallback,
-  JRPCEngineNextCallback,
-  JRPCEngineReturnHandler,
-  JRPCMiddleware,
-  JRPCRequest,
-  JRPCResponse,
-  serializeError,
-} from "./jrpc";
+import { JRPCEngineEndCallback, JRPCEngineNextCallback, JRPCEngineReturnHandler, JRPCMiddleware, JRPCRequest, JRPCResponse } from "./jrpc";
 import SafeEventEmitter from "./safeEventEmitter";
 import SerializableError from "./serializableError";
 
