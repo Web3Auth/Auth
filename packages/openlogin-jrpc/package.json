@@ -26,7 +26,8 @@
     "fast-safe-stringify": "^2.1.1",
     "once": "^1.4.0",
     "pump": "^3.0.0",
-    "readable-stream": "^3.6.0"
+    "readable-stream": "^3.6.0",
+    "eth-rpc-errors": "^4.0.3"
   },
   "devDependencies": {
     "@types/end-of-stream": "^1.4.1",

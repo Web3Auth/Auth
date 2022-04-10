@@ -15,9 +15,6 @@ export interface JRPCBase {
   id?: JRPCId;
 }
 
-export function serializeError(error: Error | SerializableError<any>): string {
-  return error.toString();
-}
 export interface JRPCResponse<T> extends JRPCBase {
   result?: T;
   error?: any;
