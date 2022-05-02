@@ -424,8 +424,6 @@ class OpenLogin {
   }
 
   _syncState(newState: Record<string, unknown>): void {
-    // eslint-disable-next-line no-console
-    console.log("newState", newState);
     if (newState.store) {
       if (typeof newState.store !== "object") {
         throw new Error("expected store to be an object");
