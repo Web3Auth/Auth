@@ -114,8 +114,8 @@ class OpenLogin {
     if (this.state.support3PC) {
       await Promise.all([this.modal.init(), this.updateOriginData()]);
       this.provider.init({ iframeElem: this.modal.iframeElem, iframeUrl: this.state.iframeUrl });
-      this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
       this._syncState(await this._getData());
+      this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
       const res = await this._check3PCSupport();
       this.state.support3PC = !!res.support3PC;
     } else {
