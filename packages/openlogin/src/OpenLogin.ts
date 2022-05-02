@@ -115,9 +115,11 @@ class OpenLogin {
       await Promise.all([this.modal.init(), this.updateOriginData()]);
       this.provider.init({ iframeElem: this.modal.iframeElem, iframeUrl: this.state.iframeUrl });
       this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
-      this._syncState(await this._getData());
       const res = await this._check3PCSupport();
       this.state.support3PC = !!res.support3PC;
+      if (this.state.support3PC) {
+        this._syncState(await this._getData());
+      }
     } else {
       await this.updateOriginData();
       this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
@@ -422,6 +424,8 @@ class OpenLogin {
   }
 
   _syncState(newState: Record<string, unknown>): void {
+    // eslint-disable-next-line no-console
+    console.log("newState", newState);
     if (newState.store) {
       if (typeof newState.store !== "object") {
         throw new Error("expected store to be an object");
