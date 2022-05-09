@@ -234,6 +234,7 @@ export const MFA_LEVELS = {
   DEFAULT: "default",
   OPTIONAL: "optional",
   MANDATORY: "mandatory",
+  NONE: "none",
 } as const;
 
 export type MfaLevelType = typeof MFA_LEVELS[keyof typeof MFA_LEVELS];
