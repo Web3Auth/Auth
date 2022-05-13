@@ -12,6 +12,10 @@ export type WhiteLabelData = {
    */
   name?: string;
   /**
+   * App url
+   */
+  url?: string;
+  /**
    * App logo to use in light mode
    */
   logoLight?: string;
