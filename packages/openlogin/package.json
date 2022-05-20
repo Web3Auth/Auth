@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@toruslabs/eccrypto": "^1.1.8",
-    "@toruslabs/http-helpers": "^2.2.0",
+    "@toruslabs/http-helpers": "^3.0.0",
     "@toruslabs/openlogin-jrpc": "^1.7.3",
     "@toruslabs/openlogin-utils": "^1.7.0",
     "lodash.merge": "^4.6.2",
@@ -29,10 +29,8 @@
     "pump": "^3.0.0"
   },
   "devDependencies": {
-    "@types/lodash.merge": "^4.6.6",
-    "@types/node": "^16",
-    "@types/pump": "^1.1.1",
-    "lint-staged": "^12.3.7"
+    "@types/lodash.merge": "^4.6.7",
+    "@types/pump": "^1.1.1"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"

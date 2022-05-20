@@ -31,11 +31,9 @@
   },
   "devDependencies": {
     "@types/end-of-stream": "^1.4.1",
-    "@types/node": "^16",
     "@types/once": "^1.4.0",
     "@types/pump": "^1.1.1",
-    "@types/readable-stream": "^2.3.13",
-    "lint-staged": "^12.3.7"
+    "@types/readable-stream": "^2.3.13"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"
