@@ -11,6 +11,9 @@ function generateWebpackConfig({ pkg, currentPath, alias }) {
         ...(depsList.includes("bn.js") && { "bn.js": path.resolve(currentPath, "node_modules/bn.js") }),
         ...alias,
       },
+      fallback: {
+        "bn.js": require.resolve("bn.js"),
+      },
     },
   };
   return { baseConfig };

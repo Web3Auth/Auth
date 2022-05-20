@@ -1,12 +1,30 @@
 # OpenLoginSdk
 
-[![npm version](https://badge.fury.io/js/%40toruslabs%2FOpenLoginSdk.svg)](https://badge.fury.io/js/%40toruslabs%2FOpenLoginSdk)
-![npm](https://img.shields.io/npm/dw/@toruslabs/OpenLoginSdk)
+[![lerna](https://img.shields.io/badge/maintained%20with-lerna-cc00ff.svg)](https://lerna.js.org/)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
+![npm](https://img.shields.io/npm/dw/@toruslabs/openlogin)
+
+| Packages                        | `@latest` Version                                                                                                                                               | Size                                                                                                                                                                       | Description                                                                      |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| 🏠 **Core**                     |
+| `@toruslabs/openlogin`          | [![npm version](https://img.shields.io/npm/v/@toruslabs/openlogin?label=%22%22)](https://www.npmjs.com/package/@toruslabs/openlogin/v/latest)                   | [![minzip](https://img.shields.io/bundlephobia/minzip/@toruslabs/openlogin?label=%22%22)](https://bundlephobia.com/result?p=@toruslabs/openlogin@latest)                   | Default package to be used to work with OpenLogin auth system                    |
+| `openlogin`                     | [![npm version](https://img.shields.io/npm/v/openlogin?label=%22%22)](https://www.npmjs.com/package/openlogin/v/latest)                                         | [![minzip](https://img.shields.io/bundlephobia/minzip/openlogin?label=%22%22)](https://bundlephobia.com/result?p=openlogin@latest)                                         | Wrapper package for @toruslabs/openlogin                                         |
+| 🔌 **Modules**                  |
+| `@toruslabs/openlogin-jrpc`     | [![npm version](https://img.shields.io/npm/v/@toruslabs/openlogin-jrpc?label=%22%22)](https://www.npmjs.com/package/@toruslabs/openlogin-jrpc/v/latest)         | [![minzip](https://img.shields.io/bundlephobia/minzip/@toruslabs/openlogin-jrpc?label=%22%22)](https://bundlephobia.com/result?p=@toruslabs/openlogin-jrpc@latest)         | Allows you to make JRPC requests easily. Creates & Manages JRPC Engines          |
+| `@toruslabs/openlogin-ed25519`  | [![npm version](https://img.shields.io/npm/v/@toruslabs/openlogin-ed25519?label=%22%22)](https://www.npmjs.com/package/@toruslabs/openlogin-ed25519/v/latest)   | [![minzip](https://img.shields.io/bundlephobia/minzip/@toruslabs/openlogin-ed25519?label=%22%22)](https://bundlephobia.com/result?p=@toruslabs/openlogin-ed25519@latest)   | Allows you to get an ed25519 private key from a secp256k1 private key            |
+| `@toruslabs/openlogin-subkey`   | [![npm version](https://img.shields.io/npm/v/@toruslabs/openlogin-subkey?label=%22%22)](https://www.npmjs.com/package/@toruslabs/openlogin-subkey/v/latest)     | [![minzip](https://img.shields.io/bundlephobia/minzip/@toruslabs/openlogin-subkey?label=%22%22)](https://bundlephobia.com/result?p=@toruslabs/openlogin-subkey@latest)     | Allows you to derive an app-scoped key from a root key + client id via mimc hash |
+| `@toruslabs/openlogin-starkkey` | [![npm version](https://img.shields.io/npm/v/@toruslabs/openlogin-starkkey?label=%22%22)](https://www.npmjs.com/package/@toruslabs/openlogin-starkkey/v/latest) | [![minzip](https://img.shields.io/bundlephobia/minzip/@toruslabs/openlogin-starkkey?label=%22%22)](https://bundlephobia.com/result?p=@toruslabs/openlogin-starkkey@latest) | Allows you to get a starknet compatible private key from a secp256k1 private key |
+|                                 |
+| 🐉 **Low-Level**                |
+| `@toruslabs/openlogin-utils`    | [![npm version](https://img.shields.io/npm/v/@toruslabs/openlogin-utils?label=%22%22)](https://www.npmjs.com/package/@toruslabs/openlogin-utils/v/latest)       | [![minzip](https://img.shields.io/bundlephobia/minzip/@toruslabs/openlogin-utils?label=%22%22)](https://bundlephobia.com/result?p=@toruslabs/openlogin-utils@latest)       | Shared [TypeScript](https://www.typescriptlang.org/) Types                       |
 
 ## Introduction
 
+Your OpenLogin account is a cryptographic key that acts as a proxy to traditional SSOs. Accounts are secured across user devices and authentication methods - there is no central server, no data honey pot.
+It combines both [CustomAuth](https://github.com/torusresearch/CustomAuth) and [tKey](https://github.com/tkey/tkey) and provides you with a nice UI and UX flows
+
 This module generates the javascript to include in a DApp via a script tag.
-It creates an iframe that loads the Torus page and sets up communication streams between
+It creates an iframe that loads the OpenLogin page and sets up communication streams between
 the iframe and the DApp javascript context.
 
 ## Features
@@ -19,11 +37,11 @@ Please refer to docs for API Reference available [here](https://docs.tor.us/open
 
 ### Bundling
 
-This module is distributed in 3 formats
+Each sub package is distributed in 3 formats
 
-- `esm` build `dist/openlogin.esm.js` in es6 format
-- `commonjs` build `dist/openlogin.cjs.js` in es5 format
-- `umd` build `dist/openlogin.umd.min.js` in es5 format without polyfilling corejs minified
+- `esm` build `dist/<MODULE_NAME>.esm.js` in es6 format
+- `commonjs` build `dist/<MODULE_NAME>.cjs.js` in es5 format
+- `umd` build `dist/<MODULE_NAME>.umd.min.js` in es5 format without polyfilling corejs minified
 
 By default, the appropriate format is used for your specified usecase
 You can use a different format (if you know what you're doing) by referencing the correct file
@@ -38,30 +56,14 @@ CDN's serve the non-core-js polyfilled version by default. You can use a differe
 jsdeliver
 
 ```js
-<script src="https://cdn.jsdelivr.net/npm/@toruslabs/OpenLoginSdk"></script>
+<script src="https://cdn.jsdelivr.net/npm/<MODULE_NAME>"></script>
 ```
 
 unpkg
 
 ```js
-<script src="https://unpkg.com/@toruslabs/OpenLoginSdk"></script>
+<script src="https://unpkg.com/<MODULE_NAME>"></script>
 ```
-
-### Tips for NUXT
-
-This is a plugin that works [only on the client side](https://nuxtjs.org/guide/plugins/#client-side-only). So please register it as a ssr-free plugin.
-
-## Usage
-
-Please refer to the [examples](examples) folder for details on usage using dynamic import.
-
-## Rehydration
-
-Torus uses `window.sessionStorage` to store user details.
-
-So, if the user reloads the page, all his data would be rehydrated and the user doesn't need to log in.
-
-The samples provided in the [examples](examples) folder illustrate the above case.
 
 ## Build
 
@@ -70,24 +72,22 @@ Ensure you have a `Node.JS` development environment setup:
 ```
 git clone https://github.com/torusresearch/OpenLoginSdk.git
 cd OpenLoginSdk
-npm install
-npm run build
+yarn
+yarn build
 ```
 
 To run tests:
 
 ```
-npm run test:e2e:headful
-npm run test:build-embed
+yarn test
 ```
-
-entry-point: `index.js`
 
 ## Requirements
 
 - This package requires a peer dependency of `@babel/runtime`
-- Node 10+
+- Node 14+
+- You will need to whitelist your domain on [developer dashboard](https://dashboard.web3auth.io)
 
 ## License
 
-`torus-embed` is [MIT Licensed](LICENSE)
+`OpenLoginSdk` is [MIT Licensed](LICENSE)
