@@ -111,6 +111,11 @@ class OpenLogin {
   }
 
   async init(): Promise<void> {
+    if (this.state.network === OPENLOGIN_NETWORK.TESTNET) {
+      // using console log because it shouldn't be affected by loglevel config
+      // eslint-disable-next-line no-console
+      console.log("%c WARNING! You are on testnet. Please set network: 'mainnet' in production", "color: #FF0000");
+    }
     if (this.state.support3PC) {
       await Promise.all([this.modal.init(), this.updateOriginData()]);
       this.provider.init({ iframeElem: this.modal.iframeElem, iframeUrl: this.state.iframeUrl });
