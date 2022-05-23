@@ -52,44 +52,7 @@ import Vue from "vue";
 
 import * as ethWeb3 from "./lib/ethWeb3";
 const YOUR_PROJECT_ID = "BMrx-qoWCSt7_GWC1T0QUKEbM0EPb4V0W5uTyjxaIZNpjT14_8ySznR1wVqZggE2DMKW-7xPSGcXEydFdkPGemM";
-const openlogin = new OpenLogin({
-  // your clientId aka projectId , get it from https://developer.tor.us
-  // clientId is not required for localhost, you can set it to any string
-  // for development
-  clientId: YOUR_PROJECT_ID,
-  network: "development",
-  uxMode: "redirect",
-  whiteLabel: {
-    name: "HelloDemo",
-    url: "http://localhost:8080",
-    logoDark: "https://images.web3auth.io/example-hello.svg", // dark logo for light background
-    logoLight: "https://images.web3auth.io/example-hello-light.svg", // light logo for dark background
-    dark: true,
-    theme: {
-      primary: "#FF9900",
-    },
-  },
-  loginConfig: {
-    email_passwordless: {
-      name: "email_passwordless",
-      typeOfLogin: "jwt",
-      description: "Login with Auth0",
-      verifier: "lioneell-auth0-email-password",
-      clientId: "MfPdpVU82zbowrP1zefQg7mCCdXzENTG",
-      showOnModal: true,
-      showOnDesktop: true,
-      showOnMobile: true,
-      mainOption: true,
-      // logoDark: "https://images.web3auth.io/example-login-hello-dark.svg",
-      // logoLight: "https://images.web3auth.io/example-login-hello-light.svg",
-      // logoHover: "https://images.web3auth.io/example-login-hello-hover.svg",
-      jwtParameters: {
-        domain: "https://dev-zraq1p5o.us.auth0.com",
-        connection: "Username-Password-Authentication",
-      },
-    },
-  },
-});
+
 export default Vue.extend({
   name: "App",
   data() {
@@ -97,24 +60,64 @@ export default Vue.extend({
       loading: false,
       privKey: "",
       ethereumPrivateKeyProvider: null as EthereumPrivateKeyProvider | null,
+      openlogin: null as OpenLogin | null,
     };
   },
   async mounted() {
     this.loading = true;
+    const openlogin = new OpenLogin({
+      // your clientId aka projectId , get it from https://developer.tor.us
+      // clientId is not required for localhost, you can set it to any string
+      // for development
+      clientId: YOUR_PROJECT_ID,
+      network: "testnet",
+      uxMode: "redirect",
+      whiteLabel: {
+        name: "HelloDemo",
+        url: "http://localhost:8080",
+        logoDark: "https://images.web3auth.io/example-hello.svg", // dark logo for light background
+        logoLight: "https://images.web3auth.io/example-hello-light.svg", // light logo for dark background
+        dark: true,
+        theme: {
+          primary: "#FF9900",
+        },
+      },
+      loginConfig: {
+        email_passwordless: {
+          name: "email_passwordless",
+          typeOfLogin: "jwt",
+          description: "Login with Auth0",
+          verifier: "lioneell-auth0-email-password",
+          clientId: "MfPdpVU82zbowrP1zefQg7mCCdXzENTG",
+          showOnModal: true,
+          showOnDesktop: true,
+          showOnMobile: true,
+          mainOption: true,
+          // logoDark: "https://images.web3auth.io/example-login-hello-dark.svg",
+          // logoLight: "https://images.web3auth.io/example-login-hello-light.svg",
+          // logoHover: "https://images.web3auth.io/example-login-hello-hover.svg",
+          jwtParameters: {
+            domain: "https://dev-zraq1p5o.us.auth0.com",
+            connection: "Username-Password-Authentication",
+          },
+        },
+      },
+    });
+    this.openlogin = openlogin;
     await openlogin.init();
     this.privKey = openlogin.privKey;
     if (this.privKey) await this.setProvider(this.privKey);
-
     this.loading = false;
   },
   methods: {
     async login() {
       this.loading = true;
+      if (!this.openlogin) return;
       try {
         // in popup mode (with third party cookies available) or if user is already logged in this function will
         // return priv key , in redirect mode or if third party cookies are blocked then priv key be injected to
         // sdk instance after calling init on redirect url page.
-        const privKey = await openlogin.login({
+        const privKey = await this.openlogin.login({
           mfaLevel: "optional",
           // pass empty string '' as loginProvider to open default torus modal
           // with all default supported login providers or you can pass specific
@@ -132,7 +135,7 @@ export default Vue.extend({
           // },
         });
         if (privKey) {
-          this.privKey = openlogin.privKey;
+          this.privKey = this.openlogin.privKey;
           await this.setProvider(this.privKey);
         }
       } catch (error) {
@@ -148,7 +151,7 @@ export default Vue.extend({
         // clientId is not required for localhost, you can set it to any string
         // for development
         clientId: YOUR_PROJECT_ID,
-        network: "development",
+        network: "testnet",
         uxMode: "redirect",
         loginConfig: {
           email_passwordless: {
@@ -171,6 +174,7 @@ export default Vue.extend({
           },
         },
       });
+      this.openlogin = openLoginPlain;
 
       await openLoginPlain.init();
       const { privKey } = await openLoginPlain.login({
@@ -179,7 +183,7 @@ export default Vue.extend({
         redirectUrl: `${window.origin}`,
         relogin: true,
       });
-      this.setProvider(privKey);
+      await this.setProvider(privKey);
     },
 
     async setProvider(privKey: string) {
@@ -199,12 +203,14 @@ export default Vue.extend({
     },
 
     async getUserInfo() {
-      const userInfo = await openlogin.getUserInfo();
+      if (!this.openlogin) return;
+      const userInfo = await this.openlogin.getUserInfo();
       this.printToConsole(userInfo);
     },
 
     getEd25519Key() {
-      const { sk } = getED25519Key(openlogin.privKey);
+      if (!this.openlogin) return;
+      const { sk } = getED25519Key(this.openlogin.privKey);
       const base58Key = bs58.encode(sk);
       this.printToConsole(base58Key);
     },
@@ -265,8 +271,9 @@ export default Vue.extend({
     },
 
     async logout() {
-      await openlogin.logout({});
-      this.privKey = openlogin.privKey;
+      if (!this.openlogin) return;
+      await this.openlogin.logout({});
+      this.privKey = this.openlogin.privKey;
       this.ethereumPrivateKeyProvider = null;
     },
     printToConsole(...args: unknown[]) {
