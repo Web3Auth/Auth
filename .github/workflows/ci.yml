@@ -54,7 +54,7 @@ jobs:
         if: github.ref == 'refs/heads/master'
         run: |
           cd examples/vue-example
-          npm run install:local
+          npm install
           npm run build
 
       # Set the credentials from repository settings/secrets
