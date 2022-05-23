@@ -8,7 +8,7 @@ const F = new ZqField(Scalar.fromString("218882428718392752222464057452572750885
 const SEED = "mimcsponge";
 const NROUNDS = 220;
 
-export function mimgGetIV(seed: string): BigInt {
+export function mimgGetIV(seed: string): bigint {
   let _seed = seed;
   if (typeof _seed === "undefined") _seed = SEED;
   const c = keccak256(`${_seed}_iv`);
@@ -17,7 +17,7 @@ export function mimgGetIV(seed: string): BigInt {
   return iv;
 }
 
-export function mimcGetConstants(seed?: string, nRounds?: number): BigInt[] {
+export function mimcGetConstants(seed?: string, nRounds?: number): bigint[] {
   let _seed = seed;
   let _nRounds = nRounds;
   if (typeof _seed === "undefined") _seed = SEED;
@@ -43,8 +43,8 @@ export function mimcHash(
   _xR_in: any,
   _k: any
 ): {
-  xL: BigInt;
-  xR: BigInt;
+  xL: bigint;
+  xR: bigint;
 } {
   let xL = F.e(_xL_in);
   let xR = F.e(_xR_in);
@@ -66,7 +66,7 @@ export function mimcHash(
   };
 }
 
-export function mimcMultiHash(arr: any[], key: any, numOutputs: number): BigInt[] {
+export function mimcMultiHash(arr: any[], key: any, numOutputs: number): bigint[] {
   let _key = key;
   let _numOutputs = numOutputs;
   if (typeof _numOutputs === "undefined") {

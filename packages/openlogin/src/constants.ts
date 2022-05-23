@@ -51,7 +51,7 @@ export type RequestParams = {
 export type BaseLogoutParams = {
   /**
    * You can get your clientId/projectId by registering your
-   * dapp on {@link "https://developer.tor.us"| developer dashbaord}
+   * dapp on {@link "https://dashboard.web3auth.io"| developer dashboard}
    */
   clientId: string;
   /**
@@ -73,7 +73,7 @@ export type BaseRedirectParams = {
    * redirectUrl is the dapp's url where user will be redirected after login.
    *
    * @remarks
-   * Register this url at {@link "https://developer.tor.us"| developer dashbaord}
+   * Register this url at {@link "https://dashboard.web3auth.io"| developer dashboard}
    * else initialization will give error.
    */
   redirectUrl?: string;
@@ -96,7 +96,7 @@ export type OPENLOGIN_NETWORK_TYPE = typeof OPENLOGIN_NETWORK[keyof typeof OPENL
 export type OpenLoginOptions = {
   /**
    * You can get your clientId/projectId by registering your
-   * dapp on {@link "https://developer.tor.us"| developer dashbaord}
+   * dapp on {@link "https://dashboard.web3auth.io"| developer dashboard}
    */
   clientId: string;
 
@@ -126,7 +126,7 @@ export type OpenLoginOptions = {
    * redirectUrl is the dapp's url where user will be redirected after login.
    *
    * @remarks
-   * Register this url at {@link "https://developer.tor.us"| developer dashbaord}
+   * Register this url at {@link "https://dashboard.web3auth.io"| developer dashboard}
    * else initialization will give error.
    */
   redirectUrl?: string;
@@ -156,7 +156,7 @@ export type OpenLoginOptions = {
    * @internal
    * @remarks
    * You don't have to pass originData explicitly if you have registered your dapp at
-   * {@link "https://developer.tor.us"| developer dashbaord}.
+   * {@link "https://dashboard.web3auth.io"| developer dashboard}.
    *
    * originData contains a signature of dapp's origin url which is generated using
    * project's secret.
@@ -171,7 +171,7 @@ export type OpenLoginOptions = {
    * should be custom configuration for that loginProvider
    *
    * @remarks
-   * You can deploy your own verifiers from {@link "https://developer.tor.us"| developer dashbaord}
+   * You can deploy your own verifiers from {@link "https://dashboard.web3auth.io"| developer dashboard}
    * to use here.
    *
    */
@@ -234,6 +234,7 @@ export const MFA_LEVELS = {
   DEFAULT: "default",
   OPTIONAL: "optional",
   MANDATORY: "mandatory",
+  NONE: "none",
 } as const;
 
 export type MfaLevelType = typeof MFA_LEVELS[keyof typeof MFA_LEVELS];

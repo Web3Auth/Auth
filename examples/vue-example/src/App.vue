@@ -115,7 +115,7 @@ export default Vue.extend({
         // return priv key , in redirect mode or if third party cookies are blocked then priv key be injected to
         // sdk instance after calling init on redirect url page.
         const privKey = await openlogin.login({
-          mfaLevel: "mandatory",
+          mfaLevel: "optional",
           // pass empty string '' as loginProvider to open default torus modal
           // with all default supported login providers or you can pass specific
           // login provider from available list to set as default.

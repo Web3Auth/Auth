@@ -1,6 +1,6 @@
 {
   "name": "openlogin",
-  "version": "1.7.3",
+  "version": "2.0.1",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
   "main": "dist/openlogin.cjs.js",
@@ -14,15 +14,15 @@
     "test": "mocha --config ../../.mocharc.json test/**.ts",
     "test-debugger": "mocha --config ../../.mocharc.json --inspect-brk test/**.ts",
     "dev": "rimraf dist/ && cross-env NODE_ENV=development torus-scripts build",
-    "build": "rimraf dist/ && cross-env NODE_ENV=production torus-scripts build",
+    "build": "torus-scripts build",
     "lint": "eslint --fix 'src/**/*.ts'",
     "prepack": "yarn run build",
     "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
-    "@toruslabs/openlogin": "^1.7.3",
-    "@toruslabs/openlogin-jrpc": "^1.7.3",
-    "@toruslabs/openlogin-utils": "^1.7.0",
+    "@toruslabs/openlogin": "^2.0.1",
+    "@toruslabs/openlogin-jrpc": "^2.0.0",
+    "@toruslabs/openlogin-utils": "^2.0.0",
     "bn.js": "^5.2.0"
   },
   "peerDependencies": {
@@ -49,8 +49,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "2d61b7f1967ecd704470c46ff7c30c47d240f4a4",
-  "devDependencies": {
-    "lint-staged": "^12.3.7"
-  }
+  "gitHead": "2d61b7f1967ecd704470c46ff7c30c47d240f4a4"
 }
