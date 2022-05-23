@@ -9,6 +9,7 @@
       <div v-if="!privKey && !loading">
         <h3>Login With Openlogin</h3>
         <button @click="login">login</button>
+        <button @click="loginWithoutWhitelabel">login without whitelabel</button>
       </div>
 
       <div v-if="privKey">
@@ -50,14 +51,44 @@ import OpenLogin from "openlogin";
 import Vue from "vue";
 
 import * as ethWeb3 from "./lib/ethWeb3";
-const YOUR_PROJECT_ID = "BCtbnOamqh0cJFEUYA0NB5YkvBECZ3HLZsKfvSRBvew2EiiKW3UxpyQASSR0artjQkiUOCHeZ_ZeygXpYpxZjOs";
+const YOUR_PROJECT_ID = "BMrx-qoWCSt7_GWC1T0QUKEbM0EPb4V0W5uTyjxaIZNpjT14_8ySznR1wVqZggE2DMKW-7xPSGcXEydFdkPGemM";
 const openlogin = new OpenLogin({
   // your clientId aka projectId , get it from https://developer.tor.us
   // clientId is not required for localhost, you can set it to any string
   // for development
   clientId: YOUR_PROJECT_ID,
-  network: "testnet",
+  network: "development",
   uxMode: "redirect",
+  whiteLabel: {
+    name: "HelloDemo",
+    url: "http://localhost:8080",
+    logoDark: "https://images.web3auth.io/example-hello.svg", // dark logo for light background
+    logoLight: "https://images.web3auth.io/example-hello-light.svg", // light logo for dark background
+    dark: false,
+    theme: {
+      primary: "#FF9900",
+    },
+  },
+  loginConfig: {
+    email_passwordless: {
+      name: "email_passwordless",
+      typeOfLogin: "jwt",
+      description: "Login with Auth0",
+      verifier: "lioneell-auth0-email-password",
+      clientId: "MfPdpVU82zbowrP1zefQg7mCCdXzENTG",
+      showOnModal: true,
+      showOnDesktop: true,
+      showOnMobile: true,
+      mainOption: true,
+      // logoDark: "https://images.web3auth.io/example-login-hello-dark.svg",
+      // logoLight: "https://images.web3auth.io/example-login-hello-light.svg",
+      // logoHover: "https://images.web3auth.io/example-login-hello-hover.svg",
+      jwtParameters: {
+        domain: "https://dev-zraq1p5o.us.auth0.com",
+        connection: "Username-Password-Authentication",
+      },
+    },
+  },
 });
 export default Vue.extend({
   name: "App",
@@ -109,6 +140,46 @@ export default Vue.extend({
       } finally {
         this.loading = false;
       }
+    },
+
+    async loginWithoutWhitelabel() {
+      const openLoginPlain = new OpenLogin({
+        // your clientId aka projectId , get it from https://developer.tor.us
+        // clientId is not required for localhost, you can set it to any string
+        // for development
+        clientId: YOUR_PROJECT_ID,
+        network: "development",
+        uxMode: "redirect",
+        loginConfig: {
+          email_passwordless: {
+            name: "email_passwordless",
+            typeOfLogin: "jwt",
+            description: "Login with Auth0",
+            verifier: "lioneell-auth0-email-password",
+            clientId: "MfPdpVU82zbowrP1zefQg7mCCdXzENTG",
+            showOnModal: true,
+            showOnDesktop: true,
+            showOnMobile: true,
+            mainOption: true,
+            // logoDark: "https://images.web3auth.io/example-login-hello-dark.svg",
+            // logoLight: "https://images.web3auth.io/example-login-hello-light.svg",
+            // logoHover: "https://images.web3auth.io/example-login-hello-hover.svg",
+            jwtParameters: {
+              domain: "https://dev-zraq1p5o.us.auth0.com",
+              connection: "Username-Password-Authentication",
+            },
+          },
+        },
+      });
+
+      await openLoginPlain.init();
+      const { privKey } = await openLoginPlain.login({
+        mfaLevel: "mandatory",
+        loginProvider: "",
+        redirectUrl: `${window.origin}`,
+        relogin: true,
+      });
+      this.setProvider(privKey);
     },
 
     async setProvider(privKey: string) {
