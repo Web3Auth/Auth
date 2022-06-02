@@ -201,6 +201,12 @@ export type OpenLoginOptions = {
    * options for whitelabling default openlogin modal.
    */
   whiteLabel?: WhiteLabelData;
+
+  /**
+   * Specify a custom storage server url
+   * @defaultValue https://broadcast-server.tor.us
+   */
+  _storageServerUrl?: string;
 };
 
 export const LOGIN_PROVIDER = {
@@ -324,6 +330,13 @@ export type LoginParams = BaseRedirectParams & {
    * dappShare is a 24 word seed phrase
    */
   dappShare?: string;
+
+  /**
+   * How long should a login session last at a minimum in seconds
+   *
+   * @defaultValue 86400 seconds
+   */
+  sessionTime?: number;
 };
 
 export type OpenloginUserInfo = {

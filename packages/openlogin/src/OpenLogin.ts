@@ -45,6 +45,7 @@ export type OpenLoginState = {
   originData: OriginData;
   whiteLabel: WhiteLabelData;
   loginConfig: LoginConfig;
+  storageServerUrl: string;
 };
 
 class OpenLogin {
@@ -85,6 +86,7 @@ class OpenLogin {
       originData: options.originData ?? { [window.location.origin]: "" },
       whiteLabel: options.whiteLabel ?? {},
       loginConfig: options.loginConfig ?? {},
+      _storageServerUrl: options._storageServerUrl ?? "https://broadcast-server.tor.us",
     });
   }
 
@@ -107,6 +109,7 @@ class OpenLogin {
       loginConfig: options.loginConfig,
       support3PC: !options.no3PC,
       whiteLabel: options.whiteLabel,
+      storageServerUrl: options._storageServerUrl,
     };
   }
 
@@ -116,16 +119,15 @@ class OpenLogin {
       // eslint-disable-next-line no-console
       console.log("%c WARNING! You are on testnet. Please set network: 'mainnet' in production", "color: #FF0000");
     }
+    await Promise.all([this.modal.init(), this.updateOriginData()]);
+    this.provider.init({ iframeElem: this.modal.iframeElem, iframeUrl: this.state.iframeUrl });
+    const params = getHashQueryParams(this.state.replaceUrlOnRedirect);
+    const currentPid = params.pid || (this.state.store.get("pid") as string);
+    this._syncState(await this._getData(currentPid));
+
     if (this.state.support3PC) {
-      await Promise.all([this.modal.init(), this.updateOriginData()]);
-      this.provider.init({ iframeElem: this.modal.iframeElem, iframeUrl: this.state.iframeUrl });
-      this._syncState(await this._getData());
-      this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
       const res = await this._check3PCSupport();
       this.state.support3PC = !!res.support3PC;
-    } else {
-      await this.updateOriginData();
-      this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
     }
   }
 
@@ -215,7 +217,7 @@ class OpenLogin {
     //   return this._fastLogin(loginParams);
     // }
 
-    const res = await this.request<{ privKey: string; store?: Record<string, string> }>({
+    const res = await this.request<{ privKey: string; store?: Record<string, string>; pid: string }>({
       method: OPENLOGIN_METHOD.LOGIN,
       allowedInteractions: [UX_MODE.REDIRECT, UX_MODE.POPUP],
       startUrl: this.state.startUrl,
@@ -226,7 +228,7 @@ class OpenLogin {
     if (res.store) {
       this._syncState(res);
     } else if (this.state.privKey && this.state.support3PC) {
-      this._syncState(await this._getData());
+      this._syncState(await this._getData(res.pid));
     }
     return { privKey: this.privKey };
   }
@@ -342,7 +344,8 @@ class OpenLogin {
           })
         );
         const windowRef = window.open(u.toString(), "_blank", getPopupFeatures());
-        return awaitReq<T>(pid, windowRef);
+        const res = await awaitReq<T>(pid, windowRef);
+        return { ...res, pid };
       }
     } else {
       // if popups preferred, check for popup flows first, then check for redirect flow
@@ -355,7 +358,8 @@ class OpenLogin {
           })
         );
         const windowRef = window.open(u.toString(), "_blank", getPopupFeatures());
-        return awaitReq<T>(pid, windowRef);
+        const res = await awaitReq<T>(pid, windowRef);
+        return { ...res, pid };
       }
 
       if (allowedInteractions.includes(ALLOWED_INTERACTIONS.REDIRECT)) {
@@ -418,11 +422,11 @@ class OpenLogin {
     });
   }
 
-  async _getData(): Promise<Record<string, unknown>> {
+  async _getData(pid: string): Promise<Record<string, unknown>> {
     return this.request<Record<string, unknown>>({
       allowedInteractions: [ALLOWED_INTERACTIONS.JRPC],
       method: OPENLOGIN_METHOD.GET_DATA,
-      params: [{}],
+      params: [{ pid }],
     });
   }
 
