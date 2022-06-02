@@ -75,16 +75,6 @@ function App() {
         // for ex: google, facebook, twitter etc
         loginProvider: "",
         redirectUrl: `${window.location.origin}`,
-        relogin: true,
-        // setting it true will force user to use touchid/faceid (if available on device)
-        // while doing login again
-        fastLogin: false,
-
-        // setting skipTKey to true will display a button to user to skip
-        // openlogin security while login.
-        // But caveat here is that user will be get different keys if user is skipping tkey
-        // so use this option with care in your app or make sure user knows about this.
-        skipTKey: false,
 
         // you can pass standard oauth parameter in extralogin options
         // for ex: in case of passwordless login, you have to pass user's email as login_hint

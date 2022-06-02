@@ -172,28 +172,6 @@ class OpenLogin {
     }
   }
 
-  async _fastLogin(params: Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
-    const defaultParams: BaseRedirectParams = {
-      redirectUrl: this.state.redirectUrl,
-    };
-
-    const loginParams: BaseRedirectParams = {
-      ...defaultParams,
-      ...params,
-    };
-
-    const res = await this.request<{ privKey: string }>({
-      params: [{ ...loginParams, fastLogin: true }],
-      method: OPENLOGIN_METHOD.LOGIN,
-      startUrl: this.state.startUrl,
-      popupUrl: this.state.popupUrl,
-      allowedInteractions: [ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
-    });
-
-    this.state.privKey = res.privKey;
-    return res;
-  }
-
   async login(params?: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
     if (params?.loginProvider) {
       return this._selectedLogin(params);
@@ -211,11 +189,6 @@ class OpenLogin {
       ...defaultParams,
       ...params,
     };
-
-    // fast login flow
-    // if (this.state.store.get("touchIDPreference") === "enabled" && !loginParams.extraLoginOptions?.login_hint) {
-    //   return this._fastLogin(loginParams);
-    // }
 
     const res = await this.request<{ privKey: string; store?: Record<string, string>; pid: string }>({
       method: OPENLOGIN_METHOD.LOGIN,
@@ -238,12 +211,10 @@ class OpenLogin {
     // defaults
     params.redirectUrl = this.state.redirectUrl;
     params._clientId = this.state.clientId;
+    params.sessionId = this.state.store.get("pid");
 
     if (logoutParams.clientId) {
       params._clientId = logoutParams.clientId;
-    }
-    if (logoutParams.fastLogin !== undefined) {
-      params.fastLogin = logoutParams.fastLogin;
     }
     if (logoutParams.redirectUrl !== undefined) {
       params.redirectUrl = logoutParams.redirectUrl;
@@ -258,7 +229,6 @@ class OpenLogin {
     });
 
     this.state.privKey = "";
-    // if (!params.fastLogin) this.state.store.set("touchIDPreference", "disabled");
     return res;
   }
 
@@ -294,6 +264,9 @@ class OpenLogin {
     session._originData = this.state.originData;
     session._whiteLabelData = this.state.whiteLabel;
     session._loginConfig = this.state.loginConfig;
+
+    const sessionId = this.state.store.get("pid");
+    if (sessionId) session._sessionId = sessionId as string;
 
     // add in session data (allow overrides)
     params = [{ ...session, ...params[0] }];
