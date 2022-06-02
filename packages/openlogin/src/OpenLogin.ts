@@ -122,8 +122,10 @@ class OpenLogin {
     await Promise.all([this.modal.init(), this.updateOriginData()]);
     this.provider.init({ iframeElem: this.modal.iframeElem, iframeUrl: this.state.iframeUrl });
     const params = getHashQueryParams(this.state.replaceUrlOnRedirect);
-    const currentPid = params.pid || (this.state.store.get("pid") as string);
-    this._syncState(await this._getData(currentPid));
+    if (params.sessionId) {
+      this.state.store.set("sessionId", params.sessionId);
+    }
+    this._syncState(await this._getData());
 
     if (this.state.support3PC) {
       const res = await this._check3PCSupport();
@@ -190,7 +192,7 @@ class OpenLogin {
       ...params,
     };
 
-    const res = await this.request<{ privKey: string; store?: Record<string, string>; pid: string }>({
+    const res = await this.request<{ privKey: string; store?: Record<string, string> }>({
       method: OPENLOGIN_METHOD.LOGIN,
       allowedInteractions: [UX_MODE.REDIRECT, UX_MODE.POPUP],
       startUrl: this.state.startUrl,
@@ -201,7 +203,7 @@ class OpenLogin {
     if (res.store) {
       this._syncState(res);
     } else if (this.state.privKey && this.state.support3PC) {
-      this._syncState(await this._getData(res.pid));
+      this._syncState(await this._getData());
     }
     return { privKey: this.privKey };
   }
@@ -321,8 +323,7 @@ class OpenLogin {
           })
         );
         const windowRef = window.open(u.toString(), "_blank", getPopupFeatures());
-        const res = await awaitReq<T>(pid, windowRef);
-        return { ...res, pid };
+        return awaitReq<T>(pid, windowRef);
       }
     } else {
       // if popups preferred, check for popup flows first, then check for redirect flow
@@ -335,8 +336,7 @@ class OpenLogin {
           })
         );
         const windowRef = window.open(u.toString(), "_blank", getPopupFeatures());
-        const res = await awaitReq<T>(pid, windowRef);
-        return { ...res, pid };
+        return awaitReq<T>(pid, windowRef);
       }
 
       if (allowedInteractions.includes(ALLOWED_INTERACTIONS.REDIRECT)) {
@@ -399,11 +399,11 @@ class OpenLogin {
     });
   }
 
-  async _getData(pid: string): Promise<Record<string, unknown>> {
+  async _getData(): Promise<Record<string, unknown>> {
     return this.request<Record<string, unknown>>({
       allowedInteractions: [ALLOWED_INTERACTIONS.JRPC],
       method: OPENLOGIN_METHOD.GET_DATA,
-      params: [{ pid }],
+      params: [{}],
     });
   }
 
