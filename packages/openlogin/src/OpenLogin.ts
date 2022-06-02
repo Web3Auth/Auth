@@ -211,7 +211,7 @@ class OpenLogin {
     // defaults
     params.redirectUrl = this.state.redirectUrl;
     params._clientId = this.state.clientId;
-    params.sessionId = this.state.store.get("pid");
+    params.sessionId = this.state.store.get("sessionId");
 
     if (logoutParams.clientId) {
       params._clientId = logoutParams.clientId;
@@ -264,9 +264,13 @@ class OpenLogin {
     session._originData = this.state.originData;
     session._whiteLabelData = this.state.whiteLabel;
     session._loginConfig = this.state.loginConfig;
+    session._sessionId = this.state.store.get("sessionId");
 
-    const sessionId = this.state.store.get("pid");
-    if (sessionId) session._sessionId = sessionId as string;
+    if (!session._sessionId) {
+      const sessionId = randomId();
+      session._sessionId = sessionId as string;
+      this.state.store.set("sessionId", sessionId);
+    }
 
     // add in session data (allow overrides)
     params = [{ ...session, ...params[0] }];
