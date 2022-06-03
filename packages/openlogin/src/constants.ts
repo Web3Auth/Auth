@@ -258,6 +258,18 @@ export type LoginParams = BaseRedirectParams & {
   mfaLevel?: MfaLevelType;
 
   /**
+   *
+   * NOTE: This option is for internal use only in torus wallet.
+   * Setting skipTKey to `true` will skip TKey onboarding for new users,
+   * whereas old users  will be presented with an option to skip tKey in UI
+   * if this option is enabled.
+   *
+   * Defaults to false
+   * @defaultValue false
+   */
+  skipTKey?: boolean;
+
+  /**
    * This option is for internal use only in torus wallet and has not effect
    * on user's login on other dapps.
    *
