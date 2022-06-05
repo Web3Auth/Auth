@@ -54,18 +54,6 @@ export type BaseLogoutParams = {
    * dapp on {@link "https://dashboard.web3auth.io"| developer dashboard}
    */
   clientId: string;
-  /**
-   * Setting fastLogin to `true` will disable fast login for the user on this dapp.
-   *
-   * Defaults to false
-   * @defaultValue false
-   * @experimental
-   *
-   * @remarks
-   * Use this option with caution only when you are sure that you wish to disable fast login for the user on this dapp.
-   * In general you may not need to use this option.
-   */
-  fastLogin: boolean;
 };
 
 export type BaseRedirectParams = {
@@ -201,6 +189,12 @@ export type OpenLoginOptions = {
    * options for whitelabling default openlogin modal.
    */
   whiteLabel?: WhiteLabelData;
+
+  /**
+   * Specify a custom storage server url
+   * @defaultValue https://broadcast-server.tor.us
+   */
+  _storageServerUrl?: string;
 };
 
 export const LOGIN_PROVIDER = {
@@ -251,33 +245,22 @@ export type LoginParams = BaseRedirectParams & {
   loginProvider?: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
 
   /**
-   * Setting fastLogin to `true` will force user to login with webauthn if
-   * webauthn is available on device.
+   * You can set the `mfaLevel` to customize when mfa screen should be shown to user.
+   * It currently accepts 4 values:-
+   * - `'default'`: Setting mfa level to `default` will present mfa screen to user on every third login.
+   * - `'optional'`: Setting mfa level to `default` will present mfa screen to user on every login but user can skip it.
+   * - `'mandatory'`: Setting mfa level to `mandatory` will make it mandatory for user to setup mfa after login.
+   * - `'none'`: Setting mfa level to `none` will make the user skip the mfa setup screen
    *
-   * Defaults to false
-   * @defaultValue false
-   * @experimental
-   *
-   * @remarks
-   * Use this option with caution only when you are sure about that user has
-   * enabled webauthn while registration, else don't use this option.
-   * Openlogin will itself take care of detecting and handling webauthn.
-   * In general you may not need to use this option.
+   * Defaults to `default`
+   * @defaultValue `default`
    */
-  fastLogin?: boolean;
+  mfaLevel?: MfaLevelType;
 
   /**
-   * Setting relogin to `true` will force user to relogin when login
-   * method is called even if user is already logged in. By default login
-   * method call skips login process if user is already logged in.
    *
-   * * Defaults to false
-   * @defaultValue false
-   */
-  relogin?: boolean;
-
-  /**
-   * setting skipTKey to `true` will skip TKey onboarding for new users,
+   * NOTE: This option is for internal use only in torus wallet.
+   * Setting skipTKey to `true` will skip TKey onboarding for new users,
    * whereas old users  will be presented with an option to skip tKey in UI
    * if this option is enabled.
    *
@@ -285,18 +268,6 @@ export type LoginParams = BaseRedirectParams & {
    * @defaultValue false
    */
   skipTKey?: boolean;
-
-  /**
-   * You can set the `mfaLevel` to customize when mfa screen should be shown to user.
-   * It currently accepts 3 values:-
-   * - `'default'`: Setting mfa level to `default` will present mfa screen to user on every third login.
-   * - `'optional'`: Setting mfa level to `default` will present mfa screen to user on every login but user can skip it.
-   * - `'mandatory'`: Setting mfa level to `mandatory` will make it mandatory for user to setup mfa after login.
-   *
-   * Defaults to `default`
-   * @defaultValue `default`
-   */
-  mfaLevel?: MfaLevelType;
 
   /**
    * This option is for internal use only in torus wallet and has not effect
@@ -324,6 +295,13 @@ export type LoginParams = BaseRedirectParams & {
    * dappShare is a 24 word seed phrase
    */
   dappShare?: string;
+
+  /**
+   * How long should a login session last at a minimum in seconds
+   *
+   * @defaultValue 86400 seconds
+   */
+  sessionTime?: number;
 };
 
 export type OpenloginUserInfo = {

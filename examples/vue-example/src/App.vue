@@ -88,7 +88,6 @@ export default Vue.extend({
           // for ex: google, facebook, twitter etc
           loginProvider: "",
           redirectUrl: `${window.origin}`,
-          relogin: true,
           // you can pass standard oauth parameter in extralogin options
           // for ex: in case of passwordless login, you have to pass user's email as login_hint
           // and your app domain.
@@ -96,6 +95,7 @@ export default Vue.extend({
           //   domain: 'www.yourapp.com',
           //   login_hint: 'hello@yourapp.com',
           // },
+          // sessionTime: 30, //seconds
         });
         if (privKey) {
           this.privKey = openlogin.privKey;
@@ -116,7 +116,6 @@ export default Vue.extend({
           mfaLevel: "mandatory",
           loginProvider: "",
           redirectUrl: `${window.origin}`,
-          relogin: true,
         });
         if (privKey) {
           this.privKey = privKey;

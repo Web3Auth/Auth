@@ -45,7 +45,6 @@ function App() {
         // for ex: google, facebook, twitter etc
         loginProvider: "",
         redirectUrl: `${window.origin}`,
-        relogin: true,
         // you can pass standard oauth parameter in extralogin options
         // for ex: in case of passwordless login, you have to pass user's email as login_hint
         // and your app domain.

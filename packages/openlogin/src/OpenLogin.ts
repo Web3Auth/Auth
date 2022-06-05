@@ -45,6 +45,7 @@ export type OpenLoginState = {
   originData: OriginData;
   whiteLabel: WhiteLabelData;
   loginConfig: LoginConfig;
+  storageServerUrl: string;
 };
 
 class OpenLogin {
@@ -85,6 +86,7 @@ class OpenLogin {
       originData: options.originData ?? { [window.location.origin]: "" },
       whiteLabel: options.whiteLabel ?? {},
       loginConfig: options.loginConfig ?? {},
+      _storageServerUrl: options._storageServerUrl ?? "https://broadcast-server.tor.us",
     });
   }
 
@@ -107,6 +109,7 @@ class OpenLogin {
       loginConfig: options.loginConfig,
       support3PC: !options.no3PC,
       whiteLabel: options.whiteLabel,
+      storageServerUrl: options._storageServerUrl,
     };
   }
 
@@ -116,16 +119,17 @@ class OpenLogin {
       // eslint-disable-next-line no-console
       console.log("%c WARNING! You are on testnet. Please set network: 'mainnet' in production", "color: #FF0000");
     }
+    await Promise.all([this.modal.init(), this.updateOriginData()]);
+    this.provider.init({ iframeElem: this.modal.iframeElem, iframeUrl: this.state.iframeUrl });
+    const params = getHashQueryParams(this.state.replaceUrlOnRedirect);
+    if (params.sessionId) {
+      this.state.store.set("sessionId", params.sessionId);
+    }
+    this._syncState(await this._getData());
+
     if (this.state.support3PC) {
-      await Promise.all([this.modal.init(), this.updateOriginData()]);
-      this.provider.init({ iframeElem: this.modal.iframeElem, iframeUrl: this.state.iframeUrl });
-      this._syncState(await this._getData());
-      this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
       const res = await this._check3PCSupport();
       this.state.support3PC = !!res.support3PC;
-    } else {
-      await this.updateOriginData();
-      this._syncState(getHashQueryParams(this.state.replaceUrlOnRedirect));
     }
   }
 
@@ -170,28 +174,6 @@ class OpenLogin {
     }
   }
 
-  async _fastLogin(params: Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
-    const defaultParams: BaseRedirectParams = {
-      redirectUrl: this.state.redirectUrl,
-    };
-
-    const loginParams: BaseRedirectParams = {
-      ...defaultParams,
-      ...params,
-    };
-
-    const res = await this.request<{ privKey: string }>({
-      params: [{ ...loginParams, fastLogin: true }],
-      method: OPENLOGIN_METHOD.LOGIN,
-      startUrl: this.state.startUrl,
-      popupUrl: this.state.popupUrl,
-      allowedInteractions: [ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
-    });
-
-    this.state.privKey = res.privKey;
-    return res;
-  }
-
   async login(params?: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
     if (params?.loginProvider) {
       return this._selectedLogin(params);
@@ -209,11 +191,6 @@ class OpenLogin {
       ...defaultParams,
       ...params,
     };
-
-    // fast login flow
-    // if (this.state.store.get("touchIDPreference") === "enabled" && !loginParams.extraLoginOptions?.login_hint) {
-    //   return this._fastLogin(loginParams);
-    // }
 
     const res = await this.request<{ privKey: string; store?: Record<string, string> }>({
       method: OPENLOGIN_METHOD.LOGIN,
@@ -236,12 +213,10 @@ class OpenLogin {
     // defaults
     params.redirectUrl = this.state.redirectUrl;
     params._clientId = this.state.clientId;
+    params.sessionId = this.state.store.get("sessionId");
 
     if (logoutParams.clientId) {
       params._clientId = logoutParams.clientId;
-    }
-    if (logoutParams.fastLogin !== undefined) {
-      params.fastLogin = logoutParams.fastLogin;
     }
     if (logoutParams.redirectUrl !== undefined) {
       params.redirectUrl = logoutParams.redirectUrl;
@@ -256,7 +231,6 @@ class OpenLogin {
     });
 
     this.state.privKey = "";
-    // if (!params.fastLogin) this.state.store.set("touchIDPreference", "disabled");
     return res;
   }
 
@@ -292,6 +266,13 @@ class OpenLogin {
     session._originData = this.state.originData;
     session._whiteLabelData = this.state.whiteLabel;
     session._loginConfig = this.state.loginConfig;
+    session._sessionId = this.state.store.get("sessionId");
+
+    if (!session._sessionId) {
+      const sessionId = randomId();
+      session._sessionId = sessionId as string;
+      this.state.store.set("sessionId", sessionId);
+    }
 
     // add in session data (allow overrides)
     params = [{ ...session, ...params[0] }];
