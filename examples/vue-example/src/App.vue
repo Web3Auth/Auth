@@ -95,7 +95,7 @@ export default Vue.extend({
           //   domain: 'www.yourapp.com',
           //   login_hint: 'hello@yourapp.com',
           // },
-          // sessionTime: 10, //seconds
+          // sessionTime: 30, //seconds
         });
         if (privKey) {
           this.privKey = openlogin.privKey;
