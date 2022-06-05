@@ -14,7 +14,7 @@ export function getOpenLoginInstance(whiteLabel?: WhiteLabelData) {
       // clientId is not required for localhost, you can set it to any string
       // for development
       clientId: YOUR_PROJECT_ID,
-      network: "development",
+      network: "testnet",
       uxMode: "redirect",
       whiteLabel,
       loginConfig,
