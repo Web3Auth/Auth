@@ -23,7 +23,7 @@
     "@toruslabs/starkware-crypto": "^1.1.0",
     "bip39": "^3.0.4",
     "enc-utils": "^3.0.0",
-    "ethereumjs-util": "^7.1.4"
+    "ethereumjs-util": "^7.1.5"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"

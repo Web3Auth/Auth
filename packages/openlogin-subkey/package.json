@@ -21,8 +21,8 @@
   },
   "dependencies": {
     "@toruslabs/openlogin-utils": "^2.0.0",
-    "bn.js": "^5.2.0",
-    "ffjavascript": "^0.2.54"
+    "bn.js": "^5.2.1",
+    "ffjavascript": "^0.2.55"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"
