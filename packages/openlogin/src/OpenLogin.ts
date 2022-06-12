@@ -54,7 +54,11 @@ class OpenLogin {
 
   modal: Modal;
 
-  constructor(options: OpenLoginOptions) {
+  siwwMessage: string;
+
+  siwwSignature: string;
+
+  constructor(options?: OpenLoginOptions) {
     this.provider = new Proxy(new Provider(), {
       deleteProperty: () => true, // work around for web3
     });
