@@ -2,6 +2,7 @@ import { decrypt, Ecies, encrypt, getPublic, sign } from "@toruslabs/eccrypto";
 import { get } from "@toruslabs/http-helpers";
 import { getRpcPromiseCallback, JRPCRequest, LoginConfig, OriginData, SessionInfo, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 import { base64url, jsonToBase64, keccak, randomId } from "@toruslabs/openlogin-utils";
+import { Payload, Signature, SIWWeb3 } from "@web3auth/sign-in-with-web3";
 import merge from "lodash.merge";
 
 import {
@@ -56,9 +57,18 @@ class OpenLogin {
 
   siwwMessage: string;
 
-  siwwSignature: string;
+  siwwObject: SIWWeb3;
 
-  constructor(options?: OpenLoginOptions) {
+  constructor(options: OpenLoginOptions) {
+    // Check if external wallet
+    if (options.network === OPENLOGIN_NETWORK.EXTERNAL) {
+      // Create the SIWWeb3 object
+      this.siwwObject = new SIWWeb3(options.payload);
+      // Get the message that needs to be signed
+      this.siwwMessage = this.siwwObject.prepareMessage();
+      return;
+    }
+
     this.provider = new Proxy(new Provider(), {
       deleteProperty: () => true, // work around for web3
     });
@@ -89,11 +99,19 @@ class OpenLogin {
       originData: options.originData ?? { [window.location.origin]: "" },
       whiteLabel: options.whiteLabel ?? {},
       loginConfig: options.loginConfig ?? {},
+      payload: null,
     });
   }
 
   get privKey(): string {
     return this.state.privKey ? this.state.privKey.padStart(64, "0") : "";
+  }
+
+  verify(payload: Payload, signature: Signature, kp?: unknown): Promise<unknown> {
+    if (kp) {
+      return this.siwwObject.verify(payload, signature, kp);
+    }
+    return this.siwwObject.verify(payload, signature);
   }
 
   initState(options: Required<OpenLoginOptions>): void {

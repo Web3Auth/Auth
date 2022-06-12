@@ -89,6 +89,7 @@ export const OPENLOGIN_NETWORK = {
   TESTNET: "testnet",
   CYAN: "cyan",
   DEVELOPMENT: "development",
+  EXTERNAL: "external", // external wallet
 } as const;
 
 export type OPENLOGIN_NETWORK_TYPE = typeof OPENLOGIN_NETWORK[keyof typeof OPENLOGIN_NETWORK];
@@ -201,6 +202,11 @@ export type OpenLoginOptions = {
    * options for whitelabling default openlogin modal.
    */
   whiteLabel?: WhiteLabelData;
+
+  /**
+   * SIWW payload
+   */
+  payload?: unknown;
 };
 
 export const LOGIN_PROVIDER = {
