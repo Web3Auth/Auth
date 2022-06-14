@@ -313,4 +313,5 @@ export type OpenloginUserInfo = {
   verifierId: string;
   typeOfLogin: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
   dappShare?: string;
+  token?: string;
 };
