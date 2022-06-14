@@ -1,4 +1,5 @@
 import { getPublic, sign } from "@toruslabs/eccrypto";
+import { post } from "@toruslabs/http-helpers";
 import { base64url, keccak, safeatob } from "@toruslabs/openlogin-utils";
 
 import { PopupResponse } from "./constants";
@@ -173,6 +174,11 @@ export function preloadIframe(url: string): void {
   } catch (error) {
     log.error(error);
   }
+}
+
+export async function getChallenge(): Promise<string> {
+  await post<{ challenge: string }>("/challenge");
+  return "";
 }
 
 export function getPopupFeatures(): string {

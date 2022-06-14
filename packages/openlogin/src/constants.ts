@@ -206,7 +206,7 @@ export type OpenLoginOptions = {
   /**
    * SIWW payload
    */
-  payload?: unknown;
+  externalWalletPayload?: unknown;
 };
 
 export const LOGIN_PROVIDER = {

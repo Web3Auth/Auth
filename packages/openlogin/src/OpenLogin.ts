@@ -4,6 +4,7 @@ import { getRpcPromiseCallback, JRPCRequest, LoginConfig, OriginData, SessionInf
 import { base64url, jsonToBase64, keccak, randomId } from "@toruslabs/openlogin-utils";
 import { Payload, Signature, SIWWeb3 } from "@web3auth/sign-in-with-web3";
 import merge from "lodash.merge";
+import log from "loglevel";
 
 import {
   ALLOWED_INTERACTIONS,
@@ -24,7 +25,7 @@ import {
 import { Modal } from "./Modal";
 import OpenLoginStore from "./OpenLoginStore";
 import Provider from "./Provider";
-import { awaitReq, constructURL, getHashQueryParams, getPopupFeatures, preloadIframe } from "./utils";
+import { awaitReq, constructURL, getChallenge, getHashQueryParams, getPopupFeatures, preloadIframe } from "./utils";
 
 preloadIframe("https://app.openlogin.com/sdk-modal");
 
@@ -62,11 +63,16 @@ class OpenLogin {
   constructor(options: OpenLoginOptions) {
     // Check if external wallet
     if (options.network === OPENLOGIN_NETWORK.EXTERNAL) {
-      // Create the SIWWeb3 object
-      this.siwwObject = new SIWWeb3(options.payload);
-      // Get the message that needs to be signed
-      this.siwwMessage = this.siwwObject.prepareMessage();
-      return;
+      try {
+        getChallenge()
+          .then((challenge) => {
+            log.info(challenge);
+            return challenge;
+          })
+          .catch(() => {});
+      } catch (e) {
+        throw new Error(e);
+      }
     }
 
     this.provider = new Proxy(new Provider(), {
@@ -99,7 +105,7 @@ class OpenLogin {
       originData: options.originData ?? { [window.location.origin]: "" },
       whiteLabel: options.whiteLabel ?? {},
       loginConfig: options.loginConfig ?? {},
-      payload: null,
+      externalWalletPayload: null,
     });
   }
 
