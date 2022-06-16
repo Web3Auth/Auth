@@ -300,6 +300,7 @@ export type LoginParams = BaseRedirectParams & {
    * How long should a login session last at a minimum in seconds
    *
    * @defaultValue 86400 seconds
+   * @remarks Max value of sessionTime can be 7 * 86400 (7 days)
    */
   sessionTime?: number;
 };
