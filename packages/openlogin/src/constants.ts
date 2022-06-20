@@ -312,10 +312,18 @@ export type LoginParams = BaseRedirectParams & {
   sessionTime?: number;
 
   /**
-   * This curve will be used as determiner for public key encoded in the jwt token returned in
-   * `getUserInfo` function
+   * This curve will be used to determine the public key encoded in the jwt token which returned in
+   * `getUserInfo` function after user login.
+   * You can use that public key from jwt token as a unique user identifier in your backend.
+   *
    * - `'secp256k1'`: secp256k1 based pub key is added as a wallet public key in jwt token to use.
    * - `'ed25519'`: ed25519 based pub key is added as a wallet public key in jwt token to use.
+   *
+   * Note: This parameter won't change format of private key returned by openlogin. Private key returned
+   * by openlogin is always `secp256k1`. As of now you have to convert it to `'ed25519'` if you want.
+   * You can use `@toruslabs/openlogin-ed25519` npm package for this purpose.
+   *
+   *
    * @defaultValue secp256k1
    */
   curve?: SUPPORTED_KEY_CURVES_TYPE;
