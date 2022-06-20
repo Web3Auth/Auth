@@ -79,6 +79,13 @@ export const OPENLOGIN_NETWORK = {
   DEVELOPMENT: "development",
 } as const;
 
+export const SUPPORTED_KEY_CURVES = {
+  SECP256K1: "secp256k1",
+  ED25519: "ed25519",
+} as const;
+
+export type SUPPORTED_KEY_CURVES_TYPE = typeof SUPPORTED_KEY_CURVES[keyof typeof SUPPORTED_KEY_CURVES];
+
 export type OPENLOGIN_NETWORK_TYPE = typeof OPENLOGIN_NETWORK[keyof typeof OPENLOGIN_NETWORK];
 
 export type OpenLoginOptions = {
@@ -303,6 +310,15 @@ export type LoginParams = BaseRedirectParams & {
    * @remarks Max value of sessionTime can be 7 * 86400 (7 days)
    */
   sessionTime?: number;
+
+  /**
+   * This curve will be used as determiner for public key encoded in the jwt token returned in
+   * `getUserInfo` function
+   * - `'secp256k1'`: secp256k1 based pub key is added as a wallet public key in jwt token to use.
+   * - `'ed25519'`: ed25519 based pub key is added as a wallet public key in jwt token to use.
+   * @defaultValue secp256k1
+   */
+  curve?: SUPPORTED_KEY_CURVES_TYPE;
 };
 
 export type OpenloginUserInfo = {
@@ -314,5 +330,5 @@ export type OpenloginUserInfo = {
   verifierId: string;
   typeOfLogin: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
   dappShare?: string;
-  token?: string;
+  idToken?: string;
 };
