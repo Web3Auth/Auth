@@ -497,6 +497,7 @@ class OpenLogin {
         verifierId: (storeData.verifierId as string) || "",
         typeOfLogin: (storeData.typeOfLogin as LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE) || "",
         dappShare: (storeData.dappShare as string) || "",
+        idToken: (storeData.idToken as string) || "",
       };
 
       return userInfo;

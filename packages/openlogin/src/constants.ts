@@ -79,6 +79,13 @@ export const OPENLOGIN_NETWORK = {
   DEVELOPMENT: "development",
 } as const;
 
+export const SUPPORTED_KEY_CURVES = {
+  SECP256K1: "secp256k1",
+  ED25519: "ed25519",
+} as const;
+
+export type SUPPORTED_KEY_CURVES_TYPE = typeof SUPPORTED_KEY_CURVES[keyof typeof SUPPORTED_KEY_CURVES];
+
 export type OPENLOGIN_NETWORK_TYPE = typeof OPENLOGIN_NETWORK[keyof typeof OPENLOGIN_NETWORK];
 
 export type OpenLoginOptions = {
@@ -300,8 +307,26 @@ export type LoginParams = BaseRedirectParams & {
    * How long should a login session last at a minimum in seconds
    *
    * @defaultValue 86400 seconds
+   * @remarks Max value of sessionTime can be 7 * 86400 (7 days)
    */
   sessionTime?: number;
+
+  /**
+   * This curve will be used to determine the public key encoded in the jwt token which returned in
+   * `getUserInfo` function after user login.
+   * You can use that public key from jwt token as a unique user identifier in your backend.
+   *
+   * - `'secp256k1'`: secp256k1 based pub key is added as a wallet public key in jwt token to use.
+   * - `'ed25519'`: ed25519 based pub key is added as a wallet public key in jwt token to use.
+   *
+   * Note: This parameter won't change format of private key returned by openlogin. Private key returned
+   * by openlogin is always `secp256k1`. As of now you have to convert it to `'ed25519'` if you want.
+   * You can use `@toruslabs/openlogin-ed25519` npm package for this purpose.
+   *
+   *
+   * @defaultValue secp256k1
+   */
+  curve?: SUPPORTED_KEY_CURVES_TYPE;
 };
 
 export type OpenloginUserInfo = {
@@ -313,4 +338,5 @@ export type OpenloginUserInfo = {
   verifierId: string;
   typeOfLogin: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
   dappShare?: string;
+  idToken?: string;
 };
