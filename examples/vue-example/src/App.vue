@@ -6,43 +6,90 @@
       </div>
     </div>
     <div>
-      <div v-if="!privKey && !loading">
+      <!-- <div v-if="!privKey && !loading">
         <h3>Login With Openlogin</h3>
         <button @click="login">login</button>
         <button @click="loginWithoutWhitelabel">login without whitelabel</button>
+      </div> -->
+      <div class="grid text-center justify-center pt-20" v-if="!privKey && !loading">
+        <h7 class="font-bold text-3xl">demo-openlogin.web3auth.io</h7>
+        <h6 class="pb-10 font-semibold text-[#595857]">Login With Openlogin</h6>
+        <div>
+          <button @click="login" class="btn-login">Login</button>
+          <button @click="loginWithoutWhitelabel" class="btn-login">Login with Whitelabel</button>
+        </div>
       </div>
 
       <div v-if="privKey">
-        <section>
-          <div>
-            Private key:
-            <i>{{ privKey }}</i>
+        <div class="flex box md:rows-span-2 m-6 text-left">
+          <div class="mt-7 ml-6 text-ellipsis overflow-hidden">
+            <h7 class="text-2xl font-semibold">demo-openlogin.web3auth.io</h7>
+            <h6 class="pb-8 text-left text-ellipsis overflow-hidden">Openlogin Private key : {{ privKey }}</h6>
           </div>
-          <div>
-            Connected ChainId
-            <i>{{ ethereumPrivateKeyProvider.state.chainId }}</i>
-            <button @click="logout">Logout</button>
+          <div class="ml-auto mt-7">
+            <span class="pr-32">Connected ChainId : {{ ethereumPrivateKeyProvider.state.chainId }}</span>
+            <button type="button" @click="logout" class="btn-logout">
+              <img src="@/assets/logout.svg" class="pr-3 pl-0" />
+              Logout
+            </button>
           </div>
-          <div>
-            <button @click="getUserInfo">Get User Info</button>
-            <button @click="getEd25519Key">Get Ed25519Key</button>
-            <button @click="signMessage" :disabled="!ethereumPrivateKeyProvider.provider">Sign Test Eth Message</button>
-            <button @click="signV1Message" :disabled="!ethereumPrivateKeyProvider.provider">Sign Typed data v1 test message</button>
-            <button @click="latestBlock" :disabled="!ethereumPrivateKeyProvider.provider">Fetch Latest Block</button>
-            <button @click="switchChain" :disabled="!ethereumPrivateKeyProvider.provider">Switch to rinkeby</button>
-            <button @click="addChain" :disabled="!ethereumPrivateKeyProvider.provider">Add Rinkeby Chain</button>
-
-            <div id="console">
-              <p />
+        </div>
+        <div class="grid grid-cols-5 gap-7 m-6 height-fit">
+          <div class="grid grid-cols-2 col-span-5 md:col-span-2 text-left gap-2 p-4 box">
+            <div class="col-span-2 text-left">
+              <div class="font-semibold">User Info</div>
+              <div class="grid grid-cols-2 gap-2">
+                <button class="btn" @click="getUserInfo">Get user info</button>
+                <button class="btn" @click="getEd25519Key">Get Ed25519Key</button>
+              </div>
+            </div>
+            <div class="col-span-2 text-left">
+              <div class="font-semibold">Signing</div>
+              <div class="grid grid-cols-2 gap-2">
+                <button class="btn" @click="signMessage" :disabled="!ethereumPrivateKeyProvider.provider">Sign test Eth Message</button>
+                <button class="btn" @click="signV1Message" :disabled="!ethereumPrivateKeyProvider.provider">Sign Typed data v1 test message</button>
+                <button class="btn" @click="latestBlock" :disabled="!ethereumPrivateKeyProvider.provider">Fetch latest block</button>
+                <button class="btn" @click="addChain" :disabled="!ethereumPrivateKeyProvider.provider">Add Rinkeby Chain</button>
+                <button class="btn" @click="switchChain" :disabled="!ethereumPrivateKeyProvider.provider">Switch to rinkeby</button>
+              </div>
+            </div>
+            <div class="col-span-2 text-left">
+              <div class="grid grid-cols-2 gap-2"></div>
+            </div>
+            <div class="col-span-2 text-left">
+              <div class="grid grid-cols-2 gap-2"></div>
+            </div>
+            <div class="col-span-2 text-left">
+              <div class="grid grid-cols-2 gap-2"></div>
+            </div>
+            <div class="col-span-2 text-left">
+              <div class="grid grid-cols-2 gap-2"></div>
+            </div>
+            <div class="col-span-2 text-left">
+              <div class="grid grid-cols-2 gap-2"></div>
+            </div>
+            <div class="col-span-2 text-left">
+              <div class="grid grid-cols-2 gap-2"></div>
+            </div>
+            <div class="col-span-2 text-left">
+              <div class="grid grid-cols-2 gap-2"></div>
+            </div>
+            <div class="col-span-2 text-left">
+              <div class="grid grid-cols-2 gap-2"></div>
             </div>
           </div>
-        </section>
+          <div class="box-grey" id="console">
+            <p style="white-space: pre-line"></p>
+            <div><button class="clear-button" @click="clearUiconsole">Clear console</button></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
+/* eslint-disable */
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import { DEFAULT_INFURA_ID } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
@@ -105,6 +152,12 @@ export default Vue.extend({
         console.error(error);
       } finally {
         this.loading = false;
+      }
+    },
+    async clearUiconsole() {
+      const el = document.querySelector("#console>p");
+      if (el) {
+        el.innerHTML = "";
       }
     },
 
@@ -229,32 +282,80 @@ export default Vue.extend({
 </script>
 
 <style>
+.box {
+  @apply bg-white;
+  border: 1px solid #f3f3f4;
+  border-radius: 20px;
+  box-shadow: 4px 4px 20px rgba(46, 91, 255, 0.1);
+}
+
+.box-grey {
+  @apply col-span-5 md:col-span-3 overflow-hidden min-h-[400px] bg-[#f3f3f4] rounded-3xl relative;
+  border: 1px solid #f3f3f4;
+  box-shadow: 4px 4px 20px rgba(46, 91, 255, 0.1);
+}
+h3 {
+  margin: 40px 0 0;
+}
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+li {
+  display: inline-block;
+  margin: 0 10px;
+}
+a {
+  color: #42b983;
+}
+/* #app {
+  font-family: 'DM Sans';
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+} */
 #app {
   font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
-#console {
-  border: 0px solid black;
-  height: 40px;
-  padding: 2px;
-  text-align: left;
-  width: calc(100% - 20px);
-  border-radius: 5px;
-  margin-top: 20px;
-  margin-bottom: 80px;
-}
-#console > p {
-  margin: 0.5em;
-}
-button {
+/* button {
   height: 25px;
   margin: 5px;
   background: none;
   border-radius: 5px;
   cursor: pointer;
+} */
+.btn-login {
+  @apply h-12 w-60 m-2 bg-white rounded-3xl font-[#6F717A] font-medium;
+  border: 1px solid #6f717a;
+}
+#console {
+  text-align: left;
+  overflow: auto;
+}
+#console > p {
+  @apply m-2;
+}
+.btn {
+  @apply h-11 w-full m-0 bg-white rounded-3xl text-[#6F717A] text-sm lg:text-base font-medium;
+  border: 1px solid #6f717a;
+}
+
+.btn-logout {
+  @apply h-12 w-32 bg-white rounded-3xl pl-6 m-2 text-sm inline-flex items-center;
+  border: 1px solid #f3f3f4;
+}
+.clear-button {
+  @apply absolute md:fixed right-8 bottom-2 md:right-8 md:bottom-12 w-28 h-7 bg-[#f3f3f4] rounded-md;
+  border: 1px solid #0f1222;
+}
+.height-fit {
+  @apply min-h-fit;
+  height: 75vh;
 }
 </style>
