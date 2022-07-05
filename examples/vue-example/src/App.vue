@@ -31,6 +31,8 @@
             <button @click="latestBlock" :disabled="!ethereumPrivateKeyProvider.provider">Fetch Latest Block</button>
             <button @click="switchChain" :disabled="!ethereumPrivateKeyProvider.provider">Switch to rinkeby</button>
             <button @click="addChain" :disabled="!ethereumPrivateKeyProvider.provider">Add Rinkeby Chain</button>
+            <button @click="enableMfa">Setup Mfa</button>
+            <button @click="showSettings">Show Settings</button>
 
             <div id="console">
               <p />
@@ -96,6 +98,7 @@ export default Vue.extend({
           //   login_hint: 'hello@yourapp.com',
           // },
           // sessionTime: 30, //seconds
+          curve: "ed25519",
         });
         if (privKey) {
           this.privKey = openlogin.privKey;
@@ -116,6 +119,7 @@ export default Vue.extend({
           mfaLevel: "mandatory",
           loginProvider: "",
           redirectUrl: `${window.origin}`,
+          curve: "ed25519",
         });
         if (privKey) {
           this.privKey = privKey;
@@ -148,6 +152,15 @@ export default Vue.extend({
       const openlogin = getOpenLoginInstance();
       const userInfo = await openlogin.getUserInfo();
       this.printToConsole(userInfo);
+    },
+    async enableMfa() {
+      const openlogin = getOpenLoginInstance();
+      await openlogin.enableMfa();
+    },
+
+    async showSettings() {
+      const openlogin = getOpenLoginInstance();
+      await openlogin.showSettings();
     },
 
     getEd25519Key() {

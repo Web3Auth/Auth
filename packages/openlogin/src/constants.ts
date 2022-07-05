@@ -22,6 +22,8 @@ export type UX_MODE_TYPE = typeof UX_MODE[keyof typeof UX_MODE];
 export const OPENLOGIN_METHOD = {
   LOGIN: "openlogin_login",
   LOGOUT: "openlogin_logout",
+  ENABLE_MFA: "openlogin_enable_mfa",
+  SHOW_SETTINGS: "openlogin_show_settings",
   CHECK_3PC_SUPPORT: "openlogin_check_3PC_support",
   SET_PID_DATA: "openlogin_set_pid_data",
   GET_DATA: "openlogin_get_data",
@@ -339,4 +341,5 @@ export type OpenloginUserInfo = {
   typeOfLogin: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
   dappShare?: string;
   idToken?: string;
+  isMfaEnabled?: boolean;
 };

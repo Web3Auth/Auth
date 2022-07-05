@@ -23,7 +23,7 @@ import {
 import { Modal } from "./Modal";
 import OpenLoginStore from "./OpenLoginStore";
 import Provider from "./Provider";
-import { awaitReq, constructURL, getHashQueryParams, getPopupFeatures, preloadIframe } from "./utils";
+import { awaitReq, constructURL, getHashQueryParams, getPopupFeatures, isNullishValue, preloadIframe } from "./utils";
 
 preloadIframe("https://app.openlogin.com/sdk-modal");
 
@@ -46,6 +46,7 @@ export type OpenLoginState = {
   whiteLabel: WhiteLabelData;
   loginConfig: LoginConfig;
   storageServerUrl: string;
+  isMfaEnabled: boolean;
 };
 
 class OpenLogin {
@@ -110,6 +111,7 @@ class OpenLogin {
       support3PC: !options.no3PC,
       whiteLabel: options.whiteLabel,
       storageServerUrl: options._storageServerUrl,
+      isMfaEnabled: false,
     };
   }
 
@@ -206,6 +208,43 @@ class OpenLogin {
       this._syncState(await this._getData());
     }
     return { privKey: this.privKey };
+  }
+
+  async enableMfa(): Promise<void> {
+    this._syncState(await this._getData());
+    const storeData = this.state.store.getStore();
+    if (!this.privKey) throw new Error("Please login first.");
+    if (storeData.isMfaEnabled) {
+      throw new Error("Mfa is already enabled for this account");
+    }
+    const params: Record<string, unknown> = {};
+    // defaults
+    params.redirectUrl = this.state.redirectUrl;
+
+    await this.request<void>({
+      method: OPENLOGIN_METHOD.ENABLE_MFA,
+      params: [params],
+      startUrl: this.state.startUrl,
+      popupUrl: this.state.popupUrl,
+      allowedInteractions: [ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
+    });
+  }
+
+  async showSettings(): Promise<void> {
+    this._syncState(await this._getData());
+    if (!this.privKey) throw new Error("Please login first.");
+
+    const params: Record<string, unknown> = {};
+    // defaults
+    params.redirectUrl = this.state.redirectUrl;
+
+    await this.request<void>({
+      method: OPENLOGIN_METHOD.SHOW_SETTINGS,
+      params: [params],
+      startUrl: this.state.startUrl,
+      popupUrl: this.state.popupUrl,
+      allowedInteractions: [ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
+    });
   }
 
   async logout(logoutParams: Partial<BaseLogoutParams> & Partial<BaseRedirectParams> = {}): Promise<void> {
@@ -417,7 +456,7 @@ class OpenLogin {
         // so we don't want to overwrite the local store if privKey is available
         // and if latest iframe store data is not available
         if (newState.privKey) {
-          if (newState.store[key]) {
+          if (!isNullishValue(newState.store[key])) {
             this.state.store.set(key, newState.store[key]);
           }
         } else {
@@ -498,6 +537,7 @@ class OpenLogin {
         typeOfLogin: (storeData.typeOfLogin as LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE) || "",
         dappShare: (storeData.dappShare as string) || "",
         idToken: (storeData.idToken as string) || "",
+        isMfaEnabled: (storeData.isMfaEnabled as boolean) || false,
       };
 
       return userInfo;
