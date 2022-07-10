@@ -270,6 +270,7 @@ class OpenLogin {
     });
 
     this.state.privKey = "";
+    this.state.store.set("sessionId", "");
     return res;
   }
 
