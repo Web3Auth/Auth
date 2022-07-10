@@ -343,3 +343,5 @@ export type OpenloginUserInfo = {
   idToken?: string;
   isMfaEnabled?: boolean;
 };
+
+export const SESSION_EXPIRED = "SESSION_EXPIRED";

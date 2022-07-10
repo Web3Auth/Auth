@@ -17,6 +17,7 @@ import {
   OpenLoginOptions,
   OpenloginUserInfo,
   RequestParams,
+  SESSION_EXPIRED,
   UX_MODE,
   UX_MODE_TYPE,
 } from "./constants";
@@ -211,23 +212,31 @@ class OpenLogin {
   }
 
   async enableMfa(): Promise<void> {
-    this._syncState(await this._getData());
-    const storeData = this.state.store.getStore();
-    if (!this.privKey) throw new Error("Please login first.");
-    if (storeData.isMfaEnabled) {
-      throw new Error("Mfa is already enabled for this account");
-    }
-    const params: Record<string, unknown> = {};
-    // defaults
-    params.redirectUrl = this.state.redirectUrl;
+    try {
+      this._syncState(await this._getData());
+      const storeData = this.state.store.getStore();
+      if (!this.privKey) throw new Error("Please login first.");
+      if (storeData.isMfaEnabled) {
+        throw new Error("Mfa is already enabled for this account");
+      }
+      const params: Record<string, unknown> = {};
+      // defaults
+      params.redirectUrl = this.state.redirectUrl;
 
-    await this.request<void>({
-      method: OPENLOGIN_METHOD.ENABLE_MFA,
-      params: [params],
-      startUrl: this.state.startUrl,
-      popupUrl: this.state.popupUrl,
-      allowedInteractions: [ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
-    });
+      await this.request<void>({
+        method: OPENLOGIN_METHOD.ENABLE_MFA,
+        params: [params],
+        startUrl: this.state.startUrl,
+        popupUrl: this.state.popupUrl,
+        allowedInteractions: [ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
+      });
+    } catch (error) {
+      if (error?.message === SESSION_EXPIRED) {
+        this._syncState(await this._getData());
+        this.state.store.set("sessionId", "");
+      }
+      throw error;
+    }
   }
 
   async showSettings(): Promise<void> {
@@ -311,6 +320,7 @@ class OpenLogin {
     if (!session._sessionId) {
       const sessionId = randomId();
       session._sessionId = sessionId as string;
+      session._isNewSession = true;
       this.state.store.set("sessionId", sessionId);
     }
 
