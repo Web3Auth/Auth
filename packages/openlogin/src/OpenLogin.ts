@@ -230,6 +230,7 @@ class OpenLogin {
         popupUrl: this.state.popupUrl,
         allowedInteractions: [ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
       });
+      this._syncState(await this._getData());
     } catch (error) {
       if (error?.message === SESSION_EXPIRED) {
         this._syncState(await this._getData());
