@@ -413,16 +413,7 @@ class OpenLogin {
         throw new Error("expected store to be an object");
       }
       Object.keys(newState.store).forEach((key) => {
-        // if privKey is available then user is not logged out, but in popup mode store info is not available.
-        // so we don't want to overwrite the local store if privKey is available
-        // and if latest iframe store data is not available
-        if (newState.privKey) {
-          if (newState.store[key]) {
-            this.state.store.set(key, newState.store[key]);
-          }
-        } else {
-          this.state.store.set(key, newState.store[key]);
-        }
+        this.state.store.set(key, newState.store[key]);
       });
     }
     const { store } = this.state;
@@ -498,6 +489,7 @@ class OpenLogin {
         typeOfLogin: (storeData.typeOfLogin as LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE) || "",
         dappShare: (storeData.dappShare as string) || "",
         idToken: (storeData.idToken as string) || "",
+        oAuthIdToken: (storeData.oAuthIdToken as string) || "",
       };
 
       return userInfo;

@@ -338,5 +338,14 @@ export type OpenloginUserInfo = {
   verifierId: string;
   typeOfLogin: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
   dappShare?: string;
+  /**
+   * Token issued by Web3Auth.
+   */
   idToken?: string;
+
+  /**
+   * Token issued by OAuth provider. Will be available only if you are using
+   * custom verifiers.
+   */
+  oAuthIdToken?: string;
 };
