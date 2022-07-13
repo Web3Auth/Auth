@@ -241,20 +241,28 @@ class OpenLogin {
   }
 
   async showSettings(): Promise<void> {
-    this._syncState(await this._getData());
-    if (!this.privKey) throw new Error("Please login first.");
+    try {
+      this._syncState(await this._getData());
+      if (!this.privKey) throw new Error("Please login first.");
 
-    const params: Record<string, unknown> = {};
-    // defaults
-    params.redirectUrl = this.state.redirectUrl;
+      const params: Record<string, unknown> = {};
+      // defaults
+      params.redirectUrl = this.state.redirectUrl;
 
-    await this.request<void>({
-      method: OPENLOGIN_METHOD.SHOW_SETTINGS,
-      params: [params],
-      startUrl: this.state.startUrl,
-      popupUrl: this.state.popupUrl,
-      allowedInteractions: [ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
-    });
+      await this.request<void>({
+        method: OPENLOGIN_METHOD.SHOW_SETTINGS,
+        params: [params],
+        startUrl: this.state.startUrl,
+        popupUrl: this.state.popupUrl,
+        allowedInteractions: [ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
+      });
+    } catch (error) {
+      if (error?.message === SESSION_EXPIRED) {
+        this._syncState(await this._getData());
+        this.state.store.set("sessionId", "");
+      }
+      throw error;
+    }
   }
 
   async logout(logoutParams: Partial<BaseLogoutParams> & Partial<BaseRedirectParams> = {}): Promise<void> {
