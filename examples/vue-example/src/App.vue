@@ -155,12 +155,26 @@ export default Vue.extend({
     },
     async enableMfa() {
       const openlogin = getOpenLoginInstance();
-      await openlogin.enableMfa();
+
+      try {
+        await openlogin.enableMfa();
+      } catch (error) {
+        console.log("error", error);
+      } finally {
+        this.privKey = openlogin.privKey;
+      }
     },
 
     async showSettings() {
       const openlogin = getOpenLoginInstance();
-      await openlogin.showSettings();
+
+      try {
+        await openlogin.showSettings();
+      } catch (error) {
+        console.log("error", error);
+      } finally {
+        this.privKey = openlogin.privKey;
+      }
     },
 
     getEd25519Key() {
