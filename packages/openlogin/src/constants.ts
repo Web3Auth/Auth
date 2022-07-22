@@ -348,4 +348,10 @@ export type OpenloginUserInfo = {
    * custom verifiers.
    */
   oAuthIdToken?: string;
+
+  /**
+   * Access Token issued by OAuth provider. Will be available only if you are using
+   * custom verifiers.
+   */
+  oAuthAccessToken?: string;
 };

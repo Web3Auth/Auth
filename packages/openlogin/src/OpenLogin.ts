@@ -490,6 +490,7 @@ class OpenLogin {
         dappShare: (storeData.dappShare as string) || "",
         idToken: (storeData.idToken as string) || "",
         oAuthIdToken: (storeData.oAuthIdToken as string) || "",
+        oAuthAccessToken: (storeData.oAuthAccessToken as string) || "",
       };
 
       return userInfo;
