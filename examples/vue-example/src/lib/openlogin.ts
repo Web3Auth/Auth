@@ -19,6 +19,5 @@ export function getOpenLoginInstance(whiteLabel?: WhiteLabelData) {
       whiteLabel,
     });
   }
-  if (whiteLabel) openLoginInstance.state.whiteLabel = whiteLabel;
   return openLoginInstance;
 }

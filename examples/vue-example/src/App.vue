@@ -66,7 +66,7 @@ export default Vue.extend({
   },
   async mounted() {
     this.loading = true;
-    const openlogin = getOpenLoginInstance();
+    const openlogin = getOpenLoginInstance(whitelabel);
     await openlogin.init();
     if (openlogin.privKey) {
       this.privKey = openlogin.privKey;
