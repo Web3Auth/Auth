@@ -277,7 +277,7 @@ export type LoginParams = BaseRedirectParams & {
   skipTKey?: boolean;
 
   /**
-   * This option is for internal use only in torus wallet and has not effect
+   * This option is for internal use only in torus wallet and has no effect
    * on user's login on other dapps.
    *
    * Defaults to false
@@ -327,6 +327,14 @@ export type LoginParams = BaseRedirectParams & {
    * @defaultValue secp256k1
    */
   curve?: SUPPORTED_KEY_CURVES_TYPE;
+
+  /**
+   * This option is for internal use only in torus wallet and has no effect
+   * on user's login on other dapps.
+   *
+   * @internal
+   */
+  _sessionNamespace?: string;
 };
 
 export type OpenloginUserInfo = {
