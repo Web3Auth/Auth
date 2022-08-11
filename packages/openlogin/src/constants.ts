@@ -202,6 +202,13 @@ export type OpenLoginOptions = {
    * @defaultValue https://broadcast-server.tor.us
    */
   _storageServerUrl?: string;
+
+  /**
+   * setting to "local" will persist social login session accross browser tabs.
+   *
+   * @defaultValue "local"
+   */
+  storageKey?: "session" | "local";
 };
 
 export const LOGIN_PROVIDER = {
