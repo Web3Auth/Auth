@@ -1,7 +1,7 @@
 import { storeKey } from "./constants";
 import { IStore } from "./IStore";
 import { MemoryStore } from "./MemoryStore";
-import { localStorageAvailable } from "./utils";
+import { localStorageAvailable, sessionStorageAvailable } from "./utils";
 
 export default class OpenLoginStore {
   // eslint-disable-next-line no-use-before-define
@@ -20,9 +20,16 @@ export default class OpenLoginStore {
     }
   }
 
-  static getInstance(): OpenLoginStore {
+  static getInstance(storageKey: "session" | "local" = "local"): OpenLoginStore {
     if (!this.instance) {
-      this.instance = new this(localStorageAvailable ? localStorage : new MemoryStore());
+      let storage: Storage | MemoryStore = new MemoryStore();
+      if (storageKey === "local" && localStorageAvailable) {
+        storage = localStorage;
+      }
+      if (storageKey === "session" && sessionStorageAvailable) {
+        storage = sessionStorage;
+      }
+      this.instance = new this(storage);
     }
     return this.instance;
   }

@@ -87,6 +87,7 @@ class OpenLogin {
       whiteLabel: options.whiteLabel ?? {},
       loginConfig: options.loginConfig ?? {},
       _storageServerUrl: options._storageServerUrl ?? "https://broadcast-server.tor.us",
+      storageKey: options.storageKey === "session" ? "session" : "local",
     });
   }
 
@@ -98,7 +99,7 @@ class OpenLogin {
     this.state = {
       uxMode: options.uxMode,
       network: options.network,
-      store: OpenLoginStore.getInstance(),
+      store: OpenLoginStore.getInstance(options.storageKey),
       iframeUrl: options._iframeUrl,
       startUrl: options._startUrl,
       popupUrl: options._popupUrl,
