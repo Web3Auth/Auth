@@ -18,6 +18,7 @@ export function getOpenLoginInstance(whiteLabel?: WhiteLabelData) {
       uxMode: "redirect",
       whiteLabel,
       loginConfig,
+      storageKey: "session",
     });
   }
   if (whiteLabel) openLoginInstance.state.whiteLabel = whiteLabel;
