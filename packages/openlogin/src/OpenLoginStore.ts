@@ -9,10 +9,10 @@ export default class OpenLoginStore {
 
   public storage: IStore;
 
-  private constructor(storage: IStore) {
+  private constructor(storage: IStore, _storeKey?: string) {
     this.storage = storage;
     try {
-      if (!storage.getItem(storeKey)) {
+      if (!storage.getItem(_storeKey || storeKey)) {
         this.resetStore();
       }
     } catch (error) {
@@ -20,7 +20,7 @@ export default class OpenLoginStore {
     }
   }
 
-  static getInstance(storageKey: "session" | "local" = "local"): OpenLoginStore {
+  static getInstance(storeNamespace: string, storageKey: "session" | "local" = "local"): OpenLoginStore {
     if (!this.instance) {
       let storage: Storage | MemoryStore = new MemoryStore();
       if (storageKey === "local" && localStorageAvailable) {
@@ -29,7 +29,8 @@ export default class OpenLoginStore {
       if (storageKey === "session" && sessionStorageAvailable) {
         storage = sessionStorage;
       }
-      this.instance = new this(storage);
+      const finalStoreKey = storeNamespace ? `${storeKey}_${storeNamespace}` : storeKey;
+      this.instance = new this(storage, finalStoreKey);
     }
     return this.instance;
   }

@@ -4,22 +4,19 @@ import { getRpcPromiseCallback, JRPCRequest, LoginConfig, OriginData, SessionInf
 import { base64url, jsonToBase64, keccak, randomId } from "@toruslabs/openlogin-utils";
 import merge from "lodash.merge";
 
+import { ALLOWED_INTERACTIONS, OPENLOGIN_METHOD, OPENLOGIN_NETWORK, UX_MODE } from "./constants";
 import {
-  ALLOWED_INTERACTIONS,
   BaseLogoutParams,
   BaseRedirectParams,
   CUSTOM_LOGIN_PROVIDER_TYPE,
   LOGIN_PROVIDER_TYPE,
   LoginParams,
-  OPENLOGIN_METHOD,
-  OPENLOGIN_NETWORK,
   OPENLOGIN_NETWORK_TYPE,
   OpenLoginOptions,
   OpenloginUserInfo,
   RequestParams,
-  UX_MODE,
   UX_MODE_TYPE,
-} from "./constants";
+} from "./interfaces";
 import { Modal } from "./Modal";
 import OpenLoginStore from "./OpenLoginStore";
 import Provider from "./Provider";
@@ -46,6 +43,7 @@ export type OpenLoginState = {
   whiteLabel: WhiteLabelData;
   loginConfig: LoginConfig;
   storageServerUrl: string;
+  sessionNamespace: string;
 };
 
 class OpenLogin {
@@ -88,6 +86,7 @@ class OpenLogin {
       loginConfig: options.loginConfig ?? {},
       _storageServerUrl: options._storageServerUrl ?? "https://broadcast-server.tor.us",
       storageKey: options.storageKey === "session" ? "session" : "local",
+      _sessionNamespace: options._sessionNamespace ?? "",
     });
   }
 
@@ -99,7 +98,7 @@ class OpenLogin {
     this.state = {
       uxMode: options.uxMode,
       network: options.network,
-      store: OpenLoginStore.getInstance(options.storageKey),
+      store: OpenLoginStore.getInstance(options._sessionNamespace, options.storageKey),
       iframeUrl: options._iframeUrl,
       startUrl: options._startUrl,
       popupUrl: options._popupUrl,
@@ -111,6 +110,7 @@ class OpenLogin {
       support3PC: !options.no3PC,
       whiteLabel: options.whiteLabel,
       storageServerUrl: options._storageServerUrl,
+      sessionNamespace: options._sessionNamespace,
     };
   }
 
@@ -248,6 +248,9 @@ class OpenLogin {
 
     if (this.state.clientId) {
       session._clientId = this.state.clientId;
+    }
+    if (this.state.sessionNamespace) {
+      session._sessionNamespace = this.state.sessionNamespace;
     }
 
     if (this.privKey) {
