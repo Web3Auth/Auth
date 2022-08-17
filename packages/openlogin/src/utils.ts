@@ -1,7 +1,7 @@
 import { getPublic, sign } from "@toruslabs/eccrypto";
 import { base64url, keccak, safeatob } from "@toruslabs/openlogin-utils";
 
-import { PopupResponse } from "./constants";
+import { PopupResponse } from "./interfaces";
 import log from "./loglevel";
 
 export async function documentReady(): Promise<void> {
