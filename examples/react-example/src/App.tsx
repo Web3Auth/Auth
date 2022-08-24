@@ -11,6 +11,7 @@ const openlogin = new OpenLogin({
   // for development
   clientId: YOUR_PROJECT_ID,
   network: "development",
+  uxMode: "popup",
 });
 function App() {
   const [loading, setLoading] = useState(false);

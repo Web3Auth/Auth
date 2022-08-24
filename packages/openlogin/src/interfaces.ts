@@ -1,9 +1,7 @@
 import { LoginConfig, OriginData, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 import { ExtraLoginOptions } from "@toruslabs/openlogin-utils";
 
-export const modalDOMElementID = "openlogin-modal";
-
-export const storeKey = "openlogin_store";
+import { ALLOWED_INTERACTIONS, LOGIN_PROVIDER, MFA_LEVELS, OPENLOGIN_METHOD, OPENLOGIN_NETWORK, SUPPORTED_KEY_CURVES, UX_MODE } from "./constants";
 
 export type PopupResponse<T> = {
   pid: string;
@@ -12,42 +10,14 @@ export type PopupResponse<T> = {
 
 export type Maybe<T> = Partial<T> | null | undefined;
 
-export const UX_MODE = {
-  POPUP: "popup",
-  REDIRECT: "redirect",
-} as const;
-
 export type UX_MODE_TYPE = typeof UX_MODE[keyof typeof UX_MODE];
-
-export const OPENLOGIN_METHOD = {
-  LOGIN: "openlogin_login",
-  LOGOUT: "openlogin_logout",
-  CHECK_3PC_SUPPORT: "openlogin_check_3PC_support",
-  SET_PID_DATA: "openlogin_set_pid_data",
-  GET_DATA: "openlogin_get_data",
-} as const;
 
 // autocomplete workaround https://github.com/microsoft/TypeScript/issues/29729
 export type CUSTOM_OPENLOGIN_METHOD_TYPE = string & { toString?: (radix?: number) => string };
 
 export type OPENLOGIN_METHOD_TYPE = typeof OPENLOGIN_METHOD[keyof typeof OPENLOGIN_METHOD];
 
-export const ALLOWED_INTERACTIONS = {
-  POPUP: "popup",
-  REDIRECT: "redirect",
-  JRPC: "jrpc",
-} as const;
-
 export type ALLOWED_INTERACTIONS_TYPE = typeof ALLOWED_INTERACTIONS[keyof typeof ALLOWED_INTERACTIONS];
-
-export type RequestParams = {
-  startUrl?: string;
-  popupUrl?: string;
-  method: OPENLOGIN_METHOD_TYPE | CUSTOM_OPENLOGIN_METHOD_TYPE;
-  params: Record<string, unknown>[];
-  allowedInteractions: ALLOWED_INTERACTIONS_TYPE[];
-  force3pc?: boolean;
-};
 
 export type BaseLogoutParams = {
   /**
@@ -73,17 +43,23 @@ export type BaseRedirectParams = {
   appState?: string;
 };
 
-export const OPENLOGIN_NETWORK = {
-  MAINNET: "mainnet",
-  TESTNET: "testnet",
-  CYAN: "cyan",
-  DEVELOPMENT: "development",
-} as const;
+export type RequestParams = {
+  startUrl?: string;
+  popupUrl?: string;
+  method: OPENLOGIN_METHOD_TYPE | CUSTOM_OPENLOGIN_METHOD_TYPE;
+  params: Record<string, unknown>[];
+  allowedInteractions: ALLOWED_INTERACTIONS_TYPE[];
+  force3pc?: boolean;
+};
+/**
+ * {@label loginProviderType}
+ */
+export type LOGIN_PROVIDER_TYPE = typeof LOGIN_PROVIDER[keyof typeof LOGIN_PROVIDER];
 
-export const SUPPORTED_KEY_CURVES = {
-  SECP256K1: "secp256k1",
-  ED25519: "ed25519",
-} as const;
+// autocomplete workaround https://github.com/microsoft/TypeScript/issues/29729
+export type CUSTOM_LOGIN_PROVIDER_TYPE = string & { toString?: (radix?: number) => string };
+
+export type MfaLevelType = typeof MFA_LEVELS[keyof typeof MFA_LEVELS];
 
 export type SUPPORTED_KEY_CURVES_TYPE = typeof SUPPORTED_KEY_CURVES[keyof typeof SUPPORTED_KEY_CURVES];
 
@@ -210,43 +186,15 @@ export type OpenLoginOptions = {
    * @defaultValue "local"
    */
   storageKey?: "session" | "local";
+
+  /**
+   * This option is for internal use only in torus wallet and has no effect
+   * on user's login on other dapps.
+   *
+   * @internal
+   */
+  _sessionNamespace?: string;
 };
-
-export const LOGIN_PROVIDER = {
-  GOOGLE: "google",
-  FACEBOOK: "facebook",
-  REDDIT: "reddit",
-  DISCORD: "discord",
-  TWITCH: "twitch",
-  APPLE: "apple",
-  LINE: "line",
-  GITHUB: "github",
-  KAKAO: "kakao",
-  LINKEDIN: "linkedin",
-  TWITTER: "twitter",
-  WEIBO: "weibo",
-  WECHAT: "wechat",
-  EMAIL_PASSWORDLESS: "email_passwordless",
-  WEBAUTHN: "webauthn",
-  JWT: "jwt",
-} as const;
-
-/**
- * {@label loginProviderType}
- */
-export type LOGIN_PROVIDER_TYPE = typeof LOGIN_PROVIDER[keyof typeof LOGIN_PROVIDER];
-
-// autocomplete workaround https://github.com/microsoft/TypeScript/issues/29729
-export type CUSTOM_LOGIN_PROVIDER_TYPE = string & { toString?: (radix?: number) => string };
-
-export const MFA_LEVELS = {
-  DEFAULT: "default",
-  OPTIONAL: "optional",
-  MANDATORY: "mandatory",
-  NONE: "none",
-} as const;
-
-export type MfaLevelType = typeof MFA_LEVELS[keyof typeof MFA_LEVELS];
 
 export type LoginParams = BaseRedirectParams & {
   /**
@@ -335,14 +283,6 @@ export type LoginParams = BaseRedirectParams & {
    * @defaultValue secp256k1
    */
   curve?: SUPPORTED_KEY_CURVES_TYPE;
-
-  /**
-   * This option is for internal use only in torus wallet and has no effect
-   * on user's login on other dapps.
-   *
-   * @internal
-   */
-  _sessionNamespace?: string;
 };
 
 export type OpenloginUserInfo = {
