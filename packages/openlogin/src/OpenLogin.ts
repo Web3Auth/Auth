@@ -215,7 +215,6 @@ class OpenLogin {
     params.redirectUrl = this.state.redirectUrl;
     params._clientId = this.state.clientId;
     params.sessionId = this.state.store.get("sessionId");
-    params.support3PC = this.state.support3PC;
 
     if (logoutParams.clientId) {
       params._clientId = logoutParams.clientId;
