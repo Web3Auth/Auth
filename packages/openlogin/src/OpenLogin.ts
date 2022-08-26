@@ -228,7 +228,7 @@ class OpenLogin {
       params: [params],
       startUrl: this.state.startUrl,
       popupUrl: this.state.popupUrl,
-      allowedInteractions: [ALLOWED_INTERACTIONS.JRPC, ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
+      allowedInteractions: [ALLOWED_INTERACTIONS.JRPC],
     });
 
     this.state.privKey = "";
