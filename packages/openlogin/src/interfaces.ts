@@ -49,7 +49,6 @@ export type RequestParams = {
   method: OPENLOGIN_METHOD_TYPE | CUSTOM_OPENLOGIN_METHOD_TYPE;
   params: Record<string, unknown>[];
   allowedInteractions: ALLOWED_INTERACTIONS_TYPE[];
-  force3pc?: boolean;
 };
 /**
  * {@label loginProviderType}

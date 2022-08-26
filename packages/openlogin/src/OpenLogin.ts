@@ -229,7 +229,6 @@ class OpenLogin {
       startUrl: this.state.startUrl,
       popupUrl: this.state.popupUrl,
       allowedInteractions: [ALLOWED_INTERACTIONS.JRPC, ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
-      force3pc: true, // logout op doesn't require 3pc support now.
     });
 
     this.state.privKey = "";
@@ -238,7 +237,7 @@ class OpenLogin {
 
   async request<T>(args: RequestParams): Promise<T> {
     const pid = randomId();
-    let { params, force3pc } = args;
+    let { params } = args;
 
     // Note: _origin is added later in postMessageStream for jrpc requests
     // do not add it here since its used for checking postMessage constraints
@@ -281,7 +280,7 @@ class OpenLogin {
 
     // use JRPC where possible
 
-    if ((this.state.support3PC || force3pc) && allowedInteractions.includes(ALLOWED_INTERACTIONS.JRPC)) {
+    if ((this.state.support3PC || session._sessionId) && allowedInteractions.includes(ALLOWED_INTERACTIONS.JRPC)) {
       return this._jrpcRequest<Record<string, unknown>[], T>({ method, params });
     }
 
