@@ -280,7 +280,7 @@ class OpenLogin {
 
     // use JRPC where possible
 
-    if ((this.state.support3PC || session._sessionId) && allowedInteractions.includes(ALLOWED_INTERACTIONS.JRPC)) {
+    if (allowedInteractions.includes(ALLOWED_INTERACTIONS.JRPC)) {
       return this._jrpcRequest<Record<string, unknown>[], T>({ method, params });
     }
 
