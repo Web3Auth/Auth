@@ -262,7 +262,7 @@ export type LoginParams = BaseRedirectParams & {
    * You can set the `mfaLevel` to customize when mfa screen should be shown to user.
    * It currently accepts 4 values:-
    * - `'default'`: Setting mfa level to `default` will present mfa screen to user on every third login.
-   * - `'optional'`: Setting mfa level to `default` will present mfa screen to user on every login but user can skip it.
+   * - `'optional'`: Setting mfa level to `optional` will present mfa screen to user on every login but user can skip it.
    * - `'mandatory'`: Setting mfa level to `mandatory` will make it mandatory for user to setup mfa after login.
    * - `'none'`: Setting mfa level to `none` will make the user skip the mfa setup screen
    *
