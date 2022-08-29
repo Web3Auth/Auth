@@ -228,7 +228,7 @@ class OpenLogin {
       params: [params],
       startUrl: this.state.startUrl,
       popupUrl: this.state.popupUrl,
-      allowedInteractions: [ALLOWED_INTERACTIONS.JRPC, ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
+      allowedInteractions: [ALLOWED_INTERACTIONS.JRPC],
     });
 
     this.state.privKey = "";
@@ -280,7 +280,7 @@ class OpenLogin {
 
     // use JRPC where possible
 
-    if (this.state.support3PC && allowedInteractions.includes(ALLOWED_INTERACTIONS.JRPC)) {
+    if (allowedInteractions.includes(ALLOWED_INTERACTIONS.JRPC)) {
       return this._jrpcRequest<Record<string, unknown>[], T>({ method, params });
     }
 
