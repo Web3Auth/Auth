@@ -241,4 +241,5 @@ export type SessionInfo = {
   _whiteLabelData?: WhiteLabelData;
   _loginConfig: LoginConfig;
   _sessionId?: string;
+  _sessionNamespace?: string;
 };
