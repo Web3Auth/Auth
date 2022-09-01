@@ -4,7 +4,7 @@ export class MemoryStore implements IStore {
   store: Record<string, string> = {};
 
   getItem(key: string): string {
-    return this.store[key];
+    return this.store[key] || null;
   }
 
   setItem(key: string, value: string): void {
