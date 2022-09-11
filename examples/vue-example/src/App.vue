@@ -1,8 +1,15 @@
 <template>
   <div id="app">
     <div v-if="loading">
-      <div class="loader-wrap">
-        <h1>....loading</h1>
+      <div class="loader-wrap flex justify-center h-screen pt-3">
+        <svg class="w-20 h-20 text-[#3090cb] animate-spin left-1/2 -ml-2.5" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path
+            class="opacity-75"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            fill="currentColor"
+          ></path>
+        </svg>
       </div>
     </div>
     <div>
@@ -34,7 +41,7 @@
             </button>
           </div>
         </div>
-        <div class="grid grid-cols-5 gap-7 m-6 height-fit">
+        <div class="grid grid-cols-5 gap-7 m-6 height-fit relative">
           <div class="grid grid-cols-2 col-span-5 md:col-span-2 text-left gap-2 p-4 box">
             <div class="col-span-2 text-left">
               <div class="font-semibold">User Info</div>
@@ -80,7 +87,7 @@
           </div>
           <div class="box-grey" id="console">
             <p style="white-space: pre-line"></p>
-            <div><button class="clear-button" @click="clearUiconsole">Clear console</button></div>
+            <button class="clear-button" @click="clearUiconsole">Clear console</button>
           </div>
         </div>
       </div>
@@ -290,7 +297,7 @@ export default Vue.extend({
 }
 
 .box-grey {
-  @apply col-span-5 md:col-span-3 overflow-hidden min-h-[400px] bg-[#f3f3f4] rounded-3xl relative;
+  @apply col-span-5 md:col-span-3 overflow-hidden min-h-[400px] bg-[#f3f3f4] rounded-3xl;
   border: 1px solid #f3f3f4;
   box-shadow: 4px 4px 20px rgba(46, 91, 255, 0.1);
 }
@@ -351,7 +358,7 @@ a {
   border: 1px solid #f3f3f4;
 }
 .clear-button {
-  @apply absolute md:fixed right-8 bottom-2 md:right-8 md:bottom-12 w-28 h-7 bg-[#f3f3f4] rounded-md;
+  @apply absolute right-2 bottom-2 w-28 h-7 bg-[#f3f3f4] rounded-md;
   border: 1px solid #0f1222;
 }
 .height-fit {
