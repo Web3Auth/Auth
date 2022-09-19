@@ -1,4 +1,6 @@
-# OpenLoginSdk
+# OpenLoginSdk by Web3Auth
+
+> [Web3Auth](https://web3auth.io) is where passwordless auth meets non-custodial key infrastructure for Web3 apps and wallets. By aggregating OAuth (Google, Twitter, Discord) logins, different wallets and innovative Multi Party Computation (MPC) - Web3Auth provides a seamless login experience to every user on your application.
 
 [![lerna](https://img.shields.io/badge/maintained%20with-lerna-cc00ff.svg)](https://lerna.js.org/)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
@@ -87,6 +89,12 @@ yarn test
 - This package requires a peer dependency of `@babel/runtime`
 - Node 14+
 - You will need to whitelist your domain on [developer dashboard](https://dashboard.web3auth.io)
+
+## 💬 Troubleshooting and Discussions
+
+- Have a look at our [GitHub Discussions](https://github.com/Web3Auth/Web3Auth/discussions?discussions_q=sort%3Atop) to see if anyone has any questions or issues you might be having.
+- Checkout our [Troubleshooting Documentation Page](https://web3auth.io/docs/troubleshooting) to know the common issues and solutions
+- Join our [Discord](https://discord.gg/web3auth) to join our community and get private integration support or help with your integration.
 
 ## License
 
