@@ -27,6 +27,8 @@ preloadIframe("https://app.openlogin.com/sdk-modal");
 export type OpenLoginState = {
   network: OPENLOGIN_NETWORK_TYPE;
   privKey?: string;
+  tssShare?: string;
+  signatures?: string[];
   walletKey?: string;
   tKey?: string;
   oAuthPrivateKey?: string;
@@ -193,14 +195,18 @@ class OpenLogin {
       ...params,
     };
 
-    const res = await this.request<{ privKey: string; store?: Record<string, string> }>({
+    const res = await this.request<{ privKey: string; tssShare?: string; signatures?: string[]; store?: Record<string, string> }>({
       method: OPENLOGIN_METHOD.LOGIN,
       allowedInteractions: [UX_MODE.REDIRECT, UX_MODE.POPUP],
       startUrl: this.state.startUrl,
       popupUrl: this.state.popupUrl,
       params: [loginParams],
     });
+    // eslint-disable-next-line no-debugger
+    debugger;
     this.state.privKey = res.privKey;
+    this.state.signatures = res.signatures;
+    this.state.tssShare = res.tssShare;
     if (res.store) {
       this._syncState(res);
     } else if (this.state.privKey && this.state.support3PC) {
