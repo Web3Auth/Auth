@@ -66,6 +66,8 @@ class OpenLogin {
         options._iframeUrl = "https://cyan.openlogin.com";
       } else if (options.network === OPENLOGIN_NETWORK.TESTNET) {
         options._iframeUrl = "https://beta.openlogin.com";
+      } else if (options.network === OPENLOGIN_NETWORK.MPC_TESTNET) {
+        options._iframeUrl = "https://mpc-beta.openlogin.com";
       } else if (options.network === OPENLOGIN_NETWORK.DEVELOPMENT) {
         options._iframeUrl = "http://localhost:3000";
       }

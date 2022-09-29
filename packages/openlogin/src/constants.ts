@@ -23,6 +23,7 @@ export const ALLOWED_INTERACTIONS = {
 
 export const OPENLOGIN_NETWORK = {
   MAINNET: "mainnet",
+  MPC_TESTNET: "mpc-testnet",
   TESTNET: "testnet",
   CYAN: "cyan",
   DEVELOPMENT: "development",

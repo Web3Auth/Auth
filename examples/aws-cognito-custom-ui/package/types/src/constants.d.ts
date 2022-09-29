@@ -74,6 +74,7 @@ export declare type BaseRedirectParams = {
 export declare const OPENLOGIN_NETWORK: {
   readonly MAINNET: "mainnet";
   readonly TESTNET: "testnet";
+  readonly MPC_TESTNET: "mpc-testnet"
   readonly DEVELOPMENT: "development";
 };
 export declare type OPENLOGIN_NETWORK_TYPE = typeof OPENLOGIN_NETWORK[keyof typeof OPENLOGIN_NETWORK];
