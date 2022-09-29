@@ -202,8 +202,6 @@ class OpenLogin {
       popupUrl: this.state.popupUrl,
       params: [loginParams],
     });
-    // eslint-disable-next-line no-debugger
-    debugger;
     this.state.privKey = res.privKey;
     this.state.signatures = res.signatures;
     this.state.tssShare = res.tssShare;
