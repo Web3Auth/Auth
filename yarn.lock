@@ -2411,6 +2411,19 @@
     lodash.merge "^4.6.2"
     loglevel "^1.8.0"
 
+"@toruslabs/openlogin@^2.6.1":
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/@toruslabs/openlogin/-/openlogin-2.6.1.tgz#e770dd99e77c1380a015172d1301557c759860e5"
+  integrity sha512-yPP22XuirW1TAToWLpZidMFKPzXYdme5V96OYtgaCJtqu01VMeFk8Dfdljue2MiEceYw3GEl7eLlf9UdD5sXrQ==
+  dependencies:
+    "@toruslabs/eccrypto" "^1.1.8"
+    "@toruslabs/http-helpers" "^3.1.0"
+    "@toruslabs/openlogin-jrpc" "^2.6.0"
+    "@toruslabs/openlogin-utils" "^2.1.0"
+    lodash.merge "^4.6.2"
+    loglevel "^1.8.0"
+    pump "^3.0.0"
+
 "@toruslabs/starkware-crypto@^1.1.0":
   version "1.1.0"
   resolved "https://registry.npmjs.org/@toruslabs/starkware-crypto/-/starkware-crypto-1.1.0.tgz"
