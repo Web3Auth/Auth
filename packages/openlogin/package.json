@@ -1,6 +1,6 @@
 {
   "name": "@toruslabs/openlogin-mpc",
-  "version": "3.0.0-alpha.0",
+  "version": "3.0.1-alpha.0",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
   "main": "dist/openloginMpc.cjs.js",
