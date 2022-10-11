@@ -1,6 +1,6 @@
 {
   "name": "openlogin",
-  "version": "2.6.1",
+  "version": "2.7.0",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
   "main": "dist/openlogin.cjs.js",
@@ -20,7 +20,7 @@
     "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
-    "@toruslabs/openlogin": "^2.6.1",
+    "@toruslabs/openlogin": "^2.7.0",
     "@toruslabs/openlogin-jrpc": "^2.6.0",
     "@toruslabs/openlogin-utils": "^2.1.0",
     "bn.js": "^5.2.1"
