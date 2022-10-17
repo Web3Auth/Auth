@@ -46,6 +46,7 @@ export type OpenLoginState = {
   whiteLabel: WhiteLabelData;
   loginConfig: LoginConfig;
   storageServerUrl: string;
+  useSocialBackupFactor: boolean;
 };
 
 class OpenLogin {
@@ -86,6 +87,7 @@ class OpenLogin {
       originData: options.originData ?? { [window.location.origin]: "" },
       whiteLabel: options.whiteLabel ?? {},
       loginConfig: options.loginConfig ?? {},
+      useSocialBackupFactor: options.useSocialBackupFactor ?? false,
       _storageServerUrl: options._storageServerUrl ?? "https://broadcast-server.tor.us",
     });
   }
@@ -110,6 +112,7 @@ class OpenLogin {
       support3PC: !options.no3PC,
       whiteLabel: options.whiteLabel,
       storageServerUrl: options._storageServerUrl,
+      useSocialBackupFactor: options.useSocialBackupFactor,
     };
   }
 
@@ -266,6 +269,7 @@ class OpenLogin {
     session._originData = this.state.originData;
     session._whiteLabelData = this.state.whiteLabel;
     session._loginConfig = this.state.loginConfig;
+    session._useSocialBackupFactor = this.state.useSocialBackupFactor;
     session._sessionId = this.state.store.get("sessionId");
 
     if (!session._sessionId) {
