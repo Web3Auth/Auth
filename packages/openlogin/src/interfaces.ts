@@ -282,6 +282,12 @@ export type LoginParams = BaseRedirectParams & {
    * @defaultValue secp256k1
    */
   curve?: SUPPORTED_KEY_CURVES_TYPE;
+
+  /**
+   * Origin/device details string of mobile device to be used for mobile login.
+   * You can set this parameter if you are using openlogin with a mobile app or in app browser.
+   */
+  mobileOrigin?: string;
 };
 
 export type OpenloginUserInfo = {
