@@ -173,6 +173,12 @@ export type OpenLoginOptions = {
   loginConfig?: LoginConfig;
 
   /**
+   * This parameter will be used to generate a social provider backup share when MFA is used.
+   * @defaultValue false
+   */
+  useSocialBackupFactor?: boolean;
+
+  /**
    * _iframeUrl is for internal development use only and is used to override the
    * `network` parameter.
    * @internal

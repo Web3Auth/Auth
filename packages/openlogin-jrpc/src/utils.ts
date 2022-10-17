@@ -223,6 +223,14 @@ export type LoginConfig = Record<
      * Whether to show the login button on mobile
      */
     showOnMobile?: boolean;
+
+    /**
+     * If we are using social logins as a backup factor,
+     * then this option will be used to show the type of social login
+     * on the social backup login screen.
+     */
+    showOnSocialBackupFactor?: boolean;
+
     /**
      * Custom jwt parameters to configure the login. Useful for Auth0 configuration
      */
@@ -240,5 +248,6 @@ export type SessionInfo = {
   _clientId: string;
   _whiteLabelData?: WhiteLabelData;
   _loginConfig: LoginConfig;
+  _useSocialBackupFactor: boolean;
   _sessionId?: string;
 };
