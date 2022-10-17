@@ -249,6 +249,5 @@ export type SessionInfo = {
   _whiteLabelData?: WhiteLabelData;
   _loginConfig: LoginConfig;
   _useSocialBackupFactor: boolean;
-  _socialBackupLoginConfig?: LoginConfig;
   _sessionId?: string;
 };
