@@ -238,6 +238,14 @@ export type LoginConfig = Record<
   }
 >;
 
+export type MfaSettings = Record<
+  string,
+  {
+    enable: boolean;
+    priority?: number;
+  }
+>;
+
 export type SessionInfo = {
   _pid: string;
   _user: string;
@@ -248,6 +256,6 @@ export type SessionInfo = {
   _clientId: string;
   _whiteLabelData?: WhiteLabelData;
   _loginConfig: LoginConfig;
-  _useSocialBackupFactor: boolean;
+  _mfaSettings: MfaSettings;
   _sessionId?: string;
 };

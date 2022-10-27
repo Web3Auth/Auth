@@ -12,7 +12,7 @@
         <button @click="loginWithoutWhitelabel">login without whitelabel</button>
       </div> -->
       <div class="grid text-center justify-center pt-20" v-if="!privKey && !loading">
-        <h7 class="font-bold text-3xl">demo-openlogin.web3auth.io</h7>
+        <h1 class="font-bold text-3xl">demo-openlogin.web3auth.io</h1>
         <h6 class="pb-10 font-semibold text-[#595857]">Login With Openlogin</h6>
         <div>
           <button @click="login" class="btn-login">Login</button>
@@ -23,7 +23,7 @@
       <div v-if="privKey">
         <div class="flex box md:rows-span-2 m-6 text-left">
           <div class="mt-7 ml-6 text-ellipsis overflow-hidden">
-            <h7 class="text-2xl font-semibold">demo-openlogin.web3auth.io</h7>
+            <h1 class="text-2xl font-semibold">demo-openlogin.web3auth.io</h1>
             <h6 class="pb-8 text-left text-ellipsis overflow-hidden">Openlogin Private key : {{ privKey }}</h6>
           </div>
           <div class="ml-auto mt-7">

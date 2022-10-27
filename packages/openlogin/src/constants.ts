@@ -1,4 +1,4 @@
-import { LoginConfig, OriginData, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
+import { LoginConfig, MfaSettings, OriginData, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 import { ExtraLoginOptions } from "@toruslabs/openlogin-utils";
 
 export const modalDOMElementID = "openlogin-modal";
@@ -173,10 +173,12 @@ export type OpenLoginOptions = {
   loginConfig?: LoginConfig;
 
   /**
-   * This parameter will be used to generate a social provider backup share when MFA is used.
+   * This parameter will be used to enable mfa factors and set priority on UI listing.
+   * List of factors available
+   * backUpShareFactor | socialFactor | passwordFactor
    * @defaultValue false
    */
-  useSocialBackupFactor?: boolean;
+  mfaSettings?: MfaSettings;
 
   /**
    * _iframeUrl is for internal development use only and is used to override the

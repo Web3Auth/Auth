@@ -14,10 +14,15 @@ export function getOpenLoginInstance(whiteLabel?: WhiteLabelData) {
       // clientId is not required for localhost, you can set it to any string
       // for development
       clientId: YOUR_PROJECT_ID,
-      network: "testnet",
+      network: "development",
       uxMode: "redirect",
       whiteLabel,
       loginConfig,
+      mfaSettings: {
+        socialFactor: {
+          enable: true,
+        },
+      },
     });
   }
   if (whiteLabel) openLoginInstance.state.whiteLabel = whiteLabel;
