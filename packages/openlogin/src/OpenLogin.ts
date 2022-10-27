@@ -1,6 +1,6 @@
 import { decrypt, Ecies, encrypt, getPublic, sign } from "@toruslabs/eccrypto";
 import { get } from "@toruslabs/http-helpers";
-import { getRpcPromiseCallback, JRPCRequest, LoginConfig, OriginData, SessionInfo, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
+import { getRpcPromiseCallback, JRPCRequest, LoginConfig, MfaSettings, OriginData, SessionInfo, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 import { base64url, jsonToBase64, keccak, randomId } from "@toruslabs/openlogin-utils";
 import merge from "lodash.merge";
 
@@ -46,7 +46,7 @@ export type OpenLoginState = {
   whiteLabel: WhiteLabelData;
   loginConfig: LoginConfig;
   storageServerUrl: string;
-  useSocialBackupFactor: boolean;
+  mfaSettings: MfaSettings;
 };
 
 class OpenLogin {
@@ -87,7 +87,7 @@ class OpenLogin {
       originData: options.originData ?? { [window.location.origin]: "" },
       whiteLabel: options.whiteLabel ?? {},
       loginConfig: options.loginConfig ?? {},
-      useSocialBackupFactor: options.useSocialBackupFactor ?? false,
+      mfaSettings: options.mfaSettings ?? {},
       _storageServerUrl: options._storageServerUrl ?? "https://broadcast-server.tor.us",
     });
   }
@@ -112,7 +112,7 @@ class OpenLogin {
       support3PC: !options.no3PC,
       whiteLabel: options.whiteLabel,
       storageServerUrl: options._storageServerUrl,
-      useSocialBackupFactor: options.useSocialBackupFactor,
+      mfaSettings: options.mfaSettings,
     };
   }
 
@@ -269,7 +269,7 @@ class OpenLogin {
     session._originData = this.state.originData;
     session._whiteLabelData = this.state.whiteLabel;
     session._loginConfig = this.state.loginConfig;
-    session._useSocialBackupFactor = this.state.useSocialBackupFactor;
+    session._mfaSettings = this.state.mfaSettings;
     session._sessionId = this.state.store.get("sessionId");
 
     if (!session._sessionId) {
