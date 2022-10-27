@@ -175,7 +175,7 @@ export type OpenLoginOptions = {
   /**
    * This parameter will be used to enable mfa factors and set priority on UI listing.
    * List of factors available
-   * deviceShareFactor | backUpShareFactor | socialFactor | passwordFactor
+   * backUpShareFactor | socialFactor | passwordFactor
    * @defaultValue false
    */
   mfaSettings?: MfaSettings;
