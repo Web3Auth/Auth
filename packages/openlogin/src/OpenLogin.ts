@@ -153,6 +153,7 @@ class OpenLogin {
       }
       const url = new URL("https://api.developer.tor.us/whitelist");
       url.searchParams.append("project_id", this.state.clientId);
+      url.searchParams.append("network", this.state.network);
       const res = await get<{ signed_urls: OriginData }>(url.href);
       return res.signed_urls;
     } catch (_) {
