@@ -242,4 +242,5 @@ export type SessionInfo = {
   _loginConfig: LoginConfig;
   _sessionId?: string;
   _isNewSession?: boolean;
+  _sessionNamespace?: string;
 };

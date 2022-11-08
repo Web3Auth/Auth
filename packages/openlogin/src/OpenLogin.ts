@@ -4,27 +4,23 @@ import { getRpcPromiseCallback, JRPCRequest, LoginConfig, OriginData, SessionInf
 import { base64url, jsonToBase64, keccak, randomId } from "@toruslabs/openlogin-utils";
 import merge from "lodash.merge";
 
+import { ALLOWED_INTERACTIONS, OPENLOGIN_METHOD, OPENLOGIN_NETWORK, SESSION_EXPIRED, UX_MODE } from "./constants";
 import {
-  ALLOWED_INTERACTIONS,
   BaseLogoutParams,
   BaseRedirectParams,
   CUSTOM_LOGIN_PROVIDER_TYPE,
   LOGIN_PROVIDER_TYPE,
   LoginParams,
-  OPENLOGIN_METHOD,
-  OPENLOGIN_NETWORK,
   OPENLOGIN_NETWORK_TYPE,
   OpenLoginOptions,
   OpenloginUserInfo,
   RequestParams,
-  SESSION_EXPIRED,
-  UX_MODE,
   UX_MODE_TYPE,
-} from "./constants";
+} from "./interfaces";
 import { Modal } from "./Modal";
 import OpenLoginStore from "./OpenLoginStore";
 import Provider from "./Provider";
-import { awaitReq, constructURL, getHashQueryParams, getPopupFeatures, isNullishValue, preloadIframe } from "./utils";
+import { awaitReq, constructURL, getHashQueryParams, getPopupFeatures, preloadIframe } from "./utils";
 
 preloadIframe("https://app.openlogin.com/sdk-modal");
 
@@ -48,6 +44,7 @@ export type OpenLoginState = {
   loginConfig: LoginConfig;
   storageServerUrl: string;
   isMfaEnabled: boolean;
+  sessionNamespace: string;
 };
 
 class OpenLogin {
@@ -68,6 +65,8 @@ class OpenLogin {
         options._iframeUrl = "https://cyan.openlogin.com";
       } else if (options.network === OPENLOGIN_NETWORK.TESTNET) {
         options._iframeUrl = "https://beta.openlogin.com";
+      } else if (options.network === OPENLOGIN_NETWORK.SK_TESTNET) {
+        options._iframeUrl = "https://beta-sk.openlogin.com";
       } else if (options.network === OPENLOGIN_NETWORK.DEVELOPMENT) {
         options._iframeUrl = "http://localhost:3000";
       }
@@ -89,6 +88,8 @@ class OpenLogin {
       whiteLabel: options.whiteLabel ?? {},
       loginConfig: options.loginConfig ?? {},
       _storageServerUrl: options._storageServerUrl ?? "https://broadcast-server.tor.us",
+      storageKey: options.storageKey === "session" ? "session" : "local",
+      _sessionNamespace: options._sessionNamespace ?? "",
     });
   }
 
@@ -100,7 +101,7 @@ class OpenLogin {
     this.state = {
       uxMode: options.uxMode,
       network: options.network,
-      store: OpenLoginStore.getInstance(),
+      store: OpenLoginStore.getInstance(options._sessionNamespace, options.storageKey),
       iframeUrl: options._iframeUrl,
       startUrl: options._startUrl,
       popupUrl: options._popupUrl,
@@ -113,6 +114,7 @@ class OpenLogin {
       whiteLabel: options.whiteLabel,
       storageServerUrl: options._storageServerUrl,
       isMfaEnabled: false,
+      sessionNamespace: options._sessionNamespace,
     };
   }
 
@@ -153,6 +155,7 @@ class OpenLogin {
       }
       const url = new URL("https://api.developer.tor.us/whitelist");
       url.searchParams.append("project_id", this.state.clientId);
+      url.searchParams.append("network", this.state.network);
       const res = await get<{ signed_urls: OriginData }>(url.href);
       return res.signed_urls;
     } catch (_) {
@@ -284,7 +287,7 @@ class OpenLogin {
       params: [params],
       startUrl: this.state.startUrl,
       popupUrl: this.state.popupUrl,
-      allowedInteractions: [ALLOWED_INTERACTIONS.JRPC, ALLOWED_INTERACTIONS.POPUP, ALLOWED_INTERACTIONS.REDIRECT],
+      allowedInteractions: [ALLOWED_INTERACTIONS.JRPC],
     });
 
     this.state.privKey = "";
@@ -305,6 +308,9 @@ class OpenLogin {
 
     if (this.state.clientId) {
       session._clientId = this.state.clientId;
+    }
+    if (this.state.sessionNamespace) {
+      session._sessionNamespace = this.state.sessionNamespace;
     }
 
     if (this.privKey) {
@@ -472,16 +478,7 @@ class OpenLogin {
         throw new Error("expected store to be an object");
       }
       Object.keys(newState.store).forEach((key) => {
-        // if privKey is available then user is not logged out, but in popup mode store info is not available.
-        // so we don't want to overwrite the local store if privKey is available
-        // and if latest iframe store data is not available
-        if (newState.privKey) {
-          if (!isNullishValue(newState.store[key])) {
-            this.state.store.set(key, newState.store[key]);
-          }
-        } else {
-          this.state.store.set(key, newState.store[key]);
-        }
+        this.state.store.set(key, newState.store[key]);
       });
     }
     const { store } = this.state;
@@ -558,6 +555,8 @@ class OpenLogin {
         dappShare: (storeData.dappShare as string) || "",
         idToken: (storeData.idToken as string) || "",
         isMfaEnabled: (storeData.isMfaEnabled as boolean) || false,
+        oAuthIdToken: (storeData.oAuthIdToken as string) || "",
+        oAuthAccessToken: (storeData.oAuthAccessToken as string) || "",
       };
 
       return userInfo;

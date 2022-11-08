@@ -1,7 +1,7 @@
 import { getPublic, sign } from "@toruslabs/eccrypto";
 import { base64url, keccak, safeatob } from "@toruslabs/openlogin-utils";
 
-import { PopupResponse } from "./constants";
+import { PopupResponse } from "./interfaces";
 import log from "./loglevel";
 
 export async function documentReady(): Promise<void> {
@@ -81,7 +81,10 @@ export function getHashQueryParams(replaceUrl = false): Record<string, string> {
 
 export function awaitReq<T>(id: string, windowRef: Window): Promise<T> {
   return new Promise((resolve, reject) => {
-    if (!windowRef) reject(new Error("Unable to open window"));
+    if (!windowRef) {
+      reject(new Error("Unable to open window"));
+      return;
+    }
     let closedByHandler = false;
     const closedMonitor = setInterval(() => {
       if (!closedByHandler && windowRef.closed) {

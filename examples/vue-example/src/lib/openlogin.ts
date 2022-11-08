@@ -17,6 +17,8 @@ export function getOpenLoginInstance(whiteLabel?: WhiteLabelData) {
       network: "development",
       uxMode: "popup",
       whiteLabel,
+      loginConfig,
+      storageKey: "session",
     });
   }
   return openLoginInstance;

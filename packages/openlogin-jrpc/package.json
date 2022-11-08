@@ -1,6 +1,6 @@
 {
   "name": "@toruslabs/openlogin-jrpc",
-  "version": "2.1.0",
+  "version": "2.6.0",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
   "main": "dist/openloginJrpc.cjs.js",
@@ -33,7 +33,7 @@
     "@types/end-of-stream": "^1.4.1",
     "@types/once": "^1.4.0",
     "@types/pump": "^1.1.1",
-    "@types/readable-stream": "^2.3.13"
+    "@types/readable-stream": "^2.3.14"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"

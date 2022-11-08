@@ -1,4 +1,5 @@
 export * from "./constants";
+export * from "./interfaces";
 export * from "./IStore";
 export { default as loglevel } from "./loglevel";
 export { default } from "./OpenLogin";
