@@ -1,6 +1,6 @@
 {
   "name": "@toruslabs/openlogin",
-  "version": "2.7.1",
+  "version": "2.8.0",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
   "main": "dist/openlogin.cjs.js",
@@ -22,7 +22,7 @@
   "dependencies": {
     "@toruslabs/eccrypto": "^1.1.8",
     "@toruslabs/http-helpers": "^3.2.0",
-    "@toruslabs/openlogin-jrpc": "^2.7.1",
+    "@toruslabs/openlogin-jrpc": "^2.8.0",
     "@toruslabs/openlogin-utils": "^2.1.0",
     "lodash.merge": "^4.6.2",
     "loglevel": "^1.8.1",
