@@ -149,6 +149,17 @@ export type OpenLoginOptions = {
   loginConfig?: LoginConfig;
 
   /**
+   * webauthnTransport enables you to configure the transport type user can use
+   * for saving their share.
+   *
+   * @defaultValue ["internal"]
+   *
+   * @remarks
+   * This is only available for v1 users.
+   */
+  webauthnTransports?: AuthenticatorTransport[];
+
+  /**
    * _iframeUrl is for internal development use only and is used to override the
    * `network` parameter.
    * @internal

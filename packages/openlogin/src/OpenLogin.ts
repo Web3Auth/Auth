@@ -44,6 +44,7 @@ export type OpenLoginState = {
   loginConfig: LoginConfig;
   storageServerUrl: string;
   sessionNamespace: string;
+  webauthnTransports: AuthenticatorTransport[];
 };
 
 class OpenLogin {
@@ -89,6 +90,7 @@ class OpenLogin {
       _storageServerUrl: options._storageServerUrl ?? "https://broadcast-server.tor.us",
       storageKey: options.storageKey === "session" ? "session" : "local",
       _sessionNamespace: options._sessionNamespace ?? "",
+      webauthnTransports: options.webauthnTransports ?? ["internal"],
     });
   }
 
@@ -113,6 +115,7 @@ class OpenLogin {
       whiteLabel: options.whiteLabel,
       storageServerUrl: options._storageServerUrl,
       sessionNamespace: options._sessionNamespace,
+      webauthnTransports: options.webauthnTransports,
     };
   }
 
@@ -274,6 +277,7 @@ class OpenLogin {
     session._whiteLabelData = this.state.whiteLabel;
     session._loginConfig = this.state.loginConfig;
     session._sessionId = this.state.store.get("sessionId");
+    session._webauthnTransports = this.state.webauthnTransports;
 
     if (!session._sessionId) {
       const sessionId = randomId();
