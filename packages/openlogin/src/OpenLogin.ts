@@ -67,6 +67,10 @@ class OpenLogin {
         options._iframeUrl = "https://beta.openlogin.com";
       } else if (options.network === OPENLOGIN_NETWORK.SK_TESTNET) {
         options._iframeUrl = "https://beta-sk.openlogin.com";
+      } else if (options.network === OPENLOGIN_NETWORK.CELESTE) {
+        options._iframeUrl = "https://celeste.openlogin.com";
+      } else if (options.network === OPENLOGIN_NETWORK.AQUA) {
+        options._iframeUrl = "https://aqua.openlogin.com";
       } else if (options.network === OPENLOGIN_NETWORK.DEVELOPMENT) {
         options._iframeUrl = "http://localhost:3000";
       }

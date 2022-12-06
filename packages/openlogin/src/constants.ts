@@ -27,6 +27,8 @@ export const OPENLOGIN_NETWORK = {
   CYAN: "cyan",
   DEVELOPMENT: "development",
   SK_TESTNET: "sk_testnet",
+  CELESTE: "celeste",
+  AQUA: "aqua",
 } as const;
 
 export const SUPPORTED_KEY_CURVES = {
