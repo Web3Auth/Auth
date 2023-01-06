@@ -75,6 +75,7 @@ Ensure you have a `Node.JS` development environment setup:
 git clone https://github.com/torusresearch/OpenLoginSdk.git
 cd OpenLoginSdk
 yarn
+yarn run bootstrap
 yarn build
 ```
 
@@ -83,6 +84,12 @@ To run tests:
 ```
 yarn test
 ```
+
+To run examples:
+
+Ensure you have run `yarn build` command.
+cd examples/vue-example
+npm i && npm run serve
 
 ## Requirements
 
