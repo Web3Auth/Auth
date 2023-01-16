@@ -246,8 +246,25 @@ class OpenLogin {
       allowedInteractions: [ALLOWED_INTERACTIONS.JRPC],
     });
 
-    this.state.privKey = "";
-    this.state.coreKitKey = "";
+    this._syncState({
+      privKey: "",
+      coreKitKey: "",
+      walletKey: "",
+      oAuthPrivateKey: "",
+      tKey: "",
+      store: {
+        name: "",
+        profileImage: "",
+        dappShare: "",
+        idToken: "",
+        oAuthIdToken: "",
+        oAuthAccessToken: "",
+        sessionId: "",
+        sessionNamespace: "",
+        appState: "",
+      },
+    });
+
     return res;
   }
 
