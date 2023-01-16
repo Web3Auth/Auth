@@ -27,7 +27,7 @@ preloadIframe("https://app.openlogin.com/sdk-modal");
 export type OpenLoginState = {
   network: OPENLOGIN_NETWORK_TYPE;
   privKey?: string;
-  sfaKey?: string;
+  coreKitKey?: string;
   walletKey?: string;
   tKey?: string;
   oAuthPrivateKey?: string;
@@ -103,8 +103,8 @@ class OpenLogin {
     return this.state.privKey ? this.state.privKey.padStart(64, "0") : "";
   }
 
-  get sfaKey(): string {
-    return this.state.sfaKey ? this.state.sfaKey.padStart(64, "0") : "";
+  get coreKitKey(): string {
+    return this.state.coreKitKey ? this.state.coreKitKey.padStart(64, "0") : "";
   }
 
   initState(options: Required<OpenLoginOptions>): void {
@@ -247,7 +247,7 @@ class OpenLogin {
     });
 
     this.state.privKey = "";
-    this.state.sfaKey = "";
+    this.state.coreKitKey = "";
     return res;
   }
 
