@@ -134,13 +134,24 @@ class OpenLogin {
       // eslint-disable-next-line no-console
       console.log("%c WARNING! You are on testnet. Please set network: 'mainnet' in production", "color: #FF0000");
     }
-    await Promise.all([this.modal.init(), this.updateOriginData()]);
-    this.provider.init({ iframeElem: this.modal.iframeElem, iframeUrl: this.state.iframeUrl });
+    if (this.state.uxMode === UX_MODE.SESSIONLESS_REDIRECT) {
+      // in this mode iframe is not used so support3pc must be false
+      this.state.support3PC = false;
+    } else {
+      // initialize iframe only when redirect or popup mode
+      await Promise.all([this.modal.init(), this.updateOriginData()]);
+      this.provider.init({ iframeElem: this.modal.iframeElem, iframeUrl: this.state.iframeUrl });
+    }
+
     const params = getHashQueryParams(this.state.replaceUrlOnRedirect);
     if (params.sessionId) {
       this.state.store.set("sessionId", params.sessionId);
     }
-    this._syncState(await this._getData());
+    if (this.state.uxMode === UX_MODE.SESSIONLESS_REDIRECT) {
+      this._syncState(params);
+    } else {
+      this._syncState(await this._getData());
+    }
 
     if (this.state.support3PC) {
       const res = await this._check3PCSupport();
@@ -194,6 +205,9 @@ class OpenLogin {
     if (params?.loginProvider) {
       return this._selectedLogin(params);
     }
+    if (this.state.uxMode === UX_MODE.SESSIONLESS_REDIRECT) {
+      throw new Error(`Please pass loginProvider in params while using ${UX_MODE.SESSIONLESS_REDIRECT} mode`);
+    }
     return this._modal(params);
   }
 
@@ -238,12 +252,13 @@ class OpenLogin {
       params.redirectUrl = logoutParams.redirectUrl;
     }
 
+    const allowedInteractions = this.state.uxMode === UX_MODE.SESSIONLESS_REDIRECT ? [ALLOWED_INTERACTIONS.REDIRECT] : [ALLOWED_INTERACTIONS.JRPC];
     const res = await this.request<void>({
       method: OPENLOGIN_METHOD.LOGOUT,
       params: [params],
       startUrl: this.state.startUrl,
       popupUrl: this.state.popupUrl,
-      allowedInteractions: [ALLOWED_INTERACTIONS.JRPC],
+      allowedInteractions,
     });
 
     this._syncState({
@@ -339,7 +354,7 @@ class OpenLogin {
     // method and pid are always in URL hash params
     // convert params from JSON to base64
 
-    if (this.state.uxMode === UX_MODE.REDIRECT) {
+    if (this.state.uxMode === UX_MODE.REDIRECT || this.state.uxMode === UX_MODE.SESSIONLESS_REDIRECT) {
       // if redirects preferred, check for redirect flows first, then check for popup flow
 
       if (allowedInteractions.includes(ALLOWED_INTERACTIONS.REDIRECT)) {
@@ -438,6 +453,7 @@ class OpenLogin {
   }
 
   async _getData(): Promise<Record<string, unknown>> {
+    if (this.state.uxMode === UX_MODE.SESSIONLESS_REDIRECT) return {};
     return this.request<Record<string, unknown>>({
       allowedInteractions: [ALLOWED_INTERACTIONS.JRPC],
       method: OPENLOGIN_METHOD.GET_DATA,
