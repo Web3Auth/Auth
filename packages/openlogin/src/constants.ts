@@ -52,6 +52,7 @@ export const LOGIN_PROVIDER = {
   WEIBO: "weibo",
   WECHAT: "wechat",
   EMAIL_PASSWORDLESS: "email_passwordless",
+  SMS_PASSWORDLESS: "sms_passwordless",
   WEBAUTHN: "webauthn",
   JWT: "jwt",
 } as const;
