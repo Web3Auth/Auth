@@ -5,6 +5,7 @@ export const storeKey = "openlogin_store";
 export const UX_MODE = {
   POPUP: "popup",
   REDIRECT: "redirect",
+  SESSIONLESS_REDIRECT: "sessionless_redirect",
 } as const;
 
 export const OPENLOGIN_METHOD = {
