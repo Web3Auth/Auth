@@ -140,7 +140,7 @@ class OpenLogin {
       this.state.support3PC = false;
     } else {
       // initialize iframe only when redirect or popup mode
-      await Promise.all([this.modal.init()]);
+      await Promise.all([this.modal.init(), this.updateOriginData()]);
       this.provider.init({ iframeElem: this.modal.iframeElem, iframeUrl: this.state.iframeUrl });
     }
 
