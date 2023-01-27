@@ -135,11 +135,12 @@ class OpenLogin {
       console.log("%c WARNING! You are on testnet. Please set network: 'mainnet' in production", "color: #FF0000");
     }
     if (this.state.uxMode === UX_MODE.SESSIONLESS_REDIRECT) {
+      await this.updateOriginData();
       // in this mode iframe is not used so support3pc must be false
       this.state.support3PC = false;
     } else {
       // initialize iframe only when redirect or popup mode
-      await Promise.all([this.modal.init(), this.updateOriginData()]);
+      await Promise.all([this.modal.init()]);
       this.provider.init({ iframeElem: this.modal.iframeElem, iframeUrl: this.state.iframeUrl });
     }
 
