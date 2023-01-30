@@ -14,7 +14,7 @@ const STARKNET_NETWORK_ID_MAP = {
   [STARKNET_NETWORKS.testnet]: 100001,
 };
 
-export type STARTNET_NETWORK_TYPE = typeof STARKNET_NETWORKS[keyof typeof STARKNET_NETWORKS];
+export type STARTNET_NETWORK_TYPE = (typeof STARKNET_NETWORKS)[keyof typeof STARKNET_NETWORKS];
 function isHexPrefixed(str: string): boolean {
   return (str || "").substring(0, 2) === "0x";
 }

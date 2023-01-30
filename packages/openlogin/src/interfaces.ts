@@ -10,14 +10,14 @@ export type PopupResponse<T> = {
 
 export type Maybe<T> = Partial<T> | null | undefined;
 
-export type UX_MODE_TYPE = typeof UX_MODE[keyof typeof UX_MODE];
+export type UX_MODE_TYPE = (typeof UX_MODE)[keyof typeof UX_MODE];
 
 // autocomplete workaround https://github.com/microsoft/TypeScript/issues/29729
 export type CUSTOM_OPENLOGIN_METHOD_TYPE = string & { toString?: (radix?: number) => string };
 
-export type OPENLOGIN_METHOD_TYPE = typeof OPENLOGIN_METHOD[keyof typeof OPENLOGIN_METHOD];
+export type OPENLOGIN_METHOD_TYPE = (typeof OPENLOGIN_METHOD)[keyof typeof OPENLOGIN_METHOD];
 
-export type ALLOWED_INTERACTIONS_TYPE = typeof ALLOWED_INTERACTIONS[keyof typeof ALLOWED_INTERACTIONS];
+export type ALLOWED_INTERACTIONS_TYPE = (typeof ALLOWED_INTERACTIONS)[keyof typeof ALLOWED_INTERACTIONS];
 
 export type BaseLogoutParams = {
   /**
@@ -53,16 +53,16 @@ export type RequestParams = {
 /**
  * {@label loginProviderType}
  */
-export type LOGIN_PROVIDER_TYPE = typeof LOGIN_PROVIDER[keyof typeof LOGIN_PROVIDER];
+export type LOGIN_PROVIDER_TYPE = (typeof LOGIN_PROVIDER)[keyof typeof LOGIN_PROVIDER];
 
 // autocomplete workaround https://github.com/microsoft/TypeScript/issues/29729
 export type CUSTOM_LOGIN_PROVIDER_TYPE = string & { toString?: (radix?: number) => string };
 
-export type MfaLevelType = typeof MFA_LEVELS[keyof typeof MFA_LEVELS];
+export type MfaLevelType = (typeof MFA_LEVELS)[keyof typeof MFA_LEVELS];
 
-export type SUPPORTED_KEY_CURVES_TYPE = typeof SUPPORTED_KEY_CURVES[keyof typeof SUPPORTED_KEY_CURVES];
+export type SUPPORTED_KEY_CURVES_TYPE = (typeof SUPPORTED_KEY_CURVES)[keyof typeof SUPPORTED_KEY_CURVES];
 
-export type OPENLOGIN_NETWORK_TYPE = typeof OPENLOGIN_NETWORK[keyof typeof OPENLOGIN_NETWORK];
+export type OPENLOGIN_NETWORK_TYPE = (typeof OPENLOGIN_NETWORK)[keyof typeof OPENLOGIN_NETWORK];
 
 export type OpenLoginOptions = {
   /**
