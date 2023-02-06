@@ -24,12 +24,10 @@
     "@toruslabs/http-helpers": "^3.2.0",
     "@toruslabs/openlogin-jrpc": "^2.13.0",
     "@toruslabs/openlogin-utils": "^2.13.0",
-    "lodash.merge": "^4.6.2",
     "loglevel": "^1.8.1",
     "pump": "^3.0.0"
   },
   "devDependencies": {
-    "@types/lodash.merge": "^4.6.7",
     "@types/pump": "^1.1.1"
   },
   "peerDependencies": {

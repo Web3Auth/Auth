@@ -11,8 +11,8 @@
         <button @click="login">login</button>
         <button @click="loginWithoutWhitelabel">login without whitelabel</button>
       </div> -->
-      <div class="grid text-center justify-center pt-20" v-if="!privKey && !loading">
-        <h7 class="font-bold text-3xl">demo-openlogin.web3auth.io</h7>
+      <div class="grid justify-center pt-20 text-center" v-if="!privKey && !loading">
+        <h7 class="text-3xl font-bold">demo-openlogin.web3auth.io</h7>
         <h6 class="pb-10 font-semibold text-[#595857]">Login With Openlogin</h6>
         <div>
           <button @click="login" class="btn-login">Login</button>
@@ -21,21 +21,21 @@
       </div>
 
       <div v-if="privKey">
-        <div class="flex box md:rows-span-2 m-6 text-left">
-          <div class="mt-7 ml-6 text-ellipsis overflow-hidden">
+        <div class="flex m-6 text-left box md:rows-span-2">
+          <div class="ml-6 overflow-hidden mt-7 text-ellipsis">
             <h7 class="text-2xl font-semibold">demo-openlogin.web3auth.io</h7>
-            <h6 class="pb-8 text-left text-ellipsis overflow-hidden">Openlogin Private key : {{ privKey }}</h6>
+            <h6 class="pb-8 overflow-hidden text-left text-ellipsis">Openlogin Private key : {{ privKey }}</h6>
           </div>
           <div class="ml-auto mt-7">
             <span class="pr-32">Connected ChainId : {{ ethereumPrivateKeyProvider.state.chainId }}</span>
             <button type="button" @click="logout" class="btn-logout">
-              <img src="@/assets/logout.svg" class="pr-3 pl-0" />
+              <img src="@/assets/logout.svg" class="pl-0 pr-3" />
               Logout
             </button>
           </div>
         </div>
-        <div class="grid grid-cols-5 gap-7 m-6 height-fit">
-          <div class="grid grid-cols-2 col-span-5 md:col-span-2 text-left gap-2 p-4 box">
+        <div class="grid grid-cols-5 m-6 gap-7 height-fit">
+          <div class="grid grid-cols-2 col-span-5 gap-2 p-4 text-left md:col-span-2 box">
             <div class="col-span-2 text-left">
               <div class="font-semibold">User Info</div>
               <div class="grid grid-cols-2 gap-2">
@@ -128,12 +128,12 @@ export default Vue.extend({
         // return priv key , in redirect mode or if third party cookies are blocked then priv key be injected to
         // sdk instance after calling init on redirect url page.
         const privKey = await openlogin.login({
+          loginProvider: 'google',
           mfaLevel: "optional",
           // pass empty string '' as loginProvider to open default torus modal
           // with all default supported login providers or you can pass specific
           // login provider from available list to set as default.
           // for ex: google, facebook, twitter etc
-          loginProvider: "",
           redirectUrl: `${window.origin}`,
           // you can pass standard oauth parameter in extralogin options
           // for ex: in case of passwordless login, you have to pass user's email as login_hint
