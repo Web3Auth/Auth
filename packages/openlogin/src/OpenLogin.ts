@@ -2,9 +2,9 @@ import { decrypt, Ecies, encrypt, getPublic, sign } from "@toruslabs/eccrypto";
 import { get } from "@toruslabs/http-helpers";
 import { getRpcPromiseCallback, JRPCRequest, LoginConfig, OriginData, SessionInfo, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 import { base64url, jsonToBase64, keccak, randomId } from "@toruslabs/openlogin-utils";
-import merge from "lodash.merge";
+import log from "loglevel";
 
-import { ALLOWED_INTERACTIONS, OPENLOGIN_METHOD, OPENLOGIN_NETWORK, UX_MODE } from "./constants";
+import { ALLOWED_INTERACTIONS, modalDOMElementID, OPENLOGIN_METHOD, OPENLOGIN_NETWORK, UX_MODE } from "./constants";
 import {
   BaseLogoutParams,
   BaseRedirectParams,
@@ -17,12 +17,9 @@ import {
   RequestParams,
   UX_MODE_TYPE,
 } from "./interfaces";
-import { Modal } from "./Modal";
 import OpenLoginStore from "./OpenLoginStore";
 import Provider from "./Provider";
-import { awaitReq, constructURL, getHashQueryParams, getPopupFeatures, preloadIframe } from "./utils";
-
-preloadIframe("https://app.openlogin.com/sdk-modal");
+import { awaitReq, constructURL, documentReady, getHashQueryParams, getPopupFeatures, htmlToElement, preloadIframe } from "./utils";
 
 export type OpenLoginState = {
   network: OPENLOGIN_NETWORK_TYPE;
@@ -53,7 +50,7 @@ class OpenLogin {
 
   state: OpenLoginState;
 
-  modal: Modal;
+  iframeElem: HTMLIFrameElement;
 
   constructor(options: OpenLoginOptions) {
     this.provider = new Proxy(new Provider(), {
@@ -79,7 +76,8 @@ class OpenLogin {
     if (!options._iframeUrl) {
       throw new Error("unspecified network and iframeUrl");
     }
-    this.modal = new Modal(`${options._iframeUrl}/sdk-modal`);
+    preloadIframe(options._iframeUrl);
+
     this.initState({
       ...options,
       no3PC: options.no3PC ?? false,
@@ -135,13 +133,12 @@ class OpenLogin {
       console.log("%c WARNING! You are on testnet. Please set network: 'mainnet' in production", "color: #FF0000");
     }
     if (this.state.uxMode === UX_MODE.SESSIONLESS_REDIRECT) {
-      await this.updateOriginData();
       // in this mode iframe is not used so support3pc must be false
       this.state.support3PC = false;
     } else {
       // initialize iframe only when redirect or popup mode
-      await Promise.all([this.modal.init(), this.updateOriginData()]);
-      this.provider.init({ iframeElem: this.modal.iframeElem, iframeUrl: this.state.iframeUrl });
+      await Promise.all([this._initIFrame(this.state.iframeUrl), this.updateOriginData()]);
+      this.provider.init({ iframeElem: this.iframeElem, iframeUrl: this.state.iframeUrl });
     }
 
     const params = getHashQueryParams(this.state.replaceUrlOnRedirect);
@@ -202,14 +199,12 @@ class OpenLogin {
     }
   }
 
-  async login(params?: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
-    if (params?.loginProvider) {
-      return this._selectedLogin(params);
+  async login(params: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
+    if (!params || !params.loginProvider) {
+      throw new Error(`Please pass loginProvider in params`);
     }
-    if (this.state.uxMode === UX_MODE.SESSIONLESS_REDIRECT) {
-      throw new Error(`Please pass loginProvider in params while using ${UX_MODE.SESSIONLESS_REDIRECT} mode`);
-    }
-    return this._modal(params);
+
+    return this._selectedLogin(params);
   }
 
   async _selectedLogin(params: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
@@ -408,6 +403,30 @@ class OpenLogin {
     throw new Error("no matching allowed interactions");
   }
 
+  async _initIFrame(src: string): Promise<void> {
+    await documentReady();
+    const documentIFrameElem = document.getElementById(modalDOMElementID) as HTMLIFrameElement;
+    if (documentIFrameElem) {
+      documentIFrameElem.remove();
+      log.info("already initialized, removing previous modal iframe");
+    }
+    this.iframeElem = htmlToElement<HTMLIFrameElement>(
+      `<iframe
+        id=${modalDOMElementID}
+        class="torusIframe"
+        src="${src}"
+        style="display: none; position: fixed; top: 0; right: 0; width: 100%;
+        height: 100%; border: none; border-radius: 0; z-index: 99999"
+      ></iframe>`
+    );
+    document.body.appendChild(this.iframeElem);
+    return new Promise<void>((resolve) => {
+      this.iframeElem.onload = () => {
+        resolve();
+      };
+    });
+  }
+
   async _jrpcRequest<T, U>(args: JRPCRequest<T>): Promise<U> {
     // await this.initialized;
     if (!args || typeof args !== "object" || Array.isArray(args)) {
@@ -473,30 +492,6 @@ class OpenLogin {
     }
     const { store } = this.state;
     this.state = { ...this.state, ...newState, store };
-  }
-
-  async _modal(params?: LoginParams & Partial<BaseRedirectParams>): Promise<{
-    privKey: string;
-  }> {
-    return new Promise<{ privKey: string }>((resolve, reject) => {
-      this.modal._prompt(this.state.clientId, this.state.whiteLabel, this.state.loginConfig, async (chunk: { cancel?: boolean }): Promise<void> => {
-        if (chunk.cancel) {
-          reject(new Error("user canceled login"));
-        } else {
-          try {
-            const selectedLoginResponse = await this._selectedLogin(merge(params, chunk));
-            resolve(selectedLoginResponse);
-          } catch (error) {
-            reject(error);
-          }
-        }
-      });
-    });
-  }
-
-  async _cleanup(): Promise<void> {
-    await this.modal.cleanup();
-    this.provider.cleanup();
   }
 
   async encrypt(message: Buffer, privateKey?: string): Promise<Ecies> {
@@ -574,6 +569,16 @@ class OpenLogin {
     };
 
     return constructURL({ baseURL: `${this.state.iframeUrl}/start`, hash: hashParams });
+  }
+
+  async _cleanup(): Promise<void> {
+    await documentReady();
+    const documentIFrameElem = document.getElementById(modalDOMElementID) as HTMLIFrameElement;
+    if (documentIFrameElem) {
+      documentIFrameElem.remove();
+      this.iframeElem = null;
+    }
+    this.provider.cleanup();
   }
 }
 

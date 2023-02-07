@@ -210,12 +210,8 @@ export type LoginParams = BaseRedirectParams & {
   /**
    * loginProvider sets the oauth login method to be used.
    * You can use any of the valid loginProvider from the supported list.
-   *
-   * If this param is not passed then it will show all the available
-   * login methods to user in a modal.
-   *
    */
-  loginProvider?: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
+  loginProvider: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
 
   /**
    * You can set the `mfaLevel` to customize when mfa screen should be shown to user.
