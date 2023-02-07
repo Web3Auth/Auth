@@ -10,7 +10,7 @@ const openlogin = new OpenLogin({
   // clientId is not required for localhost, you can set it to any string
   // for development
   clientId: YOUR_PROJECT_ID,
-  network: "development",
+  network: "mainnet",
   uxMode: "popup",
 });
 function App() {
@@ -25,7 +25,6 @@ function App() {
   const printUserInfo = async () => {
     const userInfo = await openlogin.getUserInfo();
     printToConsole(userInfo);
-    console.log(openlogin);
   };
 
   async function login() {
@@ -36,7 +35,7 @@ function App() {
         // with all default supported login providers or you can pass specific
         // login provider from available list to set as default.
         // for ex: google, facebook, twitter etc
-        loginProvider: "",
+        loginProvider: "google",
         redirectUrl: `${window.location.origin}`,
 
         // you can pass standard oauth parameter in extralogin options

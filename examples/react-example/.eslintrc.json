@@ -3,7 +3,7 @@
     "browser": true,
     "es2021": true
   },
-  "extends": ["plugin:react/recommended", "airbnb-typescript/base", "plugin:prettier/recommended", "prettier"],
+  "extends": ["plugin:react/recommended", "airbnb-typescript/base", "plugin:prettier/recommended", "prettier", "plugin:import/recommended"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaFeatures": {
@@ -13,29 +13,18 @@
     "sourceType": "module",
     "project": ["./tsconfig.json"]
   },
-  "plugins": ["prettier", "react", "@typescript-eslint"],
+  "plugins": ["prettier", "react", "@typescript-eslint", "import"],
   "settings": {
     "import/resolver": {
       "node": {
         "extensions": [".js", ".jsx", ".ts", ".tsx"]
       }
     },
-    "import/extensions": [".js", ".mjs", ".jsx", ".js", ".jsx", ".ts", ".tsx"],
     "react": {
       "version": "detect"
     }
   },
   "rules": {
-    "import/extensions": [
-      "error",
-      "ignorePackages",
-      {
-        "js": "never",
-        "jsx": "never",
-        "ts": "never",
-        "tsx": "never"
-      }
-    ],
     "react/jsx-filename-extension": [2, { "extensions": [".js", ".jsx", ".ts", ".tsx"] }],
     "react/button-has-type": 0,
     "no-console": 0,

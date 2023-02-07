@@ -6,6 +6,10 @@
     {
       "directory": "packages/*",
       "changeProcessCWD": true
+    },
+    {
+      "directory": "examples/*/*",
+      "changeProcessCWD": true
     }
   ],
   "cSpell.words": [
