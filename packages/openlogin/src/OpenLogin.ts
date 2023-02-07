@@ -570,6 +570,16 @@ class OpenLogin {
 
     return constructURL({ baseURL: `${this.state.iframeUrl}/start`, hash: hashParams });
   }
+
+  async _cleanup(): Promise<void> {
+    await documentReady();
+    const documentIFrameElem = document.getElementById(modalDOMElementID) as HTMLIFrameElement;
+    if (documentIFrameElem) {
+      documentIFrameElem.remove();
+      this.iframeElem = null;
+    }
+    this.provider.cleanup();
+  }
 }
 
 export default OpenLogin;
