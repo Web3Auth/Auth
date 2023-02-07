@@ -7,9 +7,9 @@ export default class OpenLoginStore {
   // eslint-disable-next-line no-use-before-define
   private static instance: OpenLoginStore;
 
-  private _storeKey: string = storeKey;
-
   public storage: IStore;
+
+  private _storeKey: string = storeKey;
 
   private constructor(storage: IStore, _storeKey?: string) {
     this.storage = storage;
