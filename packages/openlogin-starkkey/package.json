@@ -20,10 +20,10 @@
     "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
-    "@toruslabs/starkware-crypto": "^1.1.0",
+    "@toruslabs/starkware-crypto": "^1.2.0",
     "bip39": "^3.0.4",
     "enc-utils": "^3.0.0",
-    "ethereumjs-util": "^7.1.5"
+    "@ethereumjs/util": "^8.0.3"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"

@@ -1,8 +1,8 @@
+import { privateToAddress } from "@ethereumjs/util";
 import { getKeyPairFromPath } from "@toruslabs/starkware-crypto";
 import { entropyToMnemonic } from "bip39";
 import type { ec as EllipticCurve } from "elliptic";
 import { binaryToNumber, hexToBinary } from "enc-utils";
-import { privateToAddress } from "ethereumjs-util";
 
 export const STARKNET_NETWORKS = {
   mainnet: "mainnet",
