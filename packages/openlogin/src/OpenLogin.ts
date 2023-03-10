@@ -132,8 +132,6 @@ class OpenLogin {
     if (params.sessionId) {
       this.state.store.set("sessionId", params.sessionId);
     }
-    // eslint-disable-next-line no-console
-    console.log("get data", this._getData());
     this._syncState(await this._getData());
 
     if (this.state.support3PC) {
