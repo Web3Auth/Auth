@@ -20,7 +20,7 @@
     "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
-    "@toruslabs/tweetnacl-js": "^1.0.3"
+    "@toruslabs/tweetnacl-js": "^1.0.4"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"
