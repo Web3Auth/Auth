@@ -274,6 +274,7 @@ class OpenLogin {
         sessionId: "",
         sessionNamespace: "",
         appState: "",
+        email: "",
       },
     });
 
