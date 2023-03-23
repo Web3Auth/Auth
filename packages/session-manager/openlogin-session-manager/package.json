@@ -1,7 +1,7 @@
 {
   "name": "@toruslabs/openlogin-session-manager",
   "version": "1.0.0",
-   "files": [
+  "files": [
     "dist",
     "src"
   ],
