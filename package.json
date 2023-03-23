@@ -9,7 +9,7 @@
     "packages/openlogin-subkey",
     "packages/openlogin-utils",
     "packages/wrapper",
-    "packages/session-adapter/*"
+    "packages/session-manager/*"
   ],
   "repository": "git@github.com:torusresearch/OpenLoginSdk.git",
   "scripts": {

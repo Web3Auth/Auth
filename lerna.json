@@ -8,7 +8,7 @@
     "packages/openlogin-subkey",
     "packages/openlogin-utils",
     "packages/wrapper",
-    "packages/session-adapter/*"
+    "packages/session-manager/*"
   ],
   "npmClient": "npm",
   "useWorkspaces": true
