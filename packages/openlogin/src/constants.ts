@@ -19,7 +19,6 @@ export const OPENLOGIN_METHOD = {
 export const ALLOWED_INTERACTIONS = {
   POPUP: "popup",
   REDIRECT: "redirect",
-  JRPC: "jrpc",
 } as const;
 
 export const OPENLOGIN_NETWORK = {

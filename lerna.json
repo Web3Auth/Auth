@@ -1,6 +1,15 @@
 {
   "version": "3.2.1",
-  "packages": ["packages/*"],
+  "packages": [
+    "packages/openlogin", 
+    "packages/openlogin-ed25519",
+    "packages/openlogin-jrpc",
+    "packages/openlogin-starkey",
+    "packages/openlogin-subkey",
+    "packages/openlogin-utils",
+    "packages/wrapper",
+    "packages/session-adapter/*"
+  ],
   "npmClient": "npm",
   "useWorkspaces": true
 }

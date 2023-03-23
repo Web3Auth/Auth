@@ -81,17 +81,19 @@ export type OpenLoginOptions = {
    */
   network: OPENLOGIN_NETWORK_TYPE;
 
-  /**
-   * Setting no3PC forces openlogin to assume that third party cookies are blocked
-   * in the browser.
-   *
-   * @defaultValue false
-   * @remarks
-   * Only pass no3PC to `true` when you are sure that third party cookies are not
-   * supported. By default openlogin will self check third party cookies and proceed
-   * accordingly.
-   */
-  no3PC?: boolean;
+  // /**
+  //  * Setting no3PC forces openlogin to assume that third party cookies are blocked
+  //  * in the browser.
+  //  *
+  //  * @defaultValue false
+  //  * @remarks
+  //  * Only pass no3PC to `true` when you are sure that third party cookies are not
+  //  * supported. By default openlogin will self check third party cookies and proceed
+  //  * accordingly.
+  //  *
+  //  * @deprecated this property will be removed in next major release.
+  //  */
+  // no3PC?: boolean;
 
   /**
    * redirectUrl is the dapp's url where user will be redirected after login.

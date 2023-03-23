@@ -1,12 +1,12 @@
 import { decrypt, Ecies, encrypt, getPublic, sign } from "@toruslabs/eccrypto";
 import { get } from "@toruslabs/http-helpers";
-import { getRpcPromiseCallback, JRPCRequest, LoginConfig, OriginData, SessionInfo, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
+import { LoginConfig, OriginData, SessionInfo, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
+import { OpenloginSessionManager } from "@toruslabs/openlogin-session-manager";
 import { base64url, jsonToBase64, keccak, randomId } from "@toruslabs/openlogin-utils";
 import log from "loglevel";
 
-import { ALLOWED_INTERACTIONS, modalDOMElementID, OPENLOGIN_METHOD, OPENLOGIN_NETWORK, UX_MODE } from "./constants";
+import { ALLOWED_INTERACTIONS, OPENLOGIN_METHOD, OPENLOGIN_NETWORK, UX_MODE } from "./constants";
 import {
-  BaseLogoutParams,
   BaseRedirectParams,
   CUSTOM_LOGIN_PROVIDER_TYPE,
   LOGIN_PROVIDER_TYPE,
@@ -18,8 +18,7 @@ import {
   UX_MODE_TYPE,
 } from "./interfaces";
 import OpenLoginStore from "./OpenLoginStore";
-import Provider from "./Provider";
-import { awaitReq, constructURL, documentReady, getHashQueryParams, getPopupFeatures, htmlToElement, preloadIframe } from "./utils";
+import { awaitReq, constructURL, getHashQueryParams, getPopupFeatures } from "./utils";
 
 export type OpenLoginState = {
   network: OPENLOGIN_NETWORK_TYPE;
@@ -28,7 +27,6 @@ export type OpenLoginState = {
   walletKey?: string;
   tKey?: string;
   oAuthPrivateKey?: string;
-  support3PC?: boolean;
   clientId: string;
   iframeUrl: string;
   redirectUrl: string;
@@ -46,16 +44,13 @@ export type OpenLoginState = {
 };
 
 class OpenLogin {
-  provider: Provider;
-
   state: OpenLoginState;
 
   iframeElem: HTMLIFrameElement;
 
+  sessionManager: OpenloginSessionManager;
+
   constructor(options: OpenLoginOptions) {
-    this.provider = new Proxy(new Provider(), {
-      deleteProperty: () => true, // work around for web3
-    });
     if (!options._iframeUrl) {
       if (options.network === OPENLOGIN_NETWORK.MAINNET) {
         options._iframeUrl = "https://app.openlogin.com";
@@ -76,11 +71,9 @@ class OpenLogin {
     if (!options._iframeUrl) {
       throw new Error("unspecified network and iframeUrl");
     }
-    preloadIframe(options._iframeUrl);
 
     this.initState({
       ...options,
-      no3PC: options.no3PC ?? false,
       _iframeUrl: options._iframeUrl,
       _startUrl: options._startUrl ?? `${options._iframeUrl}/start`,
       _popupUrl: options._popupUrl ?? `${options._iframeUrl}/popup-window`,
@@ -94,6 +87,11 @@ class OpenLogin {
       storageKey: options.storageKey === "session" ? "session" : "local",
       _sessionNamespace: options._sessionNamespace ?? "",
       webauthnTransports: options.webauthnTransports ?? ["internal"],
+    });
+
+    this.sessionManager = new OpenloginSessionManager({
+      sessionServerBaseUrl: this.state.storageServerUrl,
+      sessionNamespace: this.state.sessionNamespace,
     });
   }
 
@@ -118,7 +116,6 @@ class OpenLogin {
       replaceUrlOnRedirect: options.replaceUrlOnRedirect,
       originData: options.originData,
       loginConfig: options.loginConfig,
-      support3PC: !options.no3PC,
       whiteLabel: options.whiteLabel,
       storageServerUrl: options._storageServerUrl,
       sessionNamespace: options._sessionNamespace,
@@ -132,29 +129,21 @@ class OpenLogin {
       // eslint-disable-next-line no-console
       console.log("%c WARNING! You are on testnet. Please set network: 'mainnet' in production", "color: #FF0000");
     }
-    if (this.state.uxMode === UX_MODE.SESSIONLESS_REDIRECT) {
-      await this.updateOriginData();
-      // in this mode iframe is not used so support3pc must be false
-      this.state.support3PC = false;
-    } else {
-      // initialize iframe only when redirect or popup mode
-      await Promise.all([this._initIFrame(this.state.iframeUrl), this.updateOriginData()]);
-      this.provider.init({ iframeElem: this.iframeElem, iframeUrl: this.state.iframeUrl });
-    }
+
+    await this.updateOriginData();
 
     const params = getHashQueryParams(this.state.replaceUrlOnRedirect);
     if (params.sessionId) {
       this.state.store.set("sessionId", params.sessionId);
     }
-    if (this.state.uxMode === UX_MODE.SESSIONLESS_REDIRECT) {
+
+    // if this is after redirect, directly sync data.
+    if (params.store) {
       this._syncState(params);
     } else {
-      this._syncState(await this._getData());
-    }
-
-    if (this.state.support3PC) {
-      const res = await this._check3PCSupport();
-      this.state.support3PC = !!res.support3PC;
+      // rehydrate the session if sessionId is present.
+      const sessionId = this.state.store.get<string>("sessionId");
+      this._syncState((await this._authorizeSession(sessionId)) as Record<string, unknown>);
     }
   }
 
@@ -229,34 +218,15 @@ class OpenLogin {
     this.state.privKey = res.privKey;
     if (res.store) {
       this._syncState(res);
-    } else if (this.state.privKey && this.state.support3PC) {
-      this._syncState(await this._getData());
     }
+
     return { privKey: this.privKey };
   }
 
-  async logout(logoutParams: Partial<BaseLogoutParams> & Partial<BaseRedirectParams> = {}): Promise<void> {
-    const params: Record<string, unknown> = {};
-    // defaults
-    params.redirectUrl = this.state.redirectUrl;
-    params._clientId = this.state.clientId;
-    params.sessionId = this.state.store.get("sessionId");
+  async logout(): Promise<void> {
+    const sessionId = this.state.store.get<string>("sessionId");
 
-    if (logoutParams.clientId) {
-      params._clientId = logoutParams.clientId;
-    }
-    if (logoutParams.redirectUrl !== undefined) {
-      params.redirectUrl = logoutParams.redirectUrl;
-    }
-
-    const allowedInteractions = this.state.uxMode === UX_MODE.SESSIONLESS_REDIRECT ? [ALLOWED_INTERACTIONS.REDIRECT] : [ALLOWED_INTERACTIONS.JRPC];
-    const res = await this.request<void>({
-      method: OPENLOGIN_METHOD.LOGOUT,
-      params: [params],
-      startUrl: this.state.startUrl,
-      popupUrl: this.state.popupUrl,
-      allowedInteractions,
-    });
+    await this.sessionManager.invalidateSession(sessionId);
 
     this._syncState({
       privKey: "",
@@ -277,8 +247,6 @@ class OpenLogin {
         email: "",
       },
     });
-
-    return res;
   }
 
   async request<T>(args: RequestParams): Promise<T> {
@@ -328,22 +296,8 @@ class OpenLogin {
     // add in session data (allow overrides)
     params = [{ ...session, ...params[0] }];
 
-    // use JRPC where possible
-
-    if (allowedInteractions.includes(ALLOWED_INTERACTIONS.JRPC)) {
-      return this._jrpcRequest<Record<string, unknown>[], T>({ method, params });
-    }
-
     // set origin
     params[0]._origin = new URL((params[0].redirectUrl as string) ?? this.state.redirectUrl).origin;
-
-    // preset params
-    if (this.state.support3PC) {
-      // set params first if 3PC supported
-      await this._setPIDData(pid, params);
-      // eslint-disable-next-line require-atomic-updates
-      params = [{}];
-    }
 
     if (!startUrl || !popupUrl) {
       throw new Error("no url for redirect / popup flow");
@@ -403,84 +357,6 @@ class OpenLogin {
     }
 
     throw new Error("no matching allowed interactions");
-  }
-
-  async _initIFrame(src: string): Promise<void> {
-    await documentReady();
-    const documentIFrameElem = document.getElementById(modalDOMElementID) as HTMLIFrameElement;
-    if (documentIFrameElem) {
-      documentIFrameElem.remove();
-      log.info("already initialized, removing previous modal iframe");
-    }
-    this.iframeElem = htmlToElement<HTMLIFrameElement>(
-      `<iframe
-        id=${modalDOMElementID}
-        class="torusIframe"
-        src="${src}"
-        style="display: none; position: fixed; top: 0; right: 0; width: 100%;
-        height: 100%; border: none; border-radius: 0; z-index: 99999"
-      ></iframe>`
-    );
-    document.body.appendChild(this.iframeElem);
-    return new Promise<void>((resolve) => {
-      this.iframeElem.onload = () => {
-        resolve();
-      };
-    });
-  }
-
-  async _jrpcRequest<T, U>(args: JRPCRequest<T>): Promise<U> {
-    // await this.initialized;
-    if (!args || typeof args !== "object" || Array.isArray(args)) {
-      throw new Error("invalid request args");
-    }
-
-    const { method, params } = args;
-
-    if (typeof method !== "string" || method.length === 0) {
-      throw new Error("invalid request method");
-    }
-
-    if (params === undefined || !Array.isArray(params)) {
-      throw new Error("invalid request params");
-    }
-
-    if (params.length === 0) {
-      params.push({});
-    }
-
-    return new Promise<U>((resolve, reject) => {
-      this.provider._rpcRequest({ method, params }, getRpcPromiseCallback(resolve, reject));
-    });
-  }
-
-  async _check3PCSupport(): Promise<Record<string, boolean>> {
-    return this._jrpcRequest<Record<string, unknown>[], Record<string, boolean>>({
-      method: OPENLOGIN_METHOD.CHECK_3PC_SUPPORT,
-      params: [{ _originData: this.state.originData }],
-    });
-  }
-
-  async _setPIDData(pid: string, data: Record<string, unknown>[]): Promise<void> {
-    await this.request({
-      allowedInteractions: [ALLOWED_INTERACTIONS.JRPC],
-      method: OPENLOGIN_METHOD.SET_PID_DATA,
-      params: [
-        {
-          pid,
-          data: data[0],
-        },
-      ],
-    });
-  }
-
-  async _getData(): Promise<Record<string, unknown>> {
-    if (this.state.uxMode === UX_MODE.SESSIONLESS_REDIRECT) return {};
-    return this.request<Record<string, unknown>>({
-      allowedInteractions: [ALLOWED_INTERACTIONS.JRPC],
-      method: OPENLOGIN_METHOD.GET_DATA,
-      params: [{}],
-    });
   }
 
   _syncState(newState: Record<string, unknown>): void {
@@ -573,14 +449,15 @@ class OpenLogin {
     return constructURL({ baseURL: `${this.state.iframeUrl}/start`, hash: hashParams });
   }
 
-  async _cleanup(): Promise<void> {
-    await documentReady();
-    const documentIFrameElem = document.getElementById(modalDOMElementID) as HTMLIFrameElement;
-    if (documentIFrameElem) {
-      documentIFrameElem.remove();
-      this.iframeElem = null;
+  private async _authorizeSession(key: string) {
+    try {
+      if (!key) return {};
+      const result = await this.sessionManager.authorizeSession(key);
+      return result;
+    } catch (err) {
+      log.error("authorization failed", err);
+      return {};
     }
-    this.provider.cleanup();
   }
 }
 

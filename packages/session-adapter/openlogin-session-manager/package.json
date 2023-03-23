@@ -1,14 +1,18 @@
 {
-  "name": "@toruslabs/openlogin",
-  "version": "3.2.1",
+  "name": "@toruslabs/openlogin-session-manager",
+  "version": "1.0.0",
+   "files": [
+    "dist",
+    "src"
+  ],
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
-  "license": "ISC",
-  "main": "dist/openlogin.cjs.js",
-  "module": "dist/openlogin.esm.js",
-  "unpkg": "dist/openlogin.umd.min.js",
-  "jsdelivr": "dist/openlogin.umd.min.js",
+  "main": "dist/openloginSessionManager.cjs.js",
+  "module": "dist/openloginSessionManager.esm.js",
+  "unpkg": "dist/openloginSessionManager.umd.min.js",
+  "jsdelivr": "dist/openloginSessionManager.umd.min.js",
   "types": "dist/types/index.d.ts",
   "author": "Torus Labs",
+  "description": "",
   "scripts": {
     "start": "cross-env FORCE_COLOR=1 torus-scripts start",
     "test": "mocha --config ../../.mocharc.json test/**.ts",
@@ -20,29 +24,12 @@
     "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
+    "@toruslabs/base-session-manager": "../base-session-manager",
     "@toruslabs/eccrypto": "^2.0.0",
-    "@toruslabs/http-helpers": "^3.3.0",
-    "@toruslabs/openlogin-jrpc": "^3.2.0",
-    "@toruslabs/openlogin-session-manager": "*", 
-    "@toruslabs/openlogin-utils": "^3.0.0",
-    "loglevel": "^1.8.1",
-    "pump": "^3.0.0"
-  },
-  "devDependencies": {
-    "@types/pump": "^1.1.1"
+    "@toruslabs/metadata-helpers": "3.1.0"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"
-  },
-  "files": [
-    "dist",
-    "src"
-  ],
-  "lint-staged": {
-    "!(*d).ts": [
-      "eslint --cache --fix",
-      "prettier --write"
-    ]
   },
   "repository": {
     "type": "git",
@@ -52,8 +39,11 @@
     "url": "https://github.com/torusresearch/OpenLoginSdk/issues"
   },
   "keywords": [],
-  "publishConfig": {
-    "access": "public"
+  "lint-staged": {
+    "!(*d).ts": [
+      "eslint --cache --fix",
+      "prettier --write"
+    ]
   },
-  "gitHead": "2d61b7f1967ecd704470c46ff7c30c47d240f4a4"
+  "license": "ISC"
 }

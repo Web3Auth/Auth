@@ -4,25 +4,6 @@ import { base64url, keccak, safeatob } from "@toruslabs/openlogin-utils";
 import { PopupResponse } from "./interfaces";
 import log from "./loglevel";
 
-export async function documentReady(): Promise<void> {
-  return new Promise<void>((resolve) => {
-    if (document.readyState !== "loading") {
-      resolve();
-    } else {
-      document.addEventListener("DOMContentLoaded", () => {
-        resolve();
-      });
-    }
-  });
-}
-
-export const htmlToElement = <T extends Element>(html: string): T => {
-  const template = window.document.createElement("template");
-  const trimmedHtml = html.trim(); // Never return a text node of whitespace as the result
-  template.innerHTML = trimmedHtml;
-  return template.content.firstChild as T;
-};
-
 export async function whitelistUrl(clientId: string, appKey: string, origin: string): Promise<string> {
   const appKeyBuf = Buffer.from(appKey.padStart(64, "0"), "hex");
   if (base64url.encode(getPublic(appKeyBuf)) !== clientId) throw new Error("appKey mismatch");
@@ -159,24 +140,6 @@ export function storageAvailable(type: string): boolean {
 
 export const sessionStorageAvailable = storageAvailable("sessionStorage");
 export const localStorageAvailable = storageAvailable("localStorage");
-
-export function preloadIframe(url: string): void {
-  try {
-    if (typeof document === "undefined") return;
-    const openloginIframeHtml = document.createElement("link");
-    openloginIframeHtml.href = url;
-    openloginIframeHtml.crossOrigin = "anonymous";
-    openloginIframeHtml.type = "text/html";
-    openloginIframeHtml.rel = "prefetch";
-    if (openloginIframeHtml.relList && openloginIframeHtml.relList.supports) {
-      if (openloginIframeHtml.relList.supports("prefetch")) {
-        document.head.appendChild(openloginIframeHtml);
-      }
-    }
-  } catch (error) {
-    log.error(error);
-  }
-}
 
 export function getPopupFeatures(): string {
   // Fixes dual-screen position                             Most browsers      Firefox

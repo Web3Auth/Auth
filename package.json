@@ -2,7 +2,14 @@
   "name": "toruslabs",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/openlogin", 
+    "packages/openlogin-ed25519",
+    "packages/openlogin-jrpc",
+    "packages/openlogin-starkey",
+    "packages/openlogin-subkey",
+    "packages/openlogin-utils",
+    "packages/wrapper",
+    "packages/session-adapter/*"
   ],
   "repository": "git@github.com:torusresearch/OpenLoginSdk.git",
   "scripts": {
