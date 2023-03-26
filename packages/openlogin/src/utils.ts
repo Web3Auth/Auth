@@ -1,7 +1,7 @@
 import { getPublic, sign } from "@toruslabs/eccrypto";
 import { base64url, keccak, safeatob } from "@toruslabs/openlogin-utils";
 
-import { PopupResponse } from "./interfaces";
+import { OpenloginSessionData, PopupResponse } from "./interfaces";
 import log from "./loglevel";
 
 export async function whitelistUrl(clientId: string, appKey: string, origin: string): Promise<string> {
@@ -11,7 +11,7 @@ export async function whitelistUrl(clientId: string, appKey: string, origin: str
   return base64url.encode(sig);
 }
 
-export function getHashQueryParams(replaceUrl = false): Record<string, string> {
+export function getHashQueryParams(replaceUrl = false): OpenloginSessionData {
   const result = {};
 
   const url = new URL(window.location.href);

@@ -13,6 +13,7 @@ import {
   LoginParams,
   OPENLOGIN_NETWORK_TYPE,
   OpenLoginOptions,
+  OpenloginSessionData,
   OpenloginUserInfo,
   RequestParams,
   UX_MODE_TYPE,
@@ -24,6 +25,8 @@ export type OpenLoginState = {
   network: OPENLOGIN_NETWORK_TYPE;
   privKey?: string;
   coreKitKey?: string;
+  ed25519PrivKey?: string;
+  coreKitEd25519PrivKey?: string;
   walletKey?: string;
   tKey?: string;
   oAuthPrivateKey?: string;
@@ -32,7 +35,7 @@ export type OpenLoginState = {
   redirectUrl: string;
   startUrl: string;
   popupUrl: string;
-  store: OpenLoginStore;
+  store: OpenloginSessionData["store"];
   uxMode: UX_MODE_TYPE;
   replaceUrlOnRedirect: boolean;
   originData: OriginData;
@@ -41,6 +44,7 @@ export type OpenLoginState = {
   storageServerUrl: string;
   sessionNamespace: string;
   webauthnTransports: AuthenticatorTransport[];
+  sessionTime: number;
 };
 
 class OpenLogin {
@@ -48,7 +52,9 @@ class OpenLogin {
 
   iframeElem: HTMLIFrameElement;
 
-  sessionManager: OpenloginSessionManager;
+  sessionManager: OpenloginSessionManager<OpenloginSessionData>;
+
+  store: OpenLoginStore;
 
   constructor(options: OpenLoginOptions) {
     if (!options._iframeUrl) {
@@ -87,12 +93,16 @@ class OpenLogin {
       storageKey: options.storageKey === "session" ? "session" : "local",
       _sessionNamespace: options._sessionNamespace ?? "",
       webauthnTransports: options.webauthnTransports ?? ["internal"],
+      sessionTime: options.sessionTime ?? 86400,
     });
 
     this.sessionManager = new OpenloginSessionManager({
       sessionServerBaseUrl: this.state.storageServerUrl,
       sessionNamespace: this.state.sessionNamespace,
+      sessionTime: this.state.sessionTime,
     });
+
+    this.store = OpenLoginStore.getInstance(this.state.storageServerUrl, options.storageKey);
   }
 
   get privKey(): string {
@@ -107,7 +117,7 @@ class OpenLogin {
     this.state = {
       uxMode: options.uxMode,
       network: options.network,
-      store: OpenLoginStore.getInstance(options._sessionNamespace, options.storageKey),
+      store: {} as OpenloginSessionData["store"],
       iframeUrl: options._iframeUrl,
       startUrl: options._startUrl,
       popupUrl: options._popupUrl,
@@ -120,6 +130,7 @@ class OpenLogin {
       storageServerUrl: options._storageServerUrl,
       sessionNamespace: options._sessionNamespace,
       webauthnTransports: options.webauthnTransports,
+      sessionTime: options.sessionTime,
     };
   }
 
@@ -134,7 +145,7 @@ class OpenLogin {
 
     const params = getHashQueryParams(this.state.replaceUrlOnRedirect);
     if (params.sessionId) {
-      this.state.store.set("sessionId", params.sessionId);
+      this.store.set("sessionId", params.sessionId);
     }
 
     // if this is after redirect, directly sync data.
@@ -142,8 +153,9 @@ class OpenLogin {
       this._syncState(params);
     } else {
       // rehydrate the session if sessionId is present.
-      const sessionId = this.state.store.get<string>("sessionId");
-      this._syncState((await this._authorizeSession(sessionId)) as Record<string, unknown>);
+      const sessionId = this.store.get<string>("sessionId");
+      const data = await this._authorizeSession(sessionId);
+      this._syncState(data);
     }
   }
 
@@ -208,15 +220,15 @@ class OpenLogin {
       ...params,
     };
 
-    const res = await this.request<{ privKey: string; store?: Record<string, string> }>({
+    const res = await this.request<OpenloginSessionData & { _nextRedirect?: string }>({
       method: OPENLOGIN_METHOD.LOGIN,
       allowedInteractions: [UX_MODE.REDIRECT, UX_MODE.POPUP],
       startUrl: this.state.startUrl,
       popupUrl: this.state.popupUrl,
       params: [loginParams],
     });
-    this.state.privKey = res.privKey;
     if (res.store) {
+      delete res._nextRedirect;
       this._syncState(res);
     }
 
@@ -224,13 +236,15 @@ class OpenLogin {
   }
 
   async logout(): Promise<void> {
-    const sessionId = this.state.store.get<string>("sessionId");
+    const sessionId = this.store.get<string>("sessionId");
 
     await this.sessionManager.invalidateSession(sessionId);
 
     this._syncState({
       privKey: "",
       coreKitKey: "",
+      coreKitEd25519PrivKey: "",
+      ed25519PrivKey: "",
       walletKey: "",
       oAuthPrivateKey: "",
       tKey: "",
@@ -241,10 +255,12 @@ class OpenLogin {
         idToken: "",
         oAuthIdToken: "",
         oAuthAccessToken: "",
-        sessionId: "",
-        sessionNamespace: "",
         appState: "",
         email: "",
+        verifier: "",
+        verifierId: "",
+        aggregateVerifier: "",
+        typeOfLogin: "",
       },
     });
   }
@@ -284,13 +300,13 @@ class OpenLogin {
     session._originData = this.state.originData;
     session._whiteLabelData = this.state.whiteLabel;
     session._loginConfig = this.state.loginConfig;
-    session._sessionId = this.state.store.get("sessionId");
+    session._sessionId = this.store.get<string>("sessionId");
     session._webauthnTransports = this.state.webauthnTransports;
 
     if (!session._sessionId) {
       const sessionId = randomId();
       session._sessionId = sessionId as string;
-      this.state.store.set("sessionId", sessionId);
+      this.store.set("sessionId", sessionId);
     }
 
     // add in session data (allow overrides)
@@ -359,17 +375,8 @@ class OpenLogin {
     throw new Error("no matching allowed interactions");
   }
 
-  _syncState(newState: Record<string, unknown>): void {
-    if (newState.store) {
-      if (typeof newState.store !== "object") {
-        throw new Error("expected store to be an object");
-      }
-      Object.keys(newState.store).forEach((key) => {
-        this.state.store.set(key, newState.store[key]);
-      });
-    }
-    const { store } = this.state;
-    this.state = { ...this.state, ...newState, store };
+  _syncState(newState: Partial<OpenLoginState>): void {
+    this.state = { ...this.state, ...newState, store: newState.store ? { ...newState.store } : { ...this.state.store } };
   }
 
   async encrypt(message: Buffer, privateKey?: string): Promise<Ecies> {
@@ -406,7 +413,7 @@ class OpenLogin {
 
   async getUserInfo(): Promise<OpenloginUserInfo> {
     if (this.privKey) {
-      const storeData = this.state.store.getStore();
+      const storeData = this.state.store;
       const userInfo: OpenloginUserInfo = {
         email: (storeData.email as string) || "",
         name: (storeData.name as string) || "",
@@ -449,7 +456,7 @@ class OpenLogin {
     return constructURL({ baseURL: `${this.state.iframeUrl}/start`, hash: hashParams });
   }
 
-  private async _authorizeSession(key: string) {
+  private async _authorizeSession(key: string): Promise<OpenloginSessionData> {
     try {
       if (!key) return {};
       const result = await this.sessionManager.authorizeSession(key);

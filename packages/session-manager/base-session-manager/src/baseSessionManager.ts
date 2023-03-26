@@ -2,7 +2,7 @@ import { get, patch, post, put } from "@toruslabs/http-helpers";
 
 import { ApiRequestParams, ISessionManager } from "./interfaces";
 
-export abstract class BaseSessionManager<TSessionResponse> implements ISessionManager<TSessionResponse> {
+export abstract class BaseSessionManager<TSessionData> implements ISessionManager<TSessionData> {
   checkSessionParams(key: string) {
     if (!key) throw new Error("Session key is required");
   }
@@ -29,7 +29,9 @@ export abstract class BaseSessionManager<TSessionResponse> implements ISessionMa
     throw new Error("Invalid method type");
   }
 
-  abstract authorizeSession(key: string): Promise<TSessionResponse>;
+  abstract createSession(key: string, data: TSessionData): Promise<boolean>;
+
+  abstract authorizeSession(key: string): Promise<TSessionData>;
 
   abstract invalidateSession(key: string): Promise<boolean>;
 }

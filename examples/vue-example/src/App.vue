@@ -12,7 +12,7 @@
         <button @click="loginWithoutWhitelabel">login without whitelabel</button>
       </div> -->
       <div class="grid justify-center pt-20 text-center" v-if="!privKey && !loading">
-        <h7 class="text-3xl font-bold">demo-openlogin.web3auth.io</h7>
+        <h6 class="text-3xl font-bold">demo-openlogin.web3auth.io</h6>
         <h6 class="pb-10 font-semibold text-[#595857]">Login With Openlogin</h6>
         <div>
           <button @click="login" class="btn-login">Login</button>
@@ -23,7 +23,7 @@
       <div v-if="privKey">
         <div class="flex m-6 text-left box md:rows-span-2">
           <div class="ml-6 overflow-hidden mt-7 text-ellipsis">
-            <h7 class="text-2xl font-semibold">demo-openlogin.web3auth.io</h7>
+            <h6 class="text-2xl font-semibold">demo-openlogin.web3auth.io</h6>
             <h6 class="pb-8 overflow-hidden text-left text-ellipsis">Openlogin Private key : {{ privKey }}</h6>
           </div>
           <div class="ml-auto mt-7">
@@ -267,7 +267,7 @@ export default Vue.extend({
 
     async logout() {
       const openlogin = getOpenLoginInstance();
-      await openlogin.logout({});
+      await openlogin.logout();
       this.privKey = openlogin.privKey;
       this.ethereumPrivateKeyProvider = null;
     },

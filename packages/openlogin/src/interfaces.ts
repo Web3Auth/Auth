@@ -200,6 +200,14 @@ export type OpenLoginOptions = {
   storageKey?: "session" | "local";
 
   /**
+   * How long should a login session last at a minimum in seconds
+   *
+   * @defaultValue 86400 seconds
+   * @remarks Max value of sessionTime can be 7 * 86400 (7 days)
+   */
+  sessionTime?: number;
+
+  /**
    * This option is for internal use only in torus wallet and has no effect
    * on user's login on other dapps.
    *
@@ -268,14 +276,6 @@ export type LoginParams = BaseRedirectParams & {
   dappShare?: string;
 
   /**
-   * How long should a login session last at a minimum in seconds
-   *
-   * @defaultValue 86400 seconds
-   * @remarks Max value of sessionTime can be 7 * 86400 (7 days)
-   */
-  sessionTime?: number;
-
-  /**
    * This curve will be used to determine the public key encoded in the jwt token which returned in
    * `getUserInfo` function after user login.
    * You can use that public key from jwt token as a unique user identifier in your backend.
@@ -318,4 +318,17 @@ export type OpenloginUserInfo = {
    * custom verifiers.
    */
   oAuthAccessToken?: string;
+  appState?: string;
+  touchIDPreference?: string;
 };
+
+export interface OpenloginSessionData {
+  privKey?: string;
+  coreKitKey?: string;
+  ed25519PrivKey?: string;
+  coreKitEd25519PrivKey?: string;
+  sessionId?: string;
+  oAuthPrivateKey?: string;
+  tKey?: string;
+  store?: OpenloginUserInfo;
+}
