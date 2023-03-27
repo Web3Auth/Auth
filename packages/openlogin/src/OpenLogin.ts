@@ -51,9 +51,9 @@ class OpenLogin {
 
   iframeElem: HTMLIFrameElement;
 
-  sessionManager: OpenloginSessionManager<OpenloginSessionData>;
+  private sessionManager: OpenloginSessionManager<OpenloginSessionData>;
 
-  store: BrowserStorage;
+  private store: BrowserStorage;
 
   private _storageBaseKey = "openlogin_store";
 
@@ -265,6 +265,8 @@ class OpenLogin {
         typeOfLogin: "",
       },
     });
+
+    this.store.set("sessionId", "");
   }
 
   async request<T>(args: RequestParams): Promise<T> {
