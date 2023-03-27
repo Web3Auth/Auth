@@ -49,16 +49,16 @@ export class BrowserStorage {
   }
 
   getStore(): Record<string, unknown> {
-    return JSON.parse(this.storage.getItem(this._storeKey));
+    return JSON.parse(this.storage.getItem(this._storeKey) || "{}");
   }
 
   get<T>(key: string): T {
-    const store = JSON.parse(this.storage.getItem(this._storeKey));
+    const store = JSON.parse(this.storage.getItem(this._storeKey) || "{}");
     return store[key];
   }
 
   set<T>(key: string, value: T): void {
-    const store = JSON.parse(this.storage.getItem(this._storeKey));
+    const store = JSON.parse(this.storage.getItem(this._storeKey) || "{}");
     store[key] = value;
     this.storage.setItem(this._storeKey, JSON.stringify(store));
   }

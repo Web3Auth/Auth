@@ -238,6 +238,7 @@ class OpenLogin {
 
   async logout(): Promise<void> {
     const sessionId = this.store.get<string>("sessionId");
+    if (!sessionId) throw new Error("User not logged in");
 
     await this.sessionManager.invalidateSession(sessionId);
 
