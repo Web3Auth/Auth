@@ -2,7 +2,7 @@ import { decrypt, Ecies, encrypt, getPublic, sign } from "@toruslabs/eccrypto";
 import { get } from "@toruslabs/http-helpers";
 import { LoginConfig, OriginData, SessionInfo, WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 import { OpenloginSessionManager } from "@toruslabs/openlogin-session-manager";
-import { base64url, jsonToBase64, keccak, randomId } from "@toruslabs/openlogin-utils";
+import { base64url, BrowserStorage, jsonToBase64, keccak, randomId } from "@toruslabs/openlogin-utils";
 import log from "loglevel";
 
 import { ALLOWED_INTERACTIONS, OPENLOGIN_METHOD, OPENLOGIN_NETWORK, UX_MODE } from "./constants";
@@ -18,7 +18,6 @@ import {
   RequestParams,
   UX_MODE_TYPE,
 } from "./interfaces";
-import OpenLoginStore from "./OpenLoginStore";
 import { awaitReq, constructURL, getHashQueryParams, getPopupFeatures } from "./utils";
 
 export type OpenLoginState = {
@@ -54,7 +53,9 @@ class OpenLogin {
 
   sessionManager: OpenloginSessionManager<OpenloginSessionData>;
 
-  store: OpenLoginStore;
+  store: BrowserStorage;
+
+  private _storageBaseKey = "openlogin_store";
 
   constructor(options: OpenLoginOptions) {
     if (!options._iframeUrl) {
@@ -101,8 +102,8 @@ class OpenLogin {
       sessionNamespace: this.state.sessionNamespace,
       sessionTime: this.state.sessionTime,
     });
-
-    this.store = OpenLoginStore.getInstance(this.state.storageServerUrl, options.storageKey);
+    const storageKey = this.state.sessionNamespace ? `${this._storageBaseKey}_${this.state.sessionNamespace}` : this._storageBaseKey;
+    this.store = BrowserStorage.getInstance(storageKey, options.storageKey);
   }
 
   get privKey(): string {

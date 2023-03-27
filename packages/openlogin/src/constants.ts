@@ -1,5 +1,3 @@
-export const modalDOMElementID = "openlogin-modal";
-
 export const storeKey = "openlogin_store";
 
 export const UX_MODE = {

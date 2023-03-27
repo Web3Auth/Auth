@@ -1,21 +1,18 @@
-import { storeKey } from "./constants";
-import { IStore } from "./IStore";
-import { MemoryStore } from "./MemoryStore";
-import { localStorageAvailable, sessionStorageAvailable } from "./utils";
+import { IStorage, localStorageAvailable, sessionStorageAvailable } from "./utils";
 
-export default class OpenLoginStore {
+export class BrowserStorage {
   // eslint-disable-next-line no-use-before-define
-  private static instance: OpenLoginStore;
+  private static instance: BrowserStorage;
 
-  public storage: IStore;
+  public storage: IStorage;
 
-  private _storeKey: string = storeKey;
+  private _storeKey: string;
 
-  private constructor(storage: IStore, _storeKey?: string) {
+  private constructor(storage: IStorage, storeKey: string) {
     this.storage = storage;
-    this._storeKey = _storeKey || storeKey;
+    this._storeKey = storeKey;
     try {
-      if (!storage.getItem(_storeKey || storeKey)) {
+      if (!storage.getItem(storeKey)) {
         this.resetStore();
       }
     } catch (error) {
@@ -23,17 +20,20 @@ export default class OpenLoginStore {
     }
   }
 
-  static getInstance(storeNamespace: string, storageKey: "session" | "local" = "local"): OpenLoginStore {
+  static getInstance(key: string, storageKey: "session" | "local" = "local"): BrowserStorage {
     if (!this.instance) {
-      let storage: Storage | MemoryStore = new MemoryStore();
+      let storage: Storage;
       if (storageKey === "local" && localStorageAvailable) {
         storage = localStorage;
       }
       if (storageKey === "session" && sessionStorageAvailable) {
         storage = sessionStorage;
       }
-      const finalStoreKey = storeNamespace ? `${storeKey}_${storeNamespace}` : storeKey;
-      this.instance = new this(storage, finalStoreKey);
+
+      if (!storage) {
+        throw new Error("No valid storage available");
+      }
+      this.instance = new this(storage, key);
     }
     return this.instance;
   }
