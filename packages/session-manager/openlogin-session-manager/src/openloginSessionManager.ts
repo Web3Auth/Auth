@@ -75,6 +75,7 @@ export class OpenloginSessionManager<T> extends BaseSessionManager<T> {
       data: encData,
       signature,
       namespace: this.sessionNamespace,
+      timeout: 1,
     };
 
     await super.request({ method: "POST", url: `${this.sessionServerBaseUrl}/store/set`, data });
