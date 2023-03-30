@@ -1,18 +1,18 @@
 import { getPublic, sign } from "@toruslabs/eccrypto";
-import { base64url, keccak, safeatob } from "@toruslabs/openlogin-utils";
+import { keccak256 } from "@toruslabs/metadata-helpers";
+import { base64url, OpenloginSessionData, safeatob } from "@toruslabs/openlogin-utils";
 
-import { OpenloginSessionData, PopupResponse } from "./interfaces";
 import log from "./loglevel";
 
 export async function whitelistUrl(clientId: string, appKey: string, origin: string): Promise<string> {
   const appKeyBuf = Buffer.from(appKey.padStart(64, "0"), "hex");
   if (base64url.encode(getPublic(appKeyBuf)) !== clientId) throw new Error("appKey mismatch");
-  const sig = await sign(appKeyBuf, Buffer.from(keccak("keccak256").update(origin).digest("hex"), "hex"));
+  const sig = await sign(appKeyBuf, keccak256(origin));
   return base64url.encode(sig);
 }
 
-export function getHashQueryParams(replaceUrl = false): OpenloginSessionData {
-  const result = {};
+export function getHashQueryParams(replaceUrl = false): Pick<OpenloginSessionData, "sessionId"> {
+  const result: Pick<OpenloginSessionData, "sessionId"> = {};
 
   const url = new URL(window.location.href);
   url.searchParams.forEach((value, key) => {
@@ -58,38 +58,6 @@ export function getHashQueryParams(replaceUrl = false): OpenloginSessionData {
   }
 
   return result;
-}
-
-export function awaitReq<T>(windowRef: Window): Promise<T> {
-  return new Promise((resolve, reject) => {
-    if (!windowRef) {
-      reject(new Error("Unable to open window"));
-      return;
-    }
-    let closedByHandler = false;
-    const closedMonitor = setInterval(() => {
-      if (!closedByHandler && windowRef.closed) {
-        clearInterval(closedMonitor);
-        reject(new Error("user closed popup"));
-      }
-    }, 500);
-    const handler = (ev: MessageEvent<PopupResponse<T & { error?: string }>>) => {
-      // TODO:// not sure if this check is necessary.
-      // const { pid } = ev.data;
-      // if (id !== pid) return;
-      window.removeEventListener("message", handler);
-      closedByHandler = true;
-      clearInterval(closedMonitor);
-      windowRef.close();
-      if (ev.data.data && ev.data.data.error) {
-        reject(new Error(ev.data.data.error));
-      } else {
-        resolve(ev.data.data);
-      }
-    };
-
-    window.addEventListener("message", handler);
-  });
 }
 
 export function constructURL(params: { baseURL: string; query?: Record<string, unknown>; hash?: Record<string, unknown> }): string {

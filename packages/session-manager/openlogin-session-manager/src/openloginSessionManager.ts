@@ -1,5 +1,5 @@
 import { BaseSessionManager } from "@toruslabs/base-session-manager";
-import { getPublic, sign } from "@toruslabs/eccrypto";
+import { generatePrivate, getPublic, sign } from "@toruslabs/eccrypto";
 import { decryptData, encryptData, keccak256 } from "@toruslabs/metadata-helpers";
 
 import { OpenloginSessionManagerOptions, SessionApiResponse, SessionRequestBody } from "./interfaces";
@@ -31,6 +31,10 @@ export class OpenloginSessionManager<T> extends BaseSessionManager<T> {
 
   set sessionKey(value: string) {
     this.sessionId = value;
+  }
+
+  static generateRandomSessionKey(): string {
+    return generatePrivate().toString("hex").padStart(64, "0");
   }
 
   async createSession(data: T): Promise<string> {

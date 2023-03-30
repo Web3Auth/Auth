@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { keccak256 } from "@toruslabs/openlogin-utils";
+import { keccak256 } from "@toruslabs/metadata-helpers";
 import BN from "bn.js";
 import { Scalar, ZqField } from "ffjavascript";
 
@@ -8,11 +8,19 @@ const F = new ZqField(Scalar.fromString("218882428718392752222464057452572750885
 const SEED = "mimcsponge";
 const NROUNDS = 220;
 
+function keccak256Padded(str: string): string {
+  let input: string | Buffer = str;
+  if (typeof input === "string" && input.slice(0, 2) === "0x" && input.length === 66) {
+    input = Buffer.from(str.slice(2), "hex");
+  }
+  return `0x${keccak256(input).toString("hex").padStart(64, "0")}`;
+}
+
 export function mimgGetIV(seed: string): bigint {
   let _seed = seed;
   if (typeof _seed === "undefined") _seed = SEED;
-  const c = keccak256(`${_seed}_iv`);
-  const cn = Scalar.fromString(new BN(c.slice(2), 16).toString());
+  const c = keccak256Padded(`${_seed}_iv`);
+  const cn = Scalar.fromString(new BN(c, 16).toString());
   const iv = cn.mod(F.p);
   return iv;
 }
@@ -23,9 +31,9 @@ export function mimcGetConstants(seed?: string, nRounds?: number): bigint[] {
   if (typeof _seed === "undefined") _seed = SEED;
   if (typeof nRounds === "undefined") _nRounds = NROUNDS;
   const cts = new Array(_nRounds);
-  let c = keccak256(SEED);
+  let c = keccak256Padded(SEED);
   for (let i = 1; i < _nRounds; i += 1) {
-    c = keccak256(c);
+    c = keccak256Padded(c);
 
     const n1 = new BN(c.slice(2), 16).mod(new BN(F.p.toString()));
     const c2 = n1.toString(16, 64);

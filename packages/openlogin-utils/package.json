@@ -20,13 +20,7 @@
     "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
-    "base64url": "^3.0.1",
-    "keccak": "^3.0.3",
-    "randombytes": "^2.1.0"
-  },
-  "devDependencies": {
-    "@types/keccak": "^3.0.1",
-    "@types/randombytes": "^2.0.0"
+    "base64url": "^3.0.1"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"

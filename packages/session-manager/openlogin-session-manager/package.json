@@ -22,7 +22,7 @@
     "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
-    "@toruslabs/base-session-manager": "/Users/architgupta/Desktop/web3auth/OpenLoginSdk/packages/session-manager/base-session-manager/toruslabs-base-session-manager-3.2.1.tgz",
+    "@toruslabs/base-session-manager": "^3.2.1",
     "@toruslabs/eccrypto": "^2.0.0",
     "@toruslabs/metadata-helpers": "3.1.0"
   },

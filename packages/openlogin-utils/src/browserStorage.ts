@@ -1,4 +1,4 @@
-import { IStorage, localStorageAvailable, sessionStorageAvailable } from "./utils";
+import { IStorage, storageAvailable } from "./utils";
 
 export class BrowserStorage {
   // eslint-disable-next-line no-use-before-define
@@ -23,10 +23,10 @@ export class BrowserStorage {
   static getInstance(key: string, storageKey: "session" | "local" = "local"): BrowserStorage {
     if (!this.instance) {
       let storage: Storage;
-      if (storageKey === "local" && localStorageAvailable) {
+      if (storageKey === "local" && storageAvailable("localStorage")) {
         storage = localStorage;
       }
-      if (storageKey === "session" && sessionStorageAvailable) {
+      if (storageKey === "session" && storageAvailable("sessionStorage")) {
         storage = sessionStorage;
       }
 
