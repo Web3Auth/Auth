@@ -1,5 +1,5 @@
 import OpenLogin from "@toruslabs/openlogin";
-import { WhiteLabelData } from "@toruslabs/openlogin-jrpc";
+import { WhiteLabelData } from "@toruslabs/openlogin-utils";
 
 import loginConfig from "./loginConfig";
 
@@ -20,6 +20,5 @@ export function getOpenLoginInstance(whiteLabel?: WhiteLabelData) {
       loginConfig,
     });
   }
-  if (whiteLabel) openLoginInstance.state.whiteLabel = whiteLabel;
   return openLoginInstance;
 }

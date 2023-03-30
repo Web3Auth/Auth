@@ -15,7 +15,7 @@ import PopupHandler from "./PopupHandler";
 import { constructURL, getHashQueryParams } from "./utils";
 
 class OpenLogin {
-  state: OpenloginSessionData;
+  state: OpenloginSessionData = {};
 
   private sessionManager: OpenloginSessionManager<OpenloginSessionData>;
 
@@ -134,6 +134,7 @@ class OpenLogin {
     return new Promise((resolve, reject) => {
       const loginUrl = constructURL({ baseURL: `${this.options.sdkUrl}/popup-window`, hash: { loginId } });
       const currentWindow = new PopupHandler({ url: loginUrl });
+      currentWindow.open();
 
       currentWindow.on("close", () => {
         reject(new Error("user closed popup"));
