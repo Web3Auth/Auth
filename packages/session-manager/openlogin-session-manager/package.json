@@ -1,6 +1,6 @@
 {
   "name": "@toruslabs/openlogin-session-manager",
-  "version": "1.0.0",
+  "version": "3.2.1",
   "files": [
     "dist",
     "src"
@@ -22,7 +22,7 @@
     "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
-    "@toruslabs/base-session-manager": "../base-session-manager",
+    "@toruslabs/base-session-manager": "^3.2.1",
     "@toruslabs/eccrypto": "^2.0.0",
     "@toruslabs/metadata-helpers": "3.1.0"
   },

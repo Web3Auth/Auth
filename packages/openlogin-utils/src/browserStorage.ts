@@ -8,7 +8,7 @@ export class BrowserStorage {
 
   private _storeKey: string;
 
-  private constructor(storage: IStorage, storeKey: string) {
+  private constructor(storeKey: string, storage: IStorage) {
     this.storage = storage;
     this._storeKey = storeKey;
     try {
@@ -33,7 +33,7 @@ export class BrowserStorage {
       if (!storage) {
         throw new Error("No valid storage available");
       }
-      this.instance = new this(storage, key);
+      this.instance = new this(key, storage);
     }
     return this.instance;
   }

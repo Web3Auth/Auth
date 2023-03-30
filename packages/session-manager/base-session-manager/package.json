@@ -1,6 +1,6 @@
 {
   "name": "@toruslabs/base-session-manager",
-  "version": "1.0.0",
+  "version": "3.2.1",
   "files": [
     "dist",
     "src"

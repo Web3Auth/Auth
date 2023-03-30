@@ -49,8 +49,6 @@ export type OpenLoginState = {
 class OpenLogin {
   state: OpenLoginState;
 
-  iframeElem: HTMLIFrameElement;
-
   private sessionManager: OpenloginSessionManager<OpenloginSessionData>;
 
   private store: BrowserStorage;
