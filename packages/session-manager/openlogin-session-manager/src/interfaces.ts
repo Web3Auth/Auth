@@ -8,6 +8,7 @@ export interface OpenloginSessionManagerOptions {
   sessionServerBaseUrl?: string;
   sessionNamespace?: string;
   sessionTime?: number;
+  sessionId?: string;
 }
 
 export interface SessionRequestBody extends IRequestBody {

@@ -95,13 +95,17 @@ class OpenLogin {
       sessionTime: options.sessionTime ?? 86400,
     });
 
+    const storageKey = this.state.sessionNamespace ? `${this._storageBaseKey}_${this.state.sessionNamespace}` : this._storageBaseKey;
+    this.store = BrowserStorage.getInstance(storageKey, options.storageKey);
+
+    const sessionId = this.store.get<string>("sessionId");
+
     this.sessionManager = new OpenloginSessionManager({
       sessionServerBaseUrl: this.state.storageServerUrl,
       sessionNamespace: this.state.sessionNamespace,
       sessionTime: this.state.sessionTime,
+      sessionId,
     });
-    const storageKey = this.state.sessionNamespace ? `${this._storageBaseKey}_${this.state.sessionNamespace}` : this._storageBaseKey;
-    this.store = BrowserStorage.getInstance(storageKey, options.storageKey);
   }
 
   get privKey(): string {
@@ -145,15 +149,14 @@ class OpenLogin {
     const params = getHashQueryParams(this.state.replaceUrlOnRedirect);
     if (params.sessionId) {
       this.store.set("sessionId", params.sessionId);
+      this.sessionManager.sessionKey = params.sessionId;
     }
 
     // if this is after redirect, directly sync data.
     if (params.store) {
       this._syncState(params);
     } else {
-      // rehydrate the session if sessionId is present.
-      const sessionId = this.store.get<string>("sessionId");
-      const data = await this._authorizeSession(sessionId);
+      const data = await this._authorizeSession();
       this._syncState(data);
     }
   }
@@ -235,40 +238,14 @@ class OpenLogin {
   }
 
   async logout(): Promise<void> {
-    const sessionId = this.store.get<string>("sessionId");
-    if (!sessionId) throw new Error("User not logged in");
+    if (!this.sessionManager.sessionKey) throw new Error("User not logged in");
 
-    await this.sessionManager.invalidateSession(sessionId);
+    await this.sessionManager.invalidateSession();
 
-    this._syncState({
-      privKey: "",
-      coreKitKey: "",
-      coreKitEd25519PrivKey: "",
-      ed25519PrivKey: "",
-      walletKey: "",
-      oAuthPrivateKey: "",
-      tKey: "",
-      store: {
-        name: "",
-        profileImage: "",
-        dappShare: "",
-        idToken: "",
-        oAuthIdToken: "",
-        oAuthAccessToken: "",
-        appState: "",
-        email: "",
-        verifier: "",
-        verifierId: "",
-        aggregateVerifier: "",
-        typeOfLogin: "",
-      },
-    });
-
-    this.store.set("sessionId", "");
+    this.resetSession();
   }
 
   async request<T>(args: RequestParams): Promise<T> {
-    const pid = randomId();
     let { params } = args;
 
     // Note: _origin is added later in postMessageStream for jrpc requests
@@ -321,7 +298,6 @@ class OpenLogin {
       throw new Error("no url for redirect / popup flow");
     }
 
-    // method and pid are always in URL hash params
     // convert params from JSON to base64
 
     if (this.state.uxMode === UX_MODE.REDIRECT || this.state.uxMode === UX_MODE.SESSIONLESS_REDIRECT) {
@@ -332,7 +308,7 @@ class OpenLogin {
         setTimeout(() => {
           window.location.href = constructURL({
             baseURL: startUrl,
-            hash: { b64Params: jsonToBase64(params[0]), _pid: pid, _method: method },
+            hash: { b64Params: jsonToBase64(params[0]), _method: method },
           });
         }, 50);
         return {} as T;
@@ -342,11 +318,11 @@ class OpenLogin {
         const u = new URL(
           constructURL({
             baseURL: popupUrl,
-            hash: { b64Params: jsonToBase64(params[0]), _pid: pid, _method: method },
+            hash: { b64Params: jsonToBase64(params[0]), _method: method },
           })
         );
         const windowRef = window.open(u.toString(), "_blank", getPopupFeatures());
-        return awaitReq<T>(pid, windowRef);
+        return awaitReq<T>(windowRef);
       }
     } else {
       // if popups preferred, check for popup flows first, then check for redirect flow
@@ -355,11 +331,11 @@ class OpenLogin {
         const u = new URL(
           constructURL({
             baseURL: popupUrl,
-            hash: { b64Params: jsonToBase64(params[0]), _pid: pid, _method: method },
+            hash: { b64Params: jsonToBase64(params[0]), _method: method },
           })
         );
         const windowRef = window.open(u.toString(), "_blank", getPopupFeatures());
-        return awaitReq<T>(pid, windowRef);
+        return awaitReq<T>(windowRef);
       }
 
       if (allowedInteractions.includes(ALLOWED_INTERACTIONS.REDIRECT)) {
@@ -367,7 +343,7 @@ class OpenLogin {
         setTimeout(() => {
           window.location.href = constructURL({
             baseURL: startUrl,
-            hash: { b64Params: jsonToBase64(params[0]), _pid: pid, _method: method },
+            hash: { b64Params: jsonToBase64(params[0]), _method: method },
           });
         }, 50);
         return null;
@@ -458,15 +434,43 @@ class OpenLogin {
     return constructURL({ baseURL: `${this.state.iframeUrl}/start`, hash: hashParams });
   }
 
-  private async _authorizeSession(key: string): Promise<OpenloginSessionData> {
+  private async _authorizeSession(): Promise<OpenloginSessionData> {
     try {
-      if (!key) return {};
-      const result = await this.sessionManager.authorizeSession(key);
+      if (!this.sessionManager.sessionKey) return {};
+      const result = await this.sessionManager.authorizeSession();
       return result;
     } catch (err) {
       log.error("authorization failed", err);
       return {};
     }
+  }
+
+  private resetSession(): void {
+    this._syncState({
+      privKey: "",
+      coreKitKey: "",
+      coreKitEd25519PrivKey: "",
+      ed25519PrivKey: "",
+      walletKey: "",
+      oAuthPrivateKey: "",
+      tKey: "",
+      store: {
+        name: "",
+        profileImage: "",
+        dappShare: "",
+        idToken: "",
+        oAuthIdToken: "",
+        oAuthAccessToken: "",
+        appState: "",
+        email: "",
+        verifier: "",
+        verifierId: "",
+        aggregateVerifier: "",
+        typeOfLogin: "",
+      },
+    });
+
+    this.store.set("sessionId", "");
   }
 }
 

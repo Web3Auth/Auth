@@ -8,7 +8,8 @@ export interface ApiRequestParams {
 }
 
 export interface ISessionManager<TSessionData> {
-  createSession(key: string, data: TSessionData): Promise<boolean>;
-  authorizeSession(key: string): Promise<TSessionData>;
-  invalidateSession(key: string): Promise<boolean>;
+  sessionKey: string;
+  createSession(data: TSessionData): Promise<string>;
+  authorizeSession(): Promise<TSessionData>;
+  invalidateSession(): Promise<boolean>;
 }

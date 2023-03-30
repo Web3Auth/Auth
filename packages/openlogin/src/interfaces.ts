@@ -330,5 +330,6 @@ export interface OpenloginSessionData {
   sessionId?: string;
   oAuthPrivateKey?: string;
   tKey?: string;
+  walletKey?: string;
   store?: OpenloginUserInfo;
 }

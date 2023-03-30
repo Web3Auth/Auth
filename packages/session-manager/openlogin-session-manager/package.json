@@ -18,11 +18,11 @@
     "dev": "rimraf dist/ && cross-env NODE_ENV=development torus-scripts build",
     "build": "torus-scripts build",
     "lint": "eslint --fix 'src/**/*.ts'",
-    "prepack": "yarn run build",
+    "prepack": "npm run build",
     "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
-    "@toruslabs/base-session-manager": "^3.2.1",
+    "@toruslabs/base-session-manager": "/Users/architgupta/Desktop/web3auth/OpenLoginSdk/packages/session-manager/base-session-manager/toruslabs-base-session-manager-3.2.1.tgz",
     "@toruslabs/eccrypto": "^2.0.0",
     "@toruslabs/metadata-helpers": "3.1.0"
   },

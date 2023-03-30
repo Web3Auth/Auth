@@ -60,7 +60,7 @@ export function getHashQueryParams(replaceUrl = false): OpenloginSessionData {
   return result;
 }
 
-export function awaitReq<T>(id: string, windowRef: Window): Promise<T> {
+export function awaitReq<T>(windowRef: Window): Promise<T> {
   return new Promise((resolve, reject) => {
     if (!windowRef) {
       reject(new Error("Unable to open window"));
@@ -74,8 +74,9 @@ export function awaitReq<T>(id: string, windowRef: Window): Promise<T> {
       }
     }, 500);
     const handler = (ev: MessageEvent<PopupResponse<T & { error?: string }>>) => {
-      const { pid } = ev.data;
-      if (id !== pid) return;
+      // TODO:// not sure if this check is necessary.
+      // const { pid } = ev.data;
+      // if (id !== pid) return;
       window.removeEventListener("message", handler);
       closedByHandler = true;
       clearInterval(closedMonitor);
