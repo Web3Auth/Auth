@@ -13,24 +13,13 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-
-      - name: Set output of cache
-        id: npm-cache
-        run: echo "::set-output name=dir::$(npm config get cache)"
-
-      - name: Node dependency cache
-        uses: actions/cache@v2
-        with:
-          path: ${{ steps.npm-cache.outputs.dir }}
-          key: ${{ matrix.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ matrix.os }}-node-
+          cache: "npm"
 
       - name: Install dependencies
         run: npm install
@@ -57,7 +46,7 @@ jobs:
       # Set the credentials from repository settings/secrets
       - name: Configure AWS credentials
         if: github.ref == 'refs/heads/master'
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
