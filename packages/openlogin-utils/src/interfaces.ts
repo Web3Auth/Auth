@@ -370,6 +370,14 @@ export type LoginConfig = Record<
      * Whether to show the login button on mobile
      */
     showOnMobile?: boolean;
+
+    /**
+     * If we are using social logins as a backup factor,
+     * then this option will be used to show the type of social login
+     * on the social backup login screen.
+     */
+    showOnSocialBackupFactor?: boolean;
+
     /**
      * Custom jwt parameters to configure the login. Useful for Auth0 configuration
      */
@@ -417,6 +425,21 @@ export interface OpenloginSessionData {
   walletKey?: string;
   userInfo?: OpenloginUserInfo;
 }
+
+export const MFA_FACTOR = {
+  DEVICE: "deviceShareFactor",
+  BACKUP_SHARE: "backUpShareFactor",
+  SOCIAL_BACKUP: "socialBackupFactor",
+  PASSWORD: "passwordFactor",
+} as const;
+
+export type MFA_FACTOR_TYPE = (typeof MFA_FACTOR)[keyof typeof MFA_FACTOR];
+export type MFA_SETTINGS = {
+  enable: boolean;
+  priority?: number;
+};
+
+export type MfaSettings = Partial<Record<MFA_FACTOR_TYPE, MFA_SETTINGS>>;
 
 export type OpenLoginOptions = {
   /**
@@ -555,6 +578,14 @@ export type OpenLoginOptions = {
    * @internal
    */
   sessionNamespace?: string;
+
+  /**
+   * This parameter will be used to enable mfa factors and set priority on UI listing.
+   * List of factors available
+   * backUpShareFactor | socialFactor | passwordFactor
+   * @defaultValue false
+   */
+  mfaSettings?: MfaSettings;
 };
 
 export interface BaseLoginParams {

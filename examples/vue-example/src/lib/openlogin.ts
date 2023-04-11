@@ -1,5 +1,5 @@
 import OpenLogin from "@toruslabs/openlogin";
-import { WhiteLabelData } from "@toruslabs/openlogin-utils";
+import { MFA_FACTOR, WhiteLabelData } from "@toruslabs/openlogin-utils";
 
 import loginConfig from "./loginConfig";
 
@@ -18,6 +18,14 @@ export function getOpenLoginInstance(whiteLabel?: WhiteLabelData) {
       uxMode: "popup",
       whiteLabel,
       loginConfig,
+      mfaSettings: {
+        [MFA_FACTOR.DEVICE]: {
+          enable: true,
+        },
+        [MFA_FACTOR.PASSWORD]: {
+          enable: true,
+        },
+      },
     });
   }
   return openLoginInstance;
