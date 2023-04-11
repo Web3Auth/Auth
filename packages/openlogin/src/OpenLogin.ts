@@ -149,7 +149,6 @@ class OpenLogin {
         hash: { b64Params: jsonToBase64(configParams) },
       });
       const currentWindow = new PopupHandler({ url: loginUrl });
-      currentWindow.open();
 
       currentWindow.on("close", () => {
         reject(new Error("user closed popup"));
@@ -166,6 +165,8 @@ class OpenLogin {
           return resolve({ privKey: this.privKey });
         })
         .catch(reject);
+
+      currentWindow.open();
     });
   }
 
