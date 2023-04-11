@@ -556,3 +556,15 @@ export type OpenLoginOptions = {
    */
   sessionNamespace?: string;
 };
+
+export interface BaseLoginParams {
+  loginId?: string;
+  popupWindow?: boolean;
+  sessionNamespace?: string;
+  storageServerUrl?: string;
+}
+
+export interface OpenloginSessionConfig {
+  options: OpenLoginOptions;
+  params: LoginParams;
+}

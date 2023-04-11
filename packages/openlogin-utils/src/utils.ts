@@ -11,11 +11,11 @@ export function safeatob(str: string): string {
   return base64url.decode(str);
 }
 
-export function base64toJSON(b64str: string): Record<string, unknown> {
+export function base64toJSON<T = Record<string, unknown>>(b64str: string): T {
   return JSON.parse(base64url.decode(b64str));
 }
 
-export function jsonToBase64(json: Record<string, unknown>): string {
+export function jsonToBase64<T = Record<string, unknown>>(json: T): string {
   return base64url.encode(JSON.stringify(json));
 }
 

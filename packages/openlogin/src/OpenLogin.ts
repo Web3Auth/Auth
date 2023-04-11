@@ -1,10 +1,13 @@
 import { OpenloginSessionManager } from "@toruslabs/openlogin-session-manager";
 import {
+  BaseLoginParams,
   BaseRedirectParams,
   BrowserStorage,
+  jsonToBase64,
   LoginParams,
   OPENLOGIN_NETWORK,
   OpenLoginOptions,
+  OpenloginSessionConfig,
   OpenloginSessionData,
   OpenloginUserInfo,
   UX_MODE,
@@ -98,7 +101,6 @@ class OpenLogin {
     }
 
     if (this.sessionManager.sessionKey) {
-      // if this is after redirect, directly sync data.
       const data = await this._authorizeSession();
       // Fill state with correct info from session
       this.updateState(data);
@@ -126,13 +128,26 @@ class OpenLogin {
 
     // construct the url to open for either popup/redirect mode and call request method to handle the rest
     const loginId = await this.getLoginId(loginParams);
+    const configParams: BaseLoginParams = {
+      loginId,
+      sessionNamespace: this.options.sessionNamespace,
+      storageServerUrl: this.options.storageServerUrl,
+    };
+
     if (this.options.uxMode === UX_MODE.REDIRECT) {
-      const loginUrl = constructURL({ baseURL: `${this.options.sdkUrl}/start`, hash: { loginId } });
+      const loginUrl = constructURL({
+        baseURL: `${this.options.sdkUrl}/start`,
+        hash: { b64Params: jsonToBase64(configParams) },
+      });
       window.location.href = loginUrl;
       return undefined;
     }
+    configParams.popupWindow = true;
     return new Promise((resolve, reject) => {
-      const loginUrl = constructURL({ baseURL: `${this.options.sdkUrl}/popup-window`, hash: { loginId } });
+      const loginUrl = constructURL({
+        baseURL: `${this.options.sdkUrl}/start`,
+        hash: { b64Params: jsonToBase64(configParams) },
+      });
       const currentWindow = new PopupHandler({ url: loginUrl });
       currentWindow.open();
 
@@ -193,13 +208,13 @@ class OpenLogin {
 
   async getLoginId(loginParams: LoginParams & Partial<BaseRedirectParams>): Promise<string> {
     if (!this.sessionManager) throw new Error("session manager not initialized. please call init first");
-    const dataObject = {
+    const dataObject: OpenloginSessionConfig = {
       options: this.options,
       params: loginParams,
     };
 
     const loginId = OpenloginSessionManager.generateRandomSessionKey();
-    const loginSessionMgr = new OpenloginSessionManager({
+    const loginSessionMgr = new OpenloginSessionManager<OpenloginSessionConfig>({
       sessionServerBaseUrl: this.options.storageServerUrl,
       sessionNamespace: this.options.sessionNamespace,
       sessionTime: 600, // each login key must be used with 10 mins (might be used at the end of popup redirect)
