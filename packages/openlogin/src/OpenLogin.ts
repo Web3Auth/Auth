@@ -59,6 +59,7 @@ class OpenLogin {
     if (!options.originData) options.originData = { [window.location.origin]: "" };
     if (!options.whiteLabel) options.whiteLabel = {};
     if (!options.loginConfig) options.loginConfig = {};
+    if (!options.mfaSettings) options.mfaSettings = {};
     if (!options.storageServerUrl) options.storageServerUrl = "https://broadcast-server.tor.us";
     if (!options.storageKey) options.storageKey = "local";
     if (!options.webauthnTransports) options.webauthnTransports = ["internal"];
