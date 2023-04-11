@@ -426,13 +426,20 @@ export interface OpenloginSessionData {
   userInfo?: OpenloginUserInfo;
 }
 
-export type MfaSettings = Record<
-  string,
-  {
-    enable: boolean;
-    priority?: number;
-  }
->;
+export const MFA_FACTOR = {
+  DEVICE: "deviceShareFactor",
+  BACKUP_SHARE: "backUpShareFactor",
+  SOCIAL_BACKUP: "socialBackupFactor",
+  PASSWORD: "passwordFactor",
+} as const;
+
+export type MFA_FACTOR_TYPE = (typeof MFA_FACTOR)[keyof typeof MFA_FACTOR];
+export type MFA_SETTINGS = {
+  enable: boolean;
+  priority?: number;
+};
+
+export type MfaSettings = Partial<Record<MFA_FACTOR_TYPE, MFA_SETTINGS>>;
 
 export type OpenLoginOptions = {
   /**
