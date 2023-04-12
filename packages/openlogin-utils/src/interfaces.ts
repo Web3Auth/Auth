@@ -250,7 +250,7 @@ export type WhiteLabelData = {
    * `'primary'` - To customize primary color of modal's content.
    */
   theme?: {
-    [P in string]: string;
+    [P in string]: string | Record<string, string>;
   };
 };
 

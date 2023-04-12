@@ -223,7 +223,7 @@ class OpenLogin {
       sessionId: loginId,
     });
 
-    await loginSessionMgr.createSession(dataObject);
+    await loginSessionMgr.createSession(JSON.parse(JSON.stringify(dataObject)));
 
     return loginId;
   }
