@@ -221,6 +221,19 @@ export type LoginParams = BaseRedirectParams & {
   mobileOrigin?: string;
 };
 
+export interface ColorPalette {
+  50?: string;
+  100?: string;
+  200?: string;
+  300?: string;
+  400?: string;
+  500?: string;
+  600?: string;
+  700?: string;
+  800?: string;
+  900?: string;
+}
+
 export type WhiteLabelData = {
   /**
    * App name to display in the UI
@@ -256,7 +269,15 @@ export type WhiteLabelData = {
    * `'primary'` - To customize primary color of modal's content.
    */
   theme?: {
-    [P in string]: string | Record<string, string>;
+    primary?: string | ColorPalette;
+    gray?: string | ColorPalette;
+    red?: string | ColorPalette;
+    green?: string | ColorPalette;
+    success?: string;
+    warning?: string;
+    error?: string;
+    info?: string;
+    white?: string;
   };
 };
 
