@@ -213,6 +213,12 @@ export type LoginParams = BaseRedirectParams & {
    * @defaultValue secp256k1
    */
   curve?: SUPPORTED_KEY_CURVES_TYPE;
+
+  /**
+   * This field is used by native apps.
+   * For web applications, use redirectUrl instead.
+   */
+  mobileOrigin?: string;
 };
 
 export type WhiteLabelData = {
@@ -553,6 +559,7 @@ export type OpenLoginOptions = {
   /**
    * Specify a custom storage server url
    * @defaultValue https://broadcast-server.tor.us
+   * @internal
    */
   storageServerUrl?: string;
 
@@ -574,8 +581,6 @@ export type OpenLoginOptions = {
   /**
    * This option is for internal use only in torus wallet and has no effect
    * on user's login on other dapps.
-   *
-   * @internal
    */
   sessionNamespace?: string;
 
@@ -590,9 +595,7 @@ export type OpenLoginOptions = {
 
 export interface BaseLoginParams {
   loginId?: string;
-  popupWindow?: boolean;
   sessionNamespace?: string;
-  storageServerUrl?: string;
 }
 
 export interface OpenloginSessionConfig {

@@ -65,6 +65,7 @@ class PopupHandler extends EventEmitter {
     return new Promise<string>((resolve, reject) => {
       const bc = new BroadcastChannel<{ error?: string; data?: string }>(loginId, {
         webWorkerSupport: false,
+        type: "server",
       });
       bc.addEventListener("message", (ev) => {
         this.close();

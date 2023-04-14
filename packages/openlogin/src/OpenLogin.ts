@@ -76,6 +76,10 @@ class OpenLogin {
     return this.state.coreKitKey ? this.state.coreKitKey.padStart(64, "0") : "";
   }
 
+  get sessionId(): string {
+    return this.currentStorage.get<string>("sessionId") || "";
+  }
+
   async init(): Promise<void> {
     const storageKey = this.options.sessionNamespace ? `${this._storageBaseKey}_${this.options.sessionNamespace}` : this._storageBaseKey;
     this.currentStorage = BrowserStorage.getInstance(storageKey, this.options.storageKey);
@@ -132,7 +136,6 @@ class OpenLogin {
     const configParams: BaseLoginParams = {
       loginId,
       sessionNamespace: this.options.sessionNamespace,
-      storageServerUrl: this.options.storageServerUrl,
     };
 
     if (this.options.uxMode === UX_MODE.REDIRECT) {
@@ -143,7 +146,6 @@ class OpenLogin {
       window.location.href = loginUrl;
       return undefined;
     }
-    configParams.popupWindow = true;
     return new Promise((resolve, reject) => {
       const loginUrl = constructURL({
         baseURL: `${this.options.sdkUrl}/start`,
@@ -201,7 +203,7 @@ class OpenLogin {
     this.currentStorage.set("sessionId", "");
   }
 
-  async getUserInfo(): Promise<OpenloginUserInfo> {
+  getUserInfo(): OpenloginUserInfo {
     if (this.privKey) {
       return this.state.userInfo;
     }

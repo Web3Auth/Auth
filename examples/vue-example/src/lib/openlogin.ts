@@ -12,7 +12,7 @@ export function getOpenLoginInstance(whiteLabel?: WhiteLabelData) {
     // for development
     clientId: YOUR_PROJECT_ID,
     network: "development",
-    uxMode: "popup",
+    uxMode: "redirect",
     whiteLabel,
     loginConfig,
     // mfaSettings: {
