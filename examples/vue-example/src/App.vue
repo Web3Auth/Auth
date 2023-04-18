@@ -20,7 +20,7 @@
           <p class="dashboard-subheading">Openlogin Private key : {{ privKey }}</p>
         </div>
         <div class="dashboard-action-container">
-          <p class="dashboard-chainid">Connect chainID : 0x3</p>
+          <p class="dashboard-chainid">Connect chainID : 0x5</p>
           <button class="dashboard-action-logout" @click.stop="logout">
             <img :src="require('@/assets/logout.svg')" alt="logout" height="18" width="18" />
             Logout
@@ -63,8 +63,6 @@
 
 <script lang="ts">
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
-// TODO
-// import DEFAULT_INFURA_ID from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import * as bs58 from "bs58";
 import { defineComponent } from "vue";
@@ -97,7 +95,6 @@ export default defineComponent({
     async login() {
       try {
         this.loading = true;
-        console.log("calles");
         const openlogin = getOpenLoginInstance(whitelabel);
         // in popup mode (with third party cookies available) or if user is already logged in this function will
         // return priv key , in redirect mode or if third party cookies are blocked then priv key be injected to
@@ -154,10 +151,10 @@ export default defineComponent({
       this.ethereumPrivateKeyProvider = new EthereumPrivateKeyProvider({
         config: {
           chainConfig: {
-            chainId: "0x3",
-            rpcTarget: `https://ropsten.infura.io/v3/${this.DEFAULT_INFURA_ID}`,
-            displayName: "ropsten",
-            blockExplorer: "https://ropsten.etherscan.io/",
+            chainId: "0x5",
+            rpcTarget: `https://rpc.ankr.com/eth_goerli`,
+            displayName: "goerli",
+            blockExplorer: "https://goerli.etherscan.io/",
             ticker: "ETH",
             tickerName: "Ethereum",
           },
@@ -211,15 +208,15 @@ export default defineComponent({
           method: "wallet_addEthereumChain",
           params: [
             {
-              chainId: "0x4",
+              chainId: "0x5",
               chainName: "rinkeby",
               nativeCurrency: {
                 name: "ether",
                 symbol: "ETH",
                 decimals: 18,
               },
-              rpcUrls: [`https://rinkeby.infura.io/v3/${this.DEFAULT_INFURA_ID}`],
-              blockExplorerUrls: [`https://rinkeby.etherscan.io/`],
+              rpcUrls: ["https://rpc.ankr.com/eth_goerli"],
+              blockExplorerUrls: [`https://goerli.etherscan.io/`],
             },
           ],
         });
