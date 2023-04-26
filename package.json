@@ -8,8 +8,7 @@
     "packages/openlogin-starkey",
     "packages/openlogin-subkey",
     "packages/openlogin-utils",
-    "packages/wrapper",
-    "packages/session-manager/*"
+    "packages/wrapper"
   ],
   "repository": "git@github.com:torusresearch/OpenLoginSdk.git",
   "scripts": {
