@@ -6,6 +6,7 @@ import {
   jsonToBase64,
   LoginParams,
   OPENLOGIN_NETWORK,
+  OPENLOGIN_NETWORK_TYPE,
   OpenLoginOptions,
   OpenloginSessionConfig,
   OpenloginSessionData,
@@ -15,10 +16,12 @@ import {
 import log from "loglevel";
 
 import PopupHandler from "./PopupHandler";
-import { constructURL, getHashQueryParams } from "./utils";
+import { constructURL, getHashQueryParams, version } from "./utils";
 
 class OpenLogin {
   state: OpenloginSessionData = {};
+
+  private versionSupportNetworks: OPENLOGIN_NETWORK_TYPE[] = [OPENLOGIN_NETWORK.MAINNET, OPENLOGIN_NETWORK.CYAN, OPENLOGIN_NETWORK.AQUA];
 
   private sessionManager: OpenloginSessionManager<OpenloginSessionData>;
 
@@ -36,10 +39,6 @@ class OpenLogin {
         options.sdkUrl = "https://cyan.openlogin.com";
       } else if (options.network === OPENLOGIN_NETWORK.TESTNET) {
         options.sdkUrl = "https://beta.openlogin.com";
-      } else if (options.network === OPENLOGIN_NETWORK.SK_TESTNET) {
-        options.sdkUrl = "https://beta-sk.openlogin.com";
-      } else if (options.network === OPENLOGIN_NETWORK.CELESTE) {
-        options.sdkUrl = "https://celeste.openlogin.com";
       } else if (options.network === OPENLOGIN_NETWORK.AQUA) {
         options.sdkUrl = "https://aqua.openlogin.com";
       } else if (options.network === OPENLOGIN_NETWORK.DEVELOPMENT) {
@@ -131,6 +130,8 @@ class OpenLogin {
     // do this in popup-window route
     // loginParams.redirectUrl = this.options.uxMode === UX_MODE.POPUP ? `${this.options.sdkUrl}/popup-window` : loginParams.redirectUrl;
 
+    const base64url = this.getBaseUrl();
+
     // construct the url to open for either popup/redirect mode and call request method to handle the rest
     const loginId = await this.getLoginId(loginParams);
     const configParams: BaseLoginParams = {
@@ -140,7 +141,7 @@ class OpenLogin {
 
     if (this.options.uxMode === UX_MODE.REDIRECT) {
       const loginUrl = constructURL({
-        baseURL: `${this.options.sdkUrl}/start`,
+        baseURL: base64url,
         hash: { b64Params: jsonToBase64(configParams) },
       });
       window.location.href = loginUrl;
@@ -148,7 +149,7 @@ class OpenLogin {
     }
     return new Promise((resolve, reject) => {
       const loginUrl = constructURL({
-        baseURL: `${this.options.sdkUrl}/start`,
+        baseURL: base64url,
         hash: { b64Params: jsonToBase64(configParams) },
       });
       const currentWindow = new PopupHandler({ url: loginUrl });
@@ -243,6 +244,13 @@ class OpenLogin {
 
   private updateState(data: Partial<OpenloginSessionData>) {
     this.state = { ...this.state, ...data };
+  }
+
+  private getBaseUrl(): string {
+    if (this.versionSupportNetworks.includes(this.options.network)) {
+      return `${this.options.sdkUrl}/v${version.split(".")[0]}/start`;
+    }
+    return `${this.options.sdkUrl}/start`;
   }
 }
 

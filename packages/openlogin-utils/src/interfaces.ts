@@ -476,7 +476,7 @@ export type OpenLoginOptions = {
   clientId: string;
 
   /**
-   * network specifies the openlogin iframe url url to be used.
+   * network specifies the openlogin sdk url url to be used.
    *
    * - `'mainnet'`: https://app.openlogin.com will be used which is the production version.
    * - `'cyan'`: https://cyan.openlogin.com will be used which is the production cyan version.
@@ -484,20 +484,6 @@ export type OpenLoginOptions = {
    * - `'development'`: http://localhost:3000 will be used for development purpose.
    */
   network: OPENLOGIN_NETWORK_TYPE;
-
-  // /**
-  //  * Setting no3PC forces openlogin to assume that third party cookies are blocked
-  //  * in the browser.
-  //  *
-  //  * @defaultValue false
-  //  * @remarks
-  //  * Only pass no3PC to `true` when you are sure that third party cookies are not
-  //  * supported. By default openlogin will self check third party cookies and proceed
-  //  * accordingly.
-  //  *
-  //  * @deprecated this property will be removed in next major release.
-  //  */
-  // no3PC?: boolean;
 
   /**
    * redirectUrl is the dapp's url where user will be redirected after login.
