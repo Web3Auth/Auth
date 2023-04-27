@@ -2,7 +2,7 @@
   "name": "toruslabs",
   "private": true,
   "workspaces": [
-    "packages/openlogin", 
+    "packages/openlogin",
     "packages/openlogin-ed25519",
     "packages/openlogin-jrpc",
     "packages/openlogin-starkey",
@@ -30,6 +30,7 @@
     "@babel/plugin-syntax-bigint": "^7.8.3",
     "@babel/register": "^7.21.0",
     "@babel/runtime": "^7.21.0",
+    "@rollup/plugin-replace": "^5.0.2",
     "@toruslabs/eslint-config-typescript": "^1.4.1",
     "@toruslabs/torus-scripts": "^3.0.4",
     "@types/mocha": "^10.0.1",

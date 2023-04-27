@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 import { getPublic, sign } from "@toruslabs/eccrypto";
 import { keccak256 } from "@toruslabs/metadata-helpers";
 import { base64url, OpenloginSessionData, safeatob } from "@toruslabs/openlogin-utils";
 
 import log from "./loglevel";
 
-const pkg = require("../package.json");
+// don't use destructuring for process.env cause it messes up webpack env plugin
+export const version = process.env.OPENLOGIN_VERSION;
 
 export async function whitelistUrl(clientId: string, appKey: string, origin: string): Promise<string> {
   const appKeyBuf = Buffer.from(appKey.padStart(64, "0"), "hex");
@@ -106,5 +106,3 @@ export function getPopupFeatures(): string {
   const features = `titlebar=0,toolbar=0,status=0,location=0,menubar=0,height=${h / systemZoom},width=${w / systemZoom},top=${top},left=${left}`;
   return features;
 }
-
-export const { version } = pkg;

@@ -1,5 +1,7 @@
 import loglevel from "loglevel";
 
-loglevel.setLevel("error");
+const log = loglevel.getLogger("openlogin");
 
-export default loglevel.getLogger("openlogin");
+log.setLevel("error");
+
+export default log;
