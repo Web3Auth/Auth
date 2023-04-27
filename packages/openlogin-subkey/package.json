@@ -20,11 +20,12 @@
     "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
-    "@toruslabs/openlogin-utils": "^3.0.0",
+    "@toruslabs/metadata-helpers": "^3.1.0",
     "bn.js": "^5.2.1",
     "ffjavascript": "^0.2.57"
   },
   "peerDependencies": {
+    "@types/bn.js": "^5.1.1",
     "@babel/runtime": "7.x"
   },
   "files": [

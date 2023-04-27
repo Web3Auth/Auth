@@ -1,10 +1,10 @@
-import { BufferEncoding } from "@toruslabs/openlogin-utils";
 import eos from "end-of-stream";
 import once from "once";
 import pump from "pump";
 import { Duplex } from "readable-stream";
 import type { Readable, Writable } from "stream";
 
+import { BufferEncoding } from "./interfaces";
 import Substream from "./substream";
 
 export const IGNORE_SUBSTREAM = Symbol("IGNORE_SUBSTREAM");

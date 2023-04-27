@@ -12,18 +12,27 @@
         <button @click="loginWithoutWhitelabel">login without whitelabel</button>
       </div> -->
       <div class="grid justify-center pt-20 text-center" v-if="!privKey && !loading">
-        <h7 class="text-3xl font-bold">demo-openlogin.web3auth.io</h7>
+        <h3 class="text-3xl font-bold">demo-openlogin.web3auth.io</h3>
         <h6 class="pb-10 font-semibold text-[#595857]">Login With Openlogin</h6>
         <div>
+          <div class="mb-2">
+            <label for="email" class="block mb-2 text-sm font-medium text-left text-gray-900">Email Login</label>
+            <input
+              type="email"
+              v-model="email"
+              class="bg-gray-50 border border-gray-300 text-[#595857] text-sm rounded-full block w-full p-2.5"
+              placeholder="Email"
+            />
+          </div>
           <button @click="login" class="btn-login">Login</button>
-          <button @click="loginWithoutWhitelabel" class="btn-login">Login with Whitelabel</button>
+          <button @click="loginWithoutWhitelabel" class="btn-login">Login without Whitelabel</button>
         </div>
       </div>
 
       <div v-if="privKey">
         <div class="flex m-6 text-left box md:rows-span-2">
           <div class="ml-6 overflow-hidden mt-7 text-ellipsis">
-            <h7 class="text-2xl font-semibold">demo-openlogin.web3auth.io</h7>
+            <h3 class="text-2xl font-semibold">demo-openlogin.web3auth.io</h3>
             <h6 class="pb-8 overflow-hidden text-left text-ellipsis">Openlogin Private key : {{ privKey }}</h6>
           </div>
           <div class="ml-auto mt-7">
@@ -99,6 +108,7 @@ import Vue from "vue";
 import * as ethWeb3 from "./lib/ethWeb3";
 import { getOpenLoginInstance } from "./lib/openlogin";
 import whitelabel from "./lib/whitelabel";
+import OpenLogin from "@toruslabs/openlogin";
 
 export default Vue.extend({
   name: "App",
@@ -107,12 +117,15 @@ export default Vue.extend({
       loading: false,
       privKey: "",
       ethereumPrivateKeyProvider: null as EthereumPrivateKeyProvider | null,
+      email: "",
+      openloginInstance: null as OpenLogin | null,
     };
   },
   async mounted() {
     this.loading = true;
     const openlogin = getOpenLoginInstance();
     await openlogin.init();
+    this.openloginInstance = openlogin;
     if (openlogin.privKey) {
       this.privKey = openlogin.privKey;
       await this.setProvider(this.privKey);
@@ -124,12 +137,17 @@ export default Vue.extend({
       try {
         this.loading = true;
         const openlogin = getOpenLoginInstance(whitelabel);
+        await openlogin.init();
+        this.openloginInstance = openlogin;
         // in popup mode (with third party cookies available) or if user is already logged in this function will
         // return priv key , in redirect mode or if third party cookies are blocked then priv key be injected to
         // sdk instance after calling init on redirect url page.
         const privKey = await openlogin.login({
-          loginProvider: 'google',
-          mfaLevel: "optional",
+          loginProvider: "email_passwordless",
+          extraLoginOptions: {
+            login_hint: this.email,
+          },
+          mfaLevel: "none",
           // pass empty string '' as loginProvider to open default torus modal
           // with all default supported login providers or you can pass specific
           // login provider from available list to set as default.
@@ -165,8 +183,11 @@ export default Vue.extend({
       try {
         this.loading = true;
         const openLoginPlain = getOpenLoginInstance();
+        await openLoginPlain.init();
+        this.openloginInstance = openLoginPlain;
+
         const { privKey } = await openLoginPlain.login({
-          mfaLevel: "mandatory",
+          // mfaLevel: "mandatory",
           loginProvider: "",
           redirectUrl: `${window.origin}`,
         });
@@ -198,14 +219,18 @@ export default Vue.extend({
     },
 
     async getUserInfo() {
-      const openlogin = getOpenLoginInstance();
-      const userInfo = await openlogin.getUserInfo();
+      if (!this.openloginInstance) {
+        throw new Error("Openlogin is not available.")
+      }
+      const userInfo = this.openloginInstance.getUserInfo();
       this.printToConsole(userInfo);
     },
 
     getEd25519Key() {
-      const openlogin = getOpenLoginInstance();
-      const { sk } = getED25519Key(openlogin.privKey);
+      if (!this.openloginInstance) {
+        throw new Error("Openlogin is not available.")
+      }
+      const { sk } = getED25519Key(this.privKey);
       const base58Key = bs58.encode(sk);
       this.printToConsole(base58Key);
     },
@@ -266,9 +291,11 @@ export default Vue.extend({
     },
 
     async logout() {
-      const openlogin = getOpenLoginInstance();
-      await openlogin.logout({});
-      this.privKey = openlogin.privKey;
+      if (!this.openloginInstance) {
+        throw new Error("Openlogin is not available.")
+      }
+      await this.openloginInstance.logout();
+      this.privKey = this.openloginInstance.privKey;
       this.ethereumPrivateKeyProvider = null;
     },
     printToConsole(...args: unknown[]) {
