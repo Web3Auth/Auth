@@ -1,7 +1,7 @@
 {
-  "version": "3.2.1",
+  "version": "4.0.0",
   "packages": [
-    "packages/openlogin", 
+    "packages/openlogin",
     "packages/openlogin-ed25519",
     "packages/openlogin-jrpc",
     "packages/openlogin-starkey",
