@@ -217,6 +217,7 @@ export type LoginParams = BaseRedirectParams & {
   /**
    * This field is used by native apps.
    * For web applications, use redirectUrl instead.
+   * @internal
    */
   mobileOrigin?: string;
 };
@@ -476,7 +477,7 @@ export type OpenLoginOptions = {
   clientId: string;
 
   /**
-   * network specifies the openlogin sdk url url to be used.
+   * network specifies the openlogin sdk url to be used.
    *
    * - `'mainnet'`: https://app.openlogin.com will be used which is the production version.
    * - `'cyan'`: https://cyan.openlogin.com will be used which is the production cyan version.
@@ -588,6 +589,7 @@ export type OpenLoginOptions = {
   /**
    * This option is for internal use only in torus wallet and has no effect
    * on user's login on other dapps.
+   * @internal
    */
   sessionNamespace?: string;
 
