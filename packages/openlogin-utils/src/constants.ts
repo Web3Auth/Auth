@@ -10,8 +10,6 @@ export const OPENLOGIN_NETWORK = {
   TESTNET: "testnet",
   CYAN: "cyan",
   DEVELOPMENT: "development",
-  SK_TESTNET: "sk_testnet",
-  CELESTE: "celeste",
   AQUA: "aqua",
 } as const;
 

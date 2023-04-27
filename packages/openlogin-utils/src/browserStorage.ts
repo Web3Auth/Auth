@@ -1,5 +1,17 @@
 import { IStorage, storageAvailable } from "./utils";
 
+export class MemoryStore implements IStorage {
+  store: Record<string, string> = {};
+
+  getItem(key: string): string {
+    return this.store[key] || null;
+  }
+
+  setItem(key: string, value: string): void {
+    this.store[key] = value;
+  }
+}
+
 export class BrowserStorage {
   // eslint-disable-next-line no-use-before-define
   private static instance: BrowserStorage;
@@ -22,17 +34,15 @@ export class BrowserStorage {
 
   static getInstance(key: string, storageKey: "session" | "local" = "local"): BrowserStorage {
     if (!this.instance) {
-      let storage: Storage;
+      let storage: IStorage;
       if (storageKey === "local" && storageAvailable("localStorage")) {
-        storage = localStorage;
-      }
-      if (storageKey === "session" && storageAvailable("sessionStorage")) {
-        storage = sessionStorage;
+        storage = window.localStorage;
+      } else if (storageKey === "session" && storageAvailable("sessionStorage")) {
+        storage = window.sessionStorage;
+      } else {
+        storage = new MemoryStore();
       }
 
-      if (!storage) {
-        throw new Error("No valid storage available");
-      }
       this.instance = new this(key, storage);
     }
     return this.instance;
