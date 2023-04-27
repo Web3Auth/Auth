@@ -15,6 +15,7 @@ import {
 } from "@toruslabs/openlogin-utils";
 import log from "loglevel";
 
+import { InitializationError, LoginError } from "./errors";
 import PopupHandler from "./PopupHandler";
 import { constructURL, getHashQueryParams, version } from "./utils";
 
@@ -46,7 +47,7 @@ class OpenLogin {
       }
     }
     if (!options.sdkUrl) {
-      throw new Error("unspecified network and sdkUrl");
+      throw InitializationError.invalidParams("network or sdk url");
     }
 
     if (!options.redirectUrl) {
@@ -112,9 +113,7 @@ class OpenLogin {
   }
 
   async login(params: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
-    if (!params || !params.loginProvider) {
-      throw new Error(`Please pass loginProvider in params`);
-    }
+    if (!params.loginProvider) throw LoginError.invalidLoginParams(`loginProvider is required`);
 
     // in case of redirect mode, redirect url will be dapp specified
     // in case of popup mode, redirect url will be sdk specified
@@ -155,16 +154,16 @@ class OpenLogin {
       const currentWindow = new PopupHandler({ url: loginUrl });
 
       currentWindow.on("close", () => {
-        reject(new Error("user closed popup"));
+        reject(LoginError.popupClosed());
       });
 
       currentWindow
         .listenOnChannel(loginId)
-        .then((sessionId) => {
+        .then((sessionId: string) => {
           this.sessionManager.sessionKey = sessionId;
           return this.sessionManager.authorizeSession();
         })
-        .then((sessionData) => {
+        .then((sessionData: OpenloginSessionData) => {
           this.updateState(sessionData);
           return resolve({ privKey: this.privKey });
         })
@@ -175,7 +174,7 @@ class OpenLogin {
   }
 
   async logout(): Promise<void> {
-    if (!this.sessionManager.sessionKey) throw new Error("User not logged in");
+    if (!this.sessionManager.sessionKey) throw LoginError.userNotLoggedIn();
     await this.sessionManager.invalidateSession();
     this.updateState({
       privKey: "",
@@ -205,14 +204,14 @@ class OpenLogin {
   }
 
   getUserInfo(): OpenloginUserInfo {
-    if (this.privKey) {
-      return this.state.userInfo;
+    if (!this.privKey) {
+      throw LoginError.userNotLoggedIn();
     }
-    throw new Error("user should be logged in to fetch userInfo");
+    return this.state.userInfo;
   }
 
   async getLoginId(loginParams: LoginParams & Partial<BaseRedirectParams>): Promise<string> {
-    if (!this.sessionManager) throw new Error("session manager not initialized. please call init first");
+    if (!this.sessionManager) throw InitializationError.notInitialized();
     const dataObject: OpenloginSessionConfig = {
       options: this.options,
       params: loginParams,

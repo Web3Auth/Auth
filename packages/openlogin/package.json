@@ -26,7 +26,8 @@
     "@toruslabs/openlogin-session-manager": "^0.0.2",
     "@toruslabs/openlogin-utils": "^3.0.0",
     "loglevel": "^1.8.1",
-    "events": "^3.3.0"
+    "events": "^3.3.0",
+    "ts-custom-error": "^3.2.2"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"
