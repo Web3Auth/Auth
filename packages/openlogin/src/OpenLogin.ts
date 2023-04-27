@@ -33,6 +33,7 @@ class OpenLogin {
   private options: OpenLoginOptions;
 
   constructor(options: OpenLoginOptions) {
+    if (!options.clientId) throw InitializationError.invalidParams("clientId is required");
     if (!options.sdkUrl) {
       if (options.network === OPENLOGIN_NETWORK.MAINNET) {
         options.sdkUrl = "https://app.openlogin.com";
