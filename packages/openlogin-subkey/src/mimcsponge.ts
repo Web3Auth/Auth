@@ -9,11 +9,11 @@ const SEED = "mimcsponge";
 const NROUNDS = 220;
 
 function keccak256Padded(str: string): string {
-  let input: string | Buffer = str;
-  if (typeof input === "string" && input.slice(0, 2) === "0x" && input.length === 66) {
-    input = Buffer.from(str.slice(2), "hex");
+  let finalInput: Buffer;
+  if (typeof str === "string" && str.slice(0, 2) === "0x" && str.length === 66) {
+    finalInput = Buffer.from(str.slice(2), "hex");
   }
-  return `0x${keccak256(input).toString("hex").padStart(64, "0")}`;
+  return `0x${keccak256(finalInput).toString("hex").padStart(64, "0")}`;
 }
 
 export function mimgGetIV(seed: string): bigint {

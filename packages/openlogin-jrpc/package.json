@@ -27,13 +27,12 @@
     "fast-safe-stringify": "^2.1.1",
     "once": "^1.4.0",
     "pump": "^3.0.0",
-    "readable-stream": "^3.6.2"
+    "readable-stream": "^4.3.0"
   },
   "devDependencies": {
     "@types/end-of-stream": "^1.4.1",
     "@types/once": "^1.4.0",
-    "@types/pump": "^1.1.1",
-    "@types/readable-stream": "^2.3.15"
+    "@types/pump": "^1.1.1"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"
@@ -58,6 +57,10 @@
   "keywords": [],
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": ">=16.18.1",
+    "npm": ">=8.x"
   },
   "gitHead": "2d61b7f1967ecd704470c46ff7c30c47d240f4a4"
 }

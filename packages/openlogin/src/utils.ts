@@ -10,7 +10,7 @@ export const version = process.env.OPENLOGIN_VERSION;
 export async function whitelistUrl(clientId: string, appKey: string, origin: string): Promise<string> {
   const appKeyBuf = Buffer.from(appKey.padStart(64, "0"), "hex");
   if (base64url.encode(getPublic(appKeyBuf)) !== clientId) throw new Error("appKey mismatch");
-  const sig = await sign(appKeyBuf, keccak256(origin));
+  const sig = await sign(appKeyBuf, keccak256(Buffer.from(origin, "utf8")));
   return base64url.encode(sig);
 }
 

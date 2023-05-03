@@ -20,8 +20,8 @@
     "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
-    "@toruslabs/ffjavascript": "^0.2.57",
-    "@toruslabs/metadata-helpers": "^3.1.0",
+    "@toruslabs/ffjavascript": "^1.0.0",
+    "@toruslabs/metadata-helpers": "^4.0.0",
     "bn.js": "^5.2.1"
   },
   "peerDependencies": {
@@ -48,6 +48,10 @@
   "keywords": [],
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": ">=16.18.1",
+    "npm": ">=8.x"
   },
   "gitHead": "2d61b7f1967ecd704470c46ff7c30c47d240f4a4"
 }
