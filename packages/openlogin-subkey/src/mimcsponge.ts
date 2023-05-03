@@ -9,7 +9,7 @@ const SEED = "mimcsponge";
 const NROUNDS = 220;
 
 function keccak256Padded(str: string): string {
-  let finalInput: Buffer;
+  let finalInput: Buffer = Buffer.from(str, "utf8");
   if (typeof str === "string" && str.slice(0, 2) === "0x" && str.length === 66) {
     finalInput = Buffer.from(str.slice(2), "hex");
   }
