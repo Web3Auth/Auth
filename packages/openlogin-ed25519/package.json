@@ -16,7 +16,7 @@
     "dev": "rimraf dist/ && cross-env NODE_ENV=development torus-scripts build",
     "build": "torus-scripts build",
     "lint": "eslint --fix 'src/**/*.ts'",
-    "prepack": "yarn run build",
+    "prepack": "npm run build",
     "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
@@ -45,6 +45,10 @@
   "keywords": [],
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": ">=16.18.1",
+    "npm": ">=8.x"
   },
   "gitHead": "2d61b7f1967ecd704470c46ff7c30c47d240f4a4"
 }
