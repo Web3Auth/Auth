@@ -465,6 +465,7 @@ export type MFA_FACTOR_TYPE = (typeof MFA_FACTOR)[keyof typeof MFA_FACTOR];
 export type MFA_SETTINGS = {
   enable: boolean;
   priority?: number;
+  mandatory?: boolean;
 };
 
 export type MfaSettings = Partial<Record<MFA_FACTOR_TYPE, MFA_SETTINGS>>;
