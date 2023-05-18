@@ -109,6 +109,7 @@ import * as ethWeb3 from "./lib/ethWeb3";
 import { getOpenLoginInstance } from "./lib/openlogin";
 import whitelabel from "./lib/whitelabel";
 import OpenLogin from "@toruslabs/openlogin";
+import { LOGIN_PROVIDER } from "@toruslabs/openlogin-utils";
 
 export default Vue.extend({
   name: "App",
@@ -143,7 +144,7 @@ export default Vue.extend({
         // return priv key , in redirect mode or if third party cookies are blocked then priv key be injected to
         // sdk instance after calling init on redirect url page.
         const privKey = await openlogin.login({
-          loginProvider: "email_passwordless",
+          loginProvider: LOGIN_PROVIDER.EMAIL_PASSWORDLESS,
           extraLoginOptions: {
             login_hint: this.email,
           },
@@ -188,7 +189,7 @@ export default Vue.extend({
 
         const { privKey } = await openLoginPlain.login({
           // mfaLevel: "mandatory",
-          loginProvider: "",
+          loginProvider: "google",
           redirectUrl: `${window.origin}`,
         });
         if (privKey) {
@@ -220,7 +221,7 @@ export default Vue.extend({
 
     async getUserInfo() {
       if (!this.openloginInstance) {
-        throw new Error("Openlogin is not available.")
+        throw new Error("Openlogin is not available.");
       }
       const userInfo = this.openloginInstance.getUserInfo();
       this.printToConsole(userInfo);
@@ -228,7 +229,7 @@ export default Vue.extend({
 
     getEd25519Key() {
       if (!this.openloginInstance) {
-        throw new Error("Openlogin is not available.")
+        throw new Error("Openlogin is not available.");
       }
       const { sk } = getED25519Key(this.privKey);
       const base58Key = bs58.encode(sk);
@@ -292,7 +293,7 @@ export default Vue.extend({
 
     async logout() {
       if (!this.openloginInstance) {
-        throw new Error("Openlogin is not available.")
+        throw new Error("Openlogin is not available.");
       }
       await this.openloginInstance.logout();
       this.privKey = this.openloginInstance.privKey;

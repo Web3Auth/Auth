@@ -3,7 +3,7 @@ import { MFA_FACTOR, WhiteLabelData } from "@toruslabs/openlogin-utils";
 
 import loginConfig from "./loginConfig";
 
-export const YOUR_PROJECT_ID = "BMrx-qoWCSt7_GWC1T0QUKEbM0EPb4V0W5uTyjxaIZNpjT14_8ySznR1wVqZggE2DMKW-7xPSGcXEydFdkPGemM";
+export const YOUR_PROJECT_ID = "BJ6l3_kIQiy6YVL7zDlCcEAvGpGukwFgp-C_0WvNI_fAEeIaoVRLDrV5OjtbZr_zJxbyXFsXMT-yhQiUNYvZWpo";
 
 export function getOpenLoginInstance(whiteLabel?: WhiteLabelData) {
   return new OpenLogin({
