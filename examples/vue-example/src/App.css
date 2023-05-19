@@ -43,7 +43,7 @@ body,
 }
 
 .login-btn {
-  width: 600px;
+  width: 320px;
   margin-top: 48px;
   display: flex;
   justify-content: center;
@@ -320,4 +320,12 @@ body,
 
 .torus-btn {
   width: 750px;
+}
+
+.whitelabel {
+  display: flex;
+  align-items: center;
+  column-gap: 16px;
+  margin-top: 24px;
+  margin-bottom: -16px;
 }

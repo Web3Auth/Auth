@@ -22,6 +22,8 @@ import { constructURL, getHashQueryParams, version } from "./utils";
 class OpenLogin {
   state: OpenloginSessionData = {};
 
+  options: OpenLoginOptions;
+
   private versionSupportNetworks: OPENLOGIN_NETWORK_TYPE[] = [OPENLOGIN_NETWORK.MAINNET, OPENLOGIN_NETWORK.CYAN, OPENLOGIN_NETWORK.AQUA];
 
   private sessionManager: OpenloginSessionManager<OpenloginSessionData>;
@@ -29,8 +31,6 @@ class OpenLogin {
   private currentStorage: BrowserStorage;
 
   private _storageBaseKey = "openlogin_store";
-
-  private options: OpenLoginOptions;
 
   constructor(options: OpenLoginOptions) {
     if (!options.clientId) throw InitializationError.invalidParams("clientId is required");
@@ -101,6 +101,9 @@ class OpenLogin {
     }
 
     const params = getHashQueryParams(this.options.replaceUrlOnRedirect);
+    if (params.error) {
+      throw LoginError.loginFailed(params.error);
+    }
     if (params.sessionId) {
       this.currentStorage.set("sessionId", params.sessionId);
       this.sessionManager.sessionKey = params.sessionId;

@@ -6,20 +6,32 @@
     <div class="login-container" v-if="!privKey">
       <h1 class="login-heading">demo-openlogin.web3auth.io</h1>
       <h3 class="login-subheading">Login in with Openlogin</h3>
-      <select v-model="selectedVerifier" class="select">
-        <option :key="login" v-for="login in Object.keys(verifierMap)" :value="login">{{ verifierMap[login].name }}</option>
+      <div class="whitelabel">
+        <label for="whitelabel">Enable whitelabel</label>
+        <input type="checkbox" id="whitelabel" name="whitelabel" v-model="isWhiteLabelEnabled" />
+      </div>
+      <select v-model="selectedUxMode" class="select">
+        <option :key="login" v-for="login in Object.values(UX_MODE)" :value="login">{{ login }}</option>
       </select>
-      <input v-model="login_hint" v-if="selectedVerifier === TORUS_EMAIL_PASSWORDLESS" placeholder="Enter an email" required class="login-input" />
+      <select v-model="selectedLoginProvider" class="select">
+        <option :key="login" v-for="login in Object.values(LOGIN_PROVIDER)" :value="login">{{ login }}</option>
+      </select>
       <input
         v-model="login_hint"
-        v-if="selectedVerifier === TORUS_SMS_PASSWORDLESS"
+        v-if="selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS"
+        placeholder="Enter an email"
+        required
+        class="login-input"
+      />
+      <input
+        v-model="login_hint"
+        v-if="selectedLoginProvider === LOGIN_PROVIDER.SMS_PASSWORDLESS"
         placeholder="Eg: (+{cc}-{number})"
         required
         class="login-input"
       />
-      <div :class="['login-btn', isLongLines ? 'torus-btn' : '']">
-        <button class="btn" :disabled="!isLoginHintAvailable" @click="login">Login with {{ selectedVerifier?.replaceAll("_", " ") }}</button>
-        <button class="btn" @click="loginWithoutWhitelabel">Login with WhiteLabel</button>
+      <div :class="['login-btn']">
+        <button class="btn" :disabled="!isLoginHintAvailable" @click="login">Login with {{ selectedLoginProvider?.replaceAll("_", " ") }}</button>
       </div>
     </div>
     <!-- Dashboard -->
@@ -52,8 +64,8 @@
             <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="latestBlock">Fetch latest block</button>
           </div>
           <div class="flex-row bottom-gutter">
-            <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="addChain">Add to rinkeby</button>
-            <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="switchChain">Switch to rinkeby</button>
+            <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="addChain">Add Goerli</button>
+            <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="switchChain">Switch to Goerli</button>
           </div>
           <div class="flex-row bottom-gutter">
             <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="signV1Message">Sign Typed data v1 test message</button>
@@ -78,19 +90,11 @@ import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import * as bs58 from "bs58";
 import { defineComponent } from "vue";
 
-import {
-  GOOGLE,
-  HOSTED_EMAIL_PASSWORDLESS,
-  HOSTED_SMS_PASSWORDLESS,
-  TORUS_EMAIL_PASSWORDLESS,
-  TORUS_SMS_PASSWORDLESS,
-  verifierMap,
-} from "./constants";
 import * as ethWeb3 from "./lib/ethWeb3";
 import { getOpenLoginInstance } from "./lib/openlogin";
 import whitelabel from "./lib/whitelabel";
 import OpenLogin from "@toruslabs/openlogin";
-import { LoginParams } from "@toruslabs/openlogin-utils";
+import { LoginParams, LOGIN_PROVIDER, LOGIN_PROVIDER_TYPE, UX_MODE, UX_MODE_TYPE } from "@toruslabs/openlogin-utils";
 // import { LOGIN_PROVIDER } from "@toruslabs/openlogin-utils";
 
 export default defineComponent({
@@ -100,20 +104,17 @@ export default defineComponent({
       loading: false,
       privKey: "",
       ethereumPrivateKeyProvider: null as EthereumPrivateKeyProvider | null,
-      // TODO
-      DEFAULT_INFURA_ID: "776218ac4734478c90191dde8cae483c",
-      selectedVerifier: GOOGLE,
-      verifierMap,
+      LOGIN_PROVIDER: LOGIN_PROVIDER,
+      selectedLoginProvider: LOGIN_PROVIDER.GOOGLE as LOGIN_PROVIDER_TYPE,
       login_hint: "",
-      TORUS_SMS_PASSWORDLESS,
-      TORUS_EMAIL_PASSWORDLESS,
-      email: "",
       openloginInstance: null as OpenLogin | null,
+      isWhiteLabelEnabled: false,
+      UX_MODE: UX_MODE,
+      selectedUxMode: UX_MODE.REDIRECT as UX_MODE_TYPE,
     };
   },
-  async mounted() {
-    this.selectedVerifier = GOOGLE;
-    const openlogin = getOpenLoginInstance();
+  async created() {
+    const openlogin = getOpenLoginInstance(this.selectedUxMode, this.isWhiteLabelEnabled ? whitelabel : {});
     await openlogin.init();
     this.openloginInstance = openlogin;
     if (openlogin.privKey) {
@@ -124,35 +125,38 @@ export default defineComponent({
   },
   computed: {
     isLoginHintAvailable(): boolean {
-      if (this.selectedVerifier === TORUS_EMAIL_PASSWORDLESS || this.selectedVerifier === TORUS_SMS_PASSWORDLESS) {
+      if (this.selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS || this.selectedLoginProvider === LOGIN_PROVIDER.SMS_PASSWORDLESS) {
         if (!this.login_hint) {
           return false;
         }
-        if (this.selectedVerifier === TORUS_EMAIL_PASSWORDLESS && !this.login_hint.match(/^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i)) {
+        if (this.selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS && !this.login_hint.match(/^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i)) {
           return false;
         }
-        if (this.selectedVerifier === TORUS_SMS_PASSWORDLESS && !(this.login_hint.startsWith("+") && this.login_hint.includes("-"))) {
+        if (this.selectedLoginProvider === LOGIN_PROVIDER.SMS_PASSWORDLESS && !(this.login_hint.startsWith("+") && this.login_hint.includes("-"))) {
           return false;
         }
       }
       return true;
     },
     isLongLines(): boolean {
-      return [TORUS_SMS_PASSWORDLESS, TORUS_EMAIL_PASSWORDLESS, HOSTED_EMAIL_PASSWORDLESS, HOSTED_SMS_PASSWORDLESS].includes(this.selectedVerifier);
+      return ([LOGIN_PROVIDER.EMAIL_PASSWORDLESS, LOGIN_PROVIDER.SMS_PASSWORDLESS] as LOGIN_PROVIDER_TYPE[]).includes(this.selectedLoginProvider);
     },
   },
   methods: {
     async login() {
       try {
         this.loading = true;
-        const openlogin = getOpenLoginInstance(whitelabel);
-        await openlogin.init();
-        this.openloginInstance = openlogin;
+        if (!this.openloginInstance) {
+          this.loading = false;
+          return;
+        }
+        this.openloginInstance.options.uxMode = this.selectedUxMode;
+        this.openloginInstance.options.whiteLabel = this.isWhiteLabelEnabled ? whitelabel : {};
         // in popup mode (with third party cookies available) or if user is already logged in this function will
         // return priv key , in redirect mode or if third party cookies are blocked then priv key be injected to
         // sdk instance after calling init on redirect url page.
         const openLoginObj: LoginParams = {
-          loginProvider: this.selectedVerifier,
+          loginProvider: this.selectedLoginProvider,
           mfaLevel: "optional",
           // pass empty string '' as loginProvider to open default torus modal
           // with all default supported login providers or you can pass specific
@@ -169,40 +173,16 @@ export default defineComponent({
           // sessionTime: 30, //seconds
         };
 
-        if ([TORUS_EMAIL_PASSWORDLESS, TORUS_SMS_PASSWORDLESS].includes(this.selectedVerifier)) {
-          const { typeOfLogin, clientId, verifier } = verifierMap[this.selectedVerifier];
+        if (this.isLongLines) {
           openLoginObj.extraLoginOptions = {
             login_hint: this.login_hint,
           };
         }
 
         console.log(openLoginObj, "OPENLOGIN");
-        const privKey = await openlogin.login(openLoginObj);
+        const privKey = await this.openloginInstance.login(openLoginObj);
         if (privKey) {
-          this.privKey = openlogin.privKey;
-          await this.setProvider(this.privKey);
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    async loginWithoutWhitelabel() {
-      try {
-        this.loading = true;
-        const openLoginPlain = getOpenLoginInstance();
-        await openLoginPlain.init();
-        this.openloginInstance = openLoginPlain;
-
-        const { privKey } = await openLoginPlain.login({
-          // mfaLevel: "mandatory",
-          loginProvider: "google",
-          redirectUrl: `${window.origin}`,
-        });
-        if (privKey) {
-          this.privKey = privKey;
+          this.privKey = this.openloginInstance.privKey;
           await this.setProvider(this.privKey);
         }
       } catch (error) {
@@ -216,10 +196,10 @@ export default defineComponent({
       this.ethereumPrivateKeyProvider = new EthereumPrivateKeyProvider({
         config: {
           chainConfig: {
-            chainId: "0x5",
-            rpcTarget: `https://rpc.ankr.com/eth_goerli`,
-            displayName: "goerli",
-            blockExplorer: "https://goerli.etherscan.io/",
+            chainId: "0x1",
+            rpcTarget: `https://rpc.ankr.com/eth`,
+            displayName: "Mainnet",
+            blockExplorer: "https://etherscan.io/",
             ticker: "ETH",
             tickerName: "Ethereum",
           },
@@ -233,7 +213,7 @@ export default defineComponent({
         throw new Error("Openlogin is not available.");
       }
       const userInfo = this.openloginInstance.getUserInfo();
-      this.printToConsole(userInfo);
+      this.printToConsole("User Info", userInfo);
     },
 
     getEd25519Key() {
@@ -242,7 +222,7 @@ export default defineComponent({
       }
       const { sk } = getED25519Key(this.privKey);
       const base58Key = bs58.encode(sk);
-      this.printToConsole(base58Key);
+      this.printToConsole("ED25519 Key", base58Key);
     },
 
     async signMessage() {
@@ -268,7 +248,7 @@ export default defineComponent({
       try {
         await this.ethereumPrivateKeyProvider.provider.sendAsync({
           method: "wallet_switchEthereumChain",
-          params: [{ chainId: "0x4" }],
+          params: [{ chainId: "0x5" }],
         });
         this.printToConsole("Switched Chain", { ...this.ethereumPrivateKeyProvider.state, ...this.ethereumPrivateKeyProvider.config });
       } catch (error) {
@@ -285,7 +265,7 @@ export default defineComponent({
           params: [
             {
               chainId: "0x5",
-              chainName: "rinkeby",
+              chainName: "goerli",
               nativeCurrency: {
                 name: "ether",
                 symbol: "ETH",

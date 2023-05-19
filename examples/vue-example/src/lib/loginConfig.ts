@@ -22,8 +22,8 @@ export default {
   //     connection: "Username-Password-Authentication",
   //   },
   // } as LoginConfig[keyof LoginConfig],
-  google: {
-    loginProvider: "google",
+  custom_google: {
+    loginProvider: "custom_google",
     name: "Google Login",
     typeOfLogin: LOGIN_PROVIDER.GOOGLE,
     description: "Login with Custom Google",
