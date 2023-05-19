@@ -6,8 +6,19 @@
     <div class="login-container" v-if="!privKey">
       <h1 class="login-heading">demo-openlogin.web3auth.io</h1>
       <h3 class="login-subheading">Login in with Openlogin</h3>
-      <div class="login-btn">
-        <button class="btn" @click="login">Login</button>
+      <select v-model="selectedVerifier" class="select">
+        <option :key="login" v-for="login in Object.keys(verifierMap)" :value="login">{{ verifierMap[login].name }}</option>
+      </select>
+      <input v-model="login_hint" v-if="selectedVerifier === TORUS_EMAIL_PASSWORDLESS" placeholder="Enter an email" required class="login-input" />
+      <input
+        v-model="login_hint"
+        v-if="selectedVerifier === TORUS_SMS_PASSWORDLESS"
+        placeholder="Eg: (+{cc}-{number})"
+        required
+        class="login-input"
+      />
+      <div :class="['login-btn', isLongLines ? 'torus-btn' : '']">
+        <button class="btn" :disabled="!isLoginHintAvailable" @click="login">Login with {{ selectedVerifier?.replaceAll("_", " ") }}</button>
         <button class="btn" @click="loginWithoutWhitelabel">Login with WhiteLabel</button>
       </div>
     </div>
@@ -67,9 +78,18 @@ import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import * as bs58 from "bs58";
 import { defineComponent } from "vue";
 
+import {
+  GOOGLE,
+  HOSTED_EMAIL_PASSWORDLESS,
+  HOSTED_SMS_PASSWORDLESS,
+  TORUS_EMAIL_PASSWORDLESS,
+  TORUS_SMS_PASSWORDLESS,
+  verifierMap,
+} from "./constants";
 import * as ethWeb3 from "./lib/ethWeb3";
 import { getOpenLoginInstance } from "./lib/openlogin";
 import whitelabel from "./lib/whitelabel";
+import { LoginParams } from "openlogin";
 
 export default defineComponent({
   name: "App",
@@ -80,9 +100,15 @@ export default defineComponent({
       ethereumPrivateKeyProvider: null as EthereumPrivateKeyProvider | null,
       // TODO
       DEFAULT_INFURA_ID: "776218ac4734478c90191dde8cae483c",
+      selectedVerifier: GOOGLE,
+      verifierMap,
+      login_hint: "",
+      TORUS_SMS_PASSWORDLESS,
+      TORUS_EMAIL_PASSWORDLESS,
     };
   },
   async mounted() {
+    this.selectedVerifier = GOOGLE;
     const openlogin = getOpenLoginInstance();
     await openlogin.init();
     if (openlogin.privKey) {
@@ -90,6 +116,25 @@ export default defineComponent({
       await this.setProvider(this.privKey);
     }
     this.loading = false;
+  },
+  computed: {
+    isLoginHintAvailable(): boolean {
+      if (this.selectedVerifier === TORUS_EMAIL_PASSWORDLESS || this.selectedVerifier === TORUS_SMS_PASSWORDLESS) {
+        if (!this.login_hint) {
+          return false;
+        }
+        if (this.selectedVerifier === TORUS_EMAIL_PASSWORDLESS && !this.login_hint.match(/^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i)) {
+          return false;
+        }
+        if (this.selectedVerifier === TORUS_SMS_PASSWORDLESS && !(this.login_hint.startsWith("+") && this.login_hint.includes("-"))) {
+          return false;
+        }
+      }
+      return true;
+    },
+    isLongLines(): boolean {
+      return [TORUS_SMS_PASSWORDLESS, TORUS_EMAIL_PASSWORDLESS, HOSTED_EMAIL_PASSWORDLESS, HOSTED_SMS_PASSWORDLESS].includes(this.selectedVerifier);
+    },
   },
   methods: {
     async login() {
@@ -99,8 +144,8 @@ export default defineComponent({
         // in popup mode (with third party cookies available) or if user is already logged in this function will
         // return priv key , in redirect mode or if third party cookies are blocked then priv key be injected to
         // sdk instance after calling init on redirect url page.
-        const privKey = await openlogin.login({
-          loginProvider: "google",
+        const openLoginObj: LoginParams = {
+          loginProvider: this.selectedVerifier,
           mfaLevel: "optional",
           // pass empty string '' as loginProvider to open default torus modal
           // with all default supported login providers or you can pass specific
@@ -115,7 +160,17 @@ export default defineComponent({
           //   login_hint: 'hello@yourapp.com',
           // },
           // sessionTime: 30, //seconds
-        });
+        };
+
+        if ([TORUS_EMAIL_PASSWORDLESS, TORUS_SMS_PASSWORDLESS].includes(this.selectedVerifier)) {
+          const { typeOfLogin, clientId, verifier } = verifierMap[this.selectedVerifier];
+          openLoginObj.extraLoginOptions = {
+            login_hint: this.login_hint,
+          };
+        }
+
+        console.log(openLoginObj, "OPENLOGIN");
+        const privKey = await openlogin.login(openLoginObj);
         if (privKey) {
           this.privKey = openlogin.privKey;
           await this.setProvider(this.privKey);

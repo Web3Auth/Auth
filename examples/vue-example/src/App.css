@@ -224,6 +224,14 @@ body,
   align-items: center;
   justify-content: center;
   flex: 1;
+
+  text-transform: capitalize;
+}
+
+.btn:disabled {
+  color: #929394;
+  cursor: not-allowed;
+  border: 1px solid #929394;
 }
 
 .console-btn {
@@ -245,4 +253,71 @@ body,
 
 .bottom-gutter {
   margin-bottom: 24px;
+}
+
+.input-group > *,
+.input-group > .input,
+.input-group > .select {
+  border-radius: 0px;
+}
+.select {
+  display: inline-flex;
+  flex-shrink: 0;
+  cursor: pointer;
+  user-select: none;
+  appearance: none;
+
+  height: 3rem /* 48px */;
+  padding-left: 1rem /* 16px */;
+  padding-right: 2.5rem /* 40px */;
+  padding-right: 2.5rem /* 40px */;
+  font-size: 0.875rem /* 14px */;
+  line-height: 1.25rem /* 20px */;
+  line-height: 2;
+  min-height: 3rem /* 48px */;
+
+  background: #ffffff;
+  border: 1px solid #6f717a;
+  width: 320px;
+  border-radius: 24px;
+
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+  letter-spacing: -0.02em;
+  color: #6f717a;
+  margin-top: 48px;
+
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter,
+    backdrop-filter;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 20px) calc(1px + 50%), calc(100% - 16px) calc(1px + 50%);
+  background-size: 4px 4px, 4px 4px;
+  background-repeat: no-repeat;
+}
+
+.select:focus {
+  outline: 2px solid hsla(var(--bc) / 0.2);
+  outline-offset: 2px;
+}
+
+.login-input {
+  background: #ffffff;
+  border: 1px solid #6f717a;
+  border-radius: 24px;
+  outline: 0 !important;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 21px;
+  padding: 12px 24px;
+  margin-top: 1rem /* 16px */;
+  width: 320px;
+}
+
+.torus-btn {
+  width: 750px;
 }
