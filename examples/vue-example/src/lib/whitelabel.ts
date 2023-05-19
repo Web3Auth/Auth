@@ -1,3 +1,5 @@
+import { WhiteLabelData } from "@toruslabs/openlogin-utils";
+
 export default {
   name: "HelloDemo",
   url: "http://localhost:8080",
@@ -7,4 +9,4 @@ export default {
   theme: {
     primary: "#FF9900",
   },
-};
+} as WhiteLabelData;

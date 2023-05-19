@@ -1,6 +1,6 @@
 {
   "name": "@toruslabs/openlogin-jrpc",
-  "version": "3.2.0",
+  "version": "4.3.0",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
   "main": "dist/openloginJrpc.cjs.js",
@@ -16,18 +16,18 @@
     "dev": "rimraf dist/ && cross-env NODE_ENV=development torus-scripts build",
     "build": "torus-scripts build",
     "lint": "eslint --fix 'src/**/*.ts'",
-    "prepack": "yarn run build",
+    "prepack": "npm run build",
     "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
-    "@toruslabs/openlogin-utils": "^3.0.0",
+    "@toruslabs/openlogin-utils": "^4.3.0",
     "end-of-stream": "^1.4.4",
     "eth-rpc-errors": "^4.0.3",
     "events": "^3.3.0",
     "fast-safe-stringify": "^2.1.1",
     "once": "^1.4.0",
     "pump": "^3.0.0",
-    "readable-stream": "^3.6.2"
+    "readable-stream": "^4.3.0"
   },
   "devDependencies": {
     "@types/end-of-stream": "^1.4.1",
@@ -58,6 +58,10 @@
   "keywords": [],
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": ">=16.18.1",
+    "npm": ">=8.x"
   },
   "gitHead": "2d61b7f1967ecd704470c46ff7c30c47d240f4a4"
 }

@@ -1,6 +1,6 @@
 {
   "name": "@toruslabs/openlogin",
-  "version": "3.2.1",
+  "version": "4.3.0",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
   "main": "dist/openlogin.cjs.js",
@@ -16,19 +16,18 @@
     "dev": "rimraf dist/ && cross-env NODE_ENV=development torus-scripts build",
     "build": "torus-scripts build",
     "lint": "eslint --fix 'src/**/*.ts'",
-    "prepack": "yarn run build",
+    "prepack": "npm run build",
     "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
-    "@toruslabs/eccrypto": "^2.0.0",
-    "@toruslabs/http-helpers": "^3.3.0",
-    "@toruslabs/openlogin-jrpc": "^3.2.0",
-    "@toruslabs/openlogin-utils": "^3.0.0",
+    "@toruslabs/broadcast-channel": "^7.0.0",
+    "@toruslabs/eccrypto": "^3.0.0",
+    "@toruslabs/metadata-helpers": "^4.0.0",
+    "@toruslabs/openlogin-session-manager": "^1.0.0",
+    "@toruslabs/openlogin-utils": "^4.3.0",
+    "events": "^3.3.0",
     "loglevel": "^1.8.1",
-    "pump": "^3.0.0"
-  },
-  "devDependencies": {
-    "@types/pump": "^1.1.1"
+    "ts-custom-error": "^3.3.1"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"
@@ -53,6 +52,10 @@
   "keywords": [],
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": ">=16.18.1",
+    "npm": ">=8.x"
   },
   "gitHead": "2d61b7f1967ecd704470c46ff7c30c47d240f4a4"
 }

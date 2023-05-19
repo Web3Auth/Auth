@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<head>
+  OpenLoginSDK test
+</head>
+<body>
+  <script src="../dist/openlogin.umd.min.js"></script>
+  <script>
+    (async () => {
+      const o = new Openlogin.default({ clientId: "a", network: "testnet", uxMode: "popup" });
+      console.log(o);
+      await o.init();
+      await o.login({ loginProvider: "google" });
+    })();
+  </script>
+</body>

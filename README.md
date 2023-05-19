@@ -74,20 +74,20 @@ Ensure you have a `Node.JS` development environment setup:
 ```
 git clone https://github.com/torusresearch/OpenLoginSdk.git
 cd OpenLoginSdk
-yarn
-yarn build
+npm i
+npm run build
 ```
 
 To run tests:
 
 ```
-yarn test
+npm test
 ```
 
 ## Requirements
 
 - This package requires a peer dependency of `@babel/runtime`
-- Node 14+
+- Node 16+
 - You will need to whitelist your domain on [developer dashboard](https://dashboard.web3auth.io)
 
 ## 💬 Troubleshooting and Discussions

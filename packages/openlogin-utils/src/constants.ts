@@ -1,25 +1,8 @@
-export const modalDOMElementID = "openlogin-modal";
-
 export const storeKey = "openlogin_store";
 
 export const UX_MODE = {
   POPUP: "popup",
   REDIRECT: "redirect",
-  SESSIONLESS_REDIRECT: "sessionless_redirect",
-} as const;
-
-export const OPENLOGIN_METHOD = {
-  LOGIN: "openlogin_login",
-  LOGOUT: "openlogin_logout",
-  CHECK_3PC_SUPPORT: "openlogin_check_3PC_support",
-  SET_PID_DATA: "openlogin_set_pid_data",
-  GET_DATA: "openlogin_get_data",
-} as const;
-
-export const ALLOWED_INTERACTIONS = {
-  POPUP: "popup",
-  REDIRECT: "redirect",
-  JRPC: "jrpc",
 } as const;
 
 export const OPENLOGIN_NETWORK = {
@@ -27,8 +10,6 @@ export const OPENLOGIN_NETWORK = {
   TESTNET: "testnet",
   CYAN: "cyan",
   DEVELOPMENT: "development",
-  SK_TESTNET: "sk_testnet",
-  CELESTE: "celeste",
   AQUA: "aqua",
 } as const;
 

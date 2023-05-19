@@ -89,7 +89,9 @@ import {
 import * as ethWeb3 from "./lib/ethWeb3";
 import { getOpenLoginInstance } from "./lib/openlogin";
 import whitelabel from "./lib/whitelabel";
-import { LoginParams } from "openlogin";
+import OpenLogin from "@toruslabs/openlogin";
+import { LoginParams } from "@toruslabs/openlogin-utils";
+// import { LOGIN_PROVIDER } from "@toruslabs/openlogin-utils";
 
 export default defineComponent({
   name: "App",
@@ -105,12 +107,15 @@ export default defineComponent({
       login_hint: "",
       TORUS_SMS_PASSWORDLESS,
       TORUS_EMAIL_PASSWORDLESS,
+      email: "",
+      openloginInstance: null as OpenLogin | null,
     };
   },
   async mounted() {
     this.selectedVerifier = GOOGLE;
     const openlogin = getOpenLoginInstance();
     await openlogin.init();
+    this.openloginInstance = openlogin;
     if (openlogin.privKey) {
       this.privKey = openlogin.privKey;
       await this.setProvider(this.privKey);
@@ -141,6 +146,8 @@ export default defineComponent({
       try {
         this.loading = true;
         const openlogin = getOpenLoginInstance(whitelabel);
+        await openlogin.init();
+        this.openloginInstance = openlogin;
         // in popup mode (with third party cookies available) or if user is already logged in this function will
         // return priv key , in redirect mode or if third party cookies are blocked then priv key be injected to
         // sdk instance after calling init on redirect url page.
@@ -186,9 +193,12 @@ export default defineComponent({
       try {
         this.loading = true;
         const openLoginPlain = getOpenLoginInstance();
+        await openLoginPlain.init();
+        this.openloginInstance = openLoginPlain;
+
         const { privKey } = await openLoginPlain.login({
-          mfaLevel: "mandatory",
-          loginProvider: "",
+          // mfaLevel: "mandatory",
+          loginProvider: "google",
           redirectUrl: `${window.origin}`,
         });
         if (privKey) {
@@ -219,9 +229,20 @@ export default defineComponent({
     },
 
     async getUserInfo() {
-      const openlogin = getOpenLoginInstance();
-      const userInfo = await openlogin.getUserInfo();
-      this.printToConsole("User Info", userInfo);
+      if (!this.openloginInstance) {
+        throw new Error("Openlogin is not available.");
+      }
+      const userInfo = this.openloginInstance.getUserInfo();
+      this.printToConsole(userInfo);
+    },
+
+    getEd25519Key() {
+      if (!this.openloginInstance) {
+        throw new Error("Openlogin is not available.");
+      }
+      const { sk } = getED25519Key(this.privKey);
+      const base58Key = bs58.encode(sk);
+      this.printToConsole(base58Key);
     },
 
     async signMessage() {
@@ -283,17 +304,12 @@ export default defineComponent({
     },
 
     async logout() {
-      const openlogin = getOpenLoginInstance();
-      await openlogin.logout({});
-      this.privKey = openlogin.privKey;
+      if (!this.openloginInstance) {
+        throw new Error("Openlogin is not available.");
+      }
+      await this.openloginInstance.logout();
+      this.privKey = this.openloginInstance.privKey;
       this.ethereumPrivateKeyProvider = null;
-    },
-
-    getEd25519Key() {
-      const openlogin = getOpenLoginInstance();
-      const { sk } = getED25519Key(openlogin.privKey);
-      const base58Key = bs58.encode(sk);
-      this.printToConsole("Ed25519Key", base58Key);
     },
 
     printToConsole(...args: unknown[]) {

@@ -17,8 +17,8 @@ export const WEBAUTHN = "webauthn";
 export const COGNITO = "cognito";
 export const AUTH_DOMAIN = "https://torus-test.auth0.com";
 export const COGNITO_AUTH_DOMAIN = "https://torus-test.auth.ap-southeast-1.amazoncognito.com/oauth2/";
-export const TORUS_EMAIL_PASSWORDLESS = "torus_email_passwordless";
-export const TORUS_SMS_PASSWORDLESS = "torus_sms_passwordless";
+export const TORUS_EMAIL_PASSWORDLESS = "email_passwordless";
+export const TORUS_SMS_PASSWORDLESS = "sms_passwordless";
 
 export const verifierMap = {
   [GOOGLE]: {
