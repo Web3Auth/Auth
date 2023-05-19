@@ -14,8 +14,8 @@ export async function whitelistUrl(clientId: string, appKey: string, origin: str
   return base64url.encode(sig);
 }
 
-export function getHashQueryParams(replaceUrl = false): Pick<OpenloginSessionData, "sessionId"> {
-  const result: Pick<OpenloginSessionData, "sessionId"> = {};
+export function getHashQueryParams(replaceUrl = false): Pick<OpenloginSessionData, "sessionId"> & { error?: string } {
+  const result: Pick<OpenloginSessionData, "sessionId"> & { error?: string } = {};
 
   const url = new URL(window.location.href);
   url.searchParams.forEach((value, key) => {

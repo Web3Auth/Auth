@@ -76,6 +76,7 @@ export class LoginError extends OpenloginError {
     5111: "Invalid login params",
     5112: "User not logged in.",
     5113: "login popup has been closed by the user",
+    5114: "Login failed",
   };
 
   public constructor(code: number, message?: string) {
@@ -87,7 +88,7 @@ export class LoginError extends OpenloginError {
   }
 
   public static fromCode(code: number, extraMessage = ""): OpenloginError {
-    return new LoginError(code, `${LoginError.messages[code]}${extraMessage}`);
+    return new LoginError(code, `${LoginError.messages[code]}, ${extraMessage}`);
   }
 
   public static invalidLoginParams(extraMessage = ""): OpenloginError {
@@ -100,5 +101,9 @@ export class LoginError extends OpenloginError {
 
   public static popupClosed(extraMessage = ""): OpenloginError {
     return LoginError.fromCode(5113, extraMessage);
+  }
+
+  public static loginFailed(extraMessage = ""): OpenloginError {
+    return LoginError.fromCode(5114, extraMessage);
   }
 }
