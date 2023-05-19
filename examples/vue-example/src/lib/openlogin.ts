@@ -13,8 +13,8 @@ export function getOpenLoginInstance(selectedUxMode: UX_MODE_TYPE, whiteLabel?: 
     clientId: YOUR_PROJECT_ID,
     network: "testnet",
     uxMode: selectedUxMode,
-    // sdkUrl: "https://testing.openlogin.com",
-    sdkUrl: "http://localhost:3000",
+    sdkUrl: "https://testing.openlogin.com",
+    // sdkUrl: "http://localhost:3000",
     whiteLabel,
     loginConfig,
     // mfaSettings: {
