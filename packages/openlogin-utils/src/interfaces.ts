@@ -482,7 +482,7 @@ export type OpenLoginOptions = {
    *
    * - `'mainnet'`: https://app.openlogin.com will be used which is the production version.
    * - `'cyan'`: https://cyan.openlogin.com will be used which is the production cyan version.
-   * - `'testnet'`: https://beta.openlogin.com will be used which is the beta version.
+   * - `'testnet'`: https://testing.openlogin.com will be used which is the testing version.
    * - `'development'`: http://localhost:3000 will be used for development purpose.
    */
   network: OPENLOGIN_NETWORK_TYPE;

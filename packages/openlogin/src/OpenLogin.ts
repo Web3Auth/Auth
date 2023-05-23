@@ -40,7 +40,7 @@ class OpenLogin {
       } else if (options.network === OPENLOGIN_NETWORK.CYAN) {
         options.sdkUrl = "https://cyan.openlogin.com";
       } else if (options.network === OPENLOGIN_NETWORK.TESTNET) {
-        options.sdkUrl = "https://beta.openlogin.com";
+        options.sdkUrl = "https://testing.openlogin.com";
       } else if (options.network === OPENLOGIN_NETWORK.AQUA) {
         options.sdkUrl = "https://aqua.openlogin.com";
       } else if (options.network === OPENLOGIN_NETWORK.DEVELOPMENT) {
