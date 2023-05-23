@@ -10,6 +10,9 @@
         <label for="whitelabel">Enable whitelabel</label>
         <input type="checkbox" id="whitelabel" name="whitelabel" v-model="isWhiteLabelEnabled" />
       </div>
+      <select v-model="selectedOpenloginNetwork" class="select">
+        <option :key="login" v-for="login in Object.values(OPENLOGIN_NETWORK)" :value="login">{{ login }}</option>
+      </select>
       <select v-model="selectedUxMode" class="select">
         <option :key="login" v-for="login in Object.values(UX_MODE)" :value="login">{{ login }}</option>
       </select>
@@ -91,11 +94,26 @@ import * as bs58 from "bs58";
 import { defineComponent } from "vue";
 
 import * as ethWeb3 from "./lib/ethWeb3";
-import { getOpenLoginInstance } from "./lib/openlogin";
 import whitelabel from "./lib/whitelabel";
 import OpenLogin from "@toruslabs/openlogin";
-import { LoginParams, LOGIN_PROVIDER, LOGIN_PROVIDER_TYPE, UX_MODE, UX_MODE_TYPE } from "@toruslabs/openlogin-utils";
-// import { LOGIN_PROVIDER } from "@toruslabs/openlogin-utils";
+import {
+  LoginParams,
+  LOGIN_PROVIDER,
+  LOGIN_PROVIDER_TYPE,
+  UX_MODE,
+  UX_MODE_TYPE,
+  OPENLOGIN_NETWORK,
+  OPENLOGIN_NETWORK_TYPE,
+} from "@toruslabs/openlogin-utils";
+import loginConfig from "./lib/loginConfig";
+
+const OPENLOGIN_PROJECT_IDS: Record<OPENLOGIN_NETWORK_TYPE, string> = {
+  [OPENLOGIN_NETWORK.MAINNET]: "BCtbnOamqh0cJFEUYA0NB5YkvBECZ3HLZsKfvSRBvew2EiiKW3UxpyQASSR0artjQkiUOCHeZ_ZeygXpYpxZjOs",
+  [OPENLOGIN_NETWORK.TESTNET]: "BJ6l3_kIQiy6YVL7zDlCcEAvGpGukwFgp-C_0WvNI_fAEeIaoVRLDrV5OjtbZr_zJxbyXFsXMT-yhQiUNYvZWpo",
+  [OPENLOGIN_NETWORK.AQUA]: "BK19YSk7lHGp9NdAb-HFj6DHI2sZ7DCncztz8xZazLd54_28KrQm8QDSgxZm4F0uhjiGuzdzxZyNEqgNst3oRtM",
+  [OPENLOGIN_NETWORK.CYAN]: "BHhjZ5eaJLgRtz1nVBwCFvlbpCCOHlK4Sxku2m56Gufn5IBuK9XfUzKg_HDlos14I-ZbsN1CgSLszZzr9ICc2Ho",
+  [OPENLOGIN_NETWORK.DEVELOPMENT]: "YOUR_CLIENT_ID",
+};
 
 export default defineComponent({
   name: "App",
@@ -107,16 +125,16 @@ export default defineComponent({
       LOGIN_PROVIDER: LOGIN_PROVIDER,
       selectedLoginProvider: LOGIN_PROVIDER.GOOGLE as LOGIN_PROVIDER_TYPE,
       login_hint: "",
-      openloginInstance: null as OpenLogin | null,
       isWhiteLabelEnabled: false,
       UX_MODE: UX_MODE,
       selectedUxMode: UX_MODE.REDIRECT as UX_MODE_TYPE,
+      OPENLOGIN_NETWORK: OPENLOGIN_NETWORK,
+      selectedOpenloginNetwork: OPENLOGIN_NETWORK.TESTNET as OPENLOGIN_NETWORK_TYPE,
     };
   },
   async created() {
-    const openlogin = getOpenLoginInstance(this.selectedUxMode, this.isWhiteLabelEnabled ? whitelabel : {});
+    const openlogin = this.openloginInstance;
     await openlogin.init();
-    this.openloginInstance = openlogin;
     if (openlogin.privKey) {
       this.privKey = openlogin.privKey;
       await this.setProvider(this.privKey);
@@ -140,6 +158,19 @@ export default defineComponent({
     },
     isLongLines(): boolean {
       return ([LOGIN_PROVIDER.EMAIL_PASSWORDLESS, LOGIN_PROVIDER.SMS_PASSWORDLESS] as LOGIN_PROVIDER_TYPE[]).includes(this.selectedLoginProvider);
+    },
+    openloginInstance(): OpenLogin {
+      const currentClientId = OPENLOGIN_PROJECT_IDS[this.selectedOpenloginNetwork];
+      const op = new OpenLogin({
+        clientId: currentClientId,
+        network: this.selectedOpenloginNetwork,
+        uxMode: this.selectedUxMode,
+        whiteLabel: this.isWhiteLabelEnabled ? whitelabel : {},
+        loginConfig: loginConfig,
+        // sdkUrl: "https://staging.openlogin.com",
+      });
+      op.init();
+      return op;
     },
   },
   methods: {
