@@ -452,6 +452,10 @@ export interface OpenloginSessionData {
   tKey?: string;
   walletKey?: string;
   userInfo?: OpenloginUserInfo;
+  /**
+   * Legacy reasons
+   * Will remove this in future releases.
+   */
   store?: OpenloginUserInfo;
 }
 
