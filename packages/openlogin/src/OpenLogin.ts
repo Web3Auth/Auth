@@ -78,10 +78,18 @@ class OpenLogin {
   }
 
   get sessionId(): string {
-    return this.currentStorage.get<string>("sessionId") || "";
+    return this.state.sessionId || "";
+  }
+
+  get sessionNamespace(): string {
+    return this.options.sessionNamespace || "";
   }
 
   async init(): Promise<void> {
+    // get sessionNamespace from the redirect result.
+    const params = getHashQueryParams(this.options.replaceUrlOnRedirect);
+    if (params.sessionNamespace) this.options.sessionNamespace = params.sessionNamespace;
+
     const storageKey = this.options.sessionNamespace ? `${this._storageBaseKey}_${this.options.sessionNamespace}` : this._storageBaseKey;
     this.currentStorage = BrowserStorage.getInstance(storageKey, this.options.storageKey);
 
@@ -100,10 +108,10 @@ class OpenLogin {
       console.log("%c WARNING! You are on testnet. Please set network: 'mainnet' in production", "color: #FF0000");
     }
 
-    const params = getHashQueryParams(this.options.replaceUrlOnRedirect);
     if (params.error) {
       throw LoginError.loginFailed(params.error);
     }
+
     if (params.sessionId) {
       this.currentStorage.set("sessionId", params.sessionId);
       this.sessionManager.sessionKey = params.sessionId;
@@ -112,7 +120,12 @@ class OpenLogin {
     if (this.sessionManager.sessionKey) {
       const data = await this._authorizeSession();
       // Fill state with correct info from session
+      // If session is invalid all the data is unset here.
       this.updateState(data);
+      if (Object.keys(data).length === 0) {
+        // If session is invalid, unset the sessionId from localStorage.
+        this.currentStorage.set("sessionId", "");
+      }
     }
   }
 
@@ -163,8 +176,10 @@ class OpenLogin {
 
       currentWindow
         .listenOnChannel(loginId)
-        .then((sessionId: string) => {
+        .then(({ sessionId, sessionNamespace }) => {
           this.sessionManager.sessionKey = sessionId;
+          this.options.sessionNamespace = sessionNamespace;
+          this.currentStorage.set("sessionId", sessionId);
           return this.sessionManager.authorizeSession();
         })
         .then((sessionData: OpenloginSessionData) => {

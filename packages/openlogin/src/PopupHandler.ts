@@ -61,9 +61,9 @@ class PopupHandler extends EventEmitter {
     }
   }
 
-  async listenOnChannel(loginId: string): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-      const bc = new BroadcastChannel<{ error?: string; data?: string }>(loginId, {
+  async listenOnChannel(loginId: string): Promise<{ sessionId: string; sessionNamespace?: string }> {
+    return new Promise<{ sessionId: string; sessionNamespace?: string }>((resolve, reject) => {
+      const bc = new BroadcastChannel<{ error?: string; data?: { sessionId: string; sessionNamespace?: string } }>(loginId, {
         webWorkerSupport: false,
         type: "server",
       });
