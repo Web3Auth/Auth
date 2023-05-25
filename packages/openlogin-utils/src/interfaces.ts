@@ -452,6 +452,7 @@ export interface OpenloginSessionData {
   tKey?: string;
   walletKey?: string;
   userInfo?: OpenloginUserInfo;
+  store?: OpenloginUserInfo;
 }
 
 export const MFA_FACTOR = {
