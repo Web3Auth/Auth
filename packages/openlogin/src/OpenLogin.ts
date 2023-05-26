@@ -56,7 +56,7 @@ class OpenLogin {
     }
 
     if (!options.uxMode) options.uxMode = UX_MODE.REDIRECT;
-    if (!options.replaceUrlOnRedirect) options.replaceUrlOnRedirect = true;
+    if (typeof options.replaceUrlOnRedirect !== "boolean") options.replaceUrlOnRedirect = true;
     if (!options.originData) options.originData = {};
     if (!options.whiteLabel) options.whiteLabel = {};
     if (!options.loginConfig) options.loginConfig = {};
