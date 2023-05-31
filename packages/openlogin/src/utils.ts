@@ -1,6 +1,6 @@
 import { getPublic, sign } from "@toruslabs/eccrypto";
 import { keccak256 } from "@toruslabs/metadata-helpers";
-import { base64url, OpenloginSessionData, safeatob } from "@toruslabs/openlogin-utils";
+import { base64url, safeatob } from "@toruslabs/openlogin-utils";
 
 import log from "./loglevel";
 
@@ -14,8 +14,8 @@ export async function whitelistUrl(clientId: string, appKey: string, origin: str
   return base64url.encode(sig);
 }
 
-export function getHashQueryParams(replaceUrl = false): Pick<OpenloginSessionData, "sessionId"> & { error?: string } {
-  const result: Pick<OpenloginSessionData, "sessionId"> & { error?: string } = {};
+export function getHashQueryParams(replaceUrl = false): { sessionId?: string; sessionNamespace?: string; error?: string } {
+  const result: { sessionId?: string; sessionNamespace?: string; error?: string } = {};
 
   const url = new URL(window.location.href);
   url.searchParams.forEach((value, key) => {
