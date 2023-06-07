@@ -77,6 +77,14 @@ class OpenLogin {
     return this.state.coreKitKey ? this.state.coreKitKey.padStart(64, "0") : "";
   }
 
+  get ed25519PrivKey(): string {
+    return this.state.ed25519PrivKey ? this.state.ed25519PrivKey : "";
+  }
+
+  get coreKitEd25519Key(): string {
+    return this.state.coreKitEd25519PrivKey ? this.state.coreKitEd25519PrivKey : "";
+  }
+
   get sessionId(): string {
     return this.state.sessionId || "";
   }
