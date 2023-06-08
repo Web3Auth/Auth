@@ -78,11 +78,11 @@ class OpenLogin {
   }
 
   get ed25519PrivKey(): string {
-    return this.state.ed25519PrivKey ? this.state.ed25519PrivKey.padStart(64, "0") : "";
+    return this.state.ed25519PrivKey ? this.state.ed25519PrivKey.padStart(128, "0") : "";
   }
 
   get coreKitEd25519Key(): string {
-    return this.state.coreKitEd25519PrivKey ? this.state.coreKitEd25519PrivKey.padStart(64, "0") : "";
+    return this.state.coreKitEd25519PrivKey ? this.state.coreKitEd25519PrivKey.padStart(128, "0") : "";
   }
 
   get sessionId(): string {
