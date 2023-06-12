@@ -231,7 +231,7 @@ class OpenLogin {
   }
 
   getUserInfo(): OpenloginUserInfo {
-    if (!this.privKey) {
+    if (!this.sessionManager.sessionKey) {
       throw LoginError.userNotLoggedIn();
     }
     return this.state.userInfo;
