@@ -1,7 +1,17 @@
-import { serializeError } from "eth-rpc-errors";
+import { rpcErrors, serializeError } from "@metamask/rpc-errors";
 import { Duplex } from "readable-stream";
 
-import { JRPCEngineEndCallback, JRPCEngineNextCallback, JRPCEngineReturnHandler, JRPCMiddleware, JRPCRequest, JRPCResponse } from "./interfaces";
+import {
+  JRPCEngineEndCallback,
+  JRPCEngineNextCallback,
+  JRPCEngineReturnHandler,
+  JRPCMiddleware,
+  JRPCRequest,
+  JRPCResponse,
+  Maybe,
+  RequestArguments,
+  SendCallBack,
+} from "./interfaces";
 import SafeEventEmitter from "./safeEventEmitter";
 import SerializableError from "./serializableError";
 
@@ -368,4 +378,73 @@ export function createEngineStream(opts: EngineStreamOptions): Duplex {
     });
   }
   return stream;
+}
+
+export interface SafeEventEmitterProvider extends SafeEventEmitter {
+  sendAsync: <T, U>(req: JRPCRequest<T>) => Promise<U>;
+  send: <T, U>(req: JRPCRequest<T>, callback: SendCallBack<U>) => void;
+  request: <T, U>(args: RequestArguments<T>) => Promise<Maybe<U>>;
+}
+
+export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider {
+  const provider: SafeEventEmitterProvider = new SafeEventEmitter() as SafeEventEmitterProvider;
+  // handle both rpc send methods
+  provider.sendAsync = async <T, U>(req: JRPCRequest<T>) => {
+    const res = await engine.handle(req);
+    if (res.error) {
+      const err = serializeError(res.error, {
+        fallbackError: {
+          message: res.error?.message || res.error.toString(),
+          code: res.error?.code || -32603,
+        },
+      });
+
+      throw rpcErrors.internal(err);
+    }
+    return res.result as U;
+  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  provider.send = <T, U>(req: JRPCRequest<T>, callback: (error: any, providerRes: U) => void) => {
+    if (typeof callback !== "function") {
+      throw new Error('Must provide callback to "send" method.');
+    }
+    engine.handle(req, callback);
+  };
+  // forward notifications
+  if (engine.on) {
+    engine.on("notification", (message: string) => {
+      provider.emit("data", null, message);
+    });
+  }
+
+  provider.request = async <T, U>(args: RequestArguments<T>) => {
+    const req: JRPCRequest<T> = {
+      ...args,
+      id: Math.random().toString(36).slice(2),
+      jsonrpc: "2.0",
+    };
+    const res = await provider.sendAsync(req);
+    return res as U;
+  };
+  return provider;
+}
+
+export function providerFromMiddleware(middleware: JRPCMiddleware<string[], unknown>): SafeEventEmitterProvider {
+  const engine = new JRPCEngine();
+  engine.push(middleware);
+  const provider: SafeEventEmitterProvider = providerFromEngine(engine);
+  return provider;
+}
+
+export function providerAsMiddleware(provider: SafeEventEmitterProvider): JRPCMiddleware<unknown, unknown> {
+  return async (req, res, _next, end) => {
+    // send request to provider
+    try {
+      const providerRes: unknown = await provider.sendAsync<unknown, unknown>(req);
+      res.result = providerRes;
+      return end();
+    } catch (error) {
+      return end(error.message);
+    }
+  };
 }

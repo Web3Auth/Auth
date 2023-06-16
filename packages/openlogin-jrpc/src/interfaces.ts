@@ -38,7 +38,7 @@ export type JRPCMiddleware<T, U> = (req: JRPCRequest<T>, res: JRPCResponse<U>, n
 
 export type AsyncJRPCEngineNextCallback = () => Promise<void>;
 
-type Maybe<T> = Partial<T> | null | undefined;
+export type Maybe<T> = T | Partial<T> | null | undefined;
 
 export interface JRPCSuccess<T> extends JRPCBase {
   result: Maybe<T>;
@@ -65,3 +65,22 @@ export type AsyncJRPCMiddleware<T, U> = (req: JRPCRequest<T>, res: PendingJRPCRe
 export type ReturnHandlerCallback = (error: null | Error) => void;
 
 export type BufferEncoding = "ascii" | "utf8" | "utf-8" | "utf16le" | "ucs2" | "ucs-2" | "base64" | "latin1" | "binary" | "hex";
+
+export type BlockData = string | string[];
+
+export type Block = Record<string, BlockData>;
+
+export type SendAsyncCallBack = (err: Error, providerRes: JRPCResponse<Block>) => void;
+
+export type SendCallBack<U> = (err: any, providerRes: U) => void;
+
+export type Payload = Partial<JRPCRequest<string[]>>;
+
+export interface RequestArguments<T> {
+  method: string;
+  params?: T;
+}
+
+export interface ExtendedJsonRpcRequest<T> extends JRPCRequest<T> {
+  skipCache?: boolean;
+}
