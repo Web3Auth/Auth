@@ -12,8 +12,7 @@
   ],
   "repository": "git@github.com:torusresearch/OpenLoginSdk.git",
   "scripts": {
-    "bootstrap": "lerna bootstrap",
-    "publish:lerna": "npm run clean && npm run bootstrap && lerna publish",
+    "publish:lerna": "npm run clean && npm install && lerna publish",
     "just:publish:lerna": "lerna publish",
     "clean": "lerna clean --yes && lerna exec -- rimraf package-lock.json dist/ .rollup.cache/ tsconfig.build.tsbuildinfo .rts2_cache_{cjs,esm}/ toruslabs-*.tgz openlogin-*tgz .eslintcache",
     "build": "cross-env FORCE_COLOR=1 lerna run --stream build",
