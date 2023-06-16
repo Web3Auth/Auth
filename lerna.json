@@ -9,6 +9,5 @@
     "packages/openlogin-utils",
     "packages/wrapper"
   ],
-  "npmClient": "npm",
-  "useWorkspaces": true
+  "npmClient": "npm"
 }
