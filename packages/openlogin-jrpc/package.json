@@ -1,6 +1,6 @@
 {
   "name": "@toruslabs/openlogin-jrpc",
-  "version": "4.5.1",
+  "version": "4.6.0",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
   "main": "dist/openloginJrpc.cjs.js",
@@ -20,9 +20,9 @@
     "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
+    "@metamask/rpc-errors": "^5.1.1",
     "@toruslabs/openlogin-utils": "^4.5.1",
     "end-of-stream": "^1.4.4",
-    "@metamask/rpc-errors": "^5.1.1",
     "events": "^3.3.0",
     "fast-safe-stringify": "^2.1.1",
     "once": "^1.4.0",
