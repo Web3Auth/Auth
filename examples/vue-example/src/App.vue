@@ -41,11 +41,11 @@
     <div v-else class="dashboard-container">
       <!-- Dashboard Header -->
       <div class="dashboard-header">
-        <div>
+        <div class="max-sm:w-full">
           <h1 class="dashboard-heading">demo-openlogin.web3auth.io</h1>
           <p class="dashboard-subheading">Openlogin Private key : {{ privKey }}</p>
         </div>
-        <div class="dashboard-action-container">
+        <div class="dashboard-action-container max-sm:flex max-sm:justify-between">
           <p class="dashboard-chainid">Connect chainID : 0x5</p>
           <button class="dashboard-action-logout" @click.stop="logout">
             <img :src="require('@/assets/logout.svg')" alt="logout" height="18" width="18" />
@@ -57,21 +57,21 @@
       <div class="dashboard-details-container">
         <div class="dashboard-details-btn-container">
           <p class="btn-label">User info</p>
-          <div class="flex-row bottom-gutter">
+          <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
             <button class="btn" @click="getUserInfo">Get user info</button>
             <button class="btn" @click="getEd25519Key">Get Ed25519Key</button>
           </div>
           <p class="btn-label">Signing</p>
-          <div class="flex-row bottom-gutter">
+          <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
             <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="signMessage">Sign test Eth Message</button>
             <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="latestBlock">Fetch latest block</button>
           </div>
-          <div class="flex-row bottom-gutter">
+          <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
             <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="addChain">Add Goerli</button>
             <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="switchChain">Switch to Goerli</button>
           </div>
-          <div class="flex-row bottom-gutter">
-            <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="signV1Message">Sign Typed data v1 test message</button>
+          <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
+            <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="signV1Message">Sign Typed data v1 test msg</button>
           </div>
         </div>
         <!-- Dashboard Console Container -->
