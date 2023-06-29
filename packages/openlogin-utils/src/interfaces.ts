@@ -252,6 +252,12 @@ export type WhiteLabelData = {
    * @defaultValue false
    */
   dark?: boolean;
+  /**
+   * Use logo loader
+   *
+   * @defaultValue false
+   */
+  useLogoLoader?: boolean;
 
   /**
    * Used to customize theme of the login modal with following options
