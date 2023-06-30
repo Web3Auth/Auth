@@ -31,6 +31,11 @@ body,
   font-size: 32px;
   line-height: 48px;
   color: #0f1222;
+
+  @media (width < 740px) {
+    font-size: 24px;
+    padding: 0px 16px;
+  }
 }
 
 .login-subheading {
@@ -67,6 +72,12 @@ body,
   display: flex;
   align-items: center;
   justify-content: space-between;
+
+  @media (width < 780px) {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem;
+  }
 }
 
 .dashboard-heading {
@@ -75,6 +86,10 @@ body,
   font-size: 24px;
   line-height: 36px;
   color: #0f1222;
+
+  @media (width < 740px) {
+    font-size: 1rem;
+  }
 }
 
 .dashboard-subheading {
@@ -84,12 +99,25 @@ body,
   line-height: 150%;
   letter-spacing: 0.002em;
   color: #595857;
+
+  @media (width < 740px) {
+    font-size: 12px;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 1rem;
+  }
 }
 
 .dashboard-action-container {
   display: flex;
   column-gap: 1rem;
   align-items: center;
+
+  @media (width < 780px) {
+    width: 100%;
+  }
 }
 
 .dashboard-chainid {
@@ -131,6 +159,12 @@ body,
   display: flex;
   column-gap: 2rem;
   margin-top: 1rem;
+
+  @media (width < 780px) {
+    flex-direction: column;
+    height: auto;
+    row-gap: 1rem;
+  }
 }
 
 .dashboard-details-btn-container {
@@ -143,6 +177,10 @@ body,
   flex-direction: column;
   height: calc(100vh - 186px);
   width: 582px;
+  @media (width < 780px) {
+    width: 100%;
+    height: auto;
+  }
 }
 
 .dashboard-details-console-container {
@@ -156,6 +194,9 @@ body,
   height: calc(100vh - 186px);
   overflow-y: auto;
   position: relative;
+  @media (width < 780px) {
+    width: 100%;
+  }
 }
 
 .detail-btn {
