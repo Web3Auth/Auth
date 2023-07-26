@@ -58,7 +58,7 @@ export function getHashQueryParams(replaceUrl = false): { sessionId?: string; se
 
   if (replaceUrl) {
     const cleanUrl = window.location.origin + window.location.pathname;
-    window.history.replaceState(null, "", cleanUrl);
+    window.history.replaceState({ ...window.history.state, as: cleanUrl, url: cleanUrl }, "", cleanUrl);
   }
 
   return result;
