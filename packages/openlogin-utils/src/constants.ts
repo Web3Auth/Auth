@@ -11,6 +11,9 @@ export const OPENLOGIN_NETWORK = {
   CYAN: "cyan",
   DEVELOPMENT: "development",
   AQUA: "aqua",
+  SAPPHIRE_TESTNET: "sapphire_testnet",
+  SAPPHIRE_DEVNET: "sapphire_devnet",
+  SAPPHIRE_MAINNET: "sapphire_mainnet",
 } as const;
 
 export const SUPPORTED_KEY_CURVES = {

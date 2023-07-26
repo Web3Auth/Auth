@@ -27,7 +27,7 @@
     "fast-safe-stringify": "^2.1.1",
     "once": "^1.4.0",
     "pump": "^3.0.0",
-    "readable-stream": "^4.4.1"
+    "readable-stream": "^4.4.2"
   },
   "devDependencies": {
     "@types/end-of-stream": "^1.4.1",
