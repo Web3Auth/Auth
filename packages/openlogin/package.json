@@ -20,6 +20,7 @@
     "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
+    "bowser": "^2.11.0",
     "@toruslabs/broadcast-channel": "^7.0.0",
     "@toruslabs/eccrypto": "^3.0.0",
     "@toruslabs/metadata-helpers": "^4.0.0",
