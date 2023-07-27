@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@toruslabs/ffjavascript": "^1.0.0",
-    "@toruslabs/metadata-helpers": "^4.0.0",
+    "@toruslabs/metadata-helpers": "^4.0.1",
     "bn.js": "^5.2.1"
   },
   "peerDependencies": {
