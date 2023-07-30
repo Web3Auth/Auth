@@ -1,6 +1,7 @@
 import { getPublic, sign } from "@toruslabs/eccrypto";
 import { keccak256 } from "@toruslabs/metadata-helpers";
-import { base64url, safeatob } from "@toruslabs/openlogin-utils";
+import { base64url, LOGIN_PROVIDER, safeatob } from "@toruslabs/openlogin-utils";
+import bowser from "bowser";
 
 import log from "./loglevel";
 
@@ -57,7 +58,7 @@ export function getHashQueryParams(replaceUrl = false): { sessionId?: string; se
 
   if (replaceUrl) {
     const cleanUrl = window.location.origin + window.location.pathname;
-    window.history.replaceState(null, "", cleanUrl);
+    window.history.replaceState({ ...window.history.state, as: cleanUrl, url: cleanUrl }, "", cleanUrl);
   }
 
   return result;
@@ -105,4 +106,17 @@ export function getPopupFeatures(): string {
   const top = Math.abs((height - h) / 2 / systemZoom + dualScreenTop);
   const features = `titlebar=0,toolbar=0,status=0,location=0,menubar=0,height=${h / systemZoom},width=${w / systemZoom},top=${top},left=${left}`;
   return features;
+}
+
+export function isMobileOrTablet(): boolean {
+  const browser = bowser.getParser(window.navigator.userAgent);
+  const platform = browser.getPlatform();
+  return platform.type === bowser.PLATFORMS_MAP.tablet || platform.type === bowser.PLATFORMS_MAP.mobile;
+}
+
+export function getTimeout(loginProvider: string) {
+  if ((loginProvider === LOGIN_PROVIDER.FACEBOOK || loginProvider === LOGIN_PROVIDER.LINE) && isMobileOrTablet()) {
+    return 1000 * 60 * 5; // 5 minutes to finish the login
+  }
+  return 1000 * 10; // 10 seconds
 }

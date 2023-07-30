@@ -17,7 +17,7 @@ import log from "loglevel";
 
 import { InitializationError, LoginError } from "./errors";
 import PopupHandler from "./PopupHandler";
-import { constructURL, getHashQueryParams, version } from "./utils";
+import { constructURL, getHashQueryParams, getTimeout, version } from "./utils";
 
 class OpenLogin {
   state: OpenloginSessionData = {};
@@ -176,7 +176,7 @@ class OpenLogin {
         baseURL: base64url,
         hash: { b64Params: jsonToBase64(configParams) },
       });
-      const currentWindow = new PopupHandler({ url: loginUrl });
+      const currentWindow = new PopupHandler({ url: loginUrl, timeout: getTimeout(params.loginProvider) });
 
       currentWindow.on("close", () => {
         reject(LoginError.popupClosed());
