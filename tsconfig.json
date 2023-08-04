@@ -1,9 +1,8 @@
 {
   "extends": "@toruslabs/config/tsconfig.default.json",
   "compilerOptions": {
-    "rootDir": ".",
     "paths": {
-      "@toruslabs/*": ["packages/*/src"]
+      "@toruslabs/*": ["./packages/*"]
     }
   }
 }

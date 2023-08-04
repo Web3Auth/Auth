@@ -1,13 +1,5 @@
 {
+  "$schema": "node_modules/lerna/schemas/lerna-schema.json",
   "version": "4.7.2",
-  "packages": [
-    "packages/openlogin",
-    "packages/openlogin-ed25519",
-    "packages/openlogin-jrpc",
-    "packages/openlogin-starkey",
-    "packages/openlogin-subkey",
-    "packages/openlogin-utils",
-    "packages/wrapper"
-  ],
   "npmClient": "npm"
 }

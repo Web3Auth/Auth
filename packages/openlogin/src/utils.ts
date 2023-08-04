@@ -3,7 +3,7 @@ import { keccak256 } from "@toruslabs/metadata-helpers";
 import { base64url, LOGIN_PROVIDER, safeatob } from "@toruslabs/openlogin-utils";
 import bowser from "bowser";
 
-import log from "./loglevel";
+import { loglevel as log } from "./logger";
 
 // don't use destructuring for process.env cause it messes up webpack env plugin
 export const version = process.env.OPENLOGIN_VERSION;

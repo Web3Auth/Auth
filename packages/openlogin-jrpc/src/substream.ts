@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Duplex } from "readable-stream";
 
 import { BufferEncoding } from "./interfaces";

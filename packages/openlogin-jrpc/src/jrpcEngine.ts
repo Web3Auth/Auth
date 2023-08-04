@@ -445,7 +445,7 @@ export function providerAsMiddleware(provider: SafeEventEmitterProvider): JRPCMi
       res.result = providerRes;
       return end();
     } catch (error: unknown) {
-      return end(error.message);
+      return end(error as Error);
     }
   };
 }
