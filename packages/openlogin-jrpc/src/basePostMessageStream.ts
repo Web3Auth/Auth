@@ -21,6 +21,7 @@ export default class BasePostMessageStream extends Duplex {
 
   _targetOrigin: string;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _onMessage: any;
 
   _synIntervalId: number;
@@ -124,7 +125,8 @@ export default class BasePostMessageStream extends Duplex {
     return undefined;
   }
 
-  _write(data: unknown, _, cb: () => void): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _write(data: unknown, _: any, cb: () => void): void {
     this._postMessage(data);
     cb();
   }

@@ -22,7 +22,7 @@
   "dependencies": {
     "@toruslabs/openlogin": "^4.7.2",
     "@toruslabs/openlogin-jrpc": "^4.7.2",
-    "@toruslabs/openlogin-utils": "^4.7.0",
+    "@toruslabs/openlogin-utils": "^4.7.2",
     "bn.js": "^5.2.1"
   },
   "peerDependencies": {
