@@ -47,3 +47,8 @@ export const MFA_LEVELS = {
   MANDATORY: "mandatory",
   NONE: "none",
 } as const;
+
+export const OPENLOGIN_ACTIONS = {
+  LOGIN: "login",
+  ENABLE_MFA: "enable_mfa",
+} as const;

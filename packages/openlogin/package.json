@@ -24,7 +24,7 @@
     "@toruslabs/eccrypto": "^3.0.0",
     "@toruslabs/metadata-helpers": "^4.0.1",
     "@toruslabs/openlogin-session-manager": "^1.1.0",
-    "@toruslabs/openlogin-utils": "^4.7.0",
+    "@toruslabs/openlogin-utils": "^4.7.2",
     "bowser": "^2.11.0",
     "events": "^3.3.0",
     "loglevel": "^1.8.1",

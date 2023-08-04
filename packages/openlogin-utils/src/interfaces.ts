@@ -1,4 +1,4 @@
-import { LOGIN_PROVIDER, MFA_LEVELS, OPENLOGIN_NETWORK, SUPPORTED_KEY_CURVES, UX_MODE } from "./constants";
+import { LOGIN_PROVIDER, MFA_LEVELS, OPENLOGIN_ACTIONS, OPENLOGIN_NETWORK, SUPPORTED_KEY_CURVES, UX_MODE } from "./constants";
 
 export type UX_MODE_TYPE = (typeof UX_MODE)[keyof typeof UX_MODE];
 
@@ -30,6 +30,8 @@ export type BaseRedirectParams = {
  * {@label loginProviderType}
  */
 export type LOGIN_PROVIDER_TYPE = (typeof LOGIN_PROVIDER)[keyof typeof LOGIN_PROVIDER];
+
+export type OPENLOGIN_ACTIONS_TYPE = (typeof OPENLOGIN_ACTIONS)[keyof typeof OPENLOGIN_ACTIONS];
 
 // autocomplete workaround https://github.com/microsoft/TypeScript/issues/29729
 export type CUSTOM_LOGIN_PROVIDER_TYPE = string & { toString?: (radix?: number) => string };
@@ -434,7 +436,10 @@ export type OpenloginUserInfo = {
   oAuthAccessToken?: string;
   appState?: string;
   touchIDPreference?: string;
+  isMfaEnabled?: boolean;
 };
+
+export type KeyMode = "v1" | "1/1" | "2/n";
 
 export interface OpenloginSessionData {
   privKey?: string;
@@ -446,6 +451,8 @@ export interface OpenloginSessionData {
   tKey?: string;
   walletKey?: string;
   userInfo?: OpenloginUserInfo;
+  keyMode?: KeyMode;
+  metadataNonce?: string;
   /**
    * Legacy reasons
    * Will remove this in future releases.
@@ -608,6 +615,8 @@ export interface BaseLoginParams {
 }
 
 export interface OpenloginSessionConfig {
+  actionType: OPENLOGIN_ACTIONS_TYPE;
   options: OpenLoginOptions;
-  params: LoginParams;
+  params: Partial<LoginParams>;
+  sessionId?: string;
 }

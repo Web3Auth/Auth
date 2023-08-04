@@ -5,8 +5,8 @@ import {
   BrowserStorage,
   jsonToBase64,
   LoginParams,
+  OPENLOGIN_ACTIONS,
   OPENLOGIN_NETWORK,
-  OPENLOGIN_NETWORK_TYPE,
   OpenLoginOptions,
   OpenloginSessionConfig,
   OpenloginSessionData,
@@ -16,15 +16,13 @@ import {
 import log from "loglevel";
 
 import { InitializationError, LoginError } from "./errors";
-import PopupHandler from "./PopupHandler";
+import PopupHandler, { PopupResponse } from "./PopupHandler";
 import { constructURL, getHashQueryParams, getTimeout, version } from "./utils";
 
 class OpenLogin {
   state: OpenloginSessionData = {};
 
   options: OpenLoginOptions;
-
-  private versionSupportNetworks: OPENLOGIN_NETWORK_TYPE[] = [OPENLOGIN_NETWORK.MAINNET, OPENLOGIN_NETWORK.CYAN, OPENLOGIN_NETWORK.AQUA];
 
   private sessionManager: OpenloginSessionManager<OpenloginSessionData>;
 
@@ -34,17 +32,13 @@ class OpenLogin {
 
   constructor(options: OpenLoginOptions) {
     if (!options.clientId) throw InitializationError.invalidParams("clientId is required");
+    if (!options.network) options.network = OPENLOGIN_NETWORK.MAINNET;
     if (!options.sdkUrl) {
-      if (options.network === OPENLOGIN_NETWORK.MAINNET) {
-        options.sdkUrl = "https://app.openlogin.com";
-      } else if (options.network === OPENLOGIN_NETWORK.CYAN) {
-        options.sdkUrl = "https://cyan.openlogin.com";
-      } else if (options.network === OPENLOGIN_NETWORK.TESTNET) {
-        options.sdkUrl = "https://testing.openlogin.com";
-      } else if (options.network === OPENLOGIN_NETWORK.AQUA) {
-        options.sdkUrl = "https://aqua.openlogin.com";
-      } else if (options.network === OPENLOGIN_NETWORK.DEVELOPMENT) {
+      if (options.network === OPENLOGIN_NETWORK.DEVELOPMENT) {
         options.sdkUrl = "http://localhost:3000";
+      } else {
+        // TODO: confirm this url.
+        options.sdkUrl = "https://auth.web3auth.io";
       }
     }
     if (!options.sdkUrl) {
@@ -54,7 +48,6 @@ class OpenLogin {
     if (!options.redirectUrl) {
       options.redirectUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
     }
-
     if (!options.uxMode) options.uxMode = UX_MODE.REDIRECT;
     if (typeof options.replaceUrlOnRedirect !== "boolean") options.replaceUrlOnRedirect = true;
     if (!options.originData) options.originData = {};
@@ -91,6 +84,11 @@ class OpenLogin {
 
   get sessionNamespace(): string {
     return this.options.sessionNamespace || "";
+  }
+
+  private get baseUrl(): string {
+    if (this.options.network === OPENLOGIN_NETWORK.DEVELOPMENT) return `${this.options.sdkUrl}`;
+    return `${this.options.sdkUrl}/v${version.split(".")[0]}`;
   }
 
   async init(): Promise<void> {
@@ -151,53 +149,21 @@ class OpenLogin {
       ...defaultParams,
       ...params,
     };
-    // do this in popup-window route
-    // loginParams.redirectUrl = this.options.uxMode === UX_MODE.POPUP ? `${this.options.sdkUrl}/popup-window` : loginParams.redirectUrl;
 
-    const base64url = this.getBaseUrl();
-
-    // construct the url to open for either popup/redirect mode and call request method to handle the rest
-    const loginId = await this.getLoginId(loginParams);
-    const configParams: BaseLoginParams = {
-      loginId,
-      sessionNamespace: this.options.sessionNamespace,
+    const dataObject: OpenloginSessionConfig = {
+      actionType: OPENLOGIN_ACTIONS.LOGIN,
+      options: this.options,
+      params: loginParams,
     };
 
-    if (this.options.uxMode === UX_MODE.REDIRECT) {
-      const loginUrl = constructURL({
-        baseURL: base64url,
-        hash: { b64Params: jsonToBase64(configParams) },
-      });
-      window.location.href = loginUrl;
-      return undefined;
-    }
-    return new Promise((resolve, reject) => {
-      const loginUrl = constructURL({
-        baseURL: base64url,
-        hash: { b64Params: jsonToBase64(configParams) },
-      });
-      const currentWindow = new PopupHandler({ url: loginUrl, timeout: getTimeout(params.loginProvider) });
-
-      currentWindow.on("close", () => {
-        reject(LoginError.popupClosed());
-      });
-
-      currentWindow
-        .listenOnChannel(loginId)
-        .then(({ sessionId, sessionNamespace }) => {
-          this.sessionManager.sessionKey = sessionId;
-          this.options.sessionNamespace = sessionNamespace;
-          this.currentStorage.set("sessionId", sessionId);
-          return this.sessionManager.authorizeSession();
-        })
-        .then((sessionData: OpenloginSessionData) => {
-          this.updateState(sessionData);
-          return resolve({ privKey: this.privKey });
-        })
-        .catch(reject);
-
-      currentWindow.open();
-    });
+    const result = await this.openloginHandler(`${this.baseUrl}/start`, dataObject, getTimeout(params.loginProvider));
+    if (this.options.uxMode === UX_MODE.REDIRECT) return undefined;
+    this.sessionManager.sessionKey = result.sessionId;
+    this.options.sessionNamespace = result.sessionNamespace;
+    this.currentStorage.set("sessionId", result.sessionId);
+    const sessionData = await this.sessionManager.authorizeSession();
+    this.updateState(sessionData);
+    return { privKey: this.privKey };
   }
 
   async logout(): Promise<void> {
@@ -230,6 +196,52 @@ class OpenLogin {
     this.currentStorage.set("sessionId", "");
   }
 
+  async setupMFA(params: Partial<BaseRedirectParams>): Promise<boolean> {
+    if (!this.sessionId) throw LoginError.userNotLoggedIn();
+
+    // in case of redirect mode, redirect url will be dapp specified
+    // in case of popup mode, redirect url will be sdk specified
+    const defaultParams: BaseRedirectParams = {
+      redirectUrl: this.options.redirectUrl,
+    };
+
+    const dataObject: OpenloginSessionConfig = {
+      actionType: OPENLOGIN_ACTIONS.ENABLE_MFA,
+      options: this.options,
+      params: {
+        ...defaultParams,
+        ...params,
+      },
+      sessionId: this.sessionId,
+    };
+
+    await this.openloginHandler(`${this.baseUrl}/start`, dataObject);
+    return true;
+  }
+
+  async changeSocialFactor(params: Partial<BaseRedirectParams>): Promise<boolean> {
+    if (!this.sessionId) throw LoginError.userNotLoggedIn();
+
+    // in case of redirect mode, redirect url will be dapp specified
+    // in case of popup mode, redirect url will be sdk specified
+    const defaultParams: BaseRedirectParams = {
+      redirectUrl: this.options.redirectUrl,
+    };
+
+    const dataObject: OpenloginSessionConfig = {
+      actionType: OPENLOGIN_ACTIONS.ENABLE_MFA,
+      options: this.options,
+      params: {
+        ...defaultParams,
+        ...params,
+      },
+      sessionId: this.sessionId,
+    };
+
+    await this.openloginHandler(`${this.baseUrl}/start`, dataObject);
+    return true;
+  }
+
   getUserInfo(): OpenloginUserInfo {
     if (!this.sessionManager.sessionKey) {
       throw LoginError.userNotLoggedIn();
@@ -237,12 +249,8 @@ class OpenLogin {
     return this.state.userInfo;
   }
 
-  async getLoginId(loginParams: LoginParams & Partial<BaseRedirectParams>): Promise<string> {
+  async getLoginId(data: OpenloginSessionConfig): Promise<string> {
     if (!this.sessionManager) throw InitializationError.notInitialized();
-    const dataObject: OpenloginSessionConfig = {
-      options: this.options,
-      params: loginParams,
-    };
 
     const loginId = OpenloginSessionManager.generateRandomSessionKey();
     const loginSessionMgr = new OpenloginSessionManager<OpenloginSessionConfig>({
@@ -252,7 +260,7 @@ class OpenLogin {
       sessionId: loginId,
     });
 
-    await loginSessionMgr.createSession(JSON.parse(JSON.stringify(dataObject)));
+    await loginSessionMgr.createSession(JSON.parse(JSON.stringify(data)));
 
     return loginId;
   }
@@ -272,11 +280,36 @@ class OpenLogin {
     this.state = { ...this.state, ...data };
   }
 
-  private getBaseUrl(): string {
-    if (this.versionSupportNetworks.includes(this.options.network)) {
-      return `${this.options.sdkUrl}/v${version.split(".")[0]}/start`;
+  private async openloginHandler(url: string, dataObject: OpenloginSessionConfig, popupTimeout = 1000 * 10): Promise<PopupResponse | undefined> {
+    const loginId = await this.getLoginId(dataObject);
+    const configParams: BaseLoginParams = {
+      loginId,
+      sessionNamespace: this.options.sessionNamespace,
+    };
+
+    if (this.options.uxMode === UX_MODE.REDIRECT) {
+      const loginUrl = constructURL({
+        baseURL: url,
+        hash: { b64Params: jsonToBase64(configParams) },
+      });
+      window.location.href = loginUrl;
+      return undefined;
     }
-    return `${this.options.sdkUrl}/start`;
+    return new Promise((resolve, reject) => {
+      const loginUrl = constructURL({
+        baseURL: url,
+        hash: { b64Params: jsonToBase64(configParams) },
+      });
+      const currentWindow = new PopupHandler({ url: loginUrl, timeout: popupTimeout });
+
+      currentWindow.on("close", () => {
+        reject(LoginError.popupClosed());
+      });
+
+      currentWindow.listenOnChannel(loginId).then(resolve).catch(reject);
+
+      currentWindow.open();
+    });
   }
 }
 
