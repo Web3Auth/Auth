@@ -42,7 +42,7 @@ export class JRPCEngine extends SafeEventEmitter {
     [
       unknown, // error
       boolean, // isComplete
-      JRPCEngineReturnHandler[]
+      JRPCEngineReturnHandler[],
     ]
   > {
     const returnHandlers: JRPCEngineReturnHandler[] = [];
@@ -99,8 +99,8 @@ export class JRPCEngine extends SafeEventEmitter {
 
       try {
         middleware(req, res, next, end);
-      } catch (error) {
-        end(error);
+      } catch (error: unknown) {
+        end(error as Error);
       }
     });
   }
@@ -121,7 +121,7 @@ export class JRPCEngine extends SafeEventEmitter {
    * Throws an error if the response has neither a result nor an error, or if
    * the "isComplete" flag is falsy.
    */
-  private static _checkForCompletion(req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, isComplete: boolean): void {
+  private static _checkForCompletion(_req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, isComplete: boolean): void {
     if (!("result" in res) && !("error" in res)) {
       throw new SerializableError({ code: -32603, message: "Response has no error or result for request" });
     }
@@ -174,6 +174,7 @@ export class JRPCEngine extends SafeEventEmitter {
    */
   handle<T, U>(requests: JRPCRequest<T>[]): Promise<JRPCResponse<U>[]>;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handle(req: unknown, cb?: any) {
     if (cb && typeof cb !== "function") {
       throw new Error('"callback" must be a function if provided.');
@@ -211,13 +212,13 @@ export class JRPCEngine extends SafeEventEmitter {
         return next(async (handlerCallback) => {
           try {
             await JRPCEngine._runReturnHandlers(returnHandlers);
-          } catch (error) {
-            return handlerCallback(error);
+          } catch (error: unknown) {
+            return handlerCallback(error as Error);
           }
           return handlerCallback();
         });
-      } catch (error) {
-        return end(error);
+      } catch (error: unknown) {
+        return end(error as Error);
       }
     };
   }
@@ -298,10 +299,10 @@ export class JRPCEngine extends SafeEventEmitter {
 
     try {
       await this._processRequest(req, res);
-    } catch (_error) {
+    } catch (_error: unknown) {
       // A request handler error, a re-thrown middleware error, or something
       // unexpected.
-      error = _error;
+      error = _error as Error;
     }
 
     if (error) {
@@ -358,7 +359,7 @@ export function createEngineStream(opts: EngineStreamOptions): Duplex {
   // eslint-disable-next-line prefer-const
   let stream: Duplex;
 
-  function read() {
+  function read(): undefined {
     return undefined;
   }
 
@@ -382,7 +383,7 @@ export function createEngineStream(opts: EngineStreamOptions): Duplex {
 
 export interface SafeEventEmitterProvider extends SafeEventEmitter {
   sendAsync: <T, U>(req: JRPCRequest<T>) => Promise<U>;
-  send: <T, U>(req: JRPCRequest<T>, callback: SendCallBack<U>) => void;
+  send: <T, U>(req: JRPCRequest<T>, callback: SendCallBack<JRPCResponse<U>>) => void;
   request: <T, U>(args: RequestArguments<T>) => Promise<Maybe<U>>;
 }
 
@@ -403,8 +404,8 @@ export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider
     }
     return res.result as U;
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  provider.send = <T, U>(req: JRPCRequest<T>, callback: (error: any, providerRes: U) => void) => {
+
+  provider.send = <T, U>(req: JRPCRequest<T>, callback: (error: unknown, providerRes: JRPCResponse<U>) => void) => {
     if (typeof callback !== "function") {
       throw new Error('Must provide callback to "send" method.');
     }
@@ -443,8 +444,8 @@ export function providerAsMiddleware(provider: SafeEventEmitterProvider): JRPCMi
       const providerRes: unknown = await provider.sendAsync<unknown, unknown>(req);
       res.result = providerRes;
       return end();
-    } catch (error) {
-      return end(error.message);
+    } catch (error: unknown) {
+      return end(error as Error);
     }
   };
 }

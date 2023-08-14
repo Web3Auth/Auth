@@ -33,7 +33,7 @@
     "@types/end-of-stream": "^1.4.1",
     "@types/once": "^1.4.0",
     "@types/pump": "^1.1.1",
-    "@types/readable-stream": "^4.0.0"
+    "@types/readable-stream": "^4.0.1"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"

@@ -29,14 +29,15 @@ export function storageAvailable(type: string): boolean {
   let storageLength = 0;
   let storage: Storage;
   try {
-    storage = window[type];
+    storage = window[type as "localStorage" | "sessionStorage"];
     storageExists = true;
     storageLength = storage.length;
     const x = "__storage_test__";
     storage.setItem(x, x);
     storage.removeItem(x);
     return true;
-  } catch (error) {
+  } catch (err: unknown) {
+    const error = err as { code: number; name: string };
     return (
       error &&
       // everything except Firefox

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable camelcase */
 import { Scalar, ZqField } from "@toruslabs/ffjavascript";
 import { keccak256 } from "@toruslabs/metadata-helpers";

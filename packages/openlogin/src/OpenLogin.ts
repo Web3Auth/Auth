@@ -14,9 +14,9 @@ import {
   SocialMfaModParams,
   UX_MODE,
 } from "@toruslabs/openlogin-utils";
-import log from "loglevel";
 
 import { InitializationError, LoginError } from "./errors";
+import { loglevel as log } from "./logger";
 import PopupHandler, { PopupResponse } from "./PopupHandler";
 import { constructURL, getHashQueryParams, getTimeout, version } from "./utils";
 

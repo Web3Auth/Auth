@@ -20,8 +20,8 @@
     "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
-    "@toruslabs/ffjavascript": "^1.0.0",
-    "@toruslabs/metadata-helpers": "^4.0.1",
+    "@toruslabs/ffjavascript": "^2.0.0",
+    "@toruslabs/metadata-helpers": "^5.0.0",
     "bn.js": "^5.2.1"
   },
   "peerDependencies": {

@@ -14,7 +14,7 @@
   "scripts": {
     "publish:lerna": "npm run clean && npm install && lerna publish",
     "just:publish:lerna": "lerna publish",
-    "clean": "lerna clean --yes && lerna exec -- rimraf package-lock.json dist/ .rollup.cache/ tsconfig.build.tsbuildinfo .rts2_cache_{cjs,esm}/ toruslabs-*.tgz openlogin-*tgz .eslintcache",
+    "clean": "lerna clean --yes && lerna exec -- rimraf package-lock.json dist/ .rollup.cache/ tsconfig.build.tsbuildinfo tsconfig.tsbuildinfo .rts2_cache_{cjs,esm}/ toruslabs-*.tgz openlogin-*tgz .eslintcache",
     "build": "cross-env FORCE_COLOR=1 lerna run --stream build",
     "dev": "lerna run dev",
     "start": "cross-env FORCE_COLOR=1 lerna run start --parallel",
@@ -26,39 +26,30 @@
     "prepare": "husky install"
   },
   "devDependencies": {
-    "@babel/plugin-syntax-bigint": "^7.8.3",
     "@babel/register": "^7.22.5",
-    "@babel/runtime": "^7.22.6",
+    "@babel/runtime": "^7.22.10",
     "@rollup/plugin-replace": "^5.0.2",
-    "@toruslabs/eslint-config-typescript": "^2.0.0",
-    "@toruslabs/torus-scripts": "^4.0.0",
+    "@toruslabs/config": "^2.0.1",
+    "@toruslabs/eslint-config-typescript": "^3.0.0",
+    "@toruslabs/torus-scripts": "^5.0.2",
     "@types/mocha": "^10.0.1",
-    "@types/node": "^18",
-    "@typescript-eslint/eslint-plugin": "^5.61.0",
-    "@typescript-eslint/parser": "^5.61.0",
+    "@types/node": "^20",
     "cross-env": "^7.0.3",
-    "eslint": "^8.45.0",
-    "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-mocha": "^10.1.0",
-    "eslint-plugin-n": "^15.7.0",
-    "eslint-plugin-prettier": "^4.2.1",
-    "eslint-plugin-promise": "^6.1.1",
-    "eslint-plugin-simple-import-sort": "^10.0.0",
-    "eslint-plugin-tsdoc": "^0.2.17",
+    "eslint": "^8.47.0",
     "husky": "^8.0.3",
     "jsdom": "^22.1.0",
     "jsdom-global": "^3.0.2",
-    "lerna": "^7.1.4",
-    "lint-staged": "^13.2.3",
+    "lerna": "^7.1.5",
+    "lint-staged": "^14.0.0",
     "mocha": "^10.2.0",
     "node-fetch": "^3.3.2",
-    "prettier": "^2.8.8",
+    "prettier": "^3.0.1",
     "rimraf": "^5.0.1",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "tsconfig-paths-webpack-plugin": "^4.1.0",
     "tslib": "^2.6.1",
-    "typescript": "^4.9.5"
+    "typescript": "^5.1.6"
   },
   "author": "Torus Labs",
   "license": "MIT",
@@ -66,7 +57,7 @@
     "*": "lerna run --concurrency 1 --stream --since HEAD --exclude-dependents pre-commit -- "
   },
   "engines": {
-    "node": ">=16.18.1",
-    "npm": ">=8.x"
+    "node": ">=18.x",
+    "npm": ">=9.x"
   }
 }

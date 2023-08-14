@@ -6,6 +6,7 @@ export type ED25519KeyType = "ed25519";
 export type SECP256K1Key = Buffer;
 export type ED25519Key = Buffer;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const l = (nacl as any).lowlevel;
 
 export function getED25519Key(privateKey: string | Buffer): {
