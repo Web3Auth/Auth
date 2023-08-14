@@ -11,6 +11,7 @@ import {
   OpenloginSessionConfig,
   OpenloginSessionData,
   OpenloginUserInfo,
+  SocialMfaModParams,
   UX_MODE,
 } from "@toruslabs/openlogin-utils";
 import log from "loglevel";
@@ -161,8 +162,7 @@ class OpenLogin {
     this.sessionManager.sessionKey = result.sessionId;
     this.options.sessionNamespace = result.sessionNamespace;
     this.currentStorage.set("sessionId", result.sessionId);
-    const sessionData = await this.sessionManager.authorizeSession();
-    this.updateState(sessionData);
+    await this.rehydrateSession();
     return { privKey: this.privKey };
   }
 
@@ -215,11 +215,16 @@ class OpenLogin {
       sessionId: this.sessionId,
     };
 
-    await this.openloginHandler(`${this.baseUrl}/start`, dataObject);
+    const result = await this.openloginHandler(`${this.baseUrl}/start`, dataObject);
+    if (this.options.uxMode === UX_MODE.REDIRECT) return undefined;
+    this.sessionManager.sessionKey = result.sessionId;
+    this.options.sessionNamespace = result.sessionNamespace;
+    this.currentStorage.set("sessionId", result.sessionId);
+    await this.rehydrateSession();
     return true;
   }
 
-  async changeSocialFactor(params: Partial<BaseRedirectParams>): Promise<boolean> {
+  async changeSocialFactor(params: SocialMfaModParams & Partial<BaseRedirectParams>): Promise<boolean> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
 
     // in case of redirect mode, redirect url will be dapp specified
@@ -229,7 +234,7 @@ class OpenLogin {
     };
 
     const dataObject: OpenloginSessionConfig = {
-      actionType: OPENLOGIN_ACTIONS.ENABLE_MFA,
+      actionType: OPENLOGIN_ACTIONS.MODIFY_MFA,
       options: this.options,
       params: {
         ...defaultParams,
@@ -238,7 +243,12 @@ class OpenLogin {
       sessionId: this.sessionId,
     };
 
-    await this.openloginHandler(`${this.baseUrl}/start`, dataObject);
+    const result = await this.openloginHandler(`${this.baseUrl}/start`, dataObject);
+    if (this.options.uxMode === UX_MODE.REDIRECT) return undefined;
+    this.sessionManager.sessionKey = result.sessionId;
+    this.options.sessionNamespace = result.sessionNamespace;
+    this.currentStorage.set("sessionId", result.sessionId);
+    await this.rehydrateSession();
     return true;
   }
 
@@ -278,6 +288,11 @@ class OpenLogin {
 
   private updateState(data: Partial<OpenloginSessionData>) {
     this.state = { ...this.state, ...data };
+  }
+
+  private async rehydrateSession(): Promise<void> {
+    const result = await this._authorizeSession();
+    this.updateState(result);
   }
 
   private async openloginHandler(url: string, dataObject: OpenloginSessionConfig, popupTimeout = 1000 * 10): Promise<PopupResponse | undefined> {

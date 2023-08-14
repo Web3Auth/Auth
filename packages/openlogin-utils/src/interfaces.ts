@@ -212,6 +212,24 @@ export type LoginParams = BaseRedirectParams & {
   mobileOrigin?: string;
 };
 
+export type SocialMfaModParams = {
+  /**
+   * loginProvider sets the oauth login method to be used.
+   * You can use any of the valid loginProvider from the supported list.
+   */
+  loginProvider: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
+
+  /**
+   * extraLoginOptions can be used to pass standard oauth login options to
+   * loginProvider.
+   *
+   * For ex: you will have to pass `login_hint` as user's email and `domain`
+   * as your app domain in `extraLoginOptions` while using `email_passwordless`
+   * loginProvider
+   */
+  extraLoginOptions?: ExtraLoginOptions;
+};
+
 export interface ColorPalette {
   50?: string;
   100?: string;
@@ -454,6 +472,7 @@ export interface OpenloginSessionData {
   userInfo?: OpenloginUserInfo;
   keyMode?: KeyMode;
   metadataNonce?: string;
+  authToken?: string;
 }
 
 export const MFA_FACTOR = {

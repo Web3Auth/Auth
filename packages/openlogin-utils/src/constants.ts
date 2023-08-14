@@ -51,4 +51,5 @@ export const MFA_LEVELS = {
 export const OPENLOGIN_ACTIONS = {
   LOGIN: "login",
   ENABLE_MFA: "enable_mfa",
+  MODIFY_MFA: "modify_mfa",
 } as const;
