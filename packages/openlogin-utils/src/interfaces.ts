@@ -437,6 +437,7 @@ export type OpenloginUserInfo = {
   appState?: string;
   touchIDPreference?: string;
   isMfaEnabled?: boolean;
+  authToken?: string;
 };
 
 export type KeyMode = "v1" | "1/1" | "2/n";
@@ -453,11 +454,6 @@ export interface OpenloginSessionData {
   userInfo?: OpenloginUserInfo;
   keyMode?: KeyMode;
   metadataNonce?: string;
-  /**
-   * Legacy reasons
-   * Will remove this in future releases.
-   */
-  store?: OpenloginUserInfo;
 }
 
 export const MFA_FACTOR = {
