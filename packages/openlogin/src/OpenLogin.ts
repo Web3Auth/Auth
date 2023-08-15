@@ -38,12 +38,11 @@ class OpenLogin {
       if (options.network === OPENLOGIN_NETWORK.DEVELOPMENT) {
         options.sdkUrl = "http://localhost:3000";
       } else {
-        // TODO: confirm this url.
         options.sdkUrl = "https://auth.web3auth.io";
       }
     }
     if (!options.sdkUrl) {
-      throw InitializationError.invalidParams("network or sdk url");
+      throw InitializationError.invalidParams("sdk url is invalid");
     }
 
     if (!options.redirectUrl) {
@@ -177,6 +176,8 @@ class OpenLogin {
       walletKey: "",
       oAuthPrivateKey: "",
       tKey: "",
+      metadataNonce: "",
+      keyMode: undefined,
       userInfo: {
         name: "",
         profileImage: "",
@@ -190,7 +191,9 @@ class OpenLogin {
         verifierId: "",
         aggregateVerifier: "",
         typeOfLogin: "",
+        isMfaEnabled: false,
       },
+      authToken: "",
     });
 
     this.currentStorage.set("sessionId", "");
