@@ -1,4 +1,4 @@
-import { LOGIN_PROVIDER, MFA_LEVELS, OPENLOGIN_ACTIONS, OPENLOGIN_NETWORK, SUPPORTED_KEY_CURVES, UX_MODE } from "./constants";
+import { BUILD_ENV, LOGIN_PROVIDER, MFA_LEVELS, OPENLOGIN_ACTIONS, OPENLOGIN_NETWORK, SUPPORTED_KEY_CURVES, UX_MODE } from "./constants";
 
 export type UX_MODE_TYPE = (typeof UX_MODE)[keyof typeof UX_MODE];
 
@@ -41,6 +41,8 @@ export type MfaLevelType = (typeof MFA_LEVELS)[keyof typeof MFA_LEVELS];
 export type SUPPORTED_KEY_CURVES_TYPE = (typeof SUPPORTED_KEY_CURVES)[keyof typeof SUPPORTED_KEY_CURVES];
 
 export type OPENLOGIN_NETWORK_TYPE = (typeof OPENLOGIN_NETWORK)[keyof typeof OPENLOGIN_NETWORK];
+
+export type BUILD_ENV_TYPE = (typeof BUILD_ENV)[keyof typeof BUILD_ENV];
 
 export interface BaseLoginOptions {
   /**
@@ -622,6 +624,12 @@ export type OpenLoginOptions = {
    * @defaultValue false
    */
   mfaSettings?: MfaSettings;
+
+  /**
+   * This parameter will be used to change the build environment of openlogin sdk.
+   * @defaultValue production
+   */
+  buildEnv?: BUILD_ENV_TYPE;
 };
 
 export interface BaseLoginParams {

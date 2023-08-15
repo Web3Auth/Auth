@@ -3,6 +3,7 @@ import {
   BaseLoginParams,
   BaseRedirectParams,
   BrowserStorage,
+  BUILD_ENV,
   jsonToBase64,
   LoginParams,
   OPENLOGIN_ACTIONS,
@@ -34,15 +35,17 @@ class OpenLogin {
   constructor(options: OpenLoginOptions) {
     if (!options.clientId) throw InitializationError.invalidParams("clientId is required");
     if (!options.network) options.network = OPENLOGIN_NETWORK.MAINNET;
+    if (!options.buildEnv) options.buildEnv = BUILD_ENV.PRODUCTION;
     if (!options.sdkUrl) {
-      if (options.network === OPENLOGIN_NETWORK.DEVELOPMENT) {
+      if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
         options.sdkUrl = "http://localhost:3000";
+      } else if (options.buildEnv === BUILD_ENV.STAGING) {
+        options.sdkUrl = "https://staging-auth.web3auth.io";
+      } else if (options.buildEnv === BUILD_ENV.TESTING) {
+        options.sdkUrl = "https://develop-auth.web3auth.io";
       } else {
         options.sdkUrl = "https://auth.web3auth.io";
       }
-    }
-    if (!options.sdkUrl) {
-      throw InitializationError.invalidParams("sdk url is invalid");
     }
 
     if (!options.redirectUrl) {

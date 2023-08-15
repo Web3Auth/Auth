@@ -52,3 +52,10 @@ export const OPENLOGIN_ACTIONS = {
   ENABLE_MFA: "enable_mfa",
   MODIFY_MFA: "modify_mfa",
 } as const;
+
+export const BUILD_ENV = {
+  PRODUCTION: "production",
+  DEVELOPMENT: "development",
+  STAGING: "staging",
+  TESTING: "testing",
+} as const;

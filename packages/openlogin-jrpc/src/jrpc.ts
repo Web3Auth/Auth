@@ -100,7 +100,7 @@ export function createStreamMiddleware(): { events: SafeEventEmitter; middleware
   return { events, middleware, stream };
 }
 
-type ScaffoldMiddlewareHandler<T, U> = JRPCMiddleware<T, U> | Json;
+export type ScaffoldMiddlewareHandler<T, U> = JRPCMiddleware<T, U> | Json;
 
 export function createScaffoldMiddleware(handlers: {
   [methodName: string]: ScaffoldMiddlewareHandler<unknown, unknown>;
