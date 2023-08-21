@@ -511,6 +511,12 @@ export type OpenLoginOptions = {
   network: OPENLOGIN_NETWORK_TYPE;
 
   /**
+   * This parameter will be used to change the build environment of openlogin sdk.
+   * @defaultValue production
+   */
+  buildEnv?: BUILD_ENV_TYPE;
+
+  /**
    * redirectUrl is the dapp's url where user will be redirected after login.
    *
    * @remarks
@@ -624,12 +630,6 @@ export type OpenLoginOptions = {
    * @defaultValue false
    */
   mfaSettings?: MfaSettings;
-
-  /**
-   * This parameter will be used to change the build environment of openlogin sdk.
-   * @defaultValue production
-   */
-  buildEnv?: BUILD_ENV_TYPE;
 };
 
 export interface BaseLoginParams {

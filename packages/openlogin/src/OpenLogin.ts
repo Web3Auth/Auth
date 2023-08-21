@@ -34,7 +34,7 @@ class OpenLogin {
 
   constructor(options: OpenLoginOptions) {
     if (!options.clientId) throw InitializationError.invalidParams("clientId is required");
-    if (!options.network) options.network = OPENLOGIN_NETWORK.MAINNET;
+    if (!options.network) options.network = OPENLOGIN_NETWORK.SAPPHIRE_MAINNET;
     if (!options.buildEnv) options.buildEnv = BUILD_ENV.PRODUCTION;
     if (!options.sdkUrl) {
       if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
@@ -90,7 +90,8 @@ class OpenLogin {
   }
 
   private get baseUrl(): string {
-    if (this.options.network === OPENLOGIN_NETWORK.DEVELOPMENT) return `${this.options.sdkUrl}`;
+    // testing and develop don't have versioning
+    if (this.options.buildEnv === BUILD_ENV.DEVELOPMENT || this.options.buildEnv === BUILD_ENV.TESTING) return `${this.options.sdkUrl}`;
     return `${this.options.sdkUrl}/v${version.split(".")[0]}`;
   }
 
@@ -111,10 +112,19 @@ class OpenLogin {
       sessionId,
     });
 
-    if (this.options.network === OPENLOGIN_NETWORK.TESTNET) {
+    if (this.options.network === OPENLOGIN_NETWORK.TESTNET || this.options.network === OPENLOGIN_NETWORK.SAPPHIRE_DEVNET) {
       // using console log because it shouldn't be affected by loglevel config
       // eslint-disable-next-line no-console
-      console.log("%c WARNING! You are on testnet. Please set network: 'mainnet' in production", "color: #FF0000");
+      console.log(
+        `%c WARNING! You are on ${this.options.network}. Please set network: 'mainnet' or 'sapphire_mainnet' in production`,
+        "color: #FF0000"
+      );
+    }
+
+    if (this.options.buildEnv !== BUILD_ENV.PRODUCTION) {
+      // using console log because it shouldn't be affected by loglevel config
+      // eslint-disable-next-line no-console
+      console.log(`%c WARNING! You are using build env ${this.options.buildEnv}. Please set buildEnv: 'production' in production`, "color: #FF0000");
     }
 
     if (params.error) {
