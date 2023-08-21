@@ -23,7 +23,7 @@
     "@toruslabs/broadcast-channel": "^8.0.0",
     "@toruslabs/eccrypto": "^4.0.0",
     "@toruslabs/metadata-helpers": "^5.0.0",
-    "@toruslabs/openlogin-session-manager": "^2.0.0",
+    "@toruslabs/openlogin-session-manager": "^3.0.0",
     "@toruslabs/openlogin-utils": "^4.7.0",
     "bowser": "^2.11.0",
     "events": "^3.3.0",

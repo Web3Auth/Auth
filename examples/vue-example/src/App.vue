@@ -112,10 +112,9 @@ const OPENLOGIN_PROJECT_IDS: Record<OPENLOGIN_NETWORK_TYPE, string> = {
   [OPENLOGIN_NETWORK.TESTNET]: "BJ6l3_kIQiy6YVL7zDlCcEAvGpGukwFgp-C_0WvNI_fAEeIaoVRLDrV5OjtbZr_zJxbyXFsXMT-yhQiUNYvZWpo",
   [OPENLOGIN_NETWORK.AQUA]: "BK19YSk7lHGp9NdAb-HFj6DHI2sZ7DCncztz8xZazLd54_28KrQm8QDSgxZm4F0uhjiGuzdzxZyNEqgNst3oRtM",
   [OPENLOGIN_NETWORK.CYAN]: "BHhjZ5eaJLgRtz1nVBwCFvlbpCCOHlK4Sxku2m56Gufn5IBuK9XfUzKg_HDlos14I-ZbsN1CgSLszZzr9ICc2Ho",
-  [OPENLOGIN_NETWORK.SAPPHIRE_DEVNET]: "",
-  [OPENLOGIN_NETWORK.SAPPHIRE_MAINNET]: "",
-  [OPENLOGIN_NETWORK.SAPPHIRE_TESTNET]: "",
-  [OPENLOGIN_NETWORK.DEVELOPMENT]: "YOUR_CLIENT_ID",
+  [OPENLOGIN_NETWORK.SAPPHIRE_DEVNET]: "openlogin",
+  [OPENLOGIN_NETWORK.SAPPHIRE_MAINNET]: "openlogin",
+  [OPENLOGIN_NETWORK.CELESTE]: "openlogin",
 };
 
 export default defineComponent({
@@ -132,7 +131,7 @@ export default defineComponent({
       UX_MODE: UX_MODE,
       selectedUxMode: UX_MODE.REDIRECT as UX_MODE_TYPE,
       OPENLOGIN_NETWORK: OPENLOGIN_NETWORK,
-      selectedOpenloginNetwork: OPENLOGIN_NETWORK.DEVELOPMENT as OPENLOGIN_NETWORK_TYPE,
+      selectedOpenloginNetwork: OPENLOGIN_NETWORK.SAPPHIRE_DEVNET as OPENLOGIN_NETWORK_TYPE,
     };
   },
   async created() {
@@ -170,6 +169,7 @@ export default defineComponent({
         uxMode: this.selectedUxMode,
         whiteLabel: this.isWhiteLabelEnabled ? whitelabel : {},
         loginConfig: loginConfig,
+        buildEnv: "development",
         // sdkUrl: "https://staging.openlogin.com",
       });
       op.init();

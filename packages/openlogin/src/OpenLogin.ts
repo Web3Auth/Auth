@@ -133,10 +133,10 @@ class OpenLogin {
 
     if (params.sessionId) {
       this.currentStorage.set("sessionId", params.sessionId);
-      this.sessionManager.sessionKey = params.sessionId;
+      this.sessionManager.sessionId = params.sessionId;
     }
 
-    if (this.sessionManager.sessionKey) {
+    if (this.sessionManager.sessionId) {
       const data = await this._authorizeSession();
       // Fill state with correct info from session
       // If session is invalid all the data is unset here.
@@ -171,7 +171,7 @@ class OpenLogin {
 
     const result = await this.openloginHandler(`${this.baseUrl}/start`, dataObject, getTimeout(params.loginProvider));
     if (this.options.uxMode === UX_MODE.REDIRECT) return undefined;
-    this.sessionManager.sessionKey = result.sessionId;
+    this.sessionManager.sessionId = result.sessionId;
     this.options.sessionNamespace = result.sessionNamespace;
     this.currentStorage.set("sessionId", result.sessionId);
     await this.rehydrateSession();
@@ -179,7 +179,7 @@ class OpenLogin {
   }
 
   async logout(): Promise<void> {
-    if (!this.sessionManager.sessionKey) throw LoginError.userNotLoggedIn();
+    if (!this.sessionManager.sessionId) throw LoginError.userNotLoggedIn();
     await this.sessionManager.invalidateSession();
     this.updateState({
       privKey: "",
@@ -233,7 +233,7 @@ class OpenLogin {
 
     const result = await this.openloginHandler(`${this.baseUrl}/start`, dataObject);
     if (this.options.uxMode === UX_MODE.REDIRECT) return undefined;
-    this.sessionManager.sessionKey = result.sessionId;
+    this.sessionManager.sessionId = result.sessionId;
     this.options.sessionNamespace = result.sessionNamespace;
     this.currentStorage.set("sessionId", result.sessionId);
     await this.rehydrateSession();
@@ -261,7 +261,7 @@ class OpenLogin {
 
     const result = await this.openloginHandler(`${this.baseUrl}/start`, dataObject);
     if (this.options.uxMode === UX_MODE.REDIRECT) return undefined;
-    this.sessionManager.sessionKey = result.sessionId;
+    this.sessionManager.sessionId = result.sessionId;
     this.options.sessionNamespace = result.sessionNamespace;
     this.currentStorage.set("sessionId", result.sessionId);
     await this.rehydrateSession();
@@ -269,7 +269,7 @@ class OpenLogin {
   }
 
   getUserInfo(): OpenloginUserInfo {
-    if (!this.sessionManager.sessionKey) {
+    if (!this.sessionManager.sessionId) {
       throw LoginError.userNotLoggedIn();
     }
     return this.state.userInfo;
@@ -293,7 +293,7 @@ class OpenLogin {
 
   private async _authorizeSession(): Promise<OpenloginSessionData> {
     try {
-      if (!this.sessionManager.sessionKey) return {};
+      if (!this.sessionManager.sessionId) return {};
       const result = await this.sessionManager.authorizeSession();
       return result;
     } catch (err) {
