@@ -231,29 +231,37 @@ export type SocialMfaModParams = {
    */
   extraLoginOptions?: ExtraLoginOptions;
 };
+export const LANGUAGES = {
+  en: "en",
+  ja: "ja",
+  ko: "ko",
+  de: "de",
+  zh: "zh",
+  es: "es",
+  fr: "fr",
+  pt: "pt",
+  nl: "nl",
+} as const;
 
-export interface ColorPalette {
-  50?: string;
-  100?: string;
-  200?: string;
-  300?: string;
-  400?: string;
-  500?: string;
-  600?: string;
-  700?: string;
-  800?: string;
-  900?: string;
-}
+export type LANGUAGE_TYPE = (typeof LANGUAGES)[keyof typeof LANGUAGES];
+
+export const THEME_MODES = {
+  light: "light",
+  dark: "dark",
+  auto: "auto",
+};
+
+export type THEME_MODE_TYPE = (typeof THEME_MODES)[keyof typeof THEME_MODES];
 
 export type WhiteLabelData = {
   /**
    * App name to display in the UI
    */
-  name?: string;
+  appName?: string;
   /**
    * App url
    */
-  url?: string;
+  appUrl?: string;
   /**
    * App logo to use in light mode
    */
@@ -263,17 +271,26 @@ export type WhiteLabelData = {
    */
   logoDark?: string;
   /**
-   * Default language to use
+   * language which will be used by web3auth. app will use browser language if not specified. if language is not supported it will use "en"
+   * en: english
+   * de: german
+   * ja: japanese
+   * ko: korean
+   * zh: mandarin
+   * es: spanish
+   * fr: french
+   * pt: portuguese
+   * nl: dutch
    *
    * @defaultValue en
    */
-  defaultLanguage?: string;
+  defaultLanguage?: LANGUAGE_TYPE;
   /**
-   * Whether to enable dark mode
+   theme
    *
-   * @defaultValue false
+   * @defaultValue auto
    */
-  dark?: boolean;
+  mode?: THEME_MODE_TYPE;
   /**
    * Use logo loader
    *
@@ -286,16 +303,34 @@ export type WhiteLabelData = {
    * `'primary'` - To customize primary color of modal's content.
    */
   theme?: {
-    primary?: string | ColorPalette;
-    gray?: string | ColorPalette;
-    red?: string | ColorPalette;
-    green?: string | ColorPalette;
+    primary?: string;
+    gray?: string;
+    red?: string;
+    green?: string;
     success?: string;
     warning?: string;
     error?: string;
     info?: string;
     white?: string;
   };
+  /**
+   * Language specific link for terms and conditions on torus-website. See (examples/vue-app) to configure
+   * e.g.
+   * tncLink: {
+   *  en: "http://example.com/tnc/en",
+   *  ja: "http://example.com/tnc/ja",
+   * }
+   */
+  tncLink?: Partial<Record<LANGUAGE_TYPE, string>>;
+  /**
+   * Language specific link for privacy policy on torus-website. See (examples/vue-app) to configure
+   * e.g.
+   * privacyPolicy: {
+   *  en: "http://example.com/tnc/en",
+   *  ja: "http://example.com/tnc/ja",
+   * }
+   */
+  privacyPolicy?: Partial<Record<LANGUAGE_TYPE, string>>;
 };
 
 export type TypeOfLogin =
