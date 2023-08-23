@@ -22,8 +22,7 @@
   "dependencies": {
     "@toruslabs/openlogin": "^4.7.2",
     "@toruslabs/openlogin-jrpc": "^4.7.2",
-    "@toruslabs/openlogin-utils": "^4.7.0",
-    "bn.js": "^5.2.1"
+    "@toruslabs/openlogin-utils": "^4.7.0"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"
@@ -50,8 +49,8 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=16.18.1",
-    "npm": ">=8.x"
+    "node": ">=18.x",
+    "npm": ">=9.x"
   },
   "gitHead": "2d61b7f1967ecd704470c46ff7c30c47d240f4a4"
 }

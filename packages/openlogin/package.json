@@ -20,10 +20,10 @@
     "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
-    "@toruslabs/broadcast-channel": "^7.0.0",
-    "@toruslabs/eccrypto": "^3.0.0",
-    "@toruslabs/metadata-helpers": "^4.0.1",
-    "@toruslabs/openlogin-session-manager": "^1.1.0",
+    "@toruslabs/broadcast-channel": "^8.0.0",
+    "@toruslabs/eccrypto": "^4.0.0",
+    "@toruslabs/metadata-helpers": "^5.0.0",
+    "@toruslabs/openlogin-session-manager": "^3.0.0",
     "@toruslabs/openlogin-utils": "^4.7.0",
     "bowser": "^2.11.0",
     "events": "^3.3.0",
@@ -55,8 +55,8 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=16.18.1",
-    "npm": ">=8.x"
+    "node": ">=18.x",
+    "npm": ">=9.x"
   },
   "gitHead": "2d61b7f1967ecd704470c46ff7c30c47d240f4a4"
 }

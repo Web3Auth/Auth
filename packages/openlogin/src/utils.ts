@@ -3,7 +3,7 @@ import { keccak256 } from "@toruslabs/metadata-helpers";
 import { base64url, LOGIN_PROVIDER, safeatob } from "@toruslabs/openlogin-utils";
 import bowser from "bowser";
 
-import log from "./loglevel";
+import { loglevel as log } from "./logger";
 
 // don't use destructuring for process.env cause it messes up webpack env plugin
 export const version = process.env.OPENLOGIN_VERSION;
@@ -15,21 +15,27 @@ export async function whitelistUrl(clientId: string, appKey: string, origin: str
   return base64url.encode(sig);
 }
 
-export function getHashQueryParams(replaceUrl = false): { sessionId?: string; sessionNamespace?: string; error?: string } {
-  const result: { sessionId?: string; sessionNamespace?: string; error?: string } = {};
+export type HashQueryParamResult = {
+  sessionId?: string;
+  sessionNamespace?: string;
+  error?: string;
+};
+
+export function getHashQueryParams(replaceUrl = false): HashQueryParamResult {
+  const result: HashQueryParamResult = {};
 
   const url = new URL(window.location.href);
-  url.searchParams.forEach((value, key) => {
+  url.searchParams.forEach((value: string, key: string) => {
     if (key !== "result") {
-      result[key] = value;
+      result[key as keyof HashQueryParamResult] = value;
     }
   });
   const queryResult = url.searchParams.get("result");
   if (queryResult) {
     try {
       const queryParams = JSON.parse(safeatob(queryResult));
-      Object.keys(queryParams).forEach((key) => {
-        result[key] = queryParams[key];
+      Object.keys(queryParams).forEach((key: string) => {
+        result[key as keyof HashQueryParamResult] = queryParams[key];
       });
     } catch (error) {
       log.error(error);
@@ -38,9 +44,9 @@ export function getHashQueryParams(replaceUrl = false): { sessionId?: string; se
 
   const hash = url.hash.substring(1);
   const hashUrl = new URL(`${window.location.origin}/?${hash}`);
-  hashUrl.searchParams.forEach((value, key) => {
+  hashUrl.searchParams.forEach((value: string, key: string) => {
     if (key !== "result") {
-      result[key] = value;
+      result[key as keyof HashQueryParamResult] = value;
     }
   });
   const hashResult = hashUrl.searchParams.get("result");
@@ -48,8 +54,8 @@ export function getHashQueryParams(replaceUrl = false): { sessionId?: string; se
   if (hashResult) {
     try {
       const hashParams = JSON.parse(safeatob(hashResult));
-      Object.keys(hashParams).forEach((key) => {
-        result[key] = hashParams[key];
+      Object.keys(hashParams).forEach((key: string) => {
+        result[key as keyof HashQueryParamResult] = hashParams[key];
       });
     } catch (error) {
       log.error(error);

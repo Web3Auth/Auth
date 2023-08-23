@@ -1,4 +1,4 @@
 export * from "./errors";
-export { default as loglevel } from "./loglevel";
+export * from "./logger";
 export { default } from "./OpenLogin";
 export * from "./utils";

@@ -1,4 +1,4 @@
-import { LOGIN_PROVIDER, MFA_LEVELS, OPENLOGIN_NETWORK, SUPPORTED_KEY_CURVES, UX_MODE } from "./constants";
+import { BUILD_ENV, LOGIN_PROVIDER, MFA_LEVELS, OPENLOGIN_ACTIONS, OPENLOGIN_NETWORK, SUPPORTED_KEY_CURVES, UX_MODE } from "./constants";
 
 export type UX_MODE_TYPE = (typeof UX_MODE)[keyof typeof UX_MODE];
 
@@ -31,6 +31,8 @@ export type BaseRedirectParams = {
  */
 export type LOGIN_PROVIDER_TYPE = (typeof LOGIN_PROVIDER)[keyof typeof LOGIN_PROVIDER];
 
+export type OPENLOGIN_ACTIONS_TYPE = (typeof OPENLOGIN_ACTIONS)[keyof typeof OPENLOGIN_ACTIONS];
+
 // autocomplete workaround https://github.com/microsoft/TypeScript/issues/29729
 export type CUSTOM_LOGIN_PROVIDER_TYPE = string & { toString?: (radix?: number) => string };
 
@@ -39,6 +41,8 @@ export type MfaLevelType = (typeof MFA_LEVELS)[keyof typeof MFA_LEVELS];
 export type SUPPORTED_KEY_CURVES_TYPE = (typeof SUPPORTED_KEY_CURVES)[keyof typeof SUPPORTED_KEY_CURVES];
 
 export type OPENLOGIN_NETWORK_TYPE = (typeof OPENLOGIN_NETWORK)[keyof typeof OPENLOGIN_NETWORK];
+
+export type BUILD_ENV_TYPE = (typeof BUILD_ENV)[keyof typeof BUILD_ENV];
 
 export interface BaseLoginOptions {
   /**
@@ -208,6 +212,24 @@ export type LoginParams = BaseRedirectParams & {
    * @internal
    */
   mobileOrigin?: string;
+};
+
+export type SocialMfaModParams = {
+  /**
+   * loginProvider sets the oauth login method to be used.
+   * You can use any of the valid loginProvider from the supported list.
+   */
+  loginProvider: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
+
+  /**
+   * extraLoginOptions can be used to pass standard oauth login options to
+   * loginProvider.
+   *
+   * For ex: you will have to pass `login_hint` as user's email and `domain`
+   * as your app domain in `extraLoginOptions` while using `email_passwordless`
+   * loginProvider
+   */
+  extraLoginOptions?: ExtraLoginOptions;
 };
 
 export interface ColorPalette {
@@ -434,7 +456,10 @@ export type OpenloginUserInfo = {
   oAuthAccessToken?: string;
   appState?: string;
   touchIDPreference?: string;
+  isMfaEnabled?: boolean;
 };
+
+export type KeyMode = "v1" | "1/1" | "2/n";
 
 export interface OpenloginSessionData {
   privKey?: string;
@@ -446,11 +471,9 @@ export interface OpenloginSessionData {
   tKey?: string;
   walletKey?: string;
   userInfo?: OpenloginUserInfo;
-  /**
-   * Legacy reasons
-   * Will remove this in future releases.
-   */
-  store?: OpenloginUserInfo;
+  keyMode?: KeyMode;
+  metadataNonce?: string;
+  authToken?: string;
 }
 
 export const MFA_FACTOR = {
@@ -485,6 +508,12 @@ export type OpenLoginOptions = {
    * - `'development'`: http://localhost:3000 will be used for development purpose.
    */
   network: OPENLOGIN_NETWORK_TYPE;
+
+  /**
+   * This parameter will be used to change the build environment of openlogin sdk.
+   * @defaultValue production
+   */
+  buildEnv?: BUILD_ENV_TYPE;
 
   /**
    * redirectUrl is the dapp's url where user will be redirected after login.
@@ -608,6 +637,8 @@ export interface BaseLoginParams {
 }
 
 export interface OpenloginSessionConfig {
+  actionType: OPENLOGIN_ACTIONS_TYPE;
   options: OpenLoginOptions;
-  params: LoginParams;
+  params: Partial<LoginParams>;
+  sessionId?: string;
 }

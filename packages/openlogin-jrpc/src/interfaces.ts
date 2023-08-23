@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type Json = boolean | number | string | null | { [property: string]: Json } | Json[];
 
 export type JRPCVersion = "2.0";

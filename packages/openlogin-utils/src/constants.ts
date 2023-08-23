@@ -1,3 +1,5 @@
+import { TORUS_LEGACY_NETWORK, TORUS_SAPPHIRE_NETWORK } from "@toruslabs/constants";
+
 export const storeKey = "openlogin_store";
 
 export const UX_MODE = {
@@ -6,11 +8,8 @@ export const UX_MODE = {
 } as const;
 
 export const OPENLOGIN_NETWORK = {
-  MAINNET: "mainnet",
-  TESTNET: "testnet",
-  CYAN: "cyan",
-  DEVELOPMENT: "development",
-  AQUA: "aqua",
+  ...TORUS_LEGACY_NETWORK,
+  ...TORUS_SAPPHIRE_NETWORK,
 } as const;
 
 export const SUPPORTED_KEY_CURVES = {
@@ -43,4 +42,17 @@ export const MFA_LEVELS = {
   OPTIONAL: "optional",
   MANDATORY: "mandatory",
   NONE: "none",
+} as const;
+
+export const OPENLOGIN_ACTIONS = {
+  LOGIN: "login",
+  ENABLE_MFA: "enable_mfa",
+  MODIFY_MFA: "modify_mfa",
+} as const;
+
+export const BUILD_ENV = {
+  PRODUCTION: "production",
+  DEVELOPMENT: "development",
+  STAGING: "staging",
+  TESTING: "testing",
 } as const;

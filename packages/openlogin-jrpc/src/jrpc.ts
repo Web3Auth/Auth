@@ -5,7 +5,7 @@ import SafeEventEmitter from "./safeEventEmitter";
 import SerializableError from "./serializableError";
 
 export const getRpcPromiseCallback =
-  (resolve: (value?: any) => void, reject: (error?: Error) => void, unwrapResult = true) =>
+  (resolve: (value?: unknown) => void, reject: (error?: Error) => void, unwrapResult = true) =>
   (error: Error, response: JRPCResponse<unknown>): void => {
     if (error || response.error) {
       reject(error || response.error);
@@ -33,9 +33,9 @@ export function createErrorMiddleware(log: ConsoleLike): JRPCMiddleware<unknown,
         log.error(`OpenLogin - RPC Error: ${error.message}`, error);
         return done();
       });
-    } catch (error) {
-      log.error(`OpenLogin - RPC Error thrown: ${error.message}`, error);
-      res.error = new SerializableError({ code: -32603, message: error.message });
+    } catch (error: unknown) {
+      log.error(`OpenLogin - RPC Error thrown: ${(error as Error).message}`, error);
+      res.error = new SerializableError({ code: -32603, message: (error as Error).message });
       end();
     }
   };
@@ -69,7 +69,7 @@ export function createStreamMiddleware(): { events: SafeEventEmitter; middleware
   }
 
   function processMessage(res: JRPCResponse<unknown>, _encoding: unknown, cb: (error?: Error | null) => void) {
-    let err;
+    let err: Error;
     try {
       const isNotification = !res.id;
       if (isNotification) {
@@ -77,8 +77,8 @@ export function createStreamMiddleware(): { events: SafeEventEmitter; middleware
       } else {
         processResponse(res);
       }
-    } catch (_err) {
-      err = _err;
+    } catch (_err: unknown) {
+      err = _err as Error;
     }
     // continue processing stream
     cb(err);
@@ -100,7 +100,7 @@ export function createStreamMiddleware(): { events: SafeEventEmitter; middleware
   return { events, middleware, stream };
 }
 
-type ScaffoldMiddlewareHandler<T, U> = JRPCMiddleware<T, U> | Json;
+export type ScaffoldMiddlewareHandler<T, U> = JRPCMiddleware<T, U> | Json;
 
 export function createScaffoldMiddleware(handlers: {
   [methodName: string]: ScaffoldMiddlewareHandler<unknown, unknown>;
@@ -179,7 +179,8 @@ export function createAsyncMiddleware<T, U>(asyncMiddleware: AsyncJRPCMiddleware
       } else {
         end(null);
       }
-    } catch (error) {
+    } catch (err: unknown) {
+      const error = err as Error;
       if (returnHandlerCallback) {
         (returnHandlerCallback as ReturnHandlerCallback)(error);
       } else {

@@ -33,7 +33,7 @@
     "@types/end-of-stream": "^1.4.1",
     "@types/once": "^1.4.0",
     "@types/pump": "^1.1.1",
-    "@types/readable-stream": "^4.0.0"
+    "@types/readable-stream": "^4.0.1"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"
@@ -60,8 +60,8 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=16.18.1",
-    "npm": ">=8.x"
+    "node": ">=18.x",
+    "npm": ">=9.x"
   },
   "gitHead": "2d61b7f1967ecd704470c46ff7c30c47d240f4a4"
 }
