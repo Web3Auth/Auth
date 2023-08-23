@@ -457,7 +457,6 @@ export type OpenloginUserInfo = {
   appState?: string;
   touchIDPreference?: string;
   isMfaEnabled?: boolean;
-  authToken?: string;
 };
 
 export type KeyMode = "v1" | "1/1" | "2/n";
