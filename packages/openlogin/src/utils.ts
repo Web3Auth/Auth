@@ -1,6 +1,6 @@
 import { getPublic, sign } from "@toruslabs/eccrypto";
 import { keccak256 } from "@toruslabs/metadata-helpers";
-import { base64url, LOGIN_PROVIDER, safeatob } from "@toruslabs/openlogin-utils";
+import { base64url, LOGIN_PROVIDER, safeatob, safebtoa } from "@toruslabs/openlogin-utils";
 import bowser from "bowser";
 
 import { loglevel as log } from "./logger";
@@ -63,8 +63,16 @@ export function getHashQueryParams(replaceUrl = false): HashQueryParamResult {
   }
 
   if (replaceUrl) {
-    const cleanUrl = window.location.origin + window.location.pathname;
-    window.history.replaceState({ ...window.history.state, as: cleanUrl, url: cleanUrl }, "", cleanUrl);
+    const cleanUrl = new URL(window.location.origin + window.location.pathname);
+    cleanUrl.search = window.location.search;
+    if (hashResult) {
+      const hashParams = JSON.parse(safeatob(hashResult));
+      delete hashParams.sessionId;
+      delete hashParams.sessionNamespace;
+      delete hashParams.error;
+      cleanUrl.hash = safebtoa(JSON.stringify(hashParams));
+    }
+    window.history.replaceState({ ...window.history.state, as: cleanUrl.href, url: cleanUrl.href }, "", cleanUrl.href);
   }
 
   return result;
