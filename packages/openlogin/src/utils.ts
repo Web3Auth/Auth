@@ -1,6 +1,6 @@
 import { getPublic, sign } from "@toruslabs/eccrypto";
 import { keccak256 } from "@toruslabs/metadata-helpers";
-import { base64url, LOGIN_PROVIDER, safeatob } from "@toruslabs/openlogin-utils";
+import { base64url, LOGIN_PROVIDER, safeatob, safebtoa } from "@toruslabs/openlogin-utils";
 import bowser from "bowser";
 
 import { loglevel as log } from "./logger";
@@ -63,8 +63,16 @@ export function getHashQueryParams(replaceUrl = false): HashQueryParamResult {
   }
 
   if (replaceUrl) {
-    const cleanUrl = window.location.origin + window.location.pathname;
-    window.history.replaceState({ ...window.history.state, as: cleanUrl, url: cleanUrl }, "", cleanUrl);
+    const cleanUrl = new URL(window.location.origin + window.location.pathname);
+    cleanUrl.search = window.location.search;
+    if (hashResult) {
+      const hashParams = JSON.parse(safeatob(hashResult));
+      delete hashParams.sessionId;
+      delete hashParams.sessionNamespace;
+      delete hashParams.error;
+      cleanUrl.hash = safebtoa(JSON.stringify(hashParams));
+    }
+    window.history.replaceState({ ...window.history.state, as: cleanUrl.href, url: cleanUrl.href }, "", cleanUrl.href);
   }
 
   return result;
@@ -87,6 +95,7 @@ export function constructURL(params: { baseURL: string; query?: Record<string, u
 }
 
 export function getPopupFeatures(): string {
+  if (typeof window === "undefined") return "";
   // Fixes dual-screen position                             Most browsers      Firefox
   const dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : window.screenX;
   const dualScreenTop = window.screenTop !== undefined ? window.screenTop : window.screenY;
@@ -115,6 +124,7 @@ export function getPopupFeatures(): string {
 }
 
 export function isMobileOrTablet(): boolean {
+  if (typeof window === "undefined") return false;
   const browser = bowser.getParser(window.navigator.userAgent);
   const platform = browser.getPlatform();
   return platform.type === bowser.PLATFORMS_MAP.tablet || platform.type === bowser.PLATFORMS_MAP.mobile;

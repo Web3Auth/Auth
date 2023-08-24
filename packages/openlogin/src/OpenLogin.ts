@@ -48,7 +48,7 @@ class OpenLogin {
       }
     }
 
-    if (!options.redirectUrl) {
+    if (!options.redirectUrl && typeof window !== "undefined") {
       options.redirectUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
     }
     if (!options.uxMode) options.uxMode = UX_MODE.REDIRECT;
