@@ -95,6 +95,7 @@ export function constructURL(params: { baseURL: string; query?: Record<string, u
 }
 
 export function getPopupFeatures(): string {
+  if (typeof window === "undefined") return "";
   // Fixes dual-screen position                             Most browsers      Firefox
   const dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : window.screenX;
   const dualScreenTop = window.screenTop !== undefined ? window.screenTop : window.screenY;
@@ -123,6 +124,7 @@ export function getPopupFeatures(): string {
 }
 
 export function isMobileOrTablet(): boolean {
+  if (typeof window === "undefined") return false;
   const browser = bowser.getParser(window.navigator.userAgent);
   const platform = browser.getPlatform();
   return platform.type === bowser.PLATFORMS_MAP.tablet || platform.type === bowser.PLATFORMS_MAP.mobile;
