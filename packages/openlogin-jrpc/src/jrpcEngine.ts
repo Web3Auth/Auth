@@ -383,7 +383,7 @@ export function createEngineStream(opts: EngineStreamOptions): Duplex {
 
 export interface SafeEventEmitterProvider extends SafeEventEmitter {
   sendAsync: <T, U>(req: JRPCRequest<T>) => Promise<U>;
-  send: <T, U>(req: JRPCRequest<T>, callback: SendCallBack<JRPCResponse<U>>) => void;
+  send: <T, U>(req: JRPCRequest<T>, callback: SendCallBack<U | JRPCResponse<U>>) => void;
   request: <T, U>(args: RequestArguments<T>) => Promise<Maybe<U>>;
 }
 
