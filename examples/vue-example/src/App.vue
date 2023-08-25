@@ -169,7 +169,7 @@ export default defineComponent({
         uxMode: this.selectedUxMode,
         whiteLabel: this.isWhiteLabelEnabled ? whitelabel : {},
         loginConfig: loginConfig,
-        buildEnv: "development",
+        buildEnv: "testing",
         // sdkUrl: "https://staging.openlogin.com",
       });
       op.init();
