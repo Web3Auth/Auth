@@ -17,7 +17,7 @@
         <option :key="login" v-for="login in Object.values(UX_MODE)" :value="login">{{ login }}</option>
       </select>
       <select v-model="selectedLoginProvider" class="select">
-        <option :key="login" v-for="login in Object.values(LOGIN_PROVIDER)" :value="login">{{ login }}</option>
+        <option :key="login" v-for="login in Object.values(LOGIN_PROVIDER).filter(x => x !== "jwt" && x !== "webauthn")" :value="login">{{ login }}</option>
       </select>
       <input
         v-model="login_hint"
