@@ -17,7 +17,7 @@
         <option :key="login" v-for="login in Object.values(UX_MODE)" :value="login">{{ login }}</option>
       </select>
       <select v-model="selectedLoginProvider" class="select">
-        <option :key="login" v-for="login in Object.values(LOGIN_PROVIDER).filter(x => x !== "jwt" && x !== "webauthn")" :value="login">{{ login }}</option>
+        <option :key="login" v-for="login in computedLoginProviders" :value="login">{{ login }}</option>
       </select>
       <input
         v-model="login_hint"
@@ -126,7 +126,7 @@ export default defineComponent({
       privKey: "",
       ethereumPrivateKeyProvider: null as EthereumPrivateKeyProvider | null,
       LOGIN_PROVIDER: LOGIN_PROVIDER,
-      selectedLoginProvider: LOGIN_PROVIDER.EMAIL_PASSWORDLESS as LOGIN_PROVIDER_TYPE,
+      selectedLoginProvider: LOGIN_PROVIDER.GOOGLE as LOGIN_PROVIDER_TYPE,
       login_hint: "",
       isWhiteLabelEnabled: false,
       UX_MODE: UX_MODE,
@@ -145,6 +145,9 @@ export default defineComponent({
     this.loading = false;
   },
   computed: {
+    computedLoginProviders(): LOGIN_PROVIDER_TYPE[] {
+      return Object.values(LOGIN_PROVIDER).filter((x) => x !== "jwt" && x !== "webauthn");
+    },
     isLoginHintAvailable(): boolean {
       if (this.selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS || this.selectedLoginProvider === LOGIN_PROVIDER.SMS_PASSWORDLESS) {
         if (!this.login_hint) {
