@@ -509,6 +509,10 @@ export interface OpenloginSessionData {
   keyMode?: KeyMode;
   metadataNonce?: string;
   authToken?: string;
+  factorKey?: string;
+  signatures?: string[];
+  tssShareIndex?: number;
+  tssPubKey?: string;
 }
 
 export const MFA_FACTOR = {
@@ -664,6 +668,12 @@ export type OpenLoginOptions = {
    * @defaultValue false
    */
   mfaSettings?: MfaSettings;
+
+  /**
+   * This parameter will be used to use openlogin mpc
+   * @defaultValue false
+   */
+  useMpc?: boolean;
 };
 
 export interface BaseLoginParams {

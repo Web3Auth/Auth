@@ -48,6 +48,18 @@ class OpenLogin {
       }
     }
 
+    if (options.useMpc) {
+      if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
+        options.sdkUrl = "http://localhost:3000";
+      } else if (options.buildEnv === BUILD_ENV.STAGING) {
+        options.sdkUrl = "https://staging-mpc-auth.web3auth.io";
+      } else if (options.buildEnv === BUILD_ENV.TESTING) {
+        options.sdkUrl = "https://develop-mpc-auth.web3auth.io";
+      } else {
+        options.sdkUrl = "https://mpc-auth.web3auth.io";
+      }
+    }
+
     if (!options.redirectUrl && typeof window !== "undefined") {
       options.redirectUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
     }
@@ -56,7 +68,7 @@ class OpenLogin {
     if (!options.originData) options.originData = {};
     if (!options.whiteLabel) options.whiteLabel = {};
     if (!options.loginConfig) options.loginConfig = {};
-    if (!options.mfaSettings) options.mfaSettings = {};
+    // if (!options.mfaSettings) options.mfaSettings = {};
     if (!options.storageServerUrl) options.storageServerUrl = "https://broadcast-server.tor.us";
     if (!options.storageKey) options.storageKey = "local";
     if (!options.webauthnTransports) options.webauthnTransports = ["internal"];
@@ -112,13 +124,10 @@ class OpenLogin {
       sessionId,
     });
 
-    if (this.options.network === OPENLOGIN_NETWORK.TESTNET || this.options.network === OPENLOGIN_NETWORK.SAPPHIRE_DEVNET) {
+    if (this.options.network === OPENLOGIN_NETWORK.SAPPHIRE_DEVNET) {
       // using console log because it shouldn't be affected by loglevel config
       // eslint-disable-next-line no-console
-      console.log(
-        `%c WARNING! You are on ${this.options.network}. Please set network: 'mainnet' or 'sapphire_mainnet' in production`,
-        "color: #FF0000"
-      );
+      console.log(`%c WARNING! You are on ${this.options.network}. Please set network: 'sapphire_mainnet' in production`, "color: #FF0000");
     }
 
     if (this.options.buildEnv !== BUILD_ENV.PRODUCTION) {
