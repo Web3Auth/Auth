@@ -13,6 +13,8 @@ import {
   OpenloginSessionData,
   OpenloginUserInfo,
   SocialMfaModParams,
+  TORUS_LEGACY_NETWORK,
+  type TORUS_LEGACY_NETWORK_TYPE,
   UX_MODE,
 } from "@toruslabs/openlogin-utils";
 
@@ -49,6 +51,8 @@ class OpenLogin {
     }
 
     if (options.useMpc) {
+      if (Object.values(TORUS_LEGACY_NETWORK).includes(options.network as TORUS_LEGACY_NETWORK_TYPE))
+        throw new Error("MPC is not supported on legacy networks");
       if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
         options.sdkUrl = "http://localhost:3000";
       } else if (options.buildEnv === BUILD_ENV.STAGING) {
@@ -78,6 +82,7 @@ class OpenLogin {
   }
 
   get privKey(): string {
+    if (this.options.useMpc) return this.state.factorKey || "";
     return this.state.privKey ? this.state.privKey.padStart(64, "0") : "";
   }
 

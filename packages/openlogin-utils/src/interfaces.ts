@@ -1,4 +1,8 @@
+import { type TORUS_LEGACY_NETWORK_TYPE } from "@toruslabs/constants";
+
 import { BUILD_ENV, LOGIN_PROVIDER, MFA_LEVELS, OPENLOGIN_ACTIONS, OPENLOGIN_NETWORK, SUPPORTED_KEY_CURVES, UX_MODE } from "./constants";
+
+export { TORUS_LEGACY_NETWORK_TYPE };
 
 export type UX_MODE_TYPE = (typeof UX_MODE)[keyof typeof UX_MODE];
 
@@ -513,6 +517,8 @@ export interface OpenloginSessionData {
   signatures?: string[];
   tssShareIndex?: number;
   tssPubKey?: string;
+  tssShare?: string;
+  tssNonce?: number;
 }
 
 export const MFA_FACTOR = {

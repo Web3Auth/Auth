@@ -1,4 +1,4 @@
-import { TORUS_SAPPHIRE_NETWORK } from "@toruslabs/constants";
+import { TORUS_LEGACY_NETWORK, TORUS_SAPPHIRE_NETWORK } from "@toruslabs/constants";
 
 export const storeKey = "openlogin_store";
 
@@ -9,6 +9,7 @@ export const UX_MODE = {
 
 export const OPENLOGIN_NETWORK = {
   ...TORUS_SAPPHIRE_NETWORK,
+  ...TORUS_LEGACY_NETWORK,
 } as const;
 
 export const SUPPORTED_KEY_CURVES = {
@@ -55,3 +56,5 @@ export const BUILD_ENV = {
   STAGING: "staging",
   TESTING: "testing",
 } as const;
+
+export { TORUS_LEGACY_NETWORK, TORUS_SAPPHIRE_NETWORK };
