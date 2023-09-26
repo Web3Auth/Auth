@@ -32,6 +32,8 @@ class OpenLogin {
 
   private _storageBaseKey = "openlogin_store";
 
+  private dappState: string;
+
   constructor(options: OpenLoginOptions) {
     if (!options.clientId) throw InitializationError.invalidParams("clientId is required");
     if (!options.network) options.network = OPENLOGIN_NETWORK.SAPPHIRE_MAINNET;
@@ -89,6 +91,10 @@ class OpenLogin {
     return this.options.sessionNamespace || "";
   }
 
+  get appState(): string {
+    return this.state.userInfo.appState || this.dappState || "";
+  }
+
   private get baseUrl(): string {
     // testing and develop don't have versioning
     if (this.options.buildEnv === BUILD_ENV.DEVELOPMENT || this.options.buildEnv === BUILD_ENV.TESTING) return `${this.options.sdkUrl}`;
@@ -128,6 +134,7 @@ class OpenLogin {
     }
 
     if (params.error) {
+      this.dappState = params.state;
       throw LoginError.loginFailed(params.error);
     }
 
@@ -171,6 +178,10 @@ class OpenLogin {
 
     const result = await this.openloginHandler(`${this.baseUrl}/start`, dataObject, getTimeout(params.loginProvider));
     if (this.options.uxMode === UX_MODE.REDIRECT) return undefined;
+    if (result.error) {
+      this.dappState = result.state;
+      throw LoginError.loginFailed(result.error);
+    }
     this.sessionManager.sessionId = result.sessionId;
     this.options.sessionNamespace = result.sessionNamespace;
     this.currentStorage.set("sessionId", result.sessionId);
