@@ -19,6 +19,7 @@ export type HashQueryParamResult = {
   sessionId?: string;
   sessionNamespace?: string;
   error?: string;
+  state?: string;
 };
 
 export function getHashQueryParams(replaceUrl = false): HashQueryParamResult {
