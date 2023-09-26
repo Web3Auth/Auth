@@ -5,7 +5,7 @@ export const signEthMessage = async (provider: SafeEventEmitterProvider): Promis
   const web3 = new BrowserProvider(provider as any);
   const accounts = await web3.listAccounts();
   // hex message
-  const message = "0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad";
+  const message = Buffer.from("47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad", "hex");
   const sign = await accounts[0]._legacySignMessage(message);
   return sign;
 };
@@ -30,6 +30,15 @@ export const signTypedData_v1 = async (provider: SafeEventEmitterProvider): Prom
     price: "1",
   });
 };
+
+export const ethSignTypedMessage = async (provider: SafeEventEmitterProvider) => {
+  const web3 = new BrowserProvider(provider as any);
+  const accounts = await web3.listAccounts();
+  // hex message
+  const message = "0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad";
+  const sign = await accounts[0].signMessage(message);
+  return sign;
+}
 
 export const fetchLatestBlock = async (provider: SafeEventEmitterProvider): Promise<any> => {
   const web3 = new BrowserProvider(provider as any);

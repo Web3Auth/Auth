@@ -10,6 +10,10 @@
         <label for="whitelabel">Enable whitelabel</label>
         <input type="checkbox" id="whitelabel" name="whitelabel" v-model="isWhiteLabelEnabled" />
       </div>
+      <div class="mpc">
+        <label for="mpc">Enable MPC</label>
+        <input type="checkbox" id="mpc" name="mpc" v-model="useMpc" />
+      </div>
       <select v-model="selectedBuildEnv" class="select">
         <option :key="login" v-for="login in Object.values(BUILD_ENV)" :value="login">{{ login }}</option>
       </select>
@@ -68,6 +72,7 @@
           <p class="btn-label">Signing</p>
           <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
             <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="signMessage">Sign test Eth Message</button>
+            <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="signMpcMessage">Sign test Eth Message (MPC)</button>
             <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="latestBlock">Fetch latest block</button>
           </div>
           <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
@@ -94,10 +99,16 @@
 <script lang="ts">
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
+import { EthereumSigningProvider as EthMpcPrivKeyProvider } from "@web3auth-mpc/ethereum-provider";
 import * as bs58 from "bs58";
+import { generatePrivate } from "@toruslabs/eccrypto";
 import { defineComponent } from "vue";
+import BN from "bn.js"
+import { Client, utils as tssUtils } from "@toruslabs/tss-client";
+import { TORUS_SAPPHIRE_NETWORK_TYPE } from "@toruslabs/constants";
 
 import * as ethWeb3 from "./lib/ethWeb3";
+import { CURVE, DELIMITERS } from "./constants";
 import whitelabel from "./lib/whitelabel";
 import OpenLogin from "@toruslabs/openlogin";
 import {
@@ -111,6 +122,8 @@ import {
   BUILD_ENV,
 } from "@toruslabs/openlogin-utils";
 import loginConfig from "./lib/loginConfig";
+import { keccak256 } from "ethereum-cryptography/keccak";
+import { generateTSSEndpoints, getTSSEndpoints } from "./utils";
 
 const OPENLOGIN_PROJECT_IDS: Record<OPENLOGIN_NETWORK_TYPE, string> = {
   [OPENLOGIN_NETWORK.MAINNET]: "BCtbnOamqh0cJFEUYA0NB5YkvBECZ3HLZsKfvSRBvew2EiiKW3UxpyQASSR0artjQkiUOCHeZ_ZeygXpYpxZjOs",
@@ -128,7 +141,7 @@ export default defineComponent({
     return {
       loading: false,
       privKey: "",
-      ethereumPrivateKeyProvider: null as EthereumPrivateKeyProvider | null,
+      ethereumPrivateKeyProvider: null as EthereumPrivateKeyProvider | EthMpcPrivKeyProvider | null,
       LOGIN_PROVIDER: LOGIN_PROVIDER,
       selectedLoginProvider: LOGIN_PROVIDER.GOOGLE as LOGIN_PROVIDER_TYPE,
       login_hint: "",
@@ -138,7 +151,8 @@ export default defineComponent({
       OPENLOGIN_NETWORK: OPENLOGIN_NETWORK,
       BUILD_ENV: BUILD_ENV,
       selectedOpenloginNetwork: OPENLOGIN_NETWORK.SAPPHIRE_DEVNET as OPENLOGIN_NETWORK_TYPE,
-      selectedBuildEnv: BUILD_ENV.PRODUCTION,
+      useMpc: false,
+      selectedBuildEnv: BUILD_ENV.PRODUCTION
     };
   },
   async created() {
@@ -179,6 +193,7 @@ export default defineComponent({
         uxMode: this.selectedUxMode,
         whiteLabel: this.isWhiteLabelEnabled ? whitelabel : {},
         loginConfig: loginConfig,
+        useMpc: this.useMpc,
         buildEnv: this.selectedBuildEnv,
         // sdkUrl: "https://staging.openlogin.com",
       });
@@ -224,9 +239,9 @@ export default defineComponent({
         }
 
         console.log(openLoginObj, "OPENLOGIN");
-        const privKey = await this.openloginInstance.login(openLoginObj);
-        if (privKey) {
-          this.privKey = this.openloginInstance.privKey;
+        const data = await this.openloginInstance.login(openLoginObj);
+        if (data && data.privKey) {
+          this.privKey = data.privKey;
           await this.setProvider(this.privKey);
         }
       } catch (error) {
@@ -237,19 +252,102 @@ export default defineComponent({
     },
 
     async setProvider(privKey: string) {
-      this.ethereumPrivateKeyProvider = new EthereumPrivateKeyProvider({
-        config: {
-          chainConfig: {
-            chainId: "0x1",
-            rpcTarget: `https://rpc.ankr.com/eth`,
-            displayName: "Mainnet",
-            blockExplorer: "https://etherscan.io/",
-            ticker: "ETH",
-            tickerName: "Ethereum",
+      if (this.useMpc) {
+        const { factorKey, tssPubKey, tssShareIndex, userInfo, tssShare, tssNonce, signatures  } = this.openloginInstance.state;
+        this.ethereumPrivateKeyProvider = new EthMpcPrivKeyProvider({
+          config: {
+            chainConfig: {
+              chainId: "0x1",
+              rpcTarget: `https://rpc.ankr.com/eth`,
+              displayName: "Mainnet",
+              blockExplorer: "https://etherscan.io/",
+              ticker: "ETH",
+              tickerName: "Ethereum",
+            },
           },
-        },
-      });
-      await this.ethereumPrivateKeyProvider.setupProvider(privKey);
+        });
+        if (!factorKey) throw new Error("factorKey not present");
+        if (!tssPubKey) {
+          throw new Error("tssPubKey not available");
+        }
+  
+        const vid = `${userInfo?.aggregateVerifier || userInfo?.verifier}${DELIMITERS.Delimiter1}${userInfo?.verifierId}`;
+        const sessionId = `${vid}${DELIMITERS.Delimiter2}default${DELIMITERS.Delimiter3}${tssNonce}${DELIMITERS.Delimiter4}`;
+  
+        const sign = async (msgHash: Buffer) => {
+          const parties = 4;
+          const clientIndex = parties - 1;
+          const tss = await import("@toruslabs/tss-lib");
+          // 1. setup
+          // generate endpoints for servers
+          const tssNodeEndpoints = getTSSEndpoints(this.selectedOpenloginNetwork as TORUS_SAPPHIRE_NETWORK_TYPE) 
+          const { endpoints, tssWSEndpoints, partyIndexes } = generateTSSEndpoints(tssNodeEndpoints, parties, clientIndex);
+          const randomSessionNonce = Buffer.from(keccak256(Buffer.from(generatePrivate().toString("hex") + Date.now(), "utf8"))).toString("hex");
+          const tssImportUrl = `${tssNodeEndpoints[0]}/v1/clientWasm`;
+          // session is needed for authentication to the web3auth infrastructure holding the factor 1
+          const currentSession = `${sessionId}${randomSessionNonce}`;
+  
+          // setup mock shares, sockets and tss wasm files.
+          const [sockets] = await Promise.all([tssUtils.setupSockets(tssWSEndpoints, randomSessionNonce), tss.default(tssImportUrl)]);
+  
+          const participatingServerDKGIndexes = [1, 2, 3];
+          const dklsCoeff = tssUtils.getDKLSCoeff(true, participatingServerDKGIndexes, tssShareIndex as number);
+          const denormalisedShare = dklsCoeff.mul(new BN((tssShare as string), "hex")).umod(CURVE.curve.n);
+          const share = Buffer.from(denormalisedShare.toString(16, 64), "hex").toString("base64");
+  
+          if (!currentSession) {
+            throw new Error(`sessionAuth does not exist ${currentSession}`);
+          }
+  
+          if (!signatures) {
+            throw new Error(`Signature does not exist ${signatures}`);
+          }
+  
+          const client = new Client(
+            currentSession,
+            clientIndex,
+            partyIndexes,
+            endpoints,
+            sockets,
+            share,
+            tssPubKey,
+            true,
+            tssImportUrl
+          );
+          const serverCoeffs: Record<number, string> = {};
+          for (let i = 0; i < participatingServerDKGIndexes.length; i++) {
+            const serverIndex = participatingServerDKGIndexes[i];
+            serverCoeffs[serverIndex] = tssUtils.getDKLSCoeff(false, participatingServerDKGIndexes, tssShareIndex as number, serverIndex).toString("hex");
+          }
+          client.precompute(tss, { signatures, server_coeffs: serverCoeffs });
+          await client.ready();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { r, s, recoveryParam } = await client.sign(tss as any, Buffer.from(msgHash).toString("base64"), true, "", "keccak256", {
+            signatures,
+          });
+          await client.cleanup(tss, { signatures, server_coeffs: serverCoeffs });
+          return { v: recoveryParam, r: r.toArrayLike(Buffer, "be", 64), s: s.toArrayLike(Buffer, "be", 64) };
+        };
+  
+        const getPublic: () => Promise<Buffer> = async () => {
+          return Buffer.from(tssPubKey, "base64");
+        };
+        await this.ethereumPrivateKeyProvider.setupProvider({ sign, getPublic });
+      } else {
+        this.ethereumPrivateKeyProvider = new EthereumPrivateKeyProvider({
+          config: {
+            chainConfig: {
+              chainId: "0x1",
+              rpcTarget: `https://rpc.ankr.com/eth`,
+              displayName: "Mainnet",
+              blockExplorer: "https://etherscan.io/",
+              ticker: "ETH",
+              tickerName: "Ethereum",
+            },
+          },
+        });
+        this.ethereumPrivateKeyProvider.setupProvider(privKey);
+      }
     },
 
     async getUserInfo() {
@@ -279,6 +377,12 @@ export default defineComponent({
     async signMessage() {
       if (!this.ethereumPrivateKeyProvider?.provider) throw new Error("provider not set");
       const signedMessage = await ethWeb3.signEthMessage(this.ethereumPrivateKeyProvider.provider);
+      this.printToConsole("Signed Message", signedMessage);
+    },
+
+    async signMpcMessage() {
+      if (!this.ethereumPrivateKeyProvider?.provider) throw new Error("provider not set");
+      const signedMessage = await ethWeb3.ethSignTypedMessage(this.ethereumPrivateKeyProvider.provider);
       this.printToConsole("Signed Message", signedMessage);
     },
 

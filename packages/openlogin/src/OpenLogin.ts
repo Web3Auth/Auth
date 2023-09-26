@@ -13,6 +13,8 @@ import {
   OpenloginSessionData,
   OpenloginUserInfo,
   SocialMfaModParams,
+  TORUS_LEGACY_NETWORK,
+  type TORUS_LEGACY_NETWORK_TYPE,
   UX_MODE,
 } from "@toruslabs/openlogin-utils";
 
@@ -38,7 +40,7 @@ class OpenLogin {
     if (!options.clientId) throw InitializationError.invalidParams("clientId is required");
     if (!options.network) options.network = OPENLOGIN_NETWORK.SAPPHIRE_MAINNET;
     if (!options.buildEnv) options.buildEnv = BUILD_ENV.PRODUCTION;
-    if (!options.sdkUrl) {
+    if (!options.sdkUrl && !options.useMpc) {
       if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
         options.sdkUrl = "http://localhost:3000";
       } else if (options.buildEnv === BUILD_ENV.STAGING) {
@@ -47,6 +49,20 @@ class OpenLogin {
         options.sdkUrl = "https://develop-auth.web3auth.io";
       } else {
         options.sdkUrl = "https://auth.web3auth.io";
+      }
+    }
+
+    if (options.useMpc && !options.sdkUrl) {
+      if (Object.values(TORUS_LEGACY_NETWORK).includes(options.network as TORUS_LEGACY_NETWORK_TYPE))
+        throw new Error("MPC is not supported on legacy networks");
+      if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
+        options.sdkUrl = "http://localhost:3000";
+      } else if (options.buildEnv === BUILD_ENV.STAGING) {
+        options.sdkUrl = "https://staging-mpc-auth.web3auth.io";
+      } else if (options.buildEnv === BUILD_ENV.TESTING) {
+        options.sdkUrl = "https://develop-mpc-auth.web3auth.io";
+      } else {
+        options.sdkUrl = "https://mpc-auth.web3auth.io";
       }
     }
 
@@ -68,6 +84,7 @@ class OpenLogin {
   }
 
   get privKey(): string {
+    if (this.options.useMpc) return this.state.factorKey || "";
     return this.state.privKey ? this.state.privKey.padStart(64, "0") : "";
   }
 
@@ -155,7 +172,7 @@ class OpenLogin {
     }
   }
 
-  async login(params: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
+  async login(params: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string } | null> {
     if (!params.loginProvider) throw LoginError.invalidLoginParams(`loginProvider is required`);
 
     // in case of redirect mode, redirect url will be dapp specified
@@ -177,7 +194,7 @@ class OpenLogin {
     };
 
     const result = await this.openloginHandler(`${this.baseUrl}/start`, dataObject, getTimeout(params.loginProvider));
-    if (this.options.uxMode === UX_MODE.REDIRECT) return undefined;
+    if (this.options.uxMode === UX_MODE.REDIRECT) return null;
     if (result.error) {
       this.dappState = result.state;
       throw LoginError.loginFailed(result.error);
@@ -218,6 +235,13 @@ class OpenLogin {
         isMfaEnabled: false,
       },
       authToken: "",
+      sessionId: "",
+      factorKey: "",
+      signatures: [],
+      tssShareIndex: -1,
+      tssPubKey: "",
+      tssShare: "",
+      tssNonce: -1,
     });
 
     this.currentStorage.set("sessionId", "");
