@@ -143,7 +143,7 @@ export default defineComponent({
       privKey: "",
       ethereumPrivateKeyProvider: null as EthereumPrivateKeyProvider | EthMpcPrivKeyProvider | null,
       LOGIN_PROVIDER: LOGIN_PROVIDER,
-      selectedLoginProvider: LOGIN_PROVIDER.GOOGLE as LOGIN_PROVIDER_TYPE,
+      selectedLoginProvider: LOGIN_PROVIDER.EMAIL_PASSWORDLESS as LOGIN_PROVIDER_TYPE,
       login_hint: "",
       isWhiteLabelEnabled: false,
       UX_MODE: UX_MODE,
@@ -152,7 +152,7 @@ export default defineComponent({
       BUILD_ENV: BUILD_ENV,
       selectedOpenloginNetwork: OPENLOGIN_NETWORK.SAPPHIRE_DEVNET as OPENLOGIN_NETWORK_TYPE,
       useMpc: true,
-      selectedBuildEnv: BUILD_ENV.PRODUCTION,
+      selectedBuildEnv: BUILD_ENV.DEVELOPMENT
     };
   },
   async created() {
@@ -240,7 +240,7 @@ export default defineComponent({
 
         console.log(openLoginObj, "OPENLOGIN");
         const data = await this.openloginInstance.login(openLoginObj);
-        if (data.privKey) {
+        if (data && data.privKey) {
           this.privKey = data.privKey;
           await this.setProvider(this.privKey);
         }

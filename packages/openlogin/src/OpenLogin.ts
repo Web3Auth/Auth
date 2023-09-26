@@ -169,7 +169,7 @@ class OpenLogin {
     }
   }
 
-  async login(params: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string }> {
+  async login(params: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string } | null> {
     if (!params.loginProvider) throw LoginError.invalidLoginParams(`loginProvider is required`);
 
     // in case of redirect mode, redirect url will be dapp specified
@@ -191,7 +191,7 @@ class OpenLogin {
     };
 
     const result = await this.openloginHandler(`${this.baseUrl}/start`, dataObject, getTimeout(params.loginProvider));
-    if (this.options.uxMode === UX_MODE.REDIRECT) return undefined;
+    if (this.options.uxMode === UX_MODE.REDIRECT) return null;
     if (result.error) {
       this.dappState = result.state;
       throw LoginError.loginFailed(result.error);
@@ -232,6 +232,13 @@ class OpenLogin {
         isMfaEnabled: false,
       },
       authToken: "",
+      sessionId: "",
+      factorKey: "",
+      signatures: [],
+      tssShareIndex: -1,
+      tssPubKey: "",
+      tssShare: "",
+      tssNonce: -1,
     });
 
     this.currentStorage.set("sessionId", "");
