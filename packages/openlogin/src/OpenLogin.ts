@@ -135,10 +135,13 @@ class OpenLogin {
       sessionId,
     });
 
-    if (this.options.network === OPENLOGIN_NETWORK.SAPPHIRE_DEVNET) {
+    if (this.options.network === OPENLOGIN_NETWORK.TESTNET || this.options.network === OPENLOGIN_NETWORK.SAPPHIRE_DEVNET) {
       // using console log because it shouldn't be affected by loglevel config
       // eslint-disable-next-line no-console
-      console.log(`%c WARNING! You are on ${this.options.network}. Please set network: 'sapphire_mainnet' in production`, "color: #FF0000");
+      console.log(
+        `%c WARNING! You are on ${this.options.network}. Please set network: 'mainnet' or 'sapphire_mainnet' in production`,
+        "color: #FF0000"
+      );
     }
 
     if (this.options.buildEnv !== BUILD_ENV.PRODUCTION) {
