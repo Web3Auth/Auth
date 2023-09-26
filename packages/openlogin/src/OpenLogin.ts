@@ -38,7 +38,7 @@ class OpenLogin {
     if (!options.clientId) throw InitializationError.invalidParams("clientId is required");
     if (!options.network) options.network = OPENLOGIN_NETWORK.SAPPHIRE_MAINNET;
     if (!options.buildEnv) options.buildEnv = BUILD_ENV.PRODUCTION;
-    if (!options.sdkUrl) {
+    if (!options.sdkUrl && !options.useMpc) {
       if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
         options.sdkUrl = "http://localhost:3000";
       } else if (options.buildEnv === BUILD_ENV.STAGING) {
@@ -50,7 +50,7 @@ class OpenLogin {
       }
     }
 
-    if (options.useMpc) {
+    if (options.useMpc && !options.sdkUrl) {
       if (Object.values(TORUS_LEGACY_NETWORK).includes(options.network as TORUS_LEGACY_NETWORK_TYPE))
         throw new Error("MPC is not supported on legacy networks");
       if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
