@@ -6,6 +6,8 @@ import { getPopupFeatures } from "./utils";
 export interface PopupResponse {
   sessionId?: string;
   sessionNamespace?: string;
+  state?: string;
+  error?: string;
 }
 class PopupHandler extends EventEmitter {
   url: string;
@@ -71,8 +73,8 @@ class PopupHandler extends EventEmitter {
   }
 
   async listenOnChannel(loginId: string): Promise<PopupResponse> {
-    return new Promise<PopupResponse>((resolve, reject) => {
-      const bc = new BroadcastChannel<{ error?: string; data?: PopupResponse }>(loginId, {
+    return new Promise<PopupResponse>((resolve, _reject) => {
+      const bc = new BroadcastChannel<{ error?: string; data?: PopupResponse; state?: string }>(loginId, {
         webWorkerSupport: false,
         type: "server",
       });
@@ -80,7 +82,7 @@ class PopupHandler extends EventEmitter {
         this.close();
         bc.close();
         if (ev.error) {
-          reject(new Error(ev.error));
+          resolve({ error: ev.error, state: ev.state });
         } else {
           resolve(ev.data);
         }

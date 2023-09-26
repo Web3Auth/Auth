@@ -14,6 +14,9 @@
         <label for="mpc">Enable MPC</label>
         <input type="checkbox" id="mpc" name="mpc" v-model="useMpc" />
       </div>
+      <select v-model="selectedBuildEnv" class="select">
+        <option :key="login" v-for="login in Object.values(BUILD_ENV)" :value="login">{{ login }}</option>
+      </select>
       <select v-model="selectedOpenloginNetwork" class="select">
         <option :key="login" v-for="login in Object.values(OPENLOGIN_NETWORK)" :value="login">{{ login }}</option>
       </select>
@@ -116,6 +119,7 @@ import {
   UX_MODE_TYPE,
   OPENLOGIN_NETWORK,
   OPENLOGIN_NETWORK_TYPE,
+  BUILD_ENV,
 } from "@toruslabs/openlogin-utils";
 import loginConfig from "./lib/loginConfig";
 import { keccak256 } from "ethereum-cryptography/keccak";
@@ -145,8 +149,10 @@ export default defineComponent({
       UX_MODE: UX_MODE,
       selectedUxMode: UX_MODE.REDIRECT as UX_MODE_TYPE,
       OPENLOGIN_NETWORK: OPENLOGIN_NETWORK,
+      BUILD_ENV: BUILD_ENV,
       selectedOpenloginNetwork: OPENLOGIN_NETWORK.SAPPHIRE_DEVNET as OPENLOGIN_NETWORK_TYPE,
       useMpc: true,
+      selectedBuildEnv: BUILD_ENV.PRODUCTION,
     };
   },
   async created() {
@@ -187,8 +193,8 @@ export default defineComponent({
         uxMode: this.selectedUxMode,
         whiteLabel: this.isWhiteLabelEnabled ? whitelabel : {},
         loginConfig: loginConfig,
-        buildEnv: "development",
         useMpc: this.useMpc,
+        buildEnv: this.selectedBuildEnv,
         // sdkUrl: "https://staging.openlogin.com",
       });
       op.init();
