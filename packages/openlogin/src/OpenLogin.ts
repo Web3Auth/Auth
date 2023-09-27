@@ -36,10 +36,13 @@ class OpenLogin {
 
   private dappState: string;
 
+  private addVersionInUrls = true;
+
   constructor(options: OpenLoginOptions) {
     if (!options.clientId) throw InitializationError.invalidParams("clientId is required");
     if (!options.network) options.network = OPENLOGIN_NETWORK.SAPPHIRE_MAINNET;
     if (!options.buildEnv) options.buildEnv = BUILD_ENV.PRODUCTION;
+    if (options.buildEnv === BUILD_ENV.DEVELOPMENT || options.buildEnv === BUILD_ENV.TESTING || options.sdkUrl) this.addVersionInUrls = false;
     if (!options.sdkUrl && !options.useMpc) {
       if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
         options.sdkUrl = "http://localhost:3000";
@@ -114,7 +117,7 @@ class OpenLogin {
 
   private get baseUrl(): string {
     // testing and develop don't have versioning
-    if (this.options.buildEnv === BUILD_ENV.DEVELOPMENT || this.options.buildEnv === BUILD_ENV.TESTING) return `${this.options.sdkUrl}`;
+    if (!this.addVersionInUrls) return `${this.options.sdkUrl}`;
     return `${this.options.sdkUrl}/v${version.split(".")[0]}`;
   }
 
