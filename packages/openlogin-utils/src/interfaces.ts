@@ -209,13 +209,6 @@ export type LoginParams = BaseRedirectParams & {
    * @defaultValue secp256k1
    */
   curve?: SUPPORTED_KEY_CURVES_TYPE;
-
-  /**
-   * This field is used by native apps.
-   * For web applications, use redirectUrl instead.
-   * @internal
-   */
-  mobileOrigin?: string;
 };
 
 export type SocialMfaModParams = {
