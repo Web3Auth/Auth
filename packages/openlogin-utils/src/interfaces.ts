@@ -512,6 +512,7 @@ export interface OpenloginSessionData {
   tssPubKey?: string;
   tssShare?: string;
   tssNonce?: number;
+  nodeIndexes?: number[];
 }
 
 export const MFA_FACTOR = {
