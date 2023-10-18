@@ -67,12 +67,18 @@
           <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
             <button class="btn" @click="getUserInfo">Get user info</button>
             <button class="btn" @click="getOpenloginState">Get openlogin state</button>
+            <!-- <button class="btn" @click="getEd25519Key">Get Ed25519Key</button> -->
+          </div>
+          <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
             <button class="btn" @click="getEd25519Key">Get Ed25519Key</button>
           </div>
           <p class="btn-label">Signing</p>
           <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
             <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="signMessage">Sign test Eth Message</button>
             <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="signMpcMessage">Sign test Eth Message (MPC)</button>
+            <!-- <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="latestBlock">Fetch latest block</button> -->
+          </div>
+          <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
             <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="latestBlock">Fetch latest block</button>
           </div>
           <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
