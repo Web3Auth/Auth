@@ -48,7 +48,7 @@
     "eslint-plugin-vue": "^9.17.0",
     "https-browserify": "^1.0.0",
     "os-browserify": "^0.3.0",
-    "postcss": "^8.4.28",
+    "postcss": "^8.4.31",
     "prettier": "^3.0.2",
     "tailwindcss": "^3.3.3",
     "typescript": "~5.1.6",
