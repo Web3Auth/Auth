@@ -26,6 +26,9 @@
       <select v-model="selectedLoginProvider" class="select">
         <option :key="login" v-for="login in computedLoginProviders" :value="login">{{ login }}</option>
       </select>
+      <select v-if="showEmailFlow" v-model="emailFlowType" class="select">
+        <option :key="flow" v-for="flow in Object.values(EMAIL_FLOW)" :value="flow">{{ flow }}</option>
+      </select>
       <input
         v-model="login_hint"
         v-if="selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS"
@@ -141,6 +144,11 @@ const OPENLOGIN_PROJECT_IDS: Record<OPENLOGIN_NETWORK_TYPE, string> = {
   [OPENLOGIN_NETWORK.CELESTE]: "openlogin",
 };
 
+const EMAIL_FLOW = {
+  link: "link",
+  code: "code",
+};
+
 export default defineComponent({
   name: "App",
   data() {
@@ -158,7 +166,9 @@ export default defineComponent({
       BUILD_ENV: BUILD_ENV,
       selectedOpenloginNetwork: OPENLOGIN_NETWORK.SAPPHIRE_DEVNET as OPENLOGIN_NETWORK_TYPE,
       useMpc: false,
-      selectedBuildEnv: BUILD_ENV.PRODUCTION
+      selectedBuildEnv: BUILD_ENV.PRODUCTION,
+      emailFlowType: EMAIL_FLOW.link,
+      EMAIL_FLOW: EMAIL_FLOW,
     };
   },
   async created() {
@@ -206,6 +216,9 @@ export default defineComponent({
       op.init();
       return op;
     },
+    showEmailFlow(): boolean {
+      return this.selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS;
+    }
   },
   methods: {
     async login() {
@@ -241,6 +254,13 @@ export default defineComponent({
         if (this.isLongLines) {
           openLoginObj.extraLoginOptions = {
             login_hint: this.login_hint,
+          };
+        }
+
+        if (this.emailFlowType) {
+          openLoginObj.extraLoginOptions = {
+            ...openLoginObj.extraLoginOptions,
+            flow_type: this.emailFlowType,
           };
         }
 
