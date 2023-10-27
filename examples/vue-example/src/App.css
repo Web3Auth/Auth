@@ -161,7 +161,7 @@ body,
   margin-top: 1rem;
 
   @media (width < 780px) {
-    flex-direction: column;
+    display: block;
     height: auto;
     row-gap: 1rem;
   }
@@ -196,6 +196,7 @@ body,
   position: relative;
   @media (width < 780px) {
     width: 100%;
+    height: inherit;
   }
 }
 
