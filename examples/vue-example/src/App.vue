@@ -3,7 +3,7 @@
     <!-- Loader -->
     <div class="loader-container" v-if="loading">Loading...</div>
     <!-- Login -->
-    <div class="login-container" v-if="!privKey">
+    <div class="login-container" v-if="privKey">
       <h1 class="login-heading">demo-openlogin.web3auth.io</h1>
       <h3 class="login-subheading">Login in with Openlogin</h3>
       <div class="whitelabel">
@@ -95,7 +95,21 @@
         <!-- Dashboard Console Container -->
         <div class="dashboard-details-console-container" id="console">
           <h1 class="console-heading"></h1>
-          <pre class="console-container"></pre>
+          <pre class="console-container">{
+"appState": "",
+"email": "lionell@tor.us",
+"aggregateVerifier": "web3auth-google-sapphire-devnet",
+"name": "Lionell Briones",
+"profileImage": "https://lh3.googleusercontent.com/a/ACg8ocICWL6_apSI4IXxaanXCS0ZYVFnSpFR857J4mu5xB6U=s96-c",
+"typeOfLogin": "google",
+"verifier": "web3auth",
+"verifierId": "lionell@tor.us",
+"dappShare": "",
+"oAuthIdToken": "",
+"oAuthAccessToken": "",
+"isMfaEnabled": false,
+"idToken": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlRZT2dnXy01RU9FYmxhWS1WVlJZcVZhREFncHRuZktWNDUzNU1aUEMwdzAifQ.eyJpYXQiOjE2OTg0MDY5ODIsImF1ZCI6Im9wZW5sb2dpbiIsIm5vbmNlIjoiMDMxYzM0NWQ0ODJhN2ZkZTUzNWFiZmFkZmYxNGJjNTNkZjRlZTNhYWMzZWJiMGYyOWZjYTAyMTJkYTZkODM3ZjNhIiwiaXNzIjoiaHR0cHM6Ly9hcGktYXV0aC53ZWIzYXV0aC5pbyIsIndhbGxldHMiOlt7InB1YmxpY19rZXkiOiIwMmVkOTMxMDEyMWQyMzQwNDA1Mzc0YjAwNjc1ZDVmZjhkZWE0Yzc0ZTFmMDFiNTFkYzYwODIxOTc1NjdjMDExZDUiLCJ0eXBlIjoid2ViM2F1dGhfYXBwX2tleSIsImN1cnZlIjoic2VjcDI1NmsxIn1dLCJlbWFpbCI6Imxpb25lbGxAdG9yLnVzIiwibmFtZSI6Ikxpb25lbGwgQnJpb25lcyIsInByb2ZpbGVJbWFnZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0lDV0w2X2FwU0k0SVh4YWFuWENTMFpZVkZuU3BGUjg1N0o0bXU1eEI2VT1zOTYtYyIsInZlcmlmaWVyIjoid2ViM2F1dGgiLCJ2ZXJpZmllcklkIjoibGlvbmVsbEB0b3IudXMiLCJhZ2dyZWdhdGVWZXJpZmllciI6IndlYjNhdXRoLWdvb2dsZS1zYXBwaGlyZS1kZXZuZXQiLCJleHAiOjE2OTg0OTMzODJ9.z1hzTsciA-YCEQcDgHCzuGWWdh3VxYpvmbisUnFS82FXRVaGIFjKiBktQy0Y4SOBOo8GyaUa838FgPF6Fy2gTA"
+}</pre>
           <div class="clear-console-btn">
             <button class="btn console-btn" @click="clearConsole">Clear console</button>
           </div>
@@ -112,7 +126,7 @@ import { EthereumSigningProvider as EthMpcPrivKeyProvider } from "@web3auth-mpc/
 import * as bs58 from "bs58";
 import { generatePrivate } from "@toruslabs/eccrypto";
 import { defineComponent } from "vue";
-import BN from "bn.js"
+import BN from "bn.js";
 import { Client, utils as tssUtils } from "@toruslabs/tss-client";
 import { TORUS_SAPPHIRE_NETWORK_TYPE } from "@toruslabs/constants";
 
@@ -157,17 +171,17 @@ export default defineComponent({
       privKey: "",
       ethereumPrivateKeyProvider: null as EthereumPrivateKeyProvider | EthMpcPrivKeyProvider | null,
       LOGIN_PROVIDER: LOGIN_PROVIDER,
-      selectedLoginProvider: LOGIN_PROVIDER.GOOGLE as LOGIN_PROVIDER_TYPE,
-      login_hint: "",
-      isWhiteLabelEnabled: false,
+      selectedLoginProvider: LOGIN_PROVIDER.EMAIL_PASSWORDLESS as LOGIN_PROVIDER_TYPE,
+      login_hint: "lionelltor@mailinator.com",
+      isWhiteLabelEnabled: true,
       UX_MODE: UX_MODE,
       selectedUxMode: UX_MODE.REDIRECT as UX_MODE_TYPE,
       OPENLOGIN_NETWORK: OPENLOGIN_NETWORK,
       BUILD_ENV: BUILD_ENV,
       selectedOpenloginNetwork: OPENLOGIN_NETWORK.SAPPHIRE_DEVNET as OPENLOGIN_NETWORK_TYPE,
       useMpc: false,
-      selectedBuildEnv: BUILD_ENV.PRODUCTION,
-      emailFlowType: EMAIL_FLOW.link,
+      selectedBuildEnv: BUILD_ENV.DEVELOPMENT,
+      emailFlowType: EMAIL_FLOW.code,
       EMAIL_FLOW: EMAIL_FLOW,
     };
   },
@@ -211,14 +225,14 @@ export default defineComponent({
         loginConfig: loginConfig,
         useMpc: this.useMpc,
         buildEnv: this.selectedBuildEnv,
-        // sdkUrl: "https://staging.openlogin.com",
+        sdkUrl: "http://localhost:3000",
       });
       op.init();
       return op;
     },
     showEmailFlow(): boolean {
       return this.selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS;
-    }
+    },
   },
   methods: {
     async login() {
@@ -279,7 +293,7 @@ export default defineComponent({
 
     async setProvider(privKey: string) {
       if (this.useMpc) {
-        const { factorKey, tssPubKey, tssShareIndex, userInfo, tssShare, tssNonce, signatures  } = this.openloginInstance.state;
+        const { factorKey, tssPubKey, tssShareIndex, userInfo, tssShare, tssNonce, signatures } = this.openloginInstance.state;
         this.ethereumPrivateKeyProvider = new EthMpcPrivKeyProvider({
           config: {
             chainConfig: {
@@ -296,54 +310,46 @@ export default defineComponent({
         if (!tssPubKey) {
           throw new Error("tssPubKey not available");
         }
-  
+
         const vid = `${userInfo?.aggregateVerifier || userInfo?.verifier}${DELIMITERS.Delimiter1}${userInfo?.verifierId}`;
         const sessionId = `${vid}${DELIMITERS.Delimiter2}default${DELIMITERS.Delimiter3}${tssNonce}${DELIMITERS.Delimiter4}`;
-  
+
         const sign = async (msgHash: Buffer) => {
           const parties = 4;
           const clientIndex = parties - 1;
           const tss = await import("@toruslabs/tss-lib");
           // 1. setup
           // generate endpoints for servers
-          const tssNodeEndpoints = getTSSEndpoints(this.selectedOpenloginNetwork as TORUS_SAPPHIRE_NETWORK_TYPE) 
+          const tssNodeEndpoints = getTSSEndpoints(this.selectedOpenloginNetwork as TORUS_SAPPHIRE_NETWORK_TYPE);
           const { endpoints, tssWSEndpoints, partyIndexes } = generateTSSEndpoints(tssNodeEndpoints, parties, clientIndex);
           const randomSessionNonce = Buffer.from(keccak256(Buffer.from(generatePrivate().toString("hex") + Date.now(), "utf8"))).toString("hex");
           const tssImportUrl = `${tssNodeEndpoints[0]}/v1/clientWasm`;
           // session is needed for authentication to the web3auth infrastructure holding the factor 1
           const currentSession = `${sessionId}${randomSessionNonce}`;
-  
+
           // setup mock shares, sockets and tss wasm files.
           const [sockets] = await Promise.all([tssUtils.setupSockets(tssWSEndpoints, randomSessionNonce), tss.default(tssImportUrl)]);
-  
+
           const participatingServerDKGIndexes = [1, 2, 3];
           const dklsCoeff = tssUtils.getDKLSCoeff(true, participatingServerDKGIndexes, tssShareIndex as number);
-          const denormalisedShare = dklsCoeff.mul(new BN((tssShare as string), "hex")).umod(CURVE.curve.n);
+          const denormalisedShare = dklsCoeff.mul(new BN(tssShare as string, "hex")).umod(CURVE.curve.n);
           const share = Buffer.from(denormalisedShare.toString(16, 64), "hex").toString("base64");
-  
+
           if (!currentSession) {
             throw new Error(`sessionAuth does not exist ${currentSession}`);
           }
-  
+
           if (!signatures) {
             throw new Error(`Signature does not exist ${signatures}`);
           }
-  
-          const client = new Client(
-            currentSession,
-            clientIndex,
-            partyIndexes,
-            endpoints,
-            sockets,
-            share,
-            tssPubKey,
-            true,
-            tssImportUrl
-          );
+
+          const client = new Client(currentSession, clientIndex, partyIndexes, endpoints, sockets, share, tssPubKey, true, tssImportUrl);
           const serverCoeffs: Record<number, string> = {};
           for (let i = 0; i < participatingServerDKGIndexes.length; i++) {
             const serverIndex = participatingServerDKGIndexes[i];
-            serverCoeffs[serverIndex] = tssUtils.getDKLSCoeff(false, participatingServerDKGIndexes, tssShareIndex as number, serverIndex).toString("hex");
+            serverCoeffs[serverIndex] = tssUtils
+              .getDKLSCoeff(false, participatingServerDKGIndexes, tssShareIndex as number, serverIndex)
+              .toString("hex");
           }
           client.precompute(tss, { signatures, server_coeffs: serverCoeffs });
           await client.ready();
@@ -354,7 +360,7 @@ export default defineComponent({
           await client.cleanup(tss, { signatures, server_coeffs: serverCoeffs });
           return { v: recoveryParam, r: r.toArrayLike(Buffer, "be", 64), s: s.toArrayLike(Buffer, "be", 64) };
         };
-  
+
         const getPublic: () => Promise<Buffer> = async () => {
           return Buffer.from(tssPubKey, "base64");
         };
