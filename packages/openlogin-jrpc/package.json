@@ -20,7 +20,7 @@
     "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
-    "@metamask/rpc-errors": "^6.0.0",
+    "@metamask/rpc-errors": "^6.1.0",
     "@toruslabs/openlogin-utils": "^5.3.0",
     "end-of-stream": "^1.4.4",
     "events": "^3.3.0",
@@ -30,10 +30,10 @@
     "readable-stream": "^4.4.2"
   },
   "devDependencies": {
-    "@types/end-of-stream": "^1.4.1",
-    "@types/once": "^1.4.1",
-    "@types/pump": "^1.1.1",
-    "@types/readable-stream": "^4.0.2"
+    "@types/end-of-stream": "^1.4.3",
+    "@types/once": "^1.4.2",
+    "@types/pump": "^1.1.2",
+    "@types/readable-stream": "^4.0.4"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x"

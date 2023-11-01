@@ -1,4 +1,4 @@
-import { BroadcastChannel } from "@toruslabs/broadcast-channel";
+import { SecurePubSub } from "@toruslabs/secure-pub-sub";
 import { EventEmitter } from "events";
 
 import { getPopupFeatures } from "./utils";
@@ -73,21 +73,15 @@ class PopupHandler extends EventEmitter {
   }
 
   async listenOnChannel(loginId: string): Promise<PopupResponse> {
-    return new Promise<PopupResponse>((resolve, _reject) => {
-      const bc = new BroadcastChannel<{ error?: string; data?: PopupResponse; state?: string }>(loginId, {
-        webWorkerSupport: false,
-        type: "server",
-      });
-      bc.addEventListener("message", (ev) => {
-        this.close();
-        bc.close();
-        if (ev.error) {
-          resolve({ error: ev.error, state: ev.state });
-        } else {
-          resolve(ev.data);
-        }
-      });
-    });
+    const securePubSub = new SecurePubSub();
+    const data = await securePubSub.subscribe(loginId);
+    this.close();
+    securePubSub.cleanup();
+    const parsedData = JSON.parse(data) as { error?: string; state?: string; data?: { sessionId?: string; sessionNamespace?: string } };
+    if (parsedData.error) {
+      return { error: parsedData.error, state: parsedData.state };
+    }
+    return parsedData.data;
   }
 }
 

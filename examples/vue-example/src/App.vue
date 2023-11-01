@@ -112,8 +112,8 @@ import { EthereumSigningProvider as EthMpcPrivKeyProvider } from "@web3auth-mpc/
 import * as bs58 from "bs58";
 import { generatePrivate } from "@toruslabs/eccrypto";
 import { defineComponent } from "vue";
-import BN from "bn.js"
-import { Client, utils as tssUtils } from "@toruslabs/tss-client";
+import BN from "bn.js";
+import { Client, getDKLSCoeff, setupSockets } from "@toruslabs/tss-client";
 import { TORUS_SAPPHIRE_NETWORK_TYPE } from "@toruslabs/constants";
 
 import * as ethWeb3 from "./lib/ethWeb3";
@@ -161,12 +161,12 @@ export default defineComponent({
       login_hint: "",
       isWhiteLabelEnabled: false,
       UX_MODE: UX_MODE,
-      selectedUxMode: UX_MODE.REDIRECT as UX_MODE_TYPE,
+      selectedUxMode: UX_MODE.POPUP as UX_MODE_TYPE,
       OPENLOGIN_NETWORK: OPENLOGIN_NETWORK,
       BUILD_ENV: BUILD_ENV,
       selectedOpenloginNetwork: OPENLOGIN_NETWORK.SAPPHIRE_DEVNET as OPENLOGIN_NETWORK_TYPE,
       useMpc: false,
-      selectedBuildEnv: BUILD_ENV.PRODUCTION,
+      selectedBuildEnv: BUILD_ENV.DEVELOPMENT,
       emailFlowType: EMAIL_FLOW.link,
       EMAIL_FLOW: EMAIL_FLOW,
     };
@@ -218,7 +218,7 @@ export default defineComponent({
     },
     showEmailFlow(): boolean {
       return this.selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS;
-    }
+    },
   },
   methods: {
     async login() {
@@ -279,7 +279,7 @@ export default defineComponent({
 
     async setProvider(privKey: string) {
       if (this.useMpc) {
-        const { factorKey, tssPubKey, tssShareIndex, userInfo, tssShare, tssNonce, signatures  } = this.openloginInstance.state;
+        const { factorKey, tssPubKey, tssShareIndex, userInfo, tssShare, tssNonce, signatures } = this.openloginInstance.state;
         this.ethereumPrivateKeyProvider = new EthMpcPrivKeyProvider({
           config: {
             chainConfig: {
@@ -296,54 +296,44 @@ export default defineComponent({
         if (!tssPubKey) {
           throw new Error("tssPubKey not available");
         }
-  
+
         const vid = `${userInfo?.aggregateVerifier || userInfo?.verifier}${DELIMITERS.Delimiter1}${userInfo?.verifierId}`;
         const sessionId = `${vid}${DELIMITERS.Delimiter2}default${DELIMITERS.Delimiter3}${tssNonce}${DELIMITERS.Delimiter4}`;
-  
+
         const sign = async (msgHash: Buffer) => {
           const parties = 4;
           const clientIndex = parties - 1;
           const tss = await import("@toruslabs/tss-lib");
           // 1. setup
           // generate endpoints for servers
-          const tssNodeEndpoints = getTSSEndpoints(this.selectedOpenloginNetwork as TORUS_SAPPHIRE_NETWORK_TYPE) 
+          const tssNodeEndpoints = getTSSEndpoints(this.selectedOpenloginNetwork as TORUS_SAPPHIRE_NETWORK_TYPE);
           const { endpoints, tssWSEndpoints, partyIndexes } = generateTSSEndpoints(tssNodeEndpoints, parties, clientIndex);
           const randomSessionNonce = Buffer.from(keccak256(Buffer.from(generatePrivate().toString("hex") + Date.now(), "utf8"))).toString("hex");
           const tssImportUrl = `${tssNodeEndpoints[0]}/v1/clientWasm`;
           // session is needed for authentication to the web3auth infrastructure holding the factor 1
           const currentSession = `${sessionId}${randomSessionNonce}`;
-  
+
           // setup mock shares, sockets and tss wasm files.
-          const [sockets] = await Promise.all([tssUtils.setupSockets(tssWSEndpoints, randomSessionNonce), tss.default(tssImportUrl)]);
-  
+          const [sockets] = await Promise.all([setupSockets(tssWSEndpoints, randomSessionNonce), tss.default(tssImportUrl)]);
+
           const participatingServerDKGIndexes = [1, 2, 3];
-          const dklsCoeff = tssUtils.getDKLSCoeff(true, participatingServerDKGIndexes, tssShareIndex as number);
-          const denormalisedShare = dklsCoeff.mul(new BN((tssShare as string), "hex")).umod(CURVE.curve.n);
+          const dklsCoeff = getDKLSCoeff(true, participatingServerDKGIndexes, tssShareIndex as number);
+          const denormalisedShare = dklsCoeff.mul(new BN(tssShare as string, "hex")).umod(CURVE.curve.n);
           const share = Buffer.from(denormalisedShare.toString(16, 64), "hex").toString("base64");
-  
+
           if (!currentSession) {
             throw new Error(`sessionAuth does not exist ${currentSession}`);
           }
-  
+
           if (!signatures) {
             throw new Error(`Signature does not exist ${signatures}`);
           }
-  
-          const client = new Client(
-            currentSession,
-            clientIndex,
-            partyIndexes,
-            endpoints,
-            sockets,
-            share,
-            tssPubKey,
-            true,
-            tssImportUrl
-          );
+
+          const client = new Client(currentSession, clientIndex, partyIndexes, endpoints, sockets, share, tssPubKey, true, tssImportUrl);
           const serverCoeffs: Record<number, string> = {};
           for (let i = 0; i < participatingServerDKGIndexes.length; i++) {
             const serverIndex = participatingServerDKGIndexes[i];
-            serverCoeffs[serverIndex] = tssUtils.getDKLSCoeff(false, participatingServerDKGIndexes, tssShareIndex as number, serverIndex).toString("hex");
+            serverCoeffs[serverIndex] = getDKLSCoeff(false, participatingServerDKGIndexes, tssShareIndex as number, serverIndex).toString("hex");
           }
           client.precompute(tss, { signatures, server_coeffs: serverCoeffs });
           await client.ready();
@@ -354,7 +344,7 @@ export default defineComponent({
           await client.cleanup(tss, { signatures, server_coeffs: serverCoeffs });
           return { v: recoveryParam, r: r.toArrayLike(Buffer, "be", 64), s: s.toArrayLike(Buffer, "be", 64) };
         };
-  
+
         const getPublic: () => Promise<Buffer> = async () => {
           return Buffer.from(tssPubKey, "base64");
         };
