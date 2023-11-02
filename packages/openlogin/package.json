@@ -20,7 +20,7 @@
     "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
-    "@toruslabs/broadcast-channel": "^8.0.0",
+    "@toruslabs/secure-pub-sub": "^0.0.1",
     "@toruslabs/eccrypto": "^4.0.0",
     "@toruslabs/metadata-helpers": "^5.0.0",
     "@toruslabs/openlogin-session-manager": "^3.0.0",
