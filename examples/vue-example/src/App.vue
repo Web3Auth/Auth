@@ -167,7 +167,7 @@ export default defineComponent({
       selectedOpenloginNetwork: OPENLOGIN_NETWORK.SAPPHIRE_DEVNET as OPENLOGIN_NETWORK_TYPE,
       useMpc: false,
       selectedBuildEnv: BUILD_ENV.PRODUCTION,
-      emailFlowType: EMAIL_FLOW.link,
+      emailFlowType: EMAIL_FLOW.code,
       EMAIL_FLOW: EMAIL_FLOW,
     };
   },
