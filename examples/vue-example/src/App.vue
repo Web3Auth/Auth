@@ -75,6 +75,10 @@
           <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
             <button class="btn" @click="getEd25519Key">Get Ed25519Key</button>
           </div>
+          <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
+            <button v-if="!isMFAEnabled" class="btn" @click="enableMFA">Enable MFA</button>
+            <button v-else class="btn" @click="manageMFA">Manage MFA</button>
+          </div>
           <p class="btn-label">Signing</p>
           <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
             <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="signMessage">Sign test Eth Message</button>
@@ -157,7 +161,7 @@ export default defineComponent({
       privKey: "",
       ethereumPrivateKeyProvider: null as EthereumPrivateKeyProvider | EthMpcPrivKeyProvider | null,
       LOGIN_PROVIDER: LOGIN_PROVIDER,
-      selectedLoginProvider: LOGIN_PROVIDER.GOOGLE as LOGIN_PROVIDER_TYPE,
+      selectedLoginProvider: LOGIN_PROVIDER.EMAIL_PASSWORDLESS as LOGIN_PROVIDER_TYPE,
       login_hint: "",
       isWhiteLabelEnabled: false,
       UX_MODE: UX_MODE,
@@ -166,16 +170,20 @@ export default defineComponent({
       BUILD_ENV: BUILD_ENV,
       selectedOpenloginNetwork: OPENLOGIN_NETWORK.SAPPHIRE_DEVNET as OPENLOGIN_NETWORK_TYPE,
       useMpc: false,
-      selectedBuildEnv: BUILD_ENV.PRODUCTION,
+      selectedBuildEnv: BUILD_ENV.DEVELOPMENT,
       emailFlowType: EMAIL_FLOW.link,
       EMAIL_FLOW: EMAIL_FLOW,
     };
   },
   async created() {
-    const openlogin = this.openloginInstance;
-    await openlogin.init();
-    if (openlogin.privKey) {
-      this.privKey = openlogin.privKey;
+    await this.openloginInstance.init();
+    if (this.openloginInstance.state.factorKey) {
+      this.useMpc = true;
+      this.openloginInstance.options.useMpc = true;
+    }
+    await this.openloginInstance.init();
+    if (this.openloginInstance.privKey || this.openloginInstance.state.factorKey) {
+      this.privKey = this.openloginInstance.privKey || this.openloginInstance.state.factorKey as string;
       await this.setProvider(this.privKey);
     }
     this.loading = false;
@@ -213,11 +221,13 @@ export default defineComponent({
         buildEnv: this.selectedBuildEnv,
         // sdkUrl: "https://staging.openlogin.com",
       });
-      op.init();
       return op;
     },
     showEmailFlow(): boolean {
       return this.selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS;
+    },
+    isMFAEnabled(): boolean {
+      return this.openloginInstance.state.userInfo?.isMfaEnabled || false;
     }
   },
   methods: {
@@ -236,6 +246,7 @@ export default defineComponent({
         const openLoginObj: LoginParams = {
           loginProvider: this.selectedLoginProvider,
           mfaLevel: "optional",
+
           // pass empty string '' as loginProvider to open default torus modal
           // with all default supported login providers or you can pass specific
           // login provider from available list to set as default.
@@ -280,6 +291,7 @@ export default defineComponent({
     async setProvider(privKey: string) {
       if (this.useMpc) {
         const { factorKey, tssPubKey, tssShareIndex, userInfo, tssShare, tssNonce, signatures  } = this.openloginInstance.state;
+        console.log("using mpc", this.openloginInstance.state, factorKey)
         this.ethereumPrivateKeyProvider = new EthMpcPrivKeyProvider({
           config: {
             chainConfig: {
@@ -382,6 +394,32 @@ export default defineComponent({
       }
       const userInfo = this.openloginInstance.getUserInfo();
       this.printToConsole("User Info", userInfo);
+    },
+
+    async enableMFA() {
+      if (!this.openloginInstance || !this.openloginInstance.sessionId) {
+        throw new Error("User not logged in")
+      }
+      await this.openloginInstance.enableMFA({ 
+        loginProvider: this.selectedLoginProvider, 
+        extraLoginOptions: {
+          login_hint: this.openloginInstance.getUserInfo().email,
+          flow_type: this.emailFlowType,
+        }
+      });
+    },
+
+    async manageMFA() {
+      if (!this.openloginInstance || !this.openloginInstance.sessionId) {
+        throw new Error("User not logged in")
+      }
+      await this.openloginInstance.manageMFA({ 
+        loginProvider: this.selectedLoginProvider, 
+        extraLoginOptions: {
+          login_hint: this.openloginInstance.getUserInfo().email,
+          flow_type: this.emailFlowType,
+        } 
+      });
     },
 
     async getOpenloginState() {

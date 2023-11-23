@@ -77,6 +77,7 @@ export class LoginError extends OpenloginError {
     5112: "User not logged in.",
     5113: "login popup has been closed by the user",
     5114: "Login failed",
+    5115: "MFA already enabled",
   };
 
   public constructor(code: number, message?: string) {
@@ -105,5 +106,9 @@ export class LoginError extends OpenloginError {
 
   public static loginFailed(extraMessage = ""): OpenloginError {
     return LoginError.fromCode(5114, extraMessage);
+  }
+
+  public static mfaAlreadyEnabled(extraMessage = ""): OpenloginError {
+    return LoginError.fromCode(5115, extraMessage);
   }
 }
