@@ -56,6 +56,7 @@ class PopupHandler extends EventEmitter {
 
   open(): void {
     this.window = window.open(this.url, this.target, this.features);
+    if (!this.window) throw new Error("Popup was blocked. Please call this function as soon as user clicks button or use redirect mode");
     if (this.window?.focus) this.window.focus();
   }
 
