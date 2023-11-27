@@ -377,7 +377,11 @@ class OpenLogin {
 
       currentWindow.listenOnChannel(loginId).then(resolve).catch(reject);
 
-      currentWindow.open();
+      try {
+        currentWindow.open();
+      } catch (error) {
+        reject(error);
+      }
     });
   }
 }
