@@ -14,6 +14,10 @@
         <label for="mpc">Enable MPC</label>
         <input type="checkbox" id="mpc" name="mpc" v-model="useMpc" />
       </div>
+      <div class="mfa">
+        <label for="mfa">Enable All MFA Factors</label>
+        <input type="checkbox" id="mfa" name="mfa" v-model="enableAllFactors" />
+      </div>
       <select v-model="selectedBuildEnv" class="select">
         <option :key="login" v-for="login in Object.values(BUILD_ENV)" :value="login">{{ login }}</option>
       </select>
@@ -154,6 +158,7 @@ export default defineComponent({
   data() {
     return {
       loading: false,
+      enableAllFactors: false,
       privKey: "",
       ethereumPrivateKeyProvider: null as EthereumPrivateKeyProvider | EthMpcPrivKeyProvider | null,
       LOGIN_PROVIDER: LOGIN_PROVIDER,
@@ -212,6 +217,14 @@ export default defineComponent({
         useMpc: this.useMpc,
         buildEnv: this.selectedBuildEnv,
         // sdkUrl: "https://staging.openlogin.com",
+        mfaSettings: this.enableAllFactors
+          ? {
+              backUpShareFactor: { enable: true },
+              deviceShareFactor: { enable: true },
+              passwordFactor: { enable: true },
+              socialBackupFactor: { enable: true },
+            }
+          : undefined,
       });
       op.init();
       return op;
@@ -230,6 +243,14 @@ export default defineComponent({
         }
         this.openloginInstance.options.uxMode = this.selectedUxMode;
         this.openloginInstance.options.whiteLabel = this.isWhiteLabelEnabled ? whitelabel : {};
+        this.openloginInstance.options.mfaSettings = this.enableAllFactors
+          ? {
+              backUpShareFactor: { enable: true },
+              deviceShareFactor: { enable: true },
+              passwordFactor: { enable: true },
+              socialBackupFactor: { enable: true },
+            }
+          : undefined;
         // in popup mode (with third party cookies available) or if user is already logged in this function will
         // return priv key , in redirect mode or if third party cookies are blocked then priv key be injected to
         // sdk instance after calling init on redirect url page.
