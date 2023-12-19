@@ -402,20 +402,25 @@ class OpenLogin {
       window.location.href = loginUrl;
       return undefined;
     }
-    return new Promise((resolve, reject) => {
-      const loginUrl = constructURL({
-        baseURL: url,
-        hash: { b64Params: jsonToBase64(configParams) },
-      });
-      const currentWindow = new PopupHandler({ url: loginUrl, timeout: popupTimeout });
 
+    const loginUrl = constructURL({
+      baseURL: url,
+      hash: { b64Params: jsonToBase64(configParams) },
+    });
+    const currentWindow = new PopupHandler({ url: loginUrl, timeout: popupTimeout });
+
+    return new Promise((resolve, reject) => {
       currentWindow.on("close", () => {
         reject(LoginError.popupClosed());
       });
 
       currentWindow.listenOnChannel(loginId).then(resolve).catch(reject);
 
-      currentWindow.open();
+      try {
+        currentWindow.open();
+      } catch (error) {
+        reject(error);
+      }
     });
   }
 }

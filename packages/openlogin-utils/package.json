@@ -1,6 +1,6 @@
 {
   "name": "@toruslabs/openlogin-utils",
-  "version": "5.3.0",
+  "version": "6.1.0",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
   "main": "dist/openloginUtils.cjs.js",
@@ -20,7 +20,7 @@
     "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
-    "@toruslabs/constants": "^13.0.1",
+    "@toruslabs/constants": "^13.0.4",
     "base64url": "^3.0.1"
   },
   "peerDependencies": {
