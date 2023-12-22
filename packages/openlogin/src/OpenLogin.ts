@@ -271,7 +271,7 @@ class OpenLogin {
       params: {
         ...defaultParams,
         ...params,
-        mfaLevel: "optional",
+        mfaLevel: "mandatory",
       },
     };
 
