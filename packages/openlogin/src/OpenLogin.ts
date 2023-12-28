@@ -273,6 +273,7 @@ class OpenLogin {
         ...params,
         mfaLevel: "mandatory",
       },
+      sessionId: this.sessionId,
     };
 
     const result = await this.openloginHandler(`${this.baseUrl}/start`, dataObject);
