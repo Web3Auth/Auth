@@ -291,6 +291,7 @@ class OpenLogin {
 
   async manageMFA(params: Partial<ManageMFAParams>): Promise<void> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
+    if (!this.state.userInfo.isMfaEnabled) throw LoginError.mfaNotEnabled();
 
     // in case of redirect mode, redirect url will be dapp specified
     // in case of popup mode, redirect url will be sdk specified
