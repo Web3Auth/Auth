@@ -286,7 +286,7 @@ class OpenLogin {
     this.options.sessionNamespace = result.sessionNamespace;
     this.currentStorage.set("sessionId", result.sessionId);
     await this.rehydrateSession();
-    return true;
+    return Boolean(this.state.userInfo?.isMfaEnabled);
   }
 
   async manageMFA(params: Partial<ManageMFAParams>): Promise<void> {
