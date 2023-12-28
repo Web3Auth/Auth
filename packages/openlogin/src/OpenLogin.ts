@@ -278,6 +278,10 @@ class OpenLogin {
 
     const result = await this.openloginHandler(`${this.baseUrl}/start`, dataObject, getTimeout(params.loginProvider));
     if (this.options.uxMode === UX_MODE.REDIRECT) return null;
+    if (result.error) {
+      this.dappState = result.state;
+      throw LoginError.loginFailed(result.error);
+    }
     this.sessionManager.sessionId = result.sessionId;
     this.options.sessionNamespace = result.sessionNamespace;
     this.currentStorage.set("sessionId", result.sessionId);
