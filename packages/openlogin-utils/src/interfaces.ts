@@ -637,7 +637,7 @@ export type OpenLoginOptions = {
 
   /**
    * dashboardUrl is for internal development use only and is used to override the
-   * `network` parameter.
+   * `buildEnv` parameter.
    * @internal
    */
   dashboardUrl?: string;
