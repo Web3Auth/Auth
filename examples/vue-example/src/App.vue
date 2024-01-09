@@ -188,7 +188,7 @@ export default defineComponent({
       await this.openloginInstance.init();
     }
     if (this.openloginInstance.privKey || this.openloginInstance.state.factorKey) {
-      this.privKey = this.openloginInstance.privKey || this.openloginInstance.state.factorKey as string;
+      this.privKey = this.openloginInstance.privKey || (this.openloginInstance.state.factorKey as string);
       await this.setProvider(this.privKey);
     }
     this.loading = false;
@@ -234,6 +234,7 @@ export default defineComponent({
             }
           : undefined,
       });
+      op.init();
       return op;
     },
     showEmailFlow(): boolean {
@@ -241,7 +242,7 @@ export default defineComponent({
     },
     isMFAEnabled(): boolean {
       return this.openloginInstance.state.userInfo?.isMfaEnabled || false;
-    }
+    },
   },
   methods: {
     async login() {
@@ -311,7 +312,7 @@ export default defineComponent({
 
     async setProvider(privKey: string) {
       if (this.useMpc) {
-        const { factorKey, tssPubKey, tssShareIndex, userInfo, tssShare, tssNonce, signatures  } = this.openloginInstance.state;
+        const { factorKey, tssPubKey, tssShareIndex, userInfo, tssShare, tssNonce, signatures } = this.openloginInstance.state;
         this.ethereumPrivateKeyProvider = new EthMpcPrivKeyProvider({
           config: {
             chainConfig: {
@@ -408,7 +409,7 @@ export default defineComponent({
 
     async enableMFA() {
       if (!this.openloginInstance || !this.openloginInstance.sessionId) {
-        throw new Error("User not logged in")
+        throw new Error("User not logged in");
       }
       await this.openloginInstance.enableMFA({ 
         loginProvider: this.selectedLoginProvider, 
@@ -421,14 +422,14 @@ export default defineComponent({
 
     async manageMFA() {
       if (!this.openloginInstance || !this.openloginInstance.sessionId) {
-        throw new Error("User not logged in")
+        throw new Error("User not logged in");
       }
       await this.openloginInstance.manageMFA({ 
         loginProvider: this.selectedLoginProvider, 
         extraLoginOptions: {
           login_hint: this.openloginInstance.getUserInfo().email,
           flow_type: this.emailFlowType,
-        } 
+        },
       });
     },
 
