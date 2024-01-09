@@ -411,26 +411,14 @@ export default defineComponent({
       if (!this.openloginInstance || !this.openloginInstance.sessionId) {
         throw new Error("User not logged in");
       }
-      await this.openloginInstance.enableMFA({ 
-        loginProvider: this.selectedLoginProvider, 
-        extraLoginOptions: {
-          login_hint: this.openloginInstance.getUserInfo().email,
-          flow_type: this.emailFlowType,
-        }
-      });
+      await this.openloginInstance.enableMFA({});
     },
 
     async manageMFA() {
       if (!this.openloginInstance || !this.openloginInstance.sessionId) {
         throw new Error("User not logged in");
       }
-      await this.openloginInstance.manageMFA({ 
-        loginProvider: this.selectedLoginProvider, 
-        extraLoginOptions: {
-          login_hint: this.openloginInstance.getUserInfo().email,
-          flow_type: this.emailFlowType,
-        },
-      });
+      await this.openloginInstance.manageMFA({});
     },
 
     async getOpenloginState() {
