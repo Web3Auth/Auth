@@ -79,6 +79,10 @@
           <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
             <button class="btn" @click="getEd25519Key">Get Ed25519Key</button>
           </div>
+          <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
+            <button v-if="!isMFAEnabled" class="btn" @click="enableMFA">Enable MFA</button>
+            <button v-else class="btn" @click="manageMFA">Manage MFA</button>
+          </div>
           <p class="btn-label">Signing</p>
           <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
             <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="signMessage">Sign test Eth Message</button>
@@ -177,10 +181,14 @@ export default defineComponent({
     };
   },
   async created() {
-    const openlogin = this.openloginInstance;
-    await openlogin.init();
-    if (openlogin.privKey) {
-      this.privKey = openlogin.privKey;
+    await this.openloginInstance.init();
+    if (this.openloginInstance.state.factorKey) {
+      this.useMpc = true;
+      this.openloginInstance.options.useMpc = true;
+      await this.openloginInstance.init();
+    }
+    if (this.openloginInstance.privKey || this.openloginInstance.state.factorKey) {
+      this.privKey = this.openloginInstance.privKey || this.openloginInstance.state.factorKey as string;
       await this.setProvider(this.privKey);
     }
     this.loading = false;
@@ -226,12 +234,14 @@ export default defineComponent({
             }
           : undefined,
       });
-      op.init();
       return op;
     },
     showEmailFlow(): boolean {
       return this.selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS;
     },
+    isMFAEnabled(): boolean {
+      return this.openloginInstance.state.userInfo?.isMfaEnabled || false;
+    }
   },
   methods: {
     async login() {
@@ -257,6 +267,7 @@ export default defineComponent({
         const openLoginObj: LoginParams = {
           loginProvider: this.selectedLoginProvider,
           mfaLevel: "optional",
+
           // pass empty string '' as loginProvider to open default torus modal
           // with all default supported login providers or you can pass specific
           // login provider from available list to set as default.
@@ -300,7 +311,7 @@ export default defineComponent({
 
     async setProvider(privKey: string) {
       if (this.useMpc) {
-        const { factorKey, tssPubKey, tssShareIndex, userInfo, tssShare, tssNonce, signatures } = this.openloginInstance.state;
+        const { factorKey, tssPubKey, tssShareIndex, userInfo, tssShare, tssNonce, signatures  } = this.openloginInstance.state;
         this.ethereumPrivateKeyProvider = new EthMpcPrivKeyProvider({
           config: {
             chainConfig: {
@@ -393,6 +404,32 @@ export default defineComponent({
       }
       const userInfo = this.openloginInstance.getUserInfo();
       this.printToConsole("User Info", userInfo);
+    },
+
+    async enableMFA() {
+      if (!this.openloginInstance || !this.openloginInstance.sessionId) {
+        throw new Error("User not logged in")
+      }
+      await this.openloginInstance.enableMFA({ 
+        loginProvider: this.selectedLoginProvider, 
+        extraLoginOptions: {
+          login_hint: this.openloginInstance.getUserInfo().email,
+          flow_type: this.emailFlowType,
+        }
+      });
+    },
+
+    async manageMFA() {
+      if (!this.openloginInstance || !this.openloginInstance.sessionId) {
+        throw new Error("User not logged in")
+      }
+      await this.openloginInstance.manageMFA({ 
+        loginProvider: this.selectedLoginProvider, 
+        extraLoginOptions: {
+          login_hint: this.openloginInstance.getUserInfo().email,
+          flow_type: this.emailFlowType,
+        } 
+      });
     },
 
     async getOpenloginState() {

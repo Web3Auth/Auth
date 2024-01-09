@@ -78,6 +78,8 @@ export class LoginError extends OpenloginError {
     5113: "login popup has been closed by the user",
     5114: "Login failed",
     5115: "Popup was blocked. Please call this function as soon as user clicks button or use redirect mode",
+    5116: "MFA already enabled",
+    5117: "MFA not yet enabled. Please call `enableMFA` first",
   };
 
   public constructor(code: number, message?: string) {
@@ -110,5 +112,13 @@ export class LoginError extends OpenloginError {
 
   public static popupBlocked(extraMessage = ""): OpenloginError {
     return LoginError.fromCode(5115, extraMessage);
+  }
+
+  public static mfaAlreadyEnabled(extraMessage = ""): OpenloginError {
+    return LoginError.fromCode(5116, extraMessage);
+  }
+
+  public static mfaNotEnabled(extraMessage = ""): OpenloginError {
+    return LoginError.fromCode(5117, extraMessage);
   }
 }

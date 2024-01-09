@@ -211,6 +211,14 @@ export type LoginParams = BaseRedirectParams & {
   curve?: SUPPORTED_KEY_CURVES_TYPE;
 };
 
+export type ManageMFAParams = LoginParams & {
+  /**
+   * Allows the dapp to set a custom redirect url for the manage mfa flow.
+   *
+   */
+  dappUrl?: string;
+};
+
 export type SocialMfaModParams = {
   /**
    * loginProvider sets the oauth login method to be used.
@@ -626,6 +634,13 @@ export type OpenLoginOptions = {
    * @internal
    */
   sdkUrl?: string;
+
+  /**
+   * dashboardUrl is for internal development use only and is used to override the
+   * `buildEnv` parameter.
+   * @internal
+   */
+  dashboardUrl?: string;
 
   /**
    * options for whitelabling default openlogin modal.
