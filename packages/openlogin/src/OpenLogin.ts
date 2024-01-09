@@ -270,12 +270,16 @@ class OpenLogin {
       params: {
         ...defaultParams,
         ...params,
+        loginProvider: this.state.userInfo.typeOfLogin,
+        extraLoginOptions: {
+          login_hint: this.state.userInfo.verifierId,
+        },
         mfaLevel: "mandatory",
       },
       sessionId: this.sessionId,
     };
 
-    const result = await this.openloginHandler(`${this.baseUrl}/start`, dataObject, getTimeout(params.loginProvider));
+    const result = await this.openloginHandler(`${this.baseUrl}/start`, dataObject, getTimeout(dataObject.params.loginProvider));
     if (this.options.uxMode === UX_MODE.REDIRECT) return null;
     if (result.error) {
       this.dappState = result.state;
@@ -305,6 +309,10 @@ class OpenLogin {
       params: {
         ...defaultParams,
         ...params,
+        loginProvider: this.state.userInfo.typeOfLogin,
+        extraLoginOptions: {
+          login_hint: this.state.userInfo.verifierId,
+        },
       },
     };
 
