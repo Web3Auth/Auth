@@ -185,8 +185,8 @@ export default defineComponent({
     if (this.openloginInstance.state.factorKey) {
       this.useMpc = true;
       this.openloginInstance.options.useMpc = true;
+      await this.openloginInstance.init();
     }
-    await this.openloginInstance.init();
     if (this.openloginInstance.privKey || this.openloginInstance.state.factorKey) {
       this.privKey = this.openloginInstance.privKey || this.openloginInstance.state.factorKey as string;
       await this.setProvider(this.privKey);

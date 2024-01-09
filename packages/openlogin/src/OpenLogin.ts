@@ -87,7 +87,6 @@ class OpenLogin {
     if (!options.storageKey) options.storageKey = "local";
     if (!options.webauthnTransports) options.webauthnTransports = ["internal"];
     if (!options.sessionTime) options.sessionTime = 86400;
-    if (!options.sessionNamespace) options.sessionNamespace = options.network;
 
     this.options = options;
   }
