@@ -547,12 +547,7 @@ export type OpenLoginOptions = {
   clientId: string;
 
   /**
-   * network specifies the openlogin sdk url to be used.
-   *
-   * - `'mainnet'`: https://app.openlogin.com will be used which is the production version.
-   * - `'cyan'`: https://cyan.openlogin.com will be used which is the production cyan version.
-   * - `'testnet'`: https://testing.openlogin.com will be used which is the testing version.
-   * - `'development'`: http://localhost:3000 will be used for development purpose.
+   * network specifies the web3auth network to be used.
    */
   network: OPENLOGIN_NETWORK_TYPE;
 
