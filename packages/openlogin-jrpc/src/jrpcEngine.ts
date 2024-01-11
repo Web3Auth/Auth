@@ -75,7 +75,7 @@ export class JRPCEngine extends SafeEventEmitter {
       const end: JRPCEngineEndCallback = (err?: unknown) => {
         const error = err || res.error;
         if (error) {
-          res.error = serializeError(error);
+          res.error = serializeError(error, { shouldIncludeStack: true });
         }
         // True indicates that the request should end
         resolve([error, true]);
@@ -264,12 +264,14 @@ export class JRPCEngine extends SafeEventEmitter {
    * A promise-wrapped _handle.
    */
   private _promiseHandle(req: JRPCRequest<unknown>): Promise<JRPCResponse<unknown>> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this._handle(req, (_err, res) => {
         // There will always be a response, and it will always have any error
         // that is caught and propagated.
-        resolve(res);
-      });
+        if (_err && res === undefined) {
+          reject(_err);
+        } else resolve(res);
+      }).catch(reject);
     });
   }
 
@@ -309,7 +311,7 @@ export class JRPCEngine extends SafeEventEmitter {
       // Ensure no result is present on an errored response
       delete res.result;
       if (!res.error) {
-        res.error = serializeError(error);
+        res.error = serializeError(error, { shouldIncludeStack: true });
       }
     }
 
@@ -398,6 +400,7 @@ export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider
           message: res.error?.message || res.error.toString(),
           code: res.error?.code || -32603,
         },
+        shouldIncludeStack: true,
       });
 
       throw rpcErrors.internal(err);
