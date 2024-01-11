@@ -137,6 +137,7 @@ import {
   OPENLOGIN_NETWORK,
   OPENLOGIN_NETWORK_TYPE,
   BUILD_ENV,
+  storageAvailable,
 } from "@toruslabs/openlogin-utils";
 import loginConfig from "./lib/loginConfig";
 import { keccak256 } from "ethereum-cryptography/keccak";
@@ -157,7 +158,7 @@ const EMAIL_FLOW = {
   code: "code",
 };
 
-export default defineComponent({
+const vueapp = defineComponent({
   name: "App",
   data() {
     return {
@@ -181,6 +182,13 @@ export default defineComponent({
     };
   },
   async created() {
+    if (storageAvailable("sessionStorage")) {
+      const data = sessionStorage.getItem("state");
+      if (data) {
+        const state = JSON.parse(data);
+        Object.assign(this.$data, state);
+      }
+    }
     await this.openloginInstance.init();
     if (this.openloginInstance.state.factorKey) {
       this.useMpc = true;
@@ -192,6 +200,11 @@ export default defineComponent({
       await this.setProvider(this.privKey);
     }
     this.loading = false;
+  },
+  updated() {
+    // this is called on each state update
+    console.log(this.$data);
+    if (storageAvailable("sessionStorage")) sessionStorage.setItem("state", JSON.stringify(this.$data));
   },
   computed: {
     computedLoginProviders(): LOGIN_PROVIDER_TYPE[] {
@@ -508,6 +521,7 @@ export default defineComponent({
       await this.openloginInstance.logout();
       this.privKey = this.openloginInstance.privKey;
       this.ethereumPrivateKeyProvider = null;
+      if (storageAvailable("sessionStorage")) sessionStorage.removeItem("state");
     },
 
     printToConsole(...args: unknown[]) {
@@ -541,6 +555,8 @@ export default defineComponent({
     },
   },
 });
+
+export default vueapp;
 </script>
 
 <style scoped>
