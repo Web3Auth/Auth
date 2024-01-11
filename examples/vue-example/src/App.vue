@@ -189,6 +189,16 @@ const vueapp = defineComponent({
         Object.assign(this.$data, state);
       }
     }
+    this.openloginInstance.options.uxMode = this.selectedUxMode;
+    this.openloginInstance.options.whiteLabel = this.isWhiteLabelEnabled ? whitelabel : {};
+    this.openloginInstance.options.mfaSettings = this.enableAllFactors
+      ? {
+          backUpShareFactor: { enable: true },
+          deviceShareFactor: { enable: true },
+          passwordFactor: { enable: true },
+          socialBackupFactor: { enable: true },
+        }
+      : undefined;
     await this.openloginInstance.init();
     if (this.openloginInstance.state.factorKey) {
       this.useMpc = true;
