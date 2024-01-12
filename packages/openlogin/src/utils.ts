@@ -26,12 +26,14 @@ export function getHashQueryParams(replaceUrl = false): HashQueryParamResult {
   const result: HashQueryParamResult = {};
 
   const url = new URL(window.location.href);
+  const hashQueryResult = url.hash;
   url.searchParams.forEach((value: string, key: string) => {
     if (key !== "result") {
       result[key as keyof HashQueryParamResult] = value;
     }
   });
-  const queryResult = url.searchParams.get("result");
+  const intQueryResult = hashQueryResult.split("=");
+  const queryResult = intQueryResult.length > 0 ? intQueryResult[1] : null;
   if (queryResult) {
     try {
       const queryParams = JSON.parse(safeatob(queryResult));
