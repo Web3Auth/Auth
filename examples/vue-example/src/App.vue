@@ -18,6 +18,10 @@
         <label for="mfa">Enable All MFA Factors</label>
         <input type="checkbox" id="mfa" name="mfa" v-model="enableAllFactors" />
       </div>
+      <div class="wallet-key">
+        <label for="mpc">Enable Wallet Key</label>
+        <input type="checkbox" id="walletKey" name="walletKey" v-model="useWalletKey" />
+      </div>
       <select v-model="selectedBuildEnv" class="select">
         <option :key="login" v-for="login in Object.values(BUILD_ENV)" :value="login">{{ login }}</option>
       </select>
@@ -176,6 +180,7 @@ const vueapp = defineComponent({
       BUILD_ENV: BUILD_ENV,
       selectedOpenloginNetwork: OPENLOGIN_NETWORK.SAPPHIRE_DEVNET as OPENLOGIN_NETWORK_TYPE,
       useMpc: false,
+      useWalletKey: false,
       selectedBuildEnv: BUILD_ENV.PRODUCTION,
       emailFlowType: EMAIL_FLOW.code,
       EMAIL_FLOW: EMAIL_FLOW,
@@ -205,8 +210,8 @@ const vueapp = defineComponent({
       this.openloginInstance.options.useMpc = true;
       await this.openloginInstance.init();
     }
-    if (this.openloginInstance.privKey || this.openloginInstance.state.factorKey) {
-      this.privKey = this.openloginInstance.privKey || (this.openloginInstance.state.factorKey as string);
+    if (this.openloginInstance.privKey || this.openloginInstance.state.factorKey || this.openloginInstance.state.walletKey) {
+      this.privKey = this.openloginInstance.privKey || (this.openloginInstance.state.factorKey as string) || (this.openloginInstance.state.walletKey as string);
       await this.setProvider(this.privKey);
     }
     this.loading = false;
@@ -291,7 +296,7 @@ const vueapp = defineComponent({
         const openLoginObj: LoginParams = {
           loginProvider: this.selectedLoginProvider,
           mfaLevel: "optional",
-
+          getWalletKey: this.useWalletKey,
           // pass empty string '' as loginProvider to open default torus modal
           // with all default supported login providers or you can pass specific
           // login provider from available list to set as default.
@@ -321,9 +326,9 @@ const vueapp = defineComponent({
         }
 
         console.log(openLoginObj, "OPENLOGIN");
-        const data = await this.openloginInstance.login(openLoginObj);
-        if (data && data.privKey) {
-          this.privKey = data.privKey;
+        await this.openloginInstance.login(openLoginObj);
+        if (this.openloginInstance.privKey || this.openloginInstance.state.walletKey) {
+          this.privKey = this.openloginInstance.privKey || (this.openloginInstance.state.walletKey || "");
           await this.setProvider(this.privKey);
         }
       } catch (error) {

@@ -376,15 +376,7 @@ body,
   margin-bottom: -16px;
 }
 
-.mpc {
-  display: flex;
-  align-items: center;
-  column-gap: 16px;
-  margin-top: 24px;
-  margin-bottom: -16px;
-}
-
-.mfa {
+.mpc, .wallet-key, .mfa {
   display: flex;
   align-items: center;
   column-gap: 16px;
