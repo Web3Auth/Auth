@@ -34,7 +34,7 @@ jobs:
         run: npm run test
 
       - name: Pack and build example
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/v5'
         run: |
           cd examples/vue-example
           npm install
@@ -42,7 +42,7 @@ jobs:
 
       # Set the credentials from repository settings/secrets
       - name: Configure AWS credentials
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/v5'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -52,21 +52,21 @@ jobs:
       # Copy the files from build folder to the S3 bucket
       # Upload to S3
       - name: sync s3
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/v5'
         uses: jakejarvis/s3-sync-action@master
         env:
           SOURCE_DIR: "./examples/vue-example/dist"
           AWS_REGION: "us-east-1"
-          AWS_S3_BUCKET: "demo-openlogin.web3auth.io"
+          AWS_S3_BUCKET: "demo-openlogin-v5.web3auth.io"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       # Invalidate Cloudfront (this action)
       - name: Update AWS Cloudfront Config
         uses: chaitanyapotti/cloudfront-update-distribution@v2
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/v5'
         with:
-          cloudfront-distribution-id: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}
+          cloudfront-distribution-id: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID_V5 }}
           cloudfront-invalidation-required: true
           cloudfront-invalidation-path: "/*"
           cloudfront-wait-for-service-update: false

@@ -436,17 +436,11 @@ const vueapp = defineComponent({
     },
 
     async enableMFA() {
-      if (!this.openloginInstance || !this.openloginInstance.sessionId) {
-        throw new Error("User not logged in");
-      }
-      await this.openloginInstance.enableMFA({});
+      throw new Error("Method not implemented in v5")
     },
 
     async manageMFA() {
-      if (!this.openloginInstance || !this.openloginInstance.sessionId) {
-        throw new Error("User not logged in");
-      }
-      await this.openloginInstance.manageMFA({});
+      throw new Error("Method not implemented in v5")
     },
 
     async getOpenloginState() {
