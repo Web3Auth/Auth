@@ -8,6 +8,7 @@ module.exports = {
       crypto: require.resolve("crypto-browserify"),
       stream: require.resolve("stream-browserify"),
       assert: require.resolve("assert"),
+      zlib: require.resolve("browserify-zlib")
       // os: require.resolve("os-browserify/browser"),
       // https: require.resolve("https-browserify"),
       // http: require.resolve("stream-http"),

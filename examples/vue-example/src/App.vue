@@ -10,6 +10,10 @@
         <label for="whitelabel">Enable whitelabel</label>
         <input type="checkbox" id="whitelabel" name="whitelabel" v-model="isWhiteLabelEnabled" />
       </div>
+      <div class="whitelabel">
+        <label for="whitelabel">Enable Wallet key</label>
+        <input type="checkbox" id="walletKey" name="walletKey" v-model="useWalletKey" />
+      </div>
       <select v-model="selectedOpenloginNetwork" class="select">
         <option :key="login" v-for="login in Object.values(OPENLOGIN_NETWORK)" :value="login">{{ login }}</option>
       </select>
@@ -104,6 +108,7 @@ import {
   UX_MODE_TYPE,
   OPENLOGIN_NETWORK,
   OPENLOGIN_NETWORK_TYPE,
+storageAvailable,
 } from "@toruslabs/openlogin-utils";
 import loginConfig from "./lib/loginConfig";
 
@@ -130,16 +135,29 @@ export default defineComponent({
       selectedUxMode: UX_MODE.REDIRECT as UX_MODE_TYPE,
       OPENLOGIN_NETWORK: OPENLOGIN_NETWORK,
       selectedOpenloginNetwork: OPENLOGIN_NETWORK.TESTNET as OPENLOGIN_NETWORK_TYPE,
+      useWalletKey: false,
     };
   },
   async created() {
+    if (storageAvailable("sessionStorage")) {
+      const data = sessionStorage.getItem("state");
+      if (data) {
+        const state = JSON.parse(data);
+        Object.assign(this.$data, state);
+      }
+    }
     const openlogin = this.openloginInstance;
     await openlogin.init();
-    if (openlogin.privKey) {
-      this.privKey = openlogin.privKey;
+    if (openlogin.privKey || openlogin.state.walletKey) {
+      this.privKey = openlogin.privKey || openlogin.state.walletKey || "";
       await this.setProvider(this.privKey);
     }
     this.loading = false;
+  },
+  updated() {
+    // this is called on each state update
+    console.log(this.$data);
+    if (storageAvailable("sessionStorage")) sessionStorage.setItem("state", JSON.stringify(this.$data));
   },
   computed: {
     isLoginHintAvailable(): boolean {
@@ -189,6 +207,7 @@ export default defineComponent({
         const openLoginObj: LoginParams = {
           loginProvider: this.selectedLoginProvider,
           mfaLevel: "optional",
+          getWalletKey: this.useWalletKey,
           // pass empty string '' as loginProvider to open default torus modal
           // with all default supported login providers or you can pass specific
           // login provider from available list to set as default.
@@ -211,9 +230,9 @@ export default defineComponent({
         }
 
         console.log(openLoginObj, "OPENLOGIN");
-        const privKey = await this.openloginInstance.login(openLoginObj);
-        if (privKey) {
-          this.privKey = this.openloginInstance.privKey;
+        await this.openloginInstance.login(openLoginObj);
+        if (this.openloginInstance.privKey || this.openloginInstance.state.walletKey) {
+          this.privKey = this.openloginInstance.privKey || this.openloginInstance.state.walletKey || "";
           await this.setProvider(this.privKey);
         }
       } catch (error) {
@@ -321,6 +340,7 @@ export default defineComponent({
       await this.openloginInstance.logout();
       this.privKey = this.openloginInstance.privKey;
       this.ethereumPrivateKeyProvider = null;
+      if (storageAvailable("sessionStorage")) sessionStorage.removeItem("state");
     },
 
     printToConsole(...args: unknown[]) {
