@@ -211,6 +211,14 @@ export type LoginParams = BaseRedirectParams & {
   curve?: SUPPORTED_KEY_CURVES_TYPE;
 };
 
+export type ManageMFAParams = LoginParams & {
+  /**
+   * Allows the dapp to set a custom redirect url for the manage mfa flow.
+   *
+   */
+  dappUrl?: string;
+};
+
 export type SocialMfaModParams = {
   /**
    * loginProvider sets the oauth login method to be used.
@@ -238,6 +246,7 @@ export const LANGUAGES = {
   fr: "fr",
   pt: "pt",
   nl: "nl",
+  tk: "tk",
 } as const;
 
 export type LANGUAGE_TYPE = (typeof LANGUAGES)[keyof typeof LANGUAGES];
@@ -278,6 +287,7 @@ export type WhiteLabelData = {
    * fr: french
    * pt: portuguese
    * nl: dutch
+   * tk: turkish
    *
    * @defaultValue en
    */
@@ -539,12 +549,7 @@ export type OpenLoginOptions = {
   clientId: string;
 
   /**
-   * network specifies the openlogin sdk url to be used.
-   *
-   * - `'mainnet'`: https://app.openlogin.com will be used which is the production version.
-   * - `'cyan'`: https://cyan.openlogin.com will be used which is the production cyan version.
-   * - `'testnet'`: https://testing.openlogin.com will be used which is the testing version.
-   * - `'development'`: http://localhost:3000 will be used for development purpose.
+   * network specifies the web3auth network to be used.
    */
   network: OPENLOGIN_NETWORK_TYPE;
 
@@ -626,6 +631,13 @@ export type OpenLoginOptions = {
    * @internal
    */
   sdkUrl?: string;
+
+  /**
+   * dashboardUrl is for internal development use only and is used to override the
+   * `buildEnv` parameter.
+   * @internal
+   */
+  dashboardUrl?: string;
 
   /**
    * options for whitelabling default openlogin modal.

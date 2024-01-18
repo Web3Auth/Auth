@@ -6,6 +6,7 @@ import {
   BUILD_ENV,
   jsonToBase64,
   LoginParams,
+  ManageMFAParams,
   OPENLOGIN_ACTIONS,
   OPENLOGIN_NETWORK,
   OpenLoginOptions,
@@ -46,18 +47,22 @@ class OpenLogin {
     if (!options.sdkUrl && !options.useMpc) {
       if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
         options.sdkUrl = "http://localhost:3000";
+        options.dashboardUrl = "http://localhost:5173/wallet/account";
       } else if (options.buildEnv === BUILD_ENV.STAGING) {
         options.sdkUrl = "https://staging-auth.web3auth.io";
+        options.dashboardUrl = "https://staging-account.web3auth.io/wallet/account";
       } else if (options.buildEnv === BUILD_ENV.TESTING) {
         options.sdkUrl = "https://develop-auth.web3auth.io";
+        options.dashboardUrl = "https://develop-account.web3auth.io/wallet/account";
       } else {
         options.sdkUrl = "https://auth.web3auth.io";
+        options.dashboardUrl = "https://account.web3auth.io/wallet/account";
       }
     }
 
     if (options.useMpc && !options.sdkUrl) {
       if (Object.values(TORUS_LEGACY_NETWORK).includes(options.network as TORUS_LEGACY_NETWORK_TYPE))
-        throw new Error("MPC is not supported on legacy networks");
+        throw new Error("MPC is not supported on legacy networks, please use sapphire_devnet or sapphire_mainnet.");
       if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
         options.sdkUrl = "http://localhost:3000";
       } else if (options.buildEnv === BUILD_ENV.STAGING) {
@@ -250,9 +255,9 @@ class OpenLogin {
     this.currentStorage.set("sessionId", "");
   }
 
-  async setupMFA(params: Partial<BaseRedirectParams>): Promise<boolean> {
+  async enableMFA(params: Partial<LoginParams>): Promise<boolean> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
-
+    if (this.state.userInfo.isMfaEnabled) throw LoginError.mfaAlreadyEnabled();
     // in case of redirect mode, redirect url will be dapp specified
     // in case of popup mode, redirect url will be sdk specified
     const defaultParams: BaseRedirectParams = {
@@ -265,17 +270,63 @@ class OpenLogin {
       params: {
         ...defaultParams,
         ...params,
+        loginProvider: this.state.userInfo.typeOfLogin,
+        extraLoginOptions: {
+          login_hint: this.state.userInfo.verifierId,
+        },
+        mfaLevel: "mandatory",
       },
       sessionId: this.sessionId,
     };
 
-    const result = await this.openloginHandler(`${this.baseUrl}/start`, dataObject);
-    if (this.options.uxMode === UX_MODE.REDIRECT) return undefined;
+    const result = await this.openloginHandler(`${this.baseUrl}/start`, dataObject, getTimeout(dataObject.params.loginProvider));
+    if (this.options.uxMode === UX_MODE.REDIRECT) return null;
+    if (result.error) {
+      this.dappState = result.state;
+      throw LoginError.loginFailed(result.error);
+    }
     this.sessionManager.sessionId = result.sessionId;
     this.options.sessionNamespace = result.sessionNamespace;
     this.currentStorage.set("sessionId", result.sessionId);
     await this.rehydrateSession();
-    return true;
+    return Boolean(this.state.userInfo?.isMfaEnabled);
+  }
+
+  async manageMFA(params: Partial<ManageMFAParams>): Promise<void> {
+    if (!this.sessionId) throw LoginError.userNotLoggedIn();
+    if (!this.state.userInfo.isMfaEnabled) throw LoginError.mfaNotEnabled();
+
+    // in case of redirect mode, redirect url will be dapp specified
+    // in case of popup mode, redirect url will be sdk specified
+    const defaultParams = {
+      redirectUrl: this.options.dashboardUrl,
+      dappUrl: `${window.location.origin}${window.location.pathname}`,
+    };
+
+    const dataObject: OpenloginSessionConfig = {
+      actionType: OPENLOGIN_ACTIONS.MANAGE_MFA,
+      options: this.options,
+      params: {
+        ...defaultParams,
+        ...params,
+        loginProvider: this.state.userInfo.typeOfLogin,
+        extraLoginOptions: {
+          login_hint: this.state.userInfo.verifierId,
+        },
+      },
+    };
+
+    const loginId = await this.getLoginId(dataObject);
+    const configParams: BaseLoginParams = {
+      loginId,
+      sessionNamespace: this.options.network,
+    };
+    const loginUrl = constructURL({
+      baseURL: `${this.baseUrl}/start`,
+      hash: { b64Params: jsonToBase64(configParams) },
+    });
+
+    window.open(loginUrl, "_blank");
   }
 
   async changeSocialFactor(params: SocialMfaModParams & Partial<BaseRedirectParams>): Promise<boolean> {
@@ -288,7 +339,7 @@ class OpenLogin {
     };
 
     const dataObject: OpenloginSessionConfig = {
-      actionType: OPENLOGIN_ACTIONS.MODIFY_MFA,
+      actionType: OPENLOGIN_ACTIONS.MODIFY_SOCIAL_FACTOR,
       options: this.options,
       params: {
         ...defaultParams,
@@ -324,7 +375,11 @@ class OpenLogin {
       sessionId: loginId,
     });
 
-    await loginSessionMgr.createSession(JSON.parse(JSON.stringify(data)));
+    const promise = loginSessionMgr.createSession(JSON.parse(JSON.stringify(data)));
+
+    if (data.options.uxMode === UX_MODE.REDIRECT) {
+      await promise;
+    }
 
     return loginId;
   }

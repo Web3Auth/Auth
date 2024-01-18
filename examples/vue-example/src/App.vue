@@ -79,6 +79,10 @@
           <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
             <button class="btn" @click="getEd25519Key">Get Ed25519Key</button>
           </div>
+          <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
+            <button v-if="!isMFAEnabled" class="btn" @click="enableMFA">Enable MFA</button>
+            <button v-else class="btn" @click="manageMFA">Manage MFA</button>
+          </div>
           <p class="btn-label">Signing</p>
           <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
             <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="signMessage">Sign test Eth Message</button>
@@ -133,6 +137,7 @@ import {
   OPENLOGIN_NETWORK,
   OPENLOGIN_NETWORK_TYPE,
   BUILD_ENV,
+  storageAvailable,
 } from "@toruslabs/openlogin-utils";
 import loginConfig from "./lib/loginConfig";
 import { keccak256 } from "ethereum-cryptography/keccak";
@@ -153,7 +158,7 @@ const EMAIL_FLOW = {
   code: "code",
 };
 
-export default defineComponent({
+const vueapp = defineComponent({
   name: "App",
   data() {
     return {
@@ -177,13 +182,39 @@ export default defineComponent({
     };
   },
   async created() {
-    const openlogin = this.openloginInstance;
-    await openlogin.init();
-    if (openlogin.privKey) {
-      this.privKey = openlogin.privKey;
+    if (storageAvailable("sessionStorage")) {
+      const data = sessionStorage.getItem("state");
+      if (data) {
+        const state = JSON.parse(data);
+        Object.assign(this.$data, state);
+      }
+    }
+    this.openloginInstance.options.uxMode = this.selectedUxMode;
+    this.openloginInstance.options.whiteLabel = this.isWhiteLabelEnabled ? whitelabel : {};
+    this.openloginInstance.options.mfaSettings = this.enableAllFactors
+      ? {
+          backUpShareFactor: { enable: true },
+          deviceShareFactor: { enable: true },
+          passwordFactor: { enable: true },
+          socialBackupFactor: { enable: true },
+        }
+      : undefined;
+    await this.openloginInstance.init();
+    if (this.openloginInstance.state.factorKey) {
+      this.useMpc = true;
+      this.openloginInstance.options.useMpc = true;
+      await this.openloginInstance.init();
+    }
+    if (this.openloginInstance.privKey || this.openloginInstance.state.factorKey) {
+      this.privKey = this.openloginInstance.privKey || (this.openloginInstance.state.factorKey as string);
       await this.setProvider(this.privKey);
     }
     this.loading = false;
+  },
+  updated() {
+    // this is called on each state update
+    console.log(this.$data);
+    if (storageAvailable("sessionStorage")) sessionStorage.setItem("state", JSON.stringify(this.$data));
   },
   computed: {
     computedLoginProviders(): LOGIN_PROVIDER_TYPE[] {
@@ -232,6 +263,9 @@ export default defineComponent({
     showEmailFlow(): boolean {
       return this.selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS;
     },
+    isMFAEnabled(): boolean {
+      return this.openloginInstance.state.userInfo?.isMfaEnabled || false;
+    },
   },
   methods: {
     async login() {
@@ -257,6 +291,7 @@ export default defineComponent({
         const openLoginObj: LoginParams = {
           loginProvider: this.selectedLoginProvider,
           mfaLevel: "optional",
+
           // pass empty string '' as loginProvider to open default torus modal
           // with all default supported login providers or you can pass specific
           // login provider from available list to set as default.
@@ -395,6 +430,20 @@ export default defineComponent({
       this.printToConsole("User Info", userInfo);
     },
 
+    async enableMFA() {
+      if (!this.openloginInstance || !this.openloginInstance.sessionId) {
+        throw new Error("User not logged in");
+      }
+      await this.openloginInstance.enableMFA({});
+    },
+
+    async manageMFA() {
+      if (!this.openloginInstance || !this.openloginInstance.sessionId) {
+        throw new Error("User not logged in");
+      }
+      await this.openloginInstance.manageMFA({});
+    },
+
     async getOpenloginState() {
       if (!this.openloginInstance) {
         throw new Error("Openlogin is not available.");
@@ -482,6 +531,7 @@ export default defineComponent({
       await this.openloginInstance.logout();
       this.privKey = this.openloginInstance.privKey;
       this.ethereumPrivateKeyProvider = null;
+      if (storageAvailable("sessionStorage")) sessionStorage.removeItem("state");
     },
 
     printToConsole(...args: unknown[]) {
@@ -515,6 +565,8 @@ export default defineComponent({
     },
   },
 });
+
+export default vueapp;
 </script>
 
 <style scoped>
