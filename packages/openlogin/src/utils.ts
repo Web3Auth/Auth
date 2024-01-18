@@ -26,14 +26,12 @@ export function getHashQueryParams(replaceUrl = false): HashQueryParamResult {
   const result: HashQueryParamResult = {};
 
   const url = new URL(window.location.href);
-  const hashQueryResult = url.hash;
   url.searchParams.forEach((value: string, key: string) => {
     if (key !== "result") {
       result[key as keyof HashQueryParamResult] = value;
     }
   });
-  const intQueryResult = hashQueryResult.split("=");
-  const queryResult = intQueryResult.length > 0 ? intQueryResult[1] : null;
+  const queryResult = url.searchParams.get("result");
   if (queryResult) {
     try {
       const queryParams = JSON.parse(safeatob(queryResult));
@@ -48,12 +46,12 @@ export function getHashQueryParams(replaceUrl = false): HashQueryParamResult {
   const hash = url.hash.substring(1);
   const hashUrl = new URL(`${window.location.origin}/?${hash}`);
   hashUrl.searchParams.forEach((value: string, key: string) => {
-    if (key !== "result") {
+    if (key !== "b64Params") {
       result[key as keyof HashQueryParamResult] = value;
     }
   });
-  const hashResult = hashUrl.searchParams.get("result");
 
+  const hashResult = hashUrl.searchParams.get("b64Params");
   if (hashResult) {
     try {
       const hashParams = JSON.parse(safeatob(hashResult));
@@ -73,6 +71,7 @@ export function getHashQueryParams(replaceUrl = false): HashQueryParamResult {
       delete hashParams.sessionId;
       delete hashParams.sessionNamespace;
       delete hashParams.error;
+      delete hashParams.state;
       cleanUrl.hash = safebtoa(JSON.stringify(hashParams));
     }
     window.history.replaceState({ ...window.history.state, as: cleanUrl.href, url: cleanUrl.href }, "", cleanUrl.href);
