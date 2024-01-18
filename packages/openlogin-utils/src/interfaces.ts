@@ -652,7 +652,7 @@ export type OpenLoginOptions = {
   storageServerUrl?: string;
 
   /**
-   * setting to "local" will persist social login session accross browser tabs.
+   * setting to "local" will persist social login session across browser tabs.
    *
    * @defaultValue "local"
    */
