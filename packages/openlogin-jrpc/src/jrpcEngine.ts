@@ -62,7 +62,7 @@ export class JRPCEngine extends SafeEventEmitter {
   /**
    * Runs an individual middleware.
    *
-   * @returns An array of any error encountered during middleware exection,
+   * @returns An array of any error encountered during middleware execution,
    * and a boolean indicating whether the request should end.
    */
   private static _runMiddleware(
