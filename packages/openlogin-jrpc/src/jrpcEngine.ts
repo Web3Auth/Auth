@@ -399,6 +399,8 @@ export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider
         fallbackError: {
           message: res.error?.message || res.error.toString(),
           code: res.error?.code || -32603,
+          stack: res.error?.stack,
+          data: res.error?.data,
         },
         shouldIncludeStack: true,
       });
