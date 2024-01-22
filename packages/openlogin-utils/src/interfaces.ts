@@ -246,7 +246,7 @@ export const LANGUAGES = {
   fr: "fr",
   pt: "pt",
   nl: "nl",
-  tk: "tk",
+  tr: "tr",
 } as const;
 
 export type LANGUAGE_TYPE = (typeof LANGUAGES)[keyof typeof LANGUAGES];
@@ -287,7 +287,7 @@ export type WhiteLabelData = {
    * fr: french
    * pt: portuguese
    * nl: dutch
-   * tk: turkish
+   * tr: turkish
    *
    * @defaultValue en
    */
