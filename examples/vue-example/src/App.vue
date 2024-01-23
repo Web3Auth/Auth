@@ -63,6 +63,7 @@
           <p class="btn-label">User info</p>
           <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
             <button class="btn" @click="getUserInfo">Get user info</button>
+            <button class="btn" @click="getOpenloginState">Get Openlogin State</button>
             <button class="btn" @click="getEd25519Key">Get Ed25519Key</button>
           </div>
           <p class="btn-label">Signing</p>
@@ -264,6 +265,13 @@ export default defineComponent({
       }
       const userInfo = this.openloginInstance.getUserInfo();
       this.printToConsole("User Info", userInfo);
+    },
+
+    async getOpenloginState() {
+      if (!this.openloginInstance) {
+        throw new Error("Openlogin is not available.");
+      }
+      this.printToConsole("Openlogin State", this.openloginInstance.state);
     },
 
     getEd25519Key() {
