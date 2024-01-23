@@ -303,9 +303,14 @@ class OpenLogin {
       dappUrl: `${window.location.origin}${window.location.pathname}`,
     };
 
+    const loginId = OpenloginSessionManager.generateRandomSessionKey();
+
     const dataObject: OpenloginSessionConfig = {
       actionType: OPENLOGIN_ACTIONS.MANAGE_MFA,
-      options: this.options,
+      options: {
+        ...this.options,
+        sessionNamespace: this.options.network,
+      },
       params: {
         ...defaultParams,
         ...params,
@@ -313,14 +318,16 @@ class OpenLogin {
         extraLoginOptions: {
           login_hint: this.state.userInfo.verifierId,
         },
+        appState: jsonToBase64({ loginId }),
       },
     };
 
-    const loginId = await this.getLoginId(dataObject);
+    await this.getLoginId(loginId, dataObject, dataObject.options.sessionTime);
     const configParams: BaseLoginParams = {
       loginId,
       sessionNamespace: this.options.network,
     };
+
     const loginUrl = constructURL({
       baseURL: `${this.baseUrl}/start`,
       hash: { b64Params: jsonToBase64(configParams) },
@@ -364,14 +371,13 @@ class OpenLogin {
     return this.state.userInfo;
   }
 
-  async getLoginId(data: OpenloginSessionConfig): Promise<string> {
+  async getLoginId(loginId: string, data: OpenloginSessionConfig, timeout = 600): Promise<void> {
     if (!this.sessionManager) throw InitializationError.notInitialized();
 
-    const loginId = OpenloginSessionManager.generateRandomSessionKey();
     const loginSessionMgr = new OpenloginSessionManager<OpenloginSessionConfig>({
       sessionServerBaseUrl: this.options.storageServerUrl,
       sessionNamespace: this.options.sessionNamespace,
-      sessionTime: 600, // each login key must be used with 10 mins (might be used at the end of popup redirect)
+      sessionTime: timeout, // each login key must be used with 10 mins (might be used at the end of popup redirect)
       sessionId: loginId,
     });
 
@@ -380,8 +386,6 @@ class OpenLogin {
     if (data.options.uxMode === UX_MODE.REDIRECT) {
       await promise;
     }
-
-    return loginId;
   }
 
   private async _authorizeSession(): Promise<OpenloginSessionData> {
@@ -405,7 +409,8 @@ class OpenLogin {
   }
 
   private async openloginHandler(url: string, dataObject: OpenloginSessionConfig, popupTimeout = 1000 * 10): Promise<PopupResponse | undefined> {
-    const loginId = await this.getLoginId(dataObject);
+    const loginId = OpenloginSessionManager.generateRandomSessionKey();
+    await this.getLoginId(loginId, dataObject);
     const configParams: BaseLoginParams = {
       loginId,
       sessionNamespace: this.options.sessionNamespace,
