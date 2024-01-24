@@ -6,7 +6,6 @@ import {
   BUILD_ENV,
   jsonToBase64,
   LoginParams,
-  ManageMFAParams,
   OPENLOGIN_ACTIONS,
   OPENLOGIN_NETWORK,
   OpenLoginOptions,
@@ -292,7 +291,7 @@ class OpenLogin {
     return Boolean(this.state.userInfo?.isMfaEnabled);
   }
 
-  async manageMFA(params: Partial<ManageMFAParams>): Promise<void> {
+  async manageMFA(params: Partial<LoginParams>): Promise<void> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
     if (!this.state.userInfo.isMfaEnabled) throw LoginError.mfaNotEnabled();
 
@@ -307,10 +306,7 @@ class OpenLogin {
 
     const dataObject: OpenloginSessionConfig = {
       actionType: OPENLOGIN_ACTIONS.MANAGE_MFA,
-      options: {
-        ...this.options,
-        sessionNamespace: this.options.network,
-      },
+      options: this.options,
       params: {
         ...defaultParams,
         ...params,
@@ -320,12 +316,13 @@ class OpenLogin {
         },
         appState: jsonToBase64({ loginId }),
       },
+      sessionId: this.sessionId,
     };
 
     await this.getLoginId(loginId, dataObject, dataObject.options.sessionTime);
     const configParams: BaseLoginParams = {
       loginId,
-      sessionNamespace: this.options.network,
+      sessionNamespace: "",
     };
 
     const loginUrl = constructURL({
@@ -357,10 +354,7 @@ class OpenLogin {
 
     const result = await this.openloginHandler(`${this.baseUrl}/start`, dataObject);
     if (this.options.uxMode === UX_MODE.REDIRECT) return undefined;
-    this.sessionManager.sessionId = result.sessionId;
-    this.options.sessionNamespace = result.sessionNamespace;
-    this.currentStorage.set("sessionId", result.sessionId);
-    await this.rehydrateSession();
+    if (result.error) return false;
     return true;
   }
 
@@ -375,8 +369,8 @@ class OpenLogin {
     if (!this.sessionManager) throw InitializationError.notInitialized();
 
     const loginSessionMgr = new OpenloginSessionManager<OpenloginSessionConfig>({
-      sessionServerBaseUrl: this.options.storageServerUrl,
-      sessionNamespace: this.options.sessionNamespace,
+      sessionServerBaseUrl: data.options.storageServerUrl,
+      sessionNamespace: data.options.sessionNamespace,
       sessionTime: timeout, // each login key must be used with 10 mins (might be used at the end of popup redirect)
       sessionId: loginId,
     });
