@@ -8,6 +8,7 @@ const whiteLabel: WhiteLabelData = {
   mode: "auto",
   theme: {
     primary: "#FF9900",
+    onPrimary: "black",
   },
 };
 
