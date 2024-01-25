@@ -62,7 +62,7 @@ export class JRPCEngine extends SafeEventEmitter {
   /**
    * Runs an individual middleware.
    *
-   * @returns An array of any error encountered during middleware exection,
+   * @returns An array of any error encountered during middleware execution,
    * and a boolean indicating whether the request should end.
    */
   private static _runMiddleware(
@@ -399,6 +399,8 @@ export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider
         fallbackError: {
           message: res.error?.message || res.error.toString(),
           code: res.error?.code || -32603,
+          stack: res.error?.stack,
+          data: res.error?.data,
         },
         shouldIncludeStack: true,
       });
