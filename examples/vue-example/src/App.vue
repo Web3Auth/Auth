@@ -213,7 +213,6 @@ const vueapp = defineComponent({
   },
   updated() {
     // this is called on each state update
-    console.log("updated data", this.$data);
     const data = {...this.$data};
     Reflect.deleteProperty(data, "privKey");
     if (storageAvailable("sessionStorage")) sessionStorage.setItem("state", JSON.stringify(data));
