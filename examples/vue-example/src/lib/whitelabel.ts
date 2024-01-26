@@ -7,7 +7,7 @@ const whiteLabel: WhiteLabelData = {
   logoLight: "https://images.web3auth.io/example-hello-light.svg", // light logo for dark background
   mode: "auto",
   theme: {
-    primary: "#FF9900",
+    primary: "#5DF0EB",
     onPrimary: "black",
   },
 };
