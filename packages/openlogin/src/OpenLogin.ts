@@ -375,7 +375,11 @@ class OpenLogin {
       sessionId: loginId,
     });
 
-    await loginSessionMgr.createSession(JSON.parse(JSON.stringify(data)));
+    const promise = loginSessionMgr.createSession(JSON.parse(JSON.stringify(data)));
+
+    if (data.options.uxMode === UX_MODE.REDIRECT) {
+      await promise;
+    }
 
     return loginId;
   }
