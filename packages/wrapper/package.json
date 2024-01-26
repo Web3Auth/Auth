@@ -1,6 +1,6 @@
 {
   "name": "openlogin",
-  "version": "6.2.5",
+  "version": "6.2.6",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
   "main": "dist/openlogin.cjs.js",
@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@toruslabs/openlogin": "^6.2.5",
-    "@toruslabs/openlogin-jrpc": "^6.2.5",
+    "@toruslabs/openlogin-jrpc": "^6.2.6",
     "@toruslabs/openlogin-utils": "^6.2.5"
   },
   "peerDependencies": {
