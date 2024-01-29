@@ -81,7 +81,7 @@ export class JRPCEngine extends SafeEventEmitter {
               message: error?.message || error?.toString(),
               code: error?.code || -32603,
               stack: error?.stack,
-              data: error?.data,
+              data: error?.data || error?.message || error?.toString(),
             },
           });
         }
@@ -325,7 +325,7 @@ export class JRPCEngine extends SafeEventEmitter {
             message: error?.message || error?.toString(),
             code: (error as { code?: number })?.code || -32603,
             stack: error?.stack,
-            data: (error as { data?: string })?.data,
+            data: (error as { data?: string })?.data || error?.message || error?.toString(),
           },
         });
       }
@@ -416,7 +416,7 @@ export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider
           message: res.error?.message || res.error?.toString(),
           code: res.error?.code || -32603,
           stack: res.error?.stack,
-          data: res.error?.data,
+          data: res.error?.data || res.error?.message || res.error?.toString(),
         },
         shouldIncludeStack: true,
       });
