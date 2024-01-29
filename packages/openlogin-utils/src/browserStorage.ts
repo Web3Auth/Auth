@@ -32,7 +32,7 @@ export class BrowserStorage {
     }
   }
 
-  static getInstance(key: string, storageKey: "session" | "local" = "local"): BrowserStorage {
+  static getInstance(key: string, storageKey: "session" | "local" | "memory" = "local"): BrowserStorage {
     const instanceCacheKey = `${storageKey}_${key}`;
     if (!this.instanceCache[instanceCacheKey]) {
       let storage: IStorage;
