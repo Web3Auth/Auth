@@ -1,14 +1,18 @@
 import { IStorage, storageAvailable } from "./utils";
 
 export class MemoryStore implements IStorage {
-  store: Record<string, string> = {};
+  store: Map<string, string> = new Map();
 
   getItem(key: string): string {
-    return this.store[key] || null;
+    return this.store.get(key) || null;
   }
 
   setItem(key: string, value: string): void {
-    this.store[key] = value;
+    this.store.set(key, value);
+  }
+
+  removeItem(key: string): void {
+    this.store.delete(key);
   }
 }
 
@@ -31,7 +35,7 @@ export class BrowserStorage {
     }
   }
 
-  static getInstance(key: string, storageKey: "session" | "local" = "local"): BrowserStorage {
+  static getInstance(key: string, storageKey: "session" | "local" | "memory" = "local"): BrowserStorage {
     if (!this.instanceMap.has(key)) {
       let storage: IStorage;
       if (storageKey === "local" && storageAvailable("localStorage")) {
@@ -53,7 +57,7 @@ export class BrowserStorage {
 
   resetStore(): Record<string, unknown> {
     const currStore = this.getStore();
-    this.storage.setItem(this._storeKey, JSON.stringify({}));
+    this.storage.removeItem(this._storeKey);
     return currStore;
   }
 
