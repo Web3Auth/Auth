@@ -319,7 +319,7 @@ class OpenLogin {
       sessionId: this.sessionId,
     };
 
-    await this.getLoginId(loginId, dataObject, dataObject.options.sessionTime);
+    await this.createLoginSession(loginId, dataObject, dataObject.options.sessionTime);
     const configParams: BaseLoginParams = {
       loginId,
       sessionNamespace: "",
@@ -365,7 +365,7 @@ class OpenLogin {
     return this.state.userInfo;
   }
 
-  async getLoginId(loginId: string, data: OpenloginSessionConfig, timeout = 600): Promise<void> {
+  private async createLoginSession(loginId: string, data: OpenloginSessionConfig, timeout = 600): Promise<void> {
     if (!this.sessionManager) throw InitializationError.notInitialized();
 
     const loginSessionMgr = new OpenloginSessionManager<OpenloginSessionConfig>({
@@ -404,7 +404,7 @@ class OpenLogin {
 
   private async openloginHandler(url: string, dataObject: OpenloginSessionConfig, popupTimeout = 1000 * 10): Promise<PopupResponse | undefined> {
     const loginId = OpenloginSessionManager.generateRandomSessionKey();
-    await this.getLoginId(loginId, dataObject);
+    await this.createLoginSession(loginId, dataObject);
     const configParams: BaseLoginParams = {
       loginId,
       sessionNamespace: this.options.sessionNamespace,
