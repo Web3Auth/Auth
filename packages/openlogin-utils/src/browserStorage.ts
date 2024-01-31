@@ -13,8 +13,7 @@ export class MemoryStore implements IStorage {
 }
 
 export class BrowserStorage {
-  // eslint-disable-next-line no-use-before-define
-  private static instance: BrowserStorage;
+  private static instanceMap = new Map<string, BrowserStorage>();
 
   public storage: IStorage;
 
@@ -33,7 +32,7 @@ export class BrowserStorage {
   }
 
   static getInstance(key: string, storageKey: "session" | "local" = "local"): BrowserStorage {
-    if (!this.instance) {
+    if (!this.instanceMap.has(key)) {
       let storage: IStorage;
       if (storageKey === "local" && storageAvailable("localStorage")) {
         storage = window.localStorage;
@@ -43,9 +42,9 @@ export class BrowserStorage {
         storage = new MemoryStore();
       }
 
-      this.instance = new this(key, storage);
+      this.instanceMap.set(key, new this(key, storage));
     }
-    return this.instance;
+    return this.instanceMap.get(key);
   }
 
   toJSON(): string {
