@@ -25,6 +25,9 @@
     "pre-commit": "lerna run pre-commit",
     "prepare": "husky install"
   },
+  "dependencies": {
+    "@toruslabs/openlogin-jrpc": "6.2.9"
+  },
   "devDependencies": {
     "@babel/register": "^7.23.7",
     "@babel/runtime": "^7.23.8",
