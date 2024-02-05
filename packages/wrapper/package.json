@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@toruslabs/openlogin": "^7.0.0",
-    "@toruslabs/openlogin-jrpc": "^6.2.5",
+    "@toruslabs/openlogin-jrpc": "^6.2.6",
     "@toruslabs/openlogin-utils": "^7.0.0"
   },
   "peerDependencies": {
