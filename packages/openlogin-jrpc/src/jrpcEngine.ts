@@ -75,6 +75,9 @@ export class JRPCEngine extends SafeEventEmitter {
       const end: JRPCEngineEndCallback = (err?: unknown) => {
         const error = err || res.error;
         if (error) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          if ((globalThis as any).ReactNative) error.stack = "ReactNative flag set. Stack trace is unavailable.";
+
           res.error = serializeError(error, {
             shouldIncludeStack: true,
             fallbackError: {
@@ -319,6 +322,9 @@ export class JRPCEngine extends SafeEventEmitter {
       // Ensure no result is present on an errored response
       delete res.result;
       if (!res.error) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((globalThis as any).ReactNative) error.stack = "ReactNative flag set. Stack trace is unavailable.";
+
         res.error = serializeError(error, {
           shouldIncludeStack: true,
           fallbackError: {
@@ -411,6 +417,9 @@ export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider
   provider.sendAsync = async <T, U>(req: JRPCRequest<T>) => {
     const res = await engine.handle(req);
     if (res.error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((globalThis as any).ReactNative) res.error.stack = "ReactNative flag set. Stack trace is unavailable.";
+
       const err = serializeError(res.error, {
         fallbackError: {
           message: res.error?.message || res.error?.toString(),
