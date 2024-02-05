@@ -75,7 +75,15 @@ export class JRPCEngine extends SafeEventEmitter {
       const end: JRPCEngineEndCallback = (err?: unknown) => {
         const error = err || res.error;
         if (error) {
-          res.error = serializeError(error, { shouldIncludeStack: true });
+          res.error = serializeError(error, {
+            shouldIncludeStack: true,
+            fallbackError: {
+              message: error?.message || error?.toString(),
+              code: error?.code || -32603,
+              stack: error?.stack,
+              data: error?.data || error?.message || error?.toString(),
+            },
+          });
         }
         // True indicates that the request should end
         resolve([error, true]);
@@ -311,7 +319,15 @@ export class JRPCEngine extends SafeEventEmitter {
       // Ensure no result is present on an errored response
       delete res.result;
       if (!res.error) {
-        res.error = serializeError(error, { shouldIncludeStack: true });
+        res.error = serializeError(error, {
+          shouldIncludeStack: true,
+          fallbackError: {
+            message: error?.message || error?.toString(),
+            code: (error as { code?: number })?.code || -32603,
+            stack: error?.stack,
+            data: (error as { data?: string })?.data || error?.message || error?.toString(),
+          },
+        });
       }
     }
 
@@ -397,10 +413,10 @@ export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider
     if (res.error) {
       const err = serializeError(res.error, {
         fallbackError: {
-          message: res.error?.message || res.error.toString(),
+          message: res.error?.message || res.error?.toString(),
           code: res.error?.code || -32603,
           stack: res.error?.stack,
-          data: res.error?.data,
+          data: res.error?.data || res.error?.message || res.error?.toString(),
         },
         shouldIncludeStack: true,
       });
