@@ -22,6 +22,7 @@ export function jsonToBase64<T = Record<string, unknown>>(json: T): string {
 export interface IStorage {
   getItem(key: string): string;
   setItem(key: string, value: string): void;
+  removeItem(key: string): void;
 }
 
 export function storageAvailable(type: string): boolean {
