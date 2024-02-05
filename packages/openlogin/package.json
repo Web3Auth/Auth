@@ -23,7 +23,7 @@
     "@toruslabs/eccrypto": "^4.0.0",
     "@toruslabs/metadata-helpers": "^5.0.0",
     "@toruslabs/openlogin-session-manager": "^3.0.0",
-    "@toruslabs/openlogin-utils": "^6.2.5",
+    "@toruslabs/openlogin-utils": "^7.0.0",
     "@toruslabs/secure-pub-sub": "^0.0.1",
     "bowser": "^2.11.0",
     "events": "^3.3.0",
@@ -31,7 +31,13 @@
     "ts-custom-error": "^3.3.1"
   },
   "peerDependencies": {
-    "@babel/runtime": "7.x"
+    "@babel/runtime": "7.x",
+    "@toruslabs/openlogin-utils": "^7.x"
+  },
+  "peerDependenciesMeta": {
+    "@toruslabs/openlogin-utils": {
+      "optional": true
+    }
   },
   "files": [
     "dist",
