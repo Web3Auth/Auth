@@ -21,7 +21,6 @@
   },
   "dependencies": {
     "@metamask/rpc-errors": "^6.1.0",
-    "@toruslabs/openlogin-utils": "^6.2.5",
     "end-of-stream": "^1.4.4",
     "events": "^3.3.0",
     "fast-safe-stringify": "^2.1.1",
