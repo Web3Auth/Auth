@@ -209,9 +209,7 @@ export type LoginParams = BaseRedirectParams & {
    * @defaultValue secp256k1
    */
   curve?: SUPPORTED_KEY_CURVES_TYPE;
-};
 
-export type ManageMFAParams = LoginParams & {
   /**
    * Allows the dapp to set a custom redirect url for the manage mfa flow.
    *
