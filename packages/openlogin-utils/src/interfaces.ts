@@ -530,6 +530,7 @@ export const MFA_FACTOR = {
   SOCIAL_BACKUP: "socialBackupFactor",
   PASSWORD: "passwordFactor",
   PASSKEYS: "passkeysFactor",
+  AUTHENTICATOR: "authenticatorFactor",
 } as const;
 
 export type MFA_FACTOR_TYPE = (typeof MFA_FACTOR)[keyof typeof MFA_FACTOR];
@@ -676,7 +677,7 @@ export type OpenLoginOptions = {
   /**
    * This parameter will be used to enable mfa factors and set priority on UI listing.
    * List of factors available
-   * backUpShareFactor | socialFactor | passwordFactor
+   * backUpShareFactor | socialFactor | passwordFactor | authenticatorFactor
    * @defaultValue false
    */
   mfaSettings?: MfaSettings;
