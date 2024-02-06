@@ -6,7 +6,6 @@ import {
   BUILD_ENV,
   jsonToBase64,
   LoginParams,
-  ManageMFAParams,
   OPENLOGIN_ACTIONS,
   OPENLOGIN_NETWORK,
   OpenLoginOptions,
@@ -292,7 +291,7 @@ class OpenLogin {
     return Boolean(this.state.userInfo?.isMfaEnabled);
   }
 
-  async manageMFA(params: Partial<ManageMFAParams>): Promise<void> {
+  async manageMFA(params: Partial<LoginParams>): Promise<void> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
     if (!this.state.userInfo.isMfaEnabled) throw LoginError.mfaNotEnabled();
 
