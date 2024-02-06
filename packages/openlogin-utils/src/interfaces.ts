@@ -530,6 +530,7 @@ export const MFA_FACTOR = {
   BACKUP_SHARE: "backUpShareFactor",
   SOCIAL_BACKUP: "socialBackupFactor",
   PASSWORD: "passwordFactor",
+  PASSKEYS: "passkeysFactor",
 } as const;
 
 export type MFA_FACTOR_TYPE = (typeof MFA_FACTOR)[keyof typeof MFA_FACTOR];
