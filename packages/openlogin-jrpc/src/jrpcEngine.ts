@@ -75,7 +75,7 @@ export class JRPCEngine extends SafeEventEmitter {
       const end: JRPCEngineEndCallback = (err?: unknown) => {
         const error = err || res.error;
         if (error) {
-          if (globalThis.ReactNative) error.stack = "ReactNative flag is set. Stack trace is not available.";
+          if (Object.keys(error).includes("stack") === false) error.stack = "Stack trace is not available.";
 
           res.error = serializeError(error, {
             shouldIncludeStack: true,
@@ -321,7 +321,7 @@ export class JRPCEngine extends SafeEventEmitter {
       // Ensure no result is present on an errored response
       delete res.result;
       if (!res.error) {
-        if (globalThis.ReactNative) error.stack = "ReactNative flag is set. Stack trace is not available.";
+        if (Object.keys(error).includes("stack") === false) error.stack = "Stack trace is not available.";
 
         res.error = serializeError(error, {
           shouldIncludeStack: true,
@@ -415,7 +415,7 @@ export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider
   provider.sendAsync = async <T, U>(req: JRPCRequest<T>) => {
     const res = await engine.handle(req);
     if (res.error) {
-      if (globalThis.ReactNative) res.error.stack = "ReactNative flag is set. Stack trace is not available.";
+      if (Object.keys(res.error).includes("stack") === false) res.error.stack = "Stack trace is not available.";
 
       const err = serializeError(res.error, {
         fallbackError: {
