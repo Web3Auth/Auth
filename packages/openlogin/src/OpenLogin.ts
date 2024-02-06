@@ -6,6 +6,7 @@ import {
   BUILD_ENV,
   jsonToBase64,
   LoginParams,
+  ManageMFAParams,
   OPENLOGIN_ACTIONS,
   OPENLOGIN_NETWORK,
   OpenLoginOptions,
@@ -291,7 +292,7 @@ class OpenLogin {
     return Boolean(this.state.userInfo?.isMfaEnabled);
   }
 
-  async manageMFA(params: Partial<LoginParams>): Promise<void> {
+  async manageMFA(params: Partial<ManageMFAParams>): Promise<void> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
     if (!this.state.userInfo.isMfaEnabled) throw LoginError.mfaNotEnabled();
 
@@ -319,10 +320,10 @@ class OpenLogin {
       sessionId: this.sessionId,
     };
 
-    await this.createLoginSession(loginId, dataObject, dataObject.options.sessionTime);
+    this.createLoginSession(loginId, dataObject, dataObject.options.sessionTime, true);
     const configParams: BaseLoginParams = {
       loginId,
-      sessionNamespace: "",
+      sessionNamespace: this.options.sessionNamespace,
     };
 
     const loginUrl = constructURL({
@@ -365,7 +366,7 @@ class OpenLogin {
     return this.state.userInfo;
   }
 
-  private async createLoginSession(loginId: string, data: OpenloginSessionConfig, timeout = 600): Promise<void> {
+  private async createLoginSession(loginId: string, data: OpenloginSessionConfig, timeout = 600, skipAwait = false): Promise<void> {
     if (!this.sessionManager) throw InitializationError.notInitialized();
 
     const loginSessionMgr = new OpenloginSessionManager<OpenloginSessionConfig>({
@@ -377,7 +378,7 @@ class OpenLogin {
 
     const promise = loginSessionMgr.createSession(JSON.parse(JSON.stringify(data)));
 
-    if (data.options.uxMode === UX_MODE.REDIRECT) {
+    if (data.options.uxMode === UX_MODE.REDIRECT && !skipAwait) {
       await promise;
     }
   }
