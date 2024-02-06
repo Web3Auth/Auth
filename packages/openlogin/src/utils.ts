@@ -69,12 +69,14 @@ export function getHashQueryParams(replaceUrl = false): HashQueryParamResult {
       queryUrlParams.delete("error");
       queryUrlParams.delete("state");
       queryUrlParams.delete("b64Params");
+      queryUrlParams.delete("sessionNamespace");
       cleanUrl.search = queryUrlParams.toString();
     }
     if (hashUrlParams.size > 0) {
       hashUrlParams.delete("error");
       hashUrlParams.delete("state");
       hashUrlParams.delete("b64Params");
+      hashUrlParams.delete("sessionNamespace");
       cleanUrl.hash = hashUrlParams.toString();
     }
     window.history.replaceState({ ...window.history.state, as: cleanUrl.href, url: cleanUrl.href }, "", cleanUrl.href);
