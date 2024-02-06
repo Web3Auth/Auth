@@ -1,3 +1,4 @@
+import { SESSION_SERVER } from "@toruslabs/constants";
 import { OpenloginSessionManager } from "@toruslabs/openlogin-session-manager";
 import {
   BaseLoginParams,
@@ -82,7 +83,7 @@ class OpenLogin {
     if (!options.whiteLabel) options.whiteLabel = {};
     if (!options.loginConfig) options.loginConfig = {};
     if (!options.mfaSettings) options.mfaSettings = {};
-    if (!options.storageServerUrl) options.storageServerUrl = "https://broadcast-server.tor.us";
+    if (!options.storageServerUrl) options.storageServerUrl = SESSION_SERVER;
     if (!options.storageKey) options.storageKey = "local";
     if (!options.webauthnTransports) options.webauthnTransports = ["internal"];
     if (!options.sessionTime) options.sessionTime = 86400;

@@ -660,7 +660,7 @@ export type OpenLoginOptions = {
 
   /**
    * Specify a custom storage server url
-   * @defaultValue https://broadcast-server.tor.us
+   * @defaultValue https://session.web3auth.io
    * @internal
    */
   storageServerUrl?: string;

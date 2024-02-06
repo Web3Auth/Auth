@@ -22,6 +22,7 @@
   "dependencies": {
     "@toruslabs/eccrypto": "^4.0.0",
     "@toruslabs/metadata-helpers": "^5.0.0",
+    "@toruslabs/constants": "^13.1.0",
     "@toruslabs/openlogin-session-manager": "^3.0.0",
     "@toruslabs/openlogin-utils": "^7.0.1",
     "@toruslabs/secure-pub-sub": "^0.0.1",
