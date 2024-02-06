@@ -249,6 +249,19 @@ export const LANGUAGES = {
 
 export type LANGUAGE_TYPE = (typeof LANGUAGES)[keyof typeof LANGUAGES];
 
+export const LANGUAGE_MAP: Record<LANGUAGE_TYPE, string> = {
+  en: "english",
+  ja: "japanese",
+  ko: "korean",
+  de: "german",
+  zh: "mandarin",
+  es: "spanish",
+  fr: "french",
+  pt: "portuguese",
+  nl: "dutch",
+  tr: "turkish",
+};
+
 export const THEME_MODES = {
   light: "light",
   dark: "dark",
