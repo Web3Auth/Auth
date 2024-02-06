@@ -1,6 +1,6 @@
 import { getPublic, sign } from "@toruslabs/eccrypto";
 import { keccak256 } from "@toruslabs/metadata-helpers";
-import { base64url, LOGIN_PROVIDER, safeatob, safebtoa } from "@toruslabs/openlogin-utils";
+import { base64url, LOGIN_PROVIDER, safeatob } from "@toruslabs/openlogin-utils";
 import bowser from "bowser";
 
 import { loglevel as log } from "./logger";
@@ -25,13 +25,13 @@ export type HashQueryParamResult = {
 export function getHashQueryParams(replaceUrl = false): HashQueryParamResult {
   const result: HashQueryParamResult = {};
 
-  const url = new URL(window.location.href);
-  url.searchParams.forEach((value: string, key: string) => {
-    if (key !== "result") {
+  const queryUrlParams = new URLSearchParams(window.location.search.slice(1));
+  queryUrlParams.forEach((value: string, key: string) => {
+    if (key !== "b64Params") {
       result[key as keyof HashQueryParamResult] = value;
     }
   });
-  const queryResult = url.searchParams.get("result");
+  const queryResult = queryUrlParams.get("b64Params");
   if (queryResult) {
     try {
       const queryParams = JSON.parse(safeatob(queryResult));
@@ -43,15 +43,14 @@ export function getHashQueryParams(replaceUrl = false): HashQueryParamResult {
     }
   }
 
-  const hash = url.hash.substring(1);
-  const hashUrl = new URL(`${window.location.origin}/?${hash}`);
-  hashUrl.searchParams.forEach((value: string, key: string) => {
+  const hashUrlParams = new URLSearchParams(window.location.hash.substring(1));
+  hashUrlParams.forEach((value: string, key: string) => {
     if (key !== "b64Params") {
       result[key as keyof HashQueryParamResult] = value;
     }
   });
 
-  const hashResult = hashUrl.searchParams.get("b64Params");
+  const hashResult = hashUrlParams.get("b64Params");
   if (hashResult) {
     try {
       const hashParams = JSON.parse(safeatob(hashResult));
@@ -65,14 +64,18 @@ export function getHashQueryParams(replaceUrl = false): HashQueryParamResult {
 
   if (replaceUrl) {
     const cleanUrl = new URL(window.location.origin + window.location.pathname);
-    cleanUrl.search = window.location.search;
-    if (hashResult) {
-      const hashParams = JSON.parse(safeatob(hashResult));
-      delete hashParams.sessionId;
-      delete hashParams.sessionNamespace;
-      delete hashParams.error;
-      delete hashParams.state;
-      cleanUrl.hash = safebtoa(JSON.stringify(hashParams));
+    // https://dapp.com/#b64Params=asacsdnvdfv&state=sldjvndfkjvn&dappValue=sdjvndf
+    if (queryUrlParams.size > 0) {
+      queryUrlParams.delete("error");
+      queryUrlParams.delete("state");
+      queryUrlParams.delete("b64Params");
+      cleanUrl.search = queryUrlParams.toString();
+    }
+    if (hashUrlParams.size > 0) {
+      hashUrlParams.delete("error");
+      hashUrlParams.delete("state");
+      hashUrlParams.delete("b64Params");
+      cleanUrl.hash = hashUrlParams.toString();
     }
     window.history.replaceState({ ...window.history.state, as: cleanUrl.href, url: cleanUrl.href }, "", cleanUrl.href);
   }
