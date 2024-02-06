@@ -1,6 +1,6 @@
 {
   "name": "@toruslabs/openlogin",
-  "version": "6.2.10",
+  "version": "7.0.0",
   "homepage": "https://github.com/torusresearch/OpenLoginSdk#readme",
   "license": "ISC",
   "main": "dist/openlogin.cjs.js",
@@ -23,7 +23,7 @@
     "@toruslabs/eccrypto": "^4.0.0",
     "@toruslabs/metadata-helpers": "^5.0.0",
     "@toruslabs/openlogin-session-manager": "^3.0.0",
-    "@toruslabs/openlogin-utils": "^6.2.10",
+    "@toruslabs/openlogin-utils": "^7.0.0",
     "@toruslabs/secure-pub-sub": "^0.0.1",
     "bowser": "^2.11.0",
     "events": "^3.3.0",
