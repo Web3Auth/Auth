@@ -257,6 +257,19 @@ export const THEME_MODES = {
 
 export type THEME_MODE_TYPE = (typeof THEME_MODES)[keyof typeof THEME_MODES];
 
+export type WHITE_LABEL_THEME = {
+  /**
+   * `primary` color that represents your brand
+   * Will be applied to elements such as primary button, nav tab(selected), loader, input focus, etc.
+   */
+  primary?: string;
+  /**
+   * `onPrimary` color that is meant to contrast with the primary color
+   * Applies to elements such as the text in a primary button or nav tab(selected), blocks of text on top of a primary background, etc.
+   */
+  onPrimary?: string;
+};
+
 export type WhiteLabelData = {
   /**
    * App name to display in the UI
@@ -302,22 +315,10 @@ export type WhiteLabelData = {
    * @defaultValue false
    */
   useLogoLoader?: boolean;
-
   /**
-   * Used to customize theme of the login modal with following options
-   * `'primary'` - To customize primary color of modal's content.
+   * Used to customize your theme
    */
-  theme?: {
-    primary?: string;
-    gray?: string;
-    red?: string;
-    green?: string;
-    success?: string;
-    warning?: string;
-    error?: string;
-    info?: string;
-    white?: string;
-  };
+  theme?: WHITE_LABEL_THEME;
   /**
    * Language specific link for terms and conditions on torus-website. See (examples/vue-app) to configure
    * e.g.
