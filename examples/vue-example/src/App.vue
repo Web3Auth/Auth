@@ -84,8 +84,8 @@
             <button class="btn" @click="getEd25519Key">Get Ed25519Key</button>
           </div>
           <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
-            <button v-if="!isMFAEnabled" class="btn" @click="enableMFA">Enable MFA</button>
-            <button v-else class="btn" @click="manageMFA">Manage MFA</button>
+            <button v-if="isMFAEnabled()" class="btn" @click="manageMFA">Manage MFA</button>
+            <button v-else class="btn" @click="enableMFA">Enable MFA</button>
           </div>
           <p class="btn-label">Signing</p>
           <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
@@ -218,8 +218,9 @@ const vueapp = defineComponent({
   },
   updated() {
     // this is called on each state update
-    console.log(this.$data);
-    if (storageAvailable("sessionStorage")) sessionStorage.setItem("state", JSON.stringify(this.$data));
+    const data = {...this.$data};
+    Reflect.deleteProperty(data, "privKey");
+    if (storageAvailable("sessionStorage")) sessionStorage.setItem("state", JSON.stringify(data));
   },
   computed: {
     computedLoginProviders(): LOGIN_PROVIDER_TYPE[] {
@@ -267,9 +268,6 @@ const vueapp = defineComponent({
     },
     showEmailFlow(): boolean {
       return this.selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS;
-    },
-    isMFAEnabled(): boolean {
-      return this.openloginInstance.state.userInfo?.isMfaEnabled || false;
     },
   },
   methods: {
@@ -425,6 +423,11 @@ const vueapp = defineComponent({
         });
         this.ethereumPrivateKeyProvider.setupProvider(privKey);
       }
+    },
+
+    isMFAEnabled() {
+      if (!this.openloginInstance || !this.openloginInstance.sessionId) return false;
+      return this.openloginInstance.state?.userInfo?.isMfaEnabled || false;
     },
 
     async getUserInfo() {
