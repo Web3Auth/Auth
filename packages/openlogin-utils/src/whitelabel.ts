@@ -2,7 +2,7 @@ import Color from "color";
 
 import { type WHITE_LABEL_THEME } from "./interfaces";
 
-function getColorsList(colorsAmount = 3, colorsShiftAmount = 50, mixColor = "black", rotate = 0, saturation = 20, mainColor = "#0346ff") {
+export function getColorsList(colorsAmount = 3, colorsShiftAmount = 50, mixColor = "black", rotate = 0, saturation = 20, mainColor = "#0346ff") {
   const colorsList = [];
 
   let step;
@@ -19,13 +19,13 @@ function getColorsList(colorsAmount = 3, colorsShiftAmount = 50, mixColor = "bla
   return colorsList;
 }
 
-function generateWhiteLabelTheme(primary: string) {
+export function generateWhiteLabelTheme(primary: string) {
   const darkSet = getColorsList(3, 50, "black", 0, 20, primary);
   const lightSet = getColorsList(6, 85, "white", 0, 20, primary);
-  return [...darkSet.reverse(), ...[primary], ...lightSet];
+  return [...darkSet.reverse(), primary, ...lightSet];
 }
 
-function applyWhiteLabelTheme(rootElement: HTMLElement, theme: WHITE_LABEL_THEME) {
+export function applyWhiteLabelTheme(rootElement: HTMLElement, theme: WHITE_LABEL_THEME) {
   if (theme.primary) {
     const themeSet = generateWhiteLabelTheme(theme.primary);
 
@@ -45,5 +45,3 @@ function applyWhiteLabelTheme(rootElement: HTMLElement, theme: WHITE_LABEL_THEME
     rootElement.style.setProperty("--app-on-primary", theme.onPrimary);
   }
 }
-
-export { applyWhiteLabelTheme };
