@@ -324,6 +324,7 @@ class OpenLogin {
     const configParams: BaseLoginParams = {
       loginId,
       sessionNamespace: this.options.sessionNamespace,
+      storageServerUrl: this.options.storageServerUrl,
     };
 
     const loginUrl = constructURL({
@@ -409,6 +410,7 @@ class OpenLogin {
     const configParams: BaseLoginParams = {
       loginId,
       sessionNamespace: this.options.sessionNamespace,
+      storageServerUrl: this.options.storageServerUrl,
     };
 
     if (this.options.uxMode === UX_MODE.REDIRECT) {
