@@ -705,6 +705,7 @@ export type OpenLoginOptions = {
 export interface BaseLoginParams {
   loginId?: string;
   sessionNamespace?: string;
+  storageServerUrl?: string;
 }
 
 export interface OpenloginSessionConfig {
