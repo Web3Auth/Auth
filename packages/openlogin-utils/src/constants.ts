@@ -31,6 +31,7 @@ export const LOGIN_PROVIDER = {
   TWITTER: "twitter",
   WEIBO: "weibo",
   WECHAT: "wechat",
+  FARCASTER: "farcaster",
   EMAIL_PASSWORDLESS: "email_passwordless",
   SMS_PASSWORDLESS: "sms_passwordless",
   WEBAUTHN: "webauthn",
