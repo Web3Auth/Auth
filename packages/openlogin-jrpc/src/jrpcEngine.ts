@@ -62,7 +62,7 @@ export class JRPCEngine extends SafeEventEmitter {
   /**
    * Runs an individual middleware.
    *
-   * @returns An array of any error encountered during middleware exection,
+   * @returns An array of any error encountered during middleware execution,
    * and a boolean indicating whether the request should end.
    */
   private static _runMiddleware(
@@ -75,7 +75,17 @@ export class JRPCEngine extends SafeEventEmitter {
       const end: JRPCEngineEndCallback = (err?: unknown) => {
         const error = err || res.error;
         if (error) {
-          res.error = serializeError(error, { shouldIncludeStack: true });
+          if (Object.keys(error).includes("stack") === false) error.stack = "Stack trace is not available.";
+
+          res.error = serializeError(error, {
+            shouldIncludeStack: true,
+            fallbackError: {
+              message: error?.message || error?.toString(),
+              code: error?.code || -32603,
+              stack: error?.stack,
+              data: error?.data || error?.message || error?.toString(),
+            },
+          });
         }
         // True indicates that the request should end
         resolve([error, true]);
@@ -311,7 +321,17 @@ export class JRPCEngine extends SafeEventEmitter {
       // Ensure no result is present on an errored response
       delete res.result;
       if (!res.error) {
-        res.error = serializeError(error, { shouldIncludeStack: true });
+        if (Object.keys(error).includes("stack") === false) error.stack = "Stack trace is not available.";
+
+        res.error = serializeError(error, {
+          shouldIncludeStack: true,
+          fallbackError: {
+            message: error?.message || error?.toString(),
+            code: (error as { code?: number })?.code || -32603,
+            stack: error?.stack,
+            data: (error as { data?: string })?.data || error?.message || error?.toString(),
+          },
+        });
       }
     }
 
@@ -395,10 +415,14 @@ export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider
   provider.sendAsync = async <T, U>(req: JRPCRequest<T>) => {
     const res = await engine.handle(req);
     if (res.error) {
+      if (Object.keys(res.error).includes("stack") === false) res.error.stack = "Stack trace is not available.";
+
       const err = serializeError(res.error, {
         fallbackError: {
-          message: res.error?.message || res.error.toString(),
+          message: res.error?.message || res.error?.toString(),
           code: res.error?.code || -32603,
+          stack: res.error?.stack,
+          data: res.error?.data || res.error?.message || res.error?.toString(),
         },
         shouldIncludeStack: true,
       });

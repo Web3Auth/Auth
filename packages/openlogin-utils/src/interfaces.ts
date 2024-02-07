@@ -246,7 +246,7 @@ export const LANGUAGES = {
   fr: "fr",
   pt: "pt",
   nl: "nl",
-  tk: "tk",
+  tr: "tr",
 } as const;
 
 export type LANGUAGE_TYPE = (typeof LANGUAGES)[keyof typeof LANGUAGES];
@@ -255,7 +255,7 @@ export const THEME_MODES = {
   light: "light",
   dark: "dark",
   auto: "auto",
-};
+} as const;
 
 export type THEME_MODE_TYPE = (typeof THEME_MODES)[keyof typeof THEME_MODES];
 
@@ -287,7 +287,7 @@ export type WhiteLabelData = {
    * fr: french
    * pt: portuguese
    * nl: dutch
-   * tk: turkish
+   * tr: turkish
    *
    * @defaultValue en
    */
@@ -530,6 +530,7 @@ export const MFA_FACTOR = {
   BACKUP_SHARE: "backUpShareFactor",
   SOCIAL_BACKUP: "socialBackupFactor",
   PASSWORD: "passwordFactor",
+  AUTHENTICATOR: "authenticatorFactor",
 } as const;
 
 export type MFA_FACTOR_TYPE = (typeof MFA_FACTOR)[keyof typeof MFA_FACTOR];
@@ -652,7 +653,7 @@ export type OpenLoginOptions = {
   storageServerUrl?: string;
 
   /**
-   * setting to "local" will persist social login session accross browser tabs.
+   * setting to "local" will persist social login session across browser tabs.
    *
    * @defaultValue "local"
    */
@@ -676,7 +677,7 @@ export type OpenLoginOptions = {
   /**
    * This parameter will be used to enable mfa factors and set priority on UI listing.
    * List of factors available
-   * backUpShareFactor | socialFactor | passwordFactor
+   * backUpShareFactor | socialFactor | passwordFactor | authenticatorFactor
    * @defaultValue false
    */
   mfaSettings?: MfaSettings;
@@ -691,6 +692,7 @@ export type OpenLoginOptions = {
 export interface BaseLoginParams {
   loginId?: string;
   sessionNamespace?: string;
+  storageServerUrl?: string;
 }
 
 export interface OpenloginSessionConfig {

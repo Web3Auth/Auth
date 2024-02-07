@@ -1,20 +1,23 @@
 import { IStorage, storageAvailable } from "./utils";
 
 export class MemoryStore implements IStorage {
-  store: Record<string, string> = {};
+  store: Map<string, string> = new Map();
 
   getItem(key: string): string {
-    return this.store[key] || null;
+    return this.store.get(key) || null;
   }
 
   setItem(key: string, value: string): void {
-    this.store[key] = value;
+    this.store.set(key, value);
+  }
+
+  removeItem(key: string): void {
+    this.store.delete(key);
   }
 }
 
 export class BrowserStorage {
-  // eslint-disable-next-line no-use-before-define
-  private static instance: BrowserStorage;
+  private static instanceMap = new Map<string, BrowserStorage>();
 
   public storage: IStorage;
 
@@ -32,8 +35,8 @@ export class BrowserStorage {
     }
   }
 
-  static getInstance(key: string, storageKey: "session" | "local" = "local"): BrowserStorage {
-    if (!this.instance) {
+  static getInstance(key: string, storageKey: "session" | "local" | "memory" = "local"): BrowserStorage {
+    if (!this.instanceMap.has(key)) {
       let storage: IStorage;
       if (storageKey === "local" && storageAvailable("localStorage")) {
         storage = window.localStorage;
@@ -43,9 +46,9 @@ export class BrowserStorage {
         storage = new MemoryStore();
       }
 
-      this.instance = new this(key, storage);
+      this.instanceMap.set(key, new this(key, storage));
     }
-    return this.instance;
+    return this.instanceMap.get(key);
   }
 
   toJSON(): string {
@@ -54,7 +57,7 @@ export class BrowserStorage {
 
   resetStore(): Record<string, unknown> {
     const currStore = this.getStore();
-    this.storage.setItem(this._storeKey, JSON.stringify({}));
+    this.storage.removeItem(this._storeKey);
     return currStore;
   }
 
