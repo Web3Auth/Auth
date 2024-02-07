@@ -152,8 +152,8 @@ const OPENLOGIN_PROJECT_IDS: Record<OPENLOGIN_NETWORK_TYPE, string> = {
   [OPENLOGIN_NETWORK.TESTNET]: "BJ6l3_kIQiy6YVL7zDlCcEAvGpGukwFgp-C_0WvNI_fAEeIaoVRLDrV5OjtbZr_zJxbyXFsXMT-yhQiUNYvZWpo",
   [OPENLOGIN_NETWORK.AQUA]: "BK19YSk7lHGp9NdAb-HFj6DHI2sZ7DCncztz8xZazLd54_28KrQm8QDSgxZm4F0uhjiGuzdzxZyNEqgNst3oRtM",
   [OPENLOGIN_NETWORK.CYAN]: "BHhjZ5eaJLgRtz1nVBwCFvlbpCCOHlK4Sxku2m56Gufn5IBuK9XfUzKg_HDlos14I-ZbsN1CgSLszZzr9ICc2Ho",
-  [OPENLOGIN_NETWORK.SAPPHIRE_DEVNET]: "openlogin",
-  [OPENLOGIN_NETWORK.SAPPHIRE_MAINNET]: "openlogin",
+  [OPENLOGIN_NETWORK.SAPPHIRE_DEVNET]: "BGeLpPeQTo9SD3az6tXjokcDNN65GW3V0E9s6f7aPPl-r3MXOHPrqBWaXhhRLdtC2tTt9iH6VctMK0G4xJJio0o",
+  [OPENLOGIN_NETWORK.SAPPHIRE_MAINNET]: "BJzfDwF4iBpFNyXran_VrW0sF0gfEacKrXXP1HcKsBw1d5IuCvDQ7obo56d30tCJd6geqJubj77D7x0aUFC5BcU",
   [OPENLOGIN_NETWORK.CELESTE]: "openlogin",
 };
 
@@ -211,7 +211,8 @@ const vueapp = defineComponent({
       await this.openloginInstance.init();
     }
     if (this.openloginInstance.privKey || this.openloginInstance.state.factorKey || this.openloginInstance.state.walletKey) {
-      this.privKey = this.openloginInstance.privKey || (this.openloginInstance.state.factorKey as string) || (this.openloginInstance.state.walletKey as string);
+      this.privKey =
+        this.openloginInstance.privKey || (this.openloginInstance.state.factorKey as string) || (this.openloginInstance.state.walletKey as string);
       await this.setProvider(this.privKey);
     }
     this.loading = false;
@@ -328,7 +329,7 @@ const vueapp = defineComponent({
         console.log(openLoginObj, "OPENLOGIN");
         await this.openloginInstance.login(openLoginObj);
         if (this.openloginInstance.privKey || this.openloginInstance.state.walletKey) {
-          this.privKey = this.openloginInstance.privKey || (this.openloginInstance.state.walletKey || "");
+          this.privKey = this.openloginInstance.privKey || this.openloginInstance.state.walletKey || "";
           await this.setProvider(this.privKey);
         }
       } catch (error) {
