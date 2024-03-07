@@ -269,7 +269,7 @@ const vueapp = defineComponent({
         clientId: currentClientId,
         network: this.selectedOpenloginNetwork,
         uxMode: this.selectedUxMode,
-        whiteLabel: this.isWhiteLabelEnabled ? { ...whitelabel, defaultLanguage: "fr" } : {},
+        whiteLabel: this.isWhiteLabelEnabled ? { ...whitelabel, defaultLanguage: this.selectedLanguage } : {},
         loginConfig: loginConfig,
         useMpc: this.useMpc,
         buildEnv: this.selectedBuildEnv,
@@ -299,7 +299,7 @@ const vueapp = defineComponent({
           return;
         }
         this.openloginInstance.options.uxMode = this.selectedUxMode;
-        this.openloginInstance.options.whiteLabel = this.isWhiteLabelEnabled ? { ...whitelabel, defaultLanguage: "fr" } : {};
+        this.openloginInstance.options.whiteLabel = this.isWhiteLabelEnabled ? { ...whitelabel, defaultLanguage: this.selectedLanguage } : {};
         this.openloginInstance.options.mfaSettings = this.enableAllFactors
           ? {
               backUpShareFactor: { enable: true },
