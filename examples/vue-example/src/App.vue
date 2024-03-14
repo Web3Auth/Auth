@@ -6,10 +6,6 @@
     <div class="login-container" v-if="!privKey">
       <h1 class="login-heading">demo-openlogin.web3auth.io</h1>
       <h3 class="login-subheading">Login in with Openlogin</h3>
-      <div class="whitelabel">
-        <label for="whitelabel">Enable whitelabel</label>
-        <input type="checkbox" id="whitelabel" name="whitelabel" v-model="isWhiteLabelEnabled" />
-      </div>
       <div class="mpc">
         <label for="mpc">Enable MPC</label>
         <input type="checkbox" id="mpc" name="mpc" v-model="useMpc" />
@@ -22,6 +18,10 @@
         <label for="mpc">Enable Wallet Key</label>
         <input type="checkbox" id="walletKey" name="walletKey" v-model="useWalletKey" />
       </div>
+      <div class="whitelabel">
+        <label for="whitelabel">Enable whitelabel, allows you to select defaultLanguage</label>
+        <input type="checkbox" id="whitelabel" name="whitelabel" v-model="isWhiteLabelEnabled" />
+      </div>
       <select v-model="selectedBuildEnv" class="select">
         <option :key="login" v-for="login in Object.values(BUILD_ENV)" :value="login">{{ login }}</option>
       </select>
@@ -30,6 +30,9 @@
       </select>
       <select v-model="selectedUxMode" class="select">
         <option :key="login" v-for="login in Object.values(UX_MODE)" :value="login">{{ login }}</option>
+      </select>
+      <select v-if="isWhiteLabelEnabled" v-model="selectedLanguage" class="select">
+        <option :key="login" v-for="login in Object.values(LANGUAGE)" :value="login">{{ login }}</option>
       </select>
       <select v-model="selectedLoginProvider" class="select">
         <option :key="login" v-for="login in computedLoginProviders" :value="login">{{ login }}</option>
@@ -142,19 +145,33 @@ import {
   OPENLOGIN_NETWORK_TYPE,
   BUILD_ENV,
   storageAvailable,
+  LANGUAGE_TYPE,
 } from "@toruslabs/openlogin-utils";
 import loginConfig from "./lib/loginConfig";
 import { keccak256 } from "ethereum-cryptography/keccak";
 import { generateTSSEndpoints, getTSSEndpoints } from "./utils";
 
 const OPENLOGIN_PROJECT_IDS: Record<OPENLOGIN_NETWORK_TYPE, string> = {
-  [OPENLOGIN_NETWORK.MAINNET]: "BCtbnOamqh0cJFEUYA0NB5YkvBECZ3HLZsKfvSRBvew2EiiKW3UxpyQASSR0artjQkiUOCHeZ_ZeygXpYpxZjOs",
-  [OPENLOGIN_NETWORK.TESTNET]: "BJ6l3_kIQiy6YVL7zDlCcEAvGpGukwFgp-C_0WvNI_fAEeIaoVRLDrV5OjtbZr_zJxbyXFsXMT-yhQiUNYvZWpo",
-  [OPENLOGIN_NETWORK.AQUA]: "BK19YSk7lHGp9NdAb-HFj6DHI2sZ7DCncztz8xZazLd54_28KrQm8QDSgxZm4F0uhjiGuzdzxZyNEqgNst3oRtM",
-  [OPENLOGIN_NETWORK.CYAN]: "BHhjZ5eaJLgRtz1nVBwCFvlbpCCOHlK4Sxku2m56Gufn5IBuK9XfUzKg_HDlos14I-ZbsN1CgSLszZzr9ICc2Ho",
-  [OPENLOGIN_NETWORK.SAPPHIRE_DEVNET]: "BGeLpPeQTo9SD3az6tXjokcDNN65GW3V0E9s6f7aPPl-r3MXOHPrqBWaXhhRLdtC2tTt9iH6VctMK0G4xJJio0o",
-  [OPENLOGIN_NETWORK.SAPPHIRE_MAINNET]: "BJzfDwF4iBpFNyXran_VrW0sF0gfEacKrXXP1HcKsBw1d5IuCvDQ7obo56d30tCJd6geqJubj77D7x0aUFC5BcU",
+  [OPENLOGIN_NETWORK.MAINNET]: "BJRZ6qdDTbj6Vd5YXvV994TYCqY42-PxldCetmvGTUdoq6pkCqdpuC1DIehz76zuYdaq1RJkXGHuDraHRhCQHvA",
+  [OPENLOGIN_NETWORK.TESTNET]: "BHr_dKcxC0ecKn_2dZQmQeNdjPgWykMkcodEHkVvPMo71qzOV6SgtoN8KCvFdLN7bf34JOm89vWQMLFmSfIo84A",
+  [OPENLOGIN_NETWORK.AQUA]: "BM34K7ZqV3QwbDt0lvJFCdr4DxS9gyn7XZ2wZUaaf0Ddr71nLjPCNNYtXuGWxxc4i7ivYdgQzFqKlIot4IWrWCE",
+  [OPENLOGIN_NETWORK.CYAN]: "BEglQSgt4cUWcj6SKRdu5QkOXTsePmMcusG5EAoyjyOYKlVRjIF1iCNnMOTfpzCiunHRrMui8TIwQPXdkQ8Yxuk",
+  [OPENLOGIN_NETWORK.SAPPHIRE_DEVNET]: "BHgArYmWwSeq21czpcarYh0EVq2WWOzflX-NTK-tY1-1pauPzHKRRLgpABkmYiIV_og9jAvoIxQ8L3Smrwe04Lw",
+  [OPENLOGIN_NETWORK.SAPPHIRE_MAINNET]: "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ",
   [OPENLOGIN_NETWORK.CELESTE]: "openlogin",
+};
+
+const LANGUAGE: Record<LANGUAGE_TYPE, string> = {
+  en: "en",
+  de: "de",
+  ja: "ja",
+  ko: "ko",
+  zh: "zh",
+  es: "es",
+  fr: "fr",
+  pt: "pt",
+  tr: "tr",
+  nl: "nl",
 };
 
 const EMAIL_FLOW = {
@@ -176,6 +193,8 @@ const vueapp = defineComponent({
       isWhiteLabelEnabled: false,
       UX_MODE: UX_MODE,
       selectedUxMode: UX_MODE.REDIRECT as UX_MODE_TYPE,
+      selectedLanguage: LANGUAGE.en as LANGUAGE_TYPE,
+      LANGUAGE: LANGUAGE,
       OPENLOGIN_NETWORK: OPENLOGIN_NETWORK,
       BUILD_ENV: BUILD_ENV,
       selectedOpenloginNetwork: OPENLOGIN_NETWORK.SAPPHIRE_DEVNET as OPENLOGIN_NETWORK_TYPE,
@@ -195,7 +214,7 @@ const vueapp = defineComponent({
       }
     }
     this.openloginInstance.options.uxMode = this.selectedUxMode;
-    this.openloginInstance.options.whiteLabel = this.isWhiteLabelEnabled ? whitelabel : {};
+    this.openloginInstance.options.whiteLabel = this.isWhiteLabelEnabled ? { ...whitelabel, defaultLanguage: this.selectedLanguage } : {};
     this.openloginInstance.options.mfaSettings = this.enableAllFactors
       ? {
           backUpShareFactor: { enable: true },
@@ -255,7 +274,7 @@ const vueapp = defineComponent({
         clientId: currentClientId,
         network: this.selectedOpenloginNetwork,
         uxMode: this.selectedUxMode,
-        whiteLabel: this.isWhiteLabelEnabled ? whitelabel : {},
+        whiteLabel: this.isWhiteLabelEnabled ? { ...whitelabel, defaultLanguage: this.selectedLanguage } : {},
         loginConfig: loginConfig,
         useMpc: this.useMpc,
         buildEnv: this.selectedBuildEnv,
@@ -285,7 +304,7 @@ const vueapp = defineComponent({
           return;
         }
         this.openloginInstance.options.uxMode = this.selectedUxMode;
-        this.openloginInstance.options.whiteLabel = this.isWhiteLabelEnabled ? whitelabel : {};
+        this.openloginInstance.options.whiteLabel = this.isWhiteLabelEnabled ? { ...whitelabel, defaultLanguage: this.selectedLanguage } : {};
         this.openloginInstance.options.mfaSettings = this.enableAllFactors
           ? {
               backUpShareFactor: { enable: true },
