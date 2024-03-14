@@ -211,6 +211,12 @@ const vueapp = defineComponent({
       await this.openloginInstance.init();
     }
     if (this.openloginInstance.privKey || this.openloginInstance.state.factorKey || this.openloginInstance.state.walletKey) {
+      const startTime = sessionStorage.getItem("startTime");
+      if (startTime) {
+        const loginTime = (Date.now() - parseInt(startTime, 10)) / 1000;
+        console.log("Login time", `${loginTime}s`);
+        sessionStorage.deleteItem("startTime");
+      }
       this.privKey = this.openloginInstance.privKey || (this.openloginInstance.state.factorKey as string) || (this.openloginInstance.state.walletKey as string);
       await this.setProvider(this.privKey);
     }
@@ -295,7 +301,7 @@ const vueapp = defineComponent({
         // sdk instance after calling init on redirect url page.
         const openLoginObj: LoginParams = {
           loginProvider: this.selectedLoginProvider,
-          mfaLevel: "optional",
+          mfaLevel: "none",
           getWalletKey: this.useWalletKey,
           // pass empty string '' as loginProvider to open default torus modal
           // with all default supported login providers or you can pass specific
@@ -326,8 +332,12 @@ const vueapp = defineComponent({
         }
 
         console.log(openLoginObj, "OPENLOGIN");
+        const startTime = Date.now();
+        if (this.selectedUxMode === "redirect") sessionStorage.setItem("startTime", startTime.toString());
         await this.openloginInstance.login(openLoginObj);
         if (this.openloginInstance.privKey || this.openloginInstance.state.walletKey) {
+          const loginTime = (Date.now() - startTime)  / 1000;
+          console.log("Login time", `${loginTime}s`);
           this.privKey = this.openloginInstance.privKey || (this.openloginInstance.state.walletKey || "");
           await this.setProvider(this.privKey);
         }
