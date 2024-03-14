@@ -84,7 +84,7 @@
             <button class="btn" @click="getEd25519Key">Get Ed25519Key</button>
           </div>
           <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
-            <button v-if="!isMFAEnabled" class="btn" @click="enableMFA">Enable MFA</button>
+            <button v-if="!isMFAEnabled()" class="btn" @click="enableMFA">Enable MFA</button>
             <button v-else class="btn" @click="manageMFA">Manage MFA</button>
           </div>
           <p class="btn-label">Signing</p>
@@ -274,9 +274,6 @@ const vueapp = defineComponent({
     showEmailFlow(): boolean {
       return this.selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS;
     },
-    isMFAEnabled(): boolean {
-      return this.openloginInstance.state.userInfo?.isMfaEnabled || false;
-    },
   },
   methods: {
     async login() {
@@ -444,6 +441,11 @@ const vueapp = defineComponent({
       }
       const userInfo = this.openloginInstance.getUserInfo();
       this.printToConsole("User Info", userInfo);
+    },
+
+    isMFAEnabled() {
+      if (!this.openloginInstance || !this.openloginInstance.sessionId) return false;
+      return this.openloginInstance.state?.userInfo?.isMfaEnabled || false;
     },
 
     async enableMFA() {
