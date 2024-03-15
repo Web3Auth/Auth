@@ -161,8 +161,8 @@ export type LoginParams = BaseRedirectParams & {
    * - `'mandatory'`: Setting mfa level to `mandatory` will make it mandatory for user to setup mfa after login.
    * - `'none'`: Setting mfa level to `none` will make the user skip the mfa setup screen
    *
-   * Defaults to `default`
-   * @defaultValue `default`
+   * Defaults to `none`
+   * @defaultValue `none`
    */
   mfaLevel?: MfaLevelType;
 
