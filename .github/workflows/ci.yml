@@ -63,7 +63,7 @@ jobs:
 
       # Invalidate Cloudfront (this action)
       - name: Update AWS Cloudfront Config
-        uses: chaitanyapotti/cloudfront-update-distribution@v2
+        uses: chaitanyapotti/cloudfront-update-distribution@v4
         if: github.ref == 'refs/heads/master'
         with:
           cloudfront-distribution-id: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}
