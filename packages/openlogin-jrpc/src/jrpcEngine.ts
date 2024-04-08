@@ -75,14 +75,14 @@ export class JRPCEngine extends SafeEventEmitter {
       const end: JRPCEngineEndCallback = (err?: unknown) => {
         const error = err || res.error;
         if (error) {
-          if (Object.keys(error).includes("stack") === false) error.stack = "Stack trace is not available.";
+          if (typeof error === "object" && Object.keys(error).includes("stack") === false) error.stack = "Stack trace is not available.";
 
           res.error = serializeError(error, {
             shouldIncludeStack: true,
             fallbackError: {
               message: error?.message || error?.toString(),
               code: error?.code || -32603,
-              stack: error?.stack,
+              stack: error?.stack || "Stack trace is not available.",
               data: error?.data || error?.message || error?.toString(),
             },
           });
@@ -321,14 +321,14 @@ export class JRPCEngine extends SafeEventEmitter {
       // Ensure no result is present on an errored response
       delete res.result;
       if (!res.error) {
-        if (Object.keys(error).includes("stack") === false) error.stack = "Stack trace is not available.";
+        if (typeof error === "object" && Object.keys(error).includes("stack") === false) error.stack = "Stack trace is not available.";
 
         res.error = serializeError(error, {
           shouldIncludeStack: true,
           fallbackError: {
             message: error?.message || error?.toString(),
             code: (error as { code?: number })?.code || -32603,
-            stack: error?.stack,
+            stack: error?.stack || "Stack trace is not available.",
             data: (error as { data?: string })?.data || error?.message || error?.toString(),
           },
         });
@@ -415,13 +415,13 @@ export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider
   provider.sendAsync = async <T, U>(req: JRPCRequest<T>) => {
     const res = await engine.handle(req);
     if (res.error) {
-      if (Object.keys(res.error).includes("stack") === false) res.error.stack = "Stack trace is not available.";
+      if (typeof res.error === "object" && Object.keys(res.error).includes("stack") === false) res.error.stack = "Stack trace is not available.";
 
       const err = serializeError(res.error, {
         fallbackError: {
           message: res.error?.message || res.error?.toString(),
           code: res.error?.code || -32603,
-          stack: res.error?.stack,
+          stack: res.error?.stack || "Stack trace is not available.",
           data: res.error?.data || res.error?.message || res.error?.toString(),
         },
         shouldIncludeStack: true,
