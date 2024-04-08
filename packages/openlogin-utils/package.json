@@ -20,7 +20,7 @@
     "pre-commit": "lint-staged --cwd ."
   },
   "dependencies": {
-    "@toruslabs/constants": "^13.1.0",
+    "@toruslabs/constants": "^13.2.0",
     "base64url": "^3.0.1",
     "color": "^4.2.3"
   },
@@ -28,8 +28,7 @@
     "@babel/runtime": "7.x"
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "lint-staged": {
     "!(*d).ts": [

@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@ethereumjs/util": "^8.0.5",
-    "@toruslabs/starkware-crypto": "^1.2.1",
+    "@toruslabs/starkware-crypto": "^3.1.0",
     "bip39": "^3.1.0",
     "enc-utils": "^3.0.0"
   },
@@ -29,8 +29,7 @@
     "@babel/runtime": "7.x"
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "lint-staged": {
     "!(*d).ts": [
