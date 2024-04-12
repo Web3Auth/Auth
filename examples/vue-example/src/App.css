@@ -368,7 +368,7 @@ body,
   width: 750px;
 }
 
-.whitelabel {
+.whitelabel, .curve-type, .enable-mfa {
   display: flex;
   align-items: center;
   column-gap: 16px;
