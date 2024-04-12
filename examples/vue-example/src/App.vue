@@ -22,6 +22,14 @@
         <label for="whitelabel">Enable whitelabel, allows you to select defaultLanguage</label>
         <input type="checkbox" id="whitelabel" name="whitelabel" v-model="isWhiteLabelEnabled" />
       </div>
+      <div class="curve-type">
+        <label for="curveType">Enable ed25519 keys, default is secp256k1</label>
+        <input type="checkbox" id="curveType" name="curveType" v-model="enableEd25519Key" />
+      </div>
+      <div class="enable-mfa">
+        <label for="enableMFA">Enable MFA, default MFA Level is none</label>
+        <input type="checkbox" id="enableMFA" name="enableMFA" v-model="isEnableMFA" />
+      </div>
       <select v-model="selectedBuildEnv" class="select">
         <option :key="login" v-for="login in Object.values(BUILD_ENV)" :value="login">{{ login }}</option>
       </select>
@@ -146,6 +154,7 @@ import {
   BUILD_ENV,
   storageAvailable,
   LANGUAGE_TYPE,
+SUPPORTED_KEY_CURVES,
 } from "@toruslabs/openlogin-utils";
 import loginConfig from "./lib/loginConfig";
 import { keccak256 } from "ethereum-cryptography/keccak";
@@ -203,6 +212,8 @@ const vueapp = defineComponent({
       selectedBuildEnv: BUILD_ENV.PRODUCTION,
       emailFlowType: EMAIL_FLOW.code,
       EMAIL_FLOW: EMAIL_FLOW,
+      enableEd25519Key: false,
+      isEnableMFA: false,
     };
   },
   async created() {
@@ -317,8 +328,9 @@ const vueapp = defineComponent({
         // return priv key , in redirect mode or if third party cookies are blocked then priv key be injected to
         // sdk instance after calling init on redirect url page.
         const openLoginObj: LoginParams = {
+          curve: this.enableEd25519Key ? SUPPORTED_KEY_CURVES.ED25519 : SUPPORTED_KEY_CURVES.SECP256K1,
           loginProvider: this.selectedLoginProvider,
-          mfaLevel: "none",
+          mfaLevel: this.isEnableMFA ? "optional" : "none",
           getWalletKey: this.useWalletKey,
           // pass empty string '' as loginProvider to open default torus modal
           // with all default supported login providers or you can pass specific
