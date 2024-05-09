@@ -299,7 +299,7 @@ const vueapp = defineComponent({
         // sdk instance after calling init on redirect url page.
         const openLoginObj: LoginParams = {
           loginProvider: this.selectedLoginProvider,
-          mfaLevel: "none",
+          mfaLevel: "optional",
           getWalletKey: this.useWalletKey,
           // pass empty string '' as loginProvider to open default torus modal
           // with all default supported login providers or you can pass specific
