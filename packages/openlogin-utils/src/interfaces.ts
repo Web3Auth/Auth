@@ -319,7 +319,7 @@ export type WhiteLabelData = {
   /**
    theme
    *
-   * @defaultValue auto
+   * @defaultValue light
    */
   mode?: THEME_MODE_TYPE;
   /**
