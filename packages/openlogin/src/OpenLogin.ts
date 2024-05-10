@@ -62,7 +62,7 @@ class OpenLogin {
 
     if (options.useMpc && !options.sdkUrl) {
       if (Object.values(TORUS_LEGACY_NETWORK).includes(options.network as TORUS_LEGACY_NETWORK_TYPE))
-        throw new Error("MPC is not supported on legacy networks, please use sapphire_devnet or sapphire_mainnet.");
+        throw InitializationError.invalidParams("MPC is not supported on legacy networks, please use sapphire_devnet or sapphire_mainnet.");
       if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
         options.sdkUrl = "http://localhost:3000";
       } else if (options.buildEnv === BUILD_ENV.STAGING) {
