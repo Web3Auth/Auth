@@ -700,6 +700,12 @@ export type OpenLoginOptions = {
    * @defaultValue false
    */
   useMpc?: boolean;
+
+  /**
+   * This parameter will be used to select core kit key.
+   * @defaultValue false
+   */
+  useCoreKitKey?: boolean;
 };
 
 export interface BaseLoginParams {
