@@ -365,7 +365,6 @@ const vueapp = defineComponent({
         if (this.selectedUxMode === "redirect") sessionStorage.setItem("startTime", startTime.toString());
         await this.openloginInstance.login(openLoginObj);
         if (this.openloginInstance.privKey || this.openloginInstance.state.walletKey) {
-          await this.openloginInstance.login(openLoginObj);
           const loginTime = (Date.now() - startTime)  / 1000;
           console.log("Login time", `${loginTime}s`);
           
