@@ -535,6 +535,7 @@ export interface OpenloginSessionData {
   tssShare?: string;
   tssNonce?: number;
   nodeIndexes?: number[];
+  useCoreKitKey?: boolean;
 }
 
 export const MFA_FACTOR = {
