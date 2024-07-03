@@ -33,6 +33,12 @@
       <select v-model="selectedBuildEnv" class="select">
         <option :key="login" v-for="login in Object.values(BUILD_ENV)" :value="login">{{ login }}</option>
       </select>
+      <input
+        v-model="customSdkUrl"
+        placeholder="Enter custom url"
+        required
+        class="login-input"
+      />
       <select v-model="selectedOpenloginNetwork" class="select">
         <option :key="login" v-for="login in Object.values(OPENLOGIN_NETWORK)" :value="login">{{ login }}</option>
       </select>
@@ -214,6 +220,7 @@ const vueapp = defineComponent({
       EMAIL_FLOW: EMAIL_FLOW,
       enableEd25519Key: false,
       isEnableMFA: false,
+      customSdkUrl: "",
     };
   },
   async created() {
@@ -289,7 +296,7 @@ const vueapp = defineComponent({
         loginConfig: loginConfig,
         useMpc: this.useMpc,
         buildEnv: this.selectedBuildEnv,
-        // sdkUrl: "https://staging.openlogin.com",
+        sdkUrl: this.customSdkUrl,
         mfaSettings: this.enableAllFactors
           ? {
               backUpShareFactor: { enable: true },
