@@ -16,6 +16,8 @@
     "@toruslabs/openlogin-utils": "file:../../packages/openlogin-utils/",
     "@toruslabs/tss-client": "^2.0.0",
     "@toruslabs/tss-lib": "^2.0.0",
+    "@toruslabs/vue-components": "^7.8.3",
+    "@toruslabs/vue-icons": "^7.6.2",
     "@web3auth-mpc/ethereum-provider": "^3.0.0",
     "@web3auth/ethereum-provider": "^7.1.2",
     "bn.js": "^5.2.1",
@@ -25,7 +27,7 @@
     "ethereum-cryptography": "^2.1.2",
     "ethers": "^6.8.1",
     "openlogin": "file:../../packages/wrapper/",
-    "vue": "^3.3.8"
+    "vue": "^3.4.31"
   },
   "devDependencies": {
     "@toruslabs/constants": "^13.0.4",
