@@ -1,31 +1,31 @@
 <template>
   <main class="flex items-center justify-center h-screen">
     <nav class="bg-white fixed w-full z-20 top-0 start-0 border-gray-200 dark:border-gray-600">
-    <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-    <a href="#" class="flex items-center space-x-3 rtl:space-x-reverse">
-        <img :src="require('./assets/web3auth-wordmark.svg')" class="h-8" alt="Flowbite Logo">
-    </a>
-    <div class="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
-      <button class="dashboard-action-logout" @click.stop="logout" v-if="privKey">
-            <img :src="require('@/assets/logout.svg')" alt="logout" height="18" width="18" />
+      <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+        <a href="#" class="flex items-center space-x-3 rtl:space-x-reverse">
+          <img :src="`/assets/web3auth.svg`" class="h-8" alt="W3A Logo">
+        </a>
+        <div class="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
+          <button class="dashboard-action-logout" @click.stop="logout" v-if="privKey">
+            <img :src="`/assets/logout.svg`" alt="logout" height="18" width="18" />
             Logout
           </button>
-    </div>
-    <div class="items-center justify-between w-full md:flex md:w-auto md:order-1" id="navbar-sticky">
-      <div class="max-sm:w-full" >
-        <h1 class="dashboard-heading">demo-openlogin.web3auth.io</h1>
-        <p class="dashboard-subheading" v-if="privKey">Openlogin Private key : {{ privKey }}</p>
+        </div>
+        <div class="items-center justify-between w-full md:flex md:w-auto md:order-1" id="navbar-sticky">
+          <div class="max-sm:w-full">
+            <h1 class="leading-tight text-3xl font-extrabold">demo-openlogin.web3auth.io</h1>
+            <p class="leading-tight text-1xl" v-if="privKey">Openlogin Private key : {{ privKey }}</p>
+          </div>
+        </div>
       </div>
-    </div>
-    </div>
-  </nav>
-    
-
+    </nav>
     <div class="w-[800px]" v-if="!privKey">
-      
 
-      <div class="text-3xl font-bold leading-tight mb-5 text-center"><Loader class="text-center" v-if="loading" /></div>
-      
+
+      <div class="text-3xl font-bold leading-tight mb-5 text-center">
+        <Loader class="text-center" v-if="loading" />
+      </div>
+
       <Card class="h-auto px-12 py-16">
         <div class="leading-tight text-2xl font-extrabold">Login in with Openlogin</div>
         <div class="text-app-gray-500 mt-2">
@@ -33,218 +33,172 @@
         </div>
         <div class="grid grid-cols-2 gap-5 mt-5">
           <div class="flex items-start w-full  gap-2">
-            <Checkbox v-model="useMpc" id="mpc" :checked="useMpc" @onChange="useMpc = !useMpc" />
-            <label for="mpc" class="text-xs text-left font-normal cursor-pointer device_checkbox-text">
-              Enable MPC
-            </label>
+            <Toggle v-model="useMpc" id="mpc" :show-label="true" :size="'small'" :label-disabled="'Disable MPC'"
+              :label-enabled="'Enable MPC'" />
           </div>
           <div class="flex items-start w-full  gap-2">
-            <Checkbox id="mfa" :checked="enableAllFactors" @onChange="enableAllFactors = !enableAllFactors" />
-            <label for="mfa" class="text-xs text-left font-normal cursor-pointer device_checkbox-text">
-              Enable All MFA Factors
-            </label>
-          </div>
-          <div class="flex items-start w-full  gap-2">
-            <Checkbox v-model="useWalletKey" id="walletKey" :checked="useWalletKey" @onChange="useWalletKey = !useWalletKey" />
-            <label for="walletKey" class="text-xs text-left font-normal cursor-pointer device_checkbox-text">
-              Enable Wallet Key
-            </label>
-          </div>
-          <div class="flex items-start w-full  gap-2">
-            <Checkbox v-model="isWhiteLabelEnabled" id="whitelabel" :checked="isWhiteLabelEnabled" @onChange="isWhiteLabelEnabled = !isWhiteLabelEnabled" />
-            <label for="whitelabel" class="text-xs text-left font-normal cursor-pointer device_checkbox-text">
-              Enable whitelabel
-            </label>
-          </div>
-          <div class="flex items-start w-full  gap-2">
-            <Checkbox v-model="enableEd25519Key" id="curveType" :checked="enableEd25519Key" @onChange="enableEd25519Key = !enableEd25519Key" />
-            <label for="curveType" class="text-xs text-left font-normal cursor-pointer device_checkbox-text">
-              Enable ed25519 keys, default is secp256k1
-            </label>
-          </div>
-          <div class="flex items-start w-full  gap-2">
-            <Checkbox v-model="isEnableMFA" id="enableMFA" :checked="isEnableMFA" @onChange="isEnableMFA = !isEnableMFA" />
-            <label for="enableMFA" class="text-xs text-left font-normal cursor-pointer device_checkbox-text">
-              Enable MFA, default MFA Level is none
-            </label>
+            <Toggle v-model="enableAllFactors" id="mfa" :show-label="true" :size="'small'"
+              :label-disabled="'Disable All MFA Factors'" :label-enabled="'Enable All MFA Factors'" />
 
           </div>
-          
-          <div>
-            <Select
-              v-model="selectedBuildEnv"
-              class="mt-3"
-              label="Select Build Env*"
-              aria-label="Select Build Env*"
-              placeholder="Select Build Env"
-              :options="Object.values(BUILD_ENV).map((x) => ({ name: x, value: x }))"
-              :helper-text="`Selected Build Env: ${selectedBuildEnv}`"
-              :error="!selectedBuildEnv"
-            /> 
+          <div class="flex items-start w-full  gap-2">
+            <Toggle v-model="useWalletKey" id="walletKey" :show-label="true" :size="'small'"
+              :label-disabled="'Disable Wallet Key'" :label-enabled="'Enable Wallet Key'" />
+
+          </div>
+          <div class="flex items-start w-full  gap-2">
+            <Toggle v-model="isWhiteLabelEnabled" id="whitelabel" :show-label="true" :size="'small'"
+              :label-disabled="'Disable Whitelabel'" :label-enabled="'Enable Whitelabel'" />
+
+          </div>
+          <div class="flex items-start w-full  gap-2">
+            <Toggle v-model="enableEd25519Key" id="curveType" :show-label="true" :size="'small'"
+              :label-disabled="'Disable ED25519 Key'" :label-enabled="'Enable ED25519 Key'" />
+
+          </div>
+          <div class="flex items-start w-full  gap-2">
+            <Toggle v-model="isEnableMFA" id="enableMFA" :show-label="true" :size="'small'"
+              :label-disabled="'Disable MFA'" :label-enabled="'Enable MFA'" />
           </div>
 
           <div>
-            <TextField
-              v-model="customSdkUrl"
-              class="mt-3"
-              label="Enter custom url"
-              aria-label="Enter custom url"
-              placeholder="Enter custom url"
-              required
-            />
+            <Select v-model="selectedBuildEnv" class="mt-3" label="Select Build Env*" aria-label="Select Build Env*"
+              placeholder="Select Build Env" :options="Object.values(BUILD_ENV).map((x) => ({ name: x, value: x }))"
+              :helper-text="`Selected Build Env: ${selectedBuildEnv}`" :error="!selectedBuildEnv" />
+          </div>
+
+          <div>
+            <TextField v-model="customSdkUrl" class="mt-3" label="Enter custom url" aria-label="Enter custom url"
+              placeholder="Enter custom url" required />
           </div>
           <div>
-            <Select
-              v-model="selectedOpenloginNetwork"
-              class="mt-3"
-              label="Select Openlogin Network*"
-              aria-label="Select Openlogin Network*"
-              placeholder="Select Openlogin Network"
+            <Select v-model="selectedOpenloginNetwork" class="mt-3" label="Select Openlogin Network*"
+              aria-label="Select Openlogin Network*" placeholder="Select Openlogin Network"
               :options="Object.values(OPENLOGIN_NETWORK).map((x) => ({ name: x, value: x }))"
               :helper-text="`Selected Openlogin Network: ${selectedOpenloginNetwork}`"
-              :error="!selectedOpenloginNetwork"/>
+              :error="!selectedOpenloginNetwork" />
           </div>
           <div>
-            <Select
-              v-model="selectedUxMode"
-              class="mt-3"
-              label="Select UX Mode*"
-              aria-label="Select UX Mode*"
-              placeholder="Select UX Mode"
-              :options="Object.values(UX_MODE).map((x) => ({ name: x, value: x }))"
-              :helper-text="`Selected UX Mode: ${selectedUxMode}`"
-              :error="!selectedUxMode"/>
+            <Select v-model="selectedUxMode" class="mt-3" label="Select UX Mode*" aria-label="Select UX Mode*"
+              placeholder="Select UX Mode" :options="Object.values(UX_MODE).map((x) => ({ name: x, value: x }))"
+              :helper-text="`Selected UX Mode: ${selectedUxMode}`" :error="!selectedUxMode" />
           </div>
           <div>
-            <Select
-              v-if="isWhiteLabelEnabled"
-              v-model="selectedLanguage"
-              class="mt-3"
-              label="Select Language*"
-              aria-label="Select Language*"
-              placeholder="Select Language"
+            <Select v-if="isWhiteLabelEnabled" v-model="selectedLanguage" class="mt-3" label="Select Language*"
+              aria-label="Select Language*" placeholder="Select Language"
               :options="Object.values(LANGUAGE).map((x) => ({ name: x, value: x }))"
-              :helper-text="`Selected Language: ${selectedLanguage}`"
-              :error="!selectedLanguage"/>
+              :helper-text="`Selected Language: ${selectedLanguage}`" :error="!selectedLanguage" />
           </div>
           <div>
-            <Select
-              v-model="selectedLoginProvider"
-              class="mt-3"
-              label="Select Login Provider*"
-              aria-label="Select Login Provider*"
-              placeholder="Select Login Provider"
+            <Select v-model="selectedLoginProvider" class="mt-3" label="Select Login Provider*"
+              aria-label="Select Login Provider*" placeholder="Select Login Provider"
               :options="computedLoginProviders.map((x) => ({ name: x.replaceAll('_', ' '), value: x }))"
               :helper-text="`Selected Login Provider: ${selectedLoginProvider.replaceAll('_', ' ')}`"
-              :error="!selectedLoginProvider"/>
+              :error="!selectedLoginProvider" />
           </div>
           <div>
-            <Select
-              v-if="showEmailFlow"
-              v-model="emailFlowType"
-              class="mt-3"
-              label="Select Email Flow*"
-              aria-label="Select Email Flow*"
-              placeholder="Select Email Flow"
+            <Select v-if="showEmailFlow" v-model="emailFlowType" class="mt-3" label="Select Email Flow*"
+              aria-label="Select Email Flow*" placeholder="Select Email Flow"
               :options="Object.values(EMAIL_FLOW).map((x) => ({ name: x, value: x }))"
-              :helper-text="`Selected Email Flow: ${emailFlowType}`"
-              :error="!emailFlowType"/>
+              :helper-text="`Selected Email Flow: ${emailFlowType}`" :error="!emailFlowType" />
           </div>
           <div>
-          <TextField
-            v-model="login_hint"
-            v-if="selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS"
-            class="mt-3"
-            label="Enter an email"
-            aria-label="Enter an email"
-            placeholder="Enter an email"
-            required
-          />
+            <TextField v-model="login_hint" v-if="selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS"
+              class="mt-3" label="Enter an email" aria-label="Enter an email" placeholder="Enter an email" required />
           </div>
           <div>
-            <TextField
-              v-model="login_hint"
-              v-if="selectedLoginProvider === LOGIN_PROVIDER.SMS_PASSWORDLESS"
-              class="mt-3"
-              label="Eg: (+{cc}-{number})"
-              aria-label="Eg: (+{cc}-{number})"
-              placeholder="Eg: (+{cc}-{number})"
-              required
-            />
+            <TextField v-model="login_hint" v-if="selectedLoginProvider === LOGIN_PROVIDER.SMS_PASSWORDLESS"
+              class="mt-3" label="Eg: (+{cc}-{number})" aria-label="Eg: (+{cc}-{number})"
+              placeholder="Eg: (+{cc}-{number})" required />
           </div>
 
         </div>
         <div class="flex justify-center mt-5">
-          <Button
-            class="mt-3"
-            :disabled="!isLoginHintAvailable"
-            @click="login"
-          >
+          <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']"
+            :disabled="!isLoginHintAvailable" type="button" block size="xl" pill @click="login">
             Login with {{ selectedLoginProvider.replaceAll("_", " ") }}
           </Button>
         </div>
       </Card>
     </div>
-    <div class="w-full px-10" v-else>
-      <div class="absolute right-9 top-9" >
+    <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4" v-else>
+      <div class="absolute right-9 top-9">
         <!-- <p class="dashboard-chainid">Connect chainID : 0x5</p>
           <Button @click.stop="logout">
             <img :src="require('@/assets/logout.svg')" alt="logout" height="18" width="18" />
             Logout
           </Button> -->
-          <button class="dashboard-action-logout" @click.stop="logout">
-            <img :src="require('@/assets/logout.svg')" alt="logout" height="18" width="18" />
-            Logout
-          </button>
+        <button class="dashboard-action-logout" @click.stop="logout">
+          <img src:="`/assets/logout.svg`" alt="logout" height="18" width="18" />
+          Logout
+        </button>
       </div>
       <div class="max-sm:w-full">
       </div>
       <div class="my-4"></div>
       <div class="grid grid-cols-3 gap-5">
-        <Card class="h-auto px-12 py-16 gird col-span-1">
+        <Card class=" px-12 py-16 gird col-span-1">
           <div class="mb-4">
             <p class="btn-label">User info</p>
           </div>
           <div class="mb-4">
-            <Button @click="getUserInfo">Get user info</Button>
+            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+              block size="xl" pill @click="getUserInfo">Get user info</Button>
           </div>
           <div class="mb-4">
-            <Button @click="getOpenloginState">Get openlogin state</Button>
+            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+              block size="xl" pill @click="getOpenloginState">Get openlogin state</Button>
           </div>
           <div class="mb-4">
-            <Button @click="getEd25519Key">Get Ed25519Key</Button>
+            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+              block size="xl" pill @click="getEd25519Key">Get Ed25519Key</Button>
           </div>
           <div class="mb-4">
-            <Button v-if="isMFAEnabled()" @click="manageMFA">Manage MFA</Button>
-            <Button v-else @click="enableMFA">Enable MFA</Button>
+            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+              block size="xl" pill v-if="isMFAEnabled()" @click="manageMFA">Manage MFA</Button>
+            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+              block size="xl" pill v-else @click="enableMFA">Enable MFA</Button>
           </div>
           <div class="mb-4">
             <p class="btn-label">Signing</p>
           </div>
           <div class="mb-4">
-            <Button @click="signMessage" :disabled="!ethereumPrivateKeyProvider?.provider">Sign test Eth Message</Button>
+            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+              block size="xl" pill @click="signMessage" :disabled="!ethereumPrivateKeyProvider?.provider">Sign test Eth
+              Message</Button>
           </div>
           <div class="mb-4">
-            <Button @click="signMpcMessage" :disabled="!ethereumPrivateKeyProvider?.provider">Sign test Eth Message (MPC)</Button>
+            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+              block size="xl" pill @click="signMpcMessage" :disabled="!ethereumPrivateKeyProvider?.provider">Sign test
+              Eth Message (MPC)</Button>
           </div>
           <div class="mb-4">
-            <Button @click="latestBlock" :disabled="!ethereumPrivateKeyProvider?.provider">Fetch latest block</Button>  
+            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+              block size="xl" pill @click="latestBlock" :disabled="!ethereumPrivateKeyProvider?.provider">Fetch latest
+              block</Button>
           </div>
           <div class="mb-4">
-            <Button @click="addChain" :disabled="!ethereumPrivateKeyProvider?.provider">Add Goerli</Button> 
+            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+              block size="xl" pill @click="addChain" :disabled="!ethereumPrivateKeyProvider?.provider">Add
+              Goerli</Button>
           </div>
           <div class="mb-4">
-            <Button @click="switchChain" :disabled="!ethereumPrivateKeyProvider?.provider">Switch to Goerli</Button>
+            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+              block size="xl" pill @click="switchChain" :disabled="!ethereumPrivateKeyProvider?.provider">Switch to
+              Goerli</Button>
           </div>
           <div class="mb-4">
-            <Button @click="signV1Message" :disabled="!ethereumPrivateKeyProvider?.provider">Sign Typed data v1 test msg</Button>
+            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+              block size="xl" pill @click="signV1Message" :disabled="!ethereumPrivateKeyProvider?.provider">Sign Typed
+              data v1 test msg</Button>
           </div>
         </Card>
-        <Card class="h-screen px-12 py-16 col-span-2" id="console">
+        <Card class=" px-12 py-16 col-span-2" id="console">
           <h1 class="console-heading"></h1>
           <pre class="console-container"></pre>
           <div class="clear-console-btn">
-            <Button @click="clearConsole">Clear console</Button>
+            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+              block size="xl" pill @click="clearConsole">Clear console</Button>
           </div>
         </Card>
       </div>
@@ -278,12 +232,12 @@ import {
   BUILD_ENV,
   storageAvailable,
   LANGUAGE_TYPE,
-SUPPORTED_KEY_CURVES,
+  SUPPORTED_KEY_CURVES,
 } from "@toruslabs/openlogin-utils";
 import loginConfig from "./lib/loginConfig";
 import { keccak256 } from "ethereum-cryptography/keccak";
 import { generateTSSEndpoints, getTSSEndpoints } from "./utils";
-import { Card, Checkbox, Select, TextField, Button, Loader } from "@toruslabs/vue-components";
+import { Card, Checkbox, Select, TextField, Button, Loader, Toggle } from "@toruslabs/vue-components";
 
 const OPENLOGIN_PROJECT_IDS: Record<OPENLOGIN_NETWORK_TYPE, string> = {
   [OPENLOGIN_NETWORK.MAINNET]: "BJRZ6qdDTbj6Vd5YXvV994TYCqY42-PxldCetmvGTUdoq6pkCqdpuC1DIehz76zuYdaq1RJkXGHuDraHRhCQHvA",
@@ -337,7 +291,29 @@ const enableEd25519Key = ref(false);
 const isEnableMFA = ref(false);
 const customSdkUrl = ref("");
 
+const openloginInstance = ref({} as OpenLogin);
+
 const init = async () => {
+  const currentClientId = OPENLOGIN_PROJECT_IDS[selectedOpenloginNetwork.value];
+  openloginInstance.value = new OpenLogin({
+    clientId: currentClientId,
+    network: selectedOpenloginNetwork.value,
+    uxMode: selectedUxMode.value,
+    whiteLabel: isWhiteLabelEnabled.value ? { ...whitelabel, defaultLanguage: selectedLanguage.value } : undefined,
+    loginConfig: loginConfig,
+    useMpc: useMpc.value,
+    buildEnv: selectedBuildEnv.value,
+    sdkUrl: customSdkUrl.value,
+    mfaSettings: enableAllFactors.value
+      ? {
+        backUpShareFactor: { enable: true },
+        deviceShareFactor: { enable: true },
+        passwordFactor: { enable: true },
+        socialBackupFactor: { enable: true },
+      }
+      : undefined,
+  });
+  openloginInstance.value?.init();
   if (storageAvailable("sessionStorage")) {
     const data = sessionStorage.getItem("state");
     if (data) {
@@ -360,16 +336,16 @@ const init = async () => {
       customSdkUrl.value = state.customSdkUrl;
     }
   }
-  
+
   openloginInstance.value.options.uxMode = selectedUxMode.value;
   openloginInstance.value.options.whiteLabel = isWhiteLabelEnabled.value ? { ...whitelabel, defaultLanguage: selectedLanguage.value } : {};
   openloginInstance.value.options.mfaSettings = enableAllFactors.value
     ? {
-        backUpShareFactor: { enable: true },
-        deviceShareFactor: { enable: true },
-        passwordFactor: { enable: true },
-        socialBackupFactor: { enable: true },
-      }
+      backUpShareFactor: { enable: true },
+      deviceShareFactor: { enable: true },
+      passwordFactor: { enable: true },
+      socialBackupFactor: { enable: true },
+    }
     : undefined;
   await openloginInstance.value.init();
   if (openloginInstance.value.state.factorKey) {
@@ -387,33 +363,9 @@ const init = async () => {
     await setProvider(privKey.value);
   }
   loading.value = false;
-  
+
 };
 init();
-
-const openloginInstance = computed(() => { 
-  const currentClientId = OPENLOGIN_PROJECT_IDS[selectedOpenloginNetwork.value];
-  const op = new OpenLogin({
-    clientId: currentClientId,
-    network: selectedOpenloginNetwork.value,
-    uxMode: selectedUxMode.value,
-    whiteLabel: isWhiteLabelEnabled.value ? { ...whitelabel, defaultLanguage: selectedLanguage.value } : undefined,
-    loginConfig: loginConfig,
-    useMpc: useMpc.value,
-    buildEnv: selectedBuildEnv.value,
-    sdkUrl: customSdkUrl.value,
-    mfaSettings: enableAllFactors.value
-      ? {
-          backUpShareFactor: { enable: true },
-          deviceShareFactor: { enable: true },
-          passwordFactor: { enable: true },
-          socialBackupFactor: { enable: true },
-        }
-      : undefined,
-  });
-  op.init();
-  return op;
-});
 
 const computedLoginProviders = computed(() => Object.values(LOGIN_PROVIDER).filter((x) => x !== "jwt" && x !== "webauthn"));
 const showEmailFlow = computed(() => selectedLoginProvider.value === LOGIN_PROVIDER.EMAIL_PASSWORDLESS);
@@ -445,11 +397,11 @@ const login = async () => {
     openloginInstance.value.options.whiteLabel = isWhiteLabelEnabled.value ? { ...whitelabel, defaultLanguage: selectedLanguage.value } : {};
     openloginInstance.value.options.mfaSettings = enableAllFactors.value
       ? {
-          backUpShareFactor: { enable: true },
-          deviceShareFactor: { enable: true },
-          passwordFactor: { enable: true },
-          socialBackupFactor: { enable: true },
-        }
+        backUpShareFactor: { enable: true },
+        deviceShareFactor: { enable: true },
+        passwordFactor: { enable: true },
+        socialBackupFactor: { enable: true },
+      }
       : undefined;
     // in popup mode (with third party cookies available) or if user is already logged in this function will
     // return priv key , in redirect mode or if third party cookies are blocked then priv key be injected to
@@ -492,9 +444,9 @@ const login = async () => {
     if (selectedUxMode.value === "redirect") sessionStorage.setItem("startTime", startTime.toString());
     await openloginInstance.value.login(openLoginObj);
     if (openloginInstance.value.privKey || openloginInstance.value.state.walletKey) {
-      const loginTime = (Date.now() - startTime)  / 1000;
+      const loginTime = (Date.now() - startTime) / 1000;
       console.log("Login time", `${loginTime}s`);
-    
+
       privKey.value = openloginInstance.value.privKey || openloginInstance.value.state.walletKey || "";
       await setProvider(privKey.value);
     }
@@ -534,7 +486,7 @@ const setProvider = async (privKey: string) => {
       const tss = await import("@toruslabs/tss-lib");
       // 1. setup
       // generate endpoints for servers
-      const tssNodeEndpoints = getTSSEndpoints(this.selectedOpenloginNetwork as TORUS_SAPPHIRE_NETWORK_TYPE);
+      const tssNodeEndpoints = getTSSEndpoints(selectedOpenloginNetwork.value as TORUS_SAPPHIRE_NETWORK_TYPE);
       const { endpoints, tssWSEndpoints, partyIndexes } = generateTSSEndpoints(tssNodeEndpoints, parties, clientIndex);
       const randomSessionNonce = Buffer.from(keccak256(Buffer.from(generatePrivate().toString("hex") + Date.now(), "utf8"))).toString("hex");
       const tssImportUrl = `${tssNodeEndpoints[0]}/v1/clientWasm`;
@@ -742,7 +694,7 @@ const clearConsole = () => {
 };
 
 onBeforeMount(() => {
-  const data = { 
+  const data = {
     loading: loading.value,
     enableAllFactors: enableAllFactors.value,
     privKey: privKey.value,
@@ -765,6 +717,3 @@ onBeforeMount(() => {
 });
 
 </script>
-<style scoped>
-@import "./App.css";
-</style>
