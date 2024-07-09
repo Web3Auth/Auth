@@ -237,7 +237,7 @@ import {
 import loginConfig from "./lib/loginConfig";
 import { keccak256 } from "ethereum-cryptography/keccak";
 import { generateTSSEndpoints, getTSSEndpoints } from "./utils";
-import { Card, Checkbox, Select, TextField, Button, Loader, Toggle } from "@toruslabs/vue-components";
+import { Card, Select, TextField, Button, Loader, Toggle } from "@toruslabs/vue-components";
 
 const OPENLOGIN_PROJECT_IDS: Record<OPENLOGIN_NETWORK_TYPE, string> = {
   [OPENLOGIN_NETWORK.MAINNET]: "BJRZ6qdDTbj6Vd5YXvV994TYCqY42-PxldCetmvGTUdoq6pkCqdpuC1DIehz76zuYdaq1RJkXGHuDraHRhCQHvA",
