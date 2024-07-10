@@ -19,10 +19,10 @@
       </div>
     </div>
   </nav>
-  <main class="flex-1 p-1 ">
+  <main class="flex-1 p-1">
 
     <div class="relative">
-      <div class="flex-wrap items-center justify-between p-4">
+      <div class="flex-wrap items-center justify-between p-4" v-if="privKey">
         <div class="grid grid-cols-6 gap-0">
           <div class="col-span-1"></div>
           <Card class=" px-4 py-4 gird col-span-1">
@@ -85,7 +85,7 @@
           <Card class=" px-4 py-4 col-span-3 overflow-y-auto" id="console">
             <h1 class="font-normal font-bold text-3xl leading-9 text-black mb-8"></h1>
             <pre
-              class="whitespace-pre-line overflow-x-auto font-normal text-base leading-6 text-black break-words overflow-y-auto max-h-screen" ></pre>
+              class="whitespace-pre-line overflow-x-auto font-normal text-base leading-6 text-black break-words overflow-y-auto max-h-screen"></pre>
             <div class="absolute top-8 right-8 ">
               <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
                 block size="xl" pill @click="clearConsole">Clear console</Button>
@@ -93,107 +93,106 @@
           </Card>
         </div>
       </div>
-    </div>
-    <div class="w-[800px]" v-if="!privKey">
-      <div class="text-3xl font-bold leading-tight mb-5 text-center">
-        <Loader class="text-center" v-if="loading" />
+      <div class="grid grid-cols-8 gap-0" v-else>
+        <div class="col-span-2"></div>
+        <Card class="h-auto px-12 py-16 col-span-4">
+          <div class="leading-tight text-2xl font-extrabold">Login in with Openlogin</div>
+          <div class="text-app-gray-500 mt-2">
+            This demo show how to use Openlogin SDK to login and sign messages using Openlogin SDK.
+          </div>
+          <div class="grid grid-cols-2 gap-5 mt-5">
+            <div class="flex items-start w-full  gap-2">
+              <Toggle v-model="useMpc" id="mpc" :show-label="true" :size="'small'" :label-disabled="'Disable MPC'"
+                :label-enabled="'Enable MPC'" />
+            </div>
+            <div class="flex items-start w-full  gap-2">
+              <Toggle v-model="enableAllFactors" id="mfa" :show-label="true" :size="'small'"
+                :label-disabled="'Disable All MFA Factors'" :label-enabled="'Enable All MFA Factors'" />
+
+            </div>
+            <div class="flex items-start w-full  gap-2">
+              <Toggle v-model="useWalletKey" id="walletKey" :show-label="true" :size="'small'"
+                :label-disabled="'Disable Wallet Key'" :label-enabled="'Enable Wallet Key'" />
+
+            </div>
+            <div class="flex items-start w-full  gap-2">
+              <Toggle v-model="isWhiteLabelEnabled" id="whitelabel" :show-label="true" :size="'small'"
+                :label-disabled="'Disable Whitelabel'" :label-enabled="'Enable Whitelabel'" />
+
+            </div>
+            <div class="flex items-start w-full  gap-2">
+              <Toggle v-model="enableEd25519Key" id="curveType" :show-label="true" :size="'small'"
+                :label-disabled="'Disable ED25519 Key'" :label-enabled="'Enable ED25519 Key'" />
+
+            </div>
+            <div class="flex items-start w-full  gap-2">
+              <Toggle v-model="isEnableMFA" id="enableMFA" :show-label="true" :size="'small'"
+                :label-disabled="'Disable MFA'" :label-enabled="'Enable MFA'" />
+            </div>
+
+            <div>
+              <Select v-model="selectedBuildEnv" class="mt-3" label="Select Build Env*" aria-label="Select Build Env*"
+                placeholder="Select Build Env" :options="Object.values(BUILD_ENV).map((x) => ({ name: x, value: x }))"
+                :helper-text="`Selected Build Env: ${selectedBuildEnv}`" :error="!selectedBuildEnv" />
+            </div>
+
+            <div>
+              <TextField v-model="customSdkUrl" class="mt-3" label="Enter custom url" aria-label="Enter custom url"
+                placeholder="Enter custom url" required />
+            </div>
+            <div>
+              <Select v-model="selectedOpenloginNetwork" class="mt-3" label="Select Openlogin Network*"
+                aria-label="Select Openlogin Network*" placeholder="Select Openlogin Network"
+                :options="Object.values(OPENLOGIN_NETWORK).map((x) => ({ name: x, value: x }))"
+                :helper-text="`Selected Openlogin Network: ${selectedOpenloginNetwork}`"
+                :error="!selectedOpenloginNetwork" />
+            </div>
+            <div>
+              <Select v-model="selectedUxMode" class="mt-3" label="Select UX Mode*" aria-label="Select UX Mode*"
+                placeholder="Select UX Mode" :options="Object.values(UX_MODE).map((x) => ({ name: x, value: x }))"
+                :helper-text="`Selected UX Mode: ${selectedUxMode}`" :error="!selectedUxMode" />
+            </div>
+            <div>
+              <Select v-if="isWhiteLabelEnabled" v-model="selectedLanguage" class="mt-3" label="Select Language*"
+                aria-label="Select Language*" placeholder="Select Language"
+                :options="Object.values(LANGUAGE).map((x) => ({ name: x, value: x }))"
+                :helper-text="`Selected Language: ${selectedLanguage}`" :error="!selectedLanguage" />
+            </div>
+            <div>
+              <Select v-model="selectedLoginProvider" class="mt-3" label="Select Login Provider*"
+                aria-label="Select Login Provider*" placeholder="Select Login Provider"
+                :options="computedLoginProviders.map((x) => ({ name: x.replaceAll('_', ' '), value: x }))"
+                :helper-text="`Selected Login Provider: ${selectedLoginProvider.replaceAll('_', ' ')}`"
+                :error="!selectedLoginProvider" />
+            </div>
+            <div>
+              <Select v-if="showEmailFlow" v-model="emailFlowType" class="mt-3" label="Select Email Flow*"
+                aria-label="Select Email Flow*" placeholder="Select Email Flow"
+                :options="Object.values(EMAIL_FLOW).map((x) => ({ name: x, value: x }))"
+                :helper-text="`Selected Email Flow: ${emailFlowType}`" :error="!emailFlowType" />
+            </div>
+            <div>
+              <TextField v-model="login_hint" v-if="selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS"
+                class="mt-3" label="Enter an email" aria-label="Enter an email" placeholder="Enter an email" required />
+            </div>
+            <div>
+              <TextField v-model="login_hint" v-if="selectedLoginProvider === LOGIN_PROVIDER.SMS_PASSWORDLESS"
+                class="mt-3" label="Eg: (+{cc}-{number})" aria-label="Eg: (+{cc}-{number})"
+                placeholder="Eg: (+{cc}-{number})" required />
+            </div>
+
+          </div>
+          <div class="flex justify-center mt-5">
+            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']"
+              :disabled="!isLoginHintAvailable" type="button" block size="xl" pill @click="login">
+              Login with {{ selectedLoginProvider.replaceAll("_", " ") }}
+            </Button>
+          </div>
+        </Card>
+        <div class="col-span-2"></div>
       </div>
-
-      <Card class="h-auto px-12 py-16">
-        <div class="leading-tight text-2xl font-extrabold">Login in with Openlogin</div>
-        <div class="text-app-gray-500 mt-2">
-          This demo show how to use Openlogin SDK to login and sign messages using Openlogin SDK.
-        </div>
-        <div class="grid grid-cols-2 gap-5 mt-5">
-          <div class="flex items-start w-full  gap-2">
-            <Toggle v-model="useMpc" id="mpc" :show-label="true" :size="'small'" :label-disabled="'Disable MPC'"
-              :label-enabled="'Enable MPC'" />
-          </div>
-          <div class="flex items-start w-full  gap-2">
-            <Toggle v-model="enableAllFactors" id="mfa" :show-label="true" :size="'small'"
-              :label-disabled="'Disable All MFA Factors'" :label-enabled="'Enable All MFA Factors'" />
-
-          </div>
-          <div class="flex items-start w-full  gap-2">
-            <Toggle v-model="useWalletKey" id="walletKey" :show-label="true" :size="'small'"
-              :label-disabled="'Disable Wallet Key'" :label-enabled="'Enable Wallet Key'" />
-
-          </div>
-          <div class="flex items-start w-full  gap-2">
-            <Toggle v-model="isWhiteLabelEnabled" id="whitelabel" :show-label="true" :size="'small'"
-              :label-disabled="'Disable Whitelabel'" :label-enabled="'Enable Whitelabel'" />
-
-          </div>
-          <div class="flex items-start w-full  gap-2">
-            <Toggle v-model="enableEd25519Key" id="curveType" :show-label="true" :size="'small'"
-              :label-disabled="'Disable ED25519 Key'" :label-enabled="'Enable ED25519 Key'" />
-
-          </div>
-          <div class="flex items-start w-full  gap-2">
-            <Toggle v-model="isEnableMFA" id="enableMFA" :show-label="true" :size="'small'"
-              :label-disabled="'Disable MFA'" :label-enabled="'Enable MFA'" />
-          </div>
-
-          <div>
-            <Select v-model="selectedBuildEnv" class="mt-3" label="Select Build Env*" aria-label="Select Build Env*"
-              placeholder="Select Build Env" :options="Object.values(BUILD_ENV).map((x) => ({ name: x, value: x }))"
-              :helper-text="`Selected Build Env: ${selectedBuildEnv}`" :error="!selectedBuildEnv" />
-          </div>
-
-          <div>
-            <TextField v-model="customSdkUrl" class="mt-3" label="Enter custom url" aria-label="Enter custom url"
-              placeholder="Enter custom url" required />
-          </div>
-          <div>
-            <Select v-model="selectedOpenloginNetwork" class="mt-3" label="Select Openlogin Network*"
-              aria-label="Select Openlogin Network*" placeholder="Select Openlogin Network"
-              :options="Object.values(OPENLOGIN_NETWORK).map((x) => ({ name: x, value: x }))"
-              :helper-text="`Selected Openlogin Network: ${selectedOpenloginNetwork}`"
-              :error="!selectedOpenloginNetwork" />
-          </div>
-          <div>
-            <Select v-model="selectedUxMode" class="mt-3" label="Select UX Mode*" aria-label="Select UX Mode*"
-              placeholder="Select UX Mode" :options="Object.values(UX_MODE).map((x) => ({ name: x, value: x }))"
-              :helper-text="`Selected UX Mode: ${selectedUxMode}`" :error="!selectedUxMode" />
-          </div>
-          <div>
-            <Select v-if="isWhiteLabelEnabled" v-model="selectedLanguage" class="mt-3" label="Select Language*"
-              aria-label="Select Language*" placeholder="Select Language"
-              :options="Object.values(LANGUAGE).map((x) => ({ name: x, value: x }))"
-              :helper-text="`Selected Language: ${selectedLanguage}`" :error="!selectedLanguage" />
-          </div>
-          <div>
-            <Select v-model="selectedLoginProvider" class="mt-3" label="Select Login Provider*"
-              aria-label="Select Login Provider*" placeholder="Select Login Provider"
-              :options="computedLoginProviders.map((x) => ({ name: x.replaceAll('_', ' '), value: x }))"
-              :helper-text="`Selected Login Provider: ${selectedLoginProvider.replaceAll('_', ' ')}`"
-              :error="!selectedLoginProvider" />
-          </div>
-          <div>
-            <Select v-if="showEmailFlow" v-model="emailFlowType" class="mt-3" label="Select Email Flow*"
-              aria-label="Select Email Flow*" placeholder="Select Email Flow"
-              :options="Object.values(EMAIL_FLOW).map((x) => ({ name: x, value: x }))"
-              :helper-text="`Selected Email Flow: ${emailFlowType}`" :error="!emailFlowType" />
-          </div>
-          <div>
-            <TextField v-model="login_hint" v-if="selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS"
-              class="mt-3" label="Enter an email" aria-label="Enter an email" placeholder="Enter an email" required />
-          </div>
-          <div>
-            <TextField v-model="login_hint" v-if="selectedLoginProvider === LOGIN_PROVIDER.SMS_PASSWORDLESS"
-              class="mt-3" label="Eg: (+{cc}-{number})" aria-label="Eg: (+{cc}-{number})"
-              placeholder="Eg: (+{cc}-{number})" required />
-          </div>
-
-        </div>
-        <div class="flex justify-center mt-5">
-          <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']"
-            :disabled="!isLoginHintAvailable" type="button" block size="xl" pill @click="login">
-            Login with {{ selectedLoginProvider.replaceAll("_", " ") }}
-          </Button>
-        </div>
-      </Card>
     </div>
+
 
   </main>
 </template>
