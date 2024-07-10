@@ -22,8 +22,9 @@
   <main class="flex-1 p-1 ">
 
     <div class="relative">
-      <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        <div class="grid grid-cols-4 gap-0">
+      <div class="flex-wrap items-center justify-between p-4">
+        <div class="grid grid-cols-6 gap-0">
+          <div class="col-span-1"></div>
           <Card class=" px-4 py-4 gird col-span-1">
             <div class="mb-4">
               <p class="btn-label">User info</p>
