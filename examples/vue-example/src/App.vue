@@ -1,27 +1,99 @@
 <template>
-  <main class="flex items-center justify-center h-screen">
-    <nav class="bg-white fixed w-full z-20 top-0 start-0 border-gray-200 dark:border-gray-600">
-      <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        <a href="#" class="flex items-center space-x-3 rtl:space-x-reverse">
-          <img :src="`/assets/web3auth.svg`" class="h-8" alt="W3A Logo">
-        </a>
-        <div class="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
-          <button class="dashboard-action-logout" @click.stop="logout" v-if="privKey">
-            <img :src="`/assets/logout.svg`" alt="logout" height="18" width="18" />
-            Logout
-          </button>
+  <nav class="bg-white sticky top-0 z-50 w-full z-20 top-0 start-0 border-gray-200 dark:border-gray-600">
+    <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+      <a href="#" class="flex items-center space-x-3 rtl:space-x-reverse">
+        <img :src="`/assets/web3auth.svg`" class="h-8" alt="W3A Logo">
+      </a>
+      <div class="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
+        <button class="dashboard-action-logout" @click.stop="logout" v-if="privKey">
+          <img :src="`/assets/logout.svg`" alt="logout" height="18" width="18" />
+          Logout
+        </button>
+      </div>
+      <div class="items-center justify-between w-full md:flex md:w-auto md:order-1" id="navbar-sticky">
+        <div class="max-sm:w-full">
+          <h1 class="leading-tight text-3xl font-extrabold">demo-openlogin.web3auth.io</h1>
+          <p class="leading-tight text-1xl" v-if="privKey">Openlogin Private key : {{ privKey }}</p>
         </div>
-        <div class="items-center justify-between w-full md:flex md:w-auto md:order-1" id="navbar-sticky">
-          <div class="max-sm:w-full">
-            <h1 class="leading-tight text-3xl font-extrabold">demo-openlogin.web3auth.io</h1>
-            <p class="leading-tight text-1xl" v-if="privKey">Openlogin Private key : {{ privKey }}</p>
-          </div>
+
+      </div>
+    </div>
+  </nav>
+  <main class="flex-1 p-1 ">
+
+    <div class="relative">
+      <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+        <div class="grid grid-cols-4 gap-0">
+          <Card class=" px-4 py-4 gird col-span-1">
+            <div class="mb-4">
+              <p class="btn-label">User info</p>
+            </div>
+            <div class="mb-4">
+              <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+                block size="xl" pill @click="getUserInfo">Get user info</Button>
+            </div>
+            <div class="mb-4">
+              <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+                block size="xl" pill @click="getOpenloginState">Get openlogin state</Button>
+            </div>
+            <div class="mb-4">
+              <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+                block size="xl" pill @click="getEd25519Key">Get Ed25519Key</Button>
+            </div>
+            <div class="mb-4">
+              <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+                block size="xl" pill v-if="isMFAEnabled()" @click="manageMFA">Manage MFA</Button>
+              <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+                block size="xl" pill v-else @click="enableMFA">Enable MFA</Button>
+            </div>
+            <div class="mb-4">
+              <p class="btn-label">Signing</p>
+            </div>
+            <div class="mb-4">
+              <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+                block size="xl" pill @click="signMessage" :disabled="!ethereumPrivateKeyProvider?.provider">Sign test
+                Eth
+                Message</Button>
+            </div>
+            <div class="mb-4">
+              <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+                block size="xl" pill @click="signMpcMessage" :disabled="!ethereumPrivateKeyProvider?.provider">Sign test
+                Eth Message (MPC)</Button>
+            </div>
+            <div class="mb-4">
+              <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+                block size="xl" pill @click="latestBlock" :disabled="!ethereumPrivateKeyProvider?.provider">Fetch latest
+                block</Button>
+            </div>
+            <div class="mb-4">
+              <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+                block size="xl" pill @click="addChain" :disabled="!ethereumPrivateKeyProvider?.provider">Add
+                Goerli</Button>
+            </div>
+            <div class="mb-4">
+              <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+                block size="xl" pill @click="switchChain" :disabled="!ethereumPrivateKeyProvider?.provider">Switch to
+                Goerli</Button>
+            </div>
+            <div class="mb-4">
+              <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+                block size="xl" pill @click="signV1Message" :disabled="!ethereumPrivateKeyProvider?.provider">Sign Typed
+                data v1 test msg</Button>
+            </div>
+          </Card>
+          <Card class=" px-4 py-4 col-span-3 overflow-y-auto" id="console">
+            <h1 class="font-normal font-bold text-3xl leading-9 text-black mb-8"></h1>
+            <pre
+              class="whitespace-pre-line overflow-x-auto font-normal text-base leading-6 text-black break-words overflow-y-auto max-h-screen" ></pre>
+            <div class="absolute top-8 right-8 ">
+              <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
+                block size="xl" pill @click="clearConsole">Clear console</Button>
+            </div>
+          </Card>
         </div>
       </div>
-    </nav>
+    </div>
     <div class="w-[800px]" v-if="!privKey">
-
-
       <div class="text-3xl font-bold leading-tight mb-5 text-center">
         <Loader class="text-center" v-if="loading" />
       </div>
@@ -121,88 +193,7 @@
         </div>
       </Card>
     </div>
-    <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4" v-else>
-      <div class="absolute right-9 top-9">
-        <!-- <p class="dashboard-chainid">Connect chainID : 0x5</p>
-          <Button @click.stop="logout">
-            <img :src="require('@/assets/logout.svg')" alt="logout" height="18" width="18" />
-            Logout
-          </Button> -->
-        <button class="dashboard-action-logout" @click.stop="logout">
-          <img src:="`/assets/logout.svg`" alt="logout" height="18" width="18" />
-          Logout
-        </button>
-      </div>
-      <div class="max-sm:w-full">
-      </div>
-      <div class="my-4"></div>
-      <div class="grid grid-cols-3 gap-5">
-        <Card class=" px-12 py-16 gird col-span-1">
-          <div class="mb-4">
-            <p class="btn-label">User info</p>
-          </div>
-          <div class="mb-4">
-            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
-              block size="xl" pill @click="getUserInfo">Get user info</Button>
-          </div>
-          <div class="mb-4">
-            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
-              block size="xl" pill @click="getOpenloginState">Get openlogin state</Button>
-          </div>
-          <div class="mb-4">
-            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
-              block size="xl" pill @click="getEd25519Key">Get Ed25519Key</Button>
-          </div>
-          <div class="mb-4">
-            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
-              block size="xl" pill v-if="isMFAEnabled()" @click="manageMFA">Manage MFA</Button>
-            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
-              block size="xl" pill v-else @click="enableMFA">Enable MFA</Button>
-          </div>
-          <div class="mb-4">
-            <p class="btn-label">Signing</p>
-          </div>
-          <div class="mb-4">
-            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
-              block size="xl" pill @click="signMessage" :disabled="!ethereumPrivateKeyProvider?.provider">Sign test Eth
-              Message</Button>
-          </div>
-          <div class="mb-4">
-            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
-              block size="xl" pill @click="signMpcMessage" :disabled="!ethereumPrivateKeyProvider?.provider">Sign test
-              Eth Message (MPC)</Button>
-          </div>
-          <div class="mb-4">
-            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
-              block size="xl" pill @click="latestBlock" :disabled="!ethereumPrivateKeyProvider?.provider">Fetch latest
-              block</Button>
-          </div>
-          <div class="mb-4">
-            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
-              block size="xl" pill @click="addChain" :disabled="!ethereumPrivateKeyProvider?.provider">Add
-              Goerli</Button>
-          </div>
-          <div class="mb-4">
-            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
-              block size="xl" pill @click="switchChain" :disabled="!ethereumPrivateKeyProvider?.provider">Switch to
-              Goerli</Button>
-          </div>
-          <div class="mb-4">
-            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
-              block size="xl" pill @click="signV1Message" :disabled="!ethereumPrivateKeyProvider?.provider">Sign Typed
-              data v1 test msg</Button>
-          </div>
-        </Card>
-        <Card class=" px-12 py-16 col-span-2" id="console">
-          <h1 class="console-heading"></h1>
-          <pre class="console-container"></pre>
-          <div class="clear-console-btn">
-            <Button :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']" type="button"
-              block size="xl" pill @click="clearConsole">Clear console</Button>
-          </div>
-        </Card>
-      </div>
-    </div>
+
   </main>
 </template>
 
