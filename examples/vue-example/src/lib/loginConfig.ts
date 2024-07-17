@@ -1,5 +1,4 @@
-import { LoginConfig } from "@toruslabs/openlogin-utils";
-import { LOGIN_PROVIDER } from "@toruslabs/openlogin-utils";
+import { LOGIN_PROVIDER, LoginConfig } from "@toruslabs/openlogin-utils";
 
 export default {
   // email_passwordless: {

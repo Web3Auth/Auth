@@ -3,7 +3,6 @@ const { ProvidePlugin } = require("webpack");
 
 module.exports = {
   transpileDependencies: false,
-  productionSourceMap: true,
   parallel: !process.env.CI,
   configureWebpack: (config) => {
     config.resolve.alias = {

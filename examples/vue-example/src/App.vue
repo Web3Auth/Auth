@@ -207,26 +207,27 @@ import { ref, onBeforeMount, computed } from "vue";
 import BN from "bn.js";
 import { Client, getDKLSCoeff, setupSockets } from "@toruslabs/tss-client";
 import { TORUS_SAPPHIRE_NETWORK_TYPE } from "@toruslabs/constants";
-
-import * as ethWeb3 from "./lib/ethWeb3";
-import { CURVE, DELIMITERS } from "./constants";
-import whitelabel from "./lib/whitelabel";
 import OpenLogin from "@toruslabs/openlogin";
 import {
-  LoginParams,
+  BUILD_ENV,
+  LANGUAGE_TYPE,
   LOGIN_PROVIDER,
   LOGIN_PROVIDER_TYPE,
-  UX_MODE,
-  UX_MODE_TYPE,
+  LoginParams,
   OPENLOGIN_NETWORK,
   OPENLOGIN_NETWORK_TYPE,
-  BUILD_ENV,
   storageAvailable,
-  LANGUAGE_TYPE,
   SUPPORTED_KEY_CURVES,
+  UX_MODE,
 } from "@toruslabs/openlogin-utils";
-import loginConfig from "./lib/loginConfig";
+import { EthereumSigningProvider } from "@web3auth/ethereum-mpc-provider";
 import { keccak256 } from "ethereum-cryptography/keccak";
+import { defineComponent } from "vue";
+
+import { CURVE, DELIMITERS } from "./constants";
+import * as ethWeb3 from "./lib/ethWeb3";
+import loginConfig from "./lib/loginConfig";
+import whitelabel from "./lib/whitelabel";
 import { generateTSSEndpoints, getTSSEndpoints } from "./utils";
 import { Card, Select, TextField, Button, Loader, Toggle } from "@toruslabs/vue-components";
 
@@ -500,7 +501,7 @@ const setProvider = async (privKey: string) => {
         throw new Error(`Signature does not exist ${signatures}`);
       }
 
-      const client = new Client(currentSession, clientIndex, partyIndexes, endpoints, sockets, share, tssPubKey, true, tssImportUrl);
+      const client = new Client(currentSession, clientIndex, partyIndexes, endpoints, sockets, share, tssPubKey, true, tss);
       const serverCoeffs: Record<number, string> = {};
       for (let i = 0; i < participatingServerDKGIndexes.length; i++) {
         const serverIndex = participatingServerDKGIndexes[i];

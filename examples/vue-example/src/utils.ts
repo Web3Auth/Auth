@@ -1,22 +1,5 @@
-import { TORUS_SAPPHIRE_NETWORK } from "@toruslabs/openlogin-utils";
 import { TORUS_SAPPHIRE_NETWORK_TYPE } from "@toruslabs/constants";
-
-export const SAPPHIRE_NETWORK_URLS: Record<TORUS_SAPPHIRE_NETWORK_TYPE, string[]> = {
-  [TORUS_SAPPHIRE_NETWORK.SAPPHIRE_DEVNET]: [
-    "https://sapphire-dev-2-1.authnetwork.dev",
-    "https://sapphire-dev-2-2.authnetwork.dev",
-    "https://sapphire-dev-2-3.authnetwork.dev",
-    "https://sapphire-dev-2-4.authnetwork.dev",
-    "https://sapphire-dev-2-5.authnetwork.dev",
-  ],
-  [TORUS_SAPPHIRE_NETWORK.SAPPHIRE_MAINNET]: [
-    "https://sapphire-1.auth.network",
-    "https://sapphire-2.auth.network",
-    "https://sapphire-3.auth.network",
-    "https://sapphire-4.auth.network",
-    "https://sapphire-5.auth.network",
-  ],
-};
+import { SAPPHIRE_NETWORK_URLS } from "@toruslabs/fnd-base";
 
 export const getTSSEndpoints = (sapphireNetwork: TORUS_SAPPHIRE_NETWORK_TYPE) => {
   const endpoints = SAPPHIRE_NETWORK_URLS[sapphireNetwork];
@@ -33,7 +16,7 @@ export const generateTSSEndpoints = (tssNodeEndpoints: string[], parties: number
   const endpoints: string[] = [];
   const tssWSEndpoints: string[] = [];
   const partyIndexes: number[] = [];
-  for (let i = 0; i < parties; i++) {
+  for (let i = 0; i < parties; i += 1) {
     partyIndexes.push(i);
     if (i === clientIndex) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
