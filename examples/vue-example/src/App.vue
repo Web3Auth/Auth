@@ -1,75 +1,72 @@
 <template>
   <div>
     <!-- Loader -->
-    <div class="loader-container" v-if="loading">Loading...</div>
+    <div v-if="loading" class="loader-container">Loading...</div>
     <!-- Login -->
-    <div class="login-container" v-if="!privKey">
+    <div v-if="!privKey" class="login-container">
       <h1 class="login-heading">demo-openlogin.web3auth.io</h1>
       <h3 class="login-subheading">Login in with Openlogin</h3>
       <div class="mpc">
         <label for="mpc">Enable MPC</label>
-        <input type="checkbox" id="mpc" name="mpc" v-model="useMpc" />
+        <input id="mpc" v-model="useMpc" type="checkbox" name="mpc" />
       </div>
       <div class="mfa">
         <label for="mfa">Enable All MFA Factors</label>
-        <input type="checkbox" id="mfa" name="mfa" v-model="enableAllFactors" />
+        <input id="mfa" v-model="enableAllFactors" type="checkbox" name="mfa" />
       </div>
       <div class="wallet-key">
         <label for="mpc">Enable Wallet Key</label>
-        <input type="checkbox" id="walletKey" name="walletKey" v-model="useWalletKey" />
+        <input id="walletKey" v-model="useWalletKey" type="checkbox" name="walletKey" />
       </div>
       <div class="whitelabel">
         <label for="whitelabel">Enable whitelabel, allows you to select defaultLanguage</label>
-        <input type="checkbox" id="whitelabel" name="whitelabel" v-model="isWhiteLabelEnabled" />
+        <input id="whitelabel" v-model="isWhiteLabelEnabled" type="checkbox" name="whitelabel" />
       </div>
       <div class="curve-type">
         <label for="curveType">Enable ed25519 keys, default is secp256k1</label>
-        <input type="checkbox" id="curveType" name="curveType" v-model="enableEd25519Key" />
+        <input id="curveType" v-model="enableEd25519Key" type="checkbox" name="curveType" />
       </div>
       <div class="enable-mfa">
         <label for="enableMFA">Enable MFA, default MFA Level is none</label>
-        <input type="checkbox" id="enableMFA" name="enableMFA" v-model="isEnableMFA" />
+        <input id="enableMFA" v-model="isEnableMFA" type="checkbox" name="enableMFA" />
       </div>
       <select v-model="selectedBuildEnv" class="select">
-        <option :key="login" v-for="login in Object.values(BUILD_ENV)" :value="login">{{ login }}</option>
+        <option v-for="login in Object.values(BUILD_ENV)" :key="login" :value="login">{{ login }}</option>
       </select>
-      <input
-        v-model="customSdkUrl"
-        placeholder="Enter custom url"
-        required
-        class="login-input"
-      />
+      <input v-model="customSdkUrl" placeholder="Enter custom url" required class="login-input" />
       <select v-model="selectedOpenloginNetwork" class="select">
-        <option :key="login" v-for="login in Object.values(OPENLOGIN_NETWORK)" :value="login">{{ login }}</option>
+        <option v-for="login in Object.values(OPENLOGIN_NETWORK)" :key="login" :value="login">{{ login }}</option>
       </select>
       <select v-model="selectedUxMode" class="select">
-        <option :key="login" v-for="login in Object.values(UX_MODE)" :value="login">{{ login }}</option>
+        <option v-for="login in Object.values(UX_MODE)" :key="login" :value="login">{{ login }}</option>
       </select>
       <select v-if="isWhiteLabelEnabled" v-model="selectedLanguage" class="select">
-        <option :key="login" v-for="login in Object.values(LANGUAGE)" :value="login">{{ login }}</option>
+        <option v-for="login in Object.values(LANGUAGE)" :key="login" :value="login">{{ login }}</option>
       </select>
       <select v-model="selectedLoginProvider" class="select">
-        <option :key="login" v-for="login in computedLoginProviders" :value="login">{{ login }}</option>
+        <option v-for="login in computedLoginProviders" :key="login" :value="login">{{ login }}</option>
       </select>
       <select v-if="showEmailFlow" v-model="emailFlowType" class="select">
-        <option :key="flow" v-for="flow in Object.values(EMAIL_FLOW)" :value="flow">{{ flow }}</option>
+        <option v-for="flow in Object.values(EMAIL_FLOW)" :key="flow" :value="flow">{{ flow }}</option>
       </select>
       <input
-        v-model="login_hint"
         v-if="selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS"
+        v-model="login_hint"
         placeholder="Enter an email"
         required
         class="login-input"
       />
       <input
-        v-model="login_hint"
         v-if="selectedLoginProvider === LOGIN_PROVIDER.SMS_PASSWORDLESS"
+        v-model="login_hint"
         placeholder="Eg: (+{cc}-{number})"
         required
         class="login-input"
       />
       <div :class="['login-btn']">
-        <button class="btn" :disabled="!isLoginHintAvailable" @click="login">Login with {{ selectedLoginProvider?.replaceAll("_", " ") }}</button>
+        <button type="button" class="btn" :disabled="!isLoginHintAvailable" @click="login">
+          Login with {{ selectedLoginProvider?.replaceAll("_", " ") }}
+        </button>
       </div>
     </div>
     <!-- Dashboard -->
@@ -82,7 +79,7 @@
         </div>
         <div class="dashboard-action-container max-sm:flex max-sm:justify-between">
           <p class="dashboard-chainid">Connect chainID : 0x5</p>
-          <button class="dashboard-action-logout" @click.stop="logout">
+          <button type="button" class="dashboard-action-logout" @click.stop="logout">
             <img :src="require('@/assets/logout.svg')" alt="logout" height="18" width="18" />
             Logout
           </button>
@@ -93,40 +90,43 @@
         <div class="dashboard-details-btn-container">
           <p class="btn-label">User info</p>
           <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
-            <button class="btn" @click="getUserInfo">Get user info</button>
-            <button class="btn" @click="getOpenloginState">Get openlogin state</button>
+            <button type="button" class="btn" @click="getUserInfo">Get user info</button>
+            <button type="button" class="btn" @click="getOpenloginState">Get openlogin state</button>
             <!-- <button class="btn" @click="getEd25519Key">Get Ed25519Key</button> -->
           </div>
           <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
-            <button class="btn" @click="getEd25519Key">Get Ed25519Key</button>
+            <button type="button" class="btn" @click="getEd25519Key">Get Ed25519Key</button>
           </div>
           <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
-            <button v-if="isMFAEnabled()" class="btn" @click="manageMFA">Manage MFA</button>
-            <button v-else class="btn" @click="enableMFA">Enable MFA</button>
+            <button v-if="isMFAEnabled()" type="button" class="btn" @click="manageMFA">Manage MFA</button>
+            <button v-else type="button" class="btn" @click="enableMFA">Enable MFA</button>
           </div>
           <p class="btn-label">Signing</p>
           <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
-            <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="signMessage">Sign test Eth Message</button>
-            <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="signMpcMessage">Sign test Eth Message (MPC)</button>
+            <button type="button" class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="signMessage">Sign test Eth Message</button>
+            <button type="button" class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="signMpcMessage">
+              Sign test Eth Message (MPC)
+            </button>
             <!-- <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="latestBlock">Fetch latest block</button> -->
           </div>
           <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
-            <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="latestBlock">Fetch latest block</button>
+            <button type="button" class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="latestBlock">Fetch latest block</button>
           </div>
           <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
-            <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="addChain">Add Goerli</button>
-            <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="switchChain">Switch to Goerli</button>
+            <button type="button" class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="addChain">Add Sepolia</button>
+            <button type="button" class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="switchChain">Switch to Sepolia</button>
           </div>
           <div class="flex flex-col sm:flex-row gap-4 bottom-gutter">
-            <button class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="signV1Message">Sign Typed data v1 test msg</button>
+            <button type="button" class="btn" :disabled="!ethereumPrivateKeyProvider?.provider" @click="signV1Message">
+              Sign Typed data v1 test msg
+            </button>
           </div>
         </div>
         <!-- Dashboard Console Container -->
-        <div class="dashboard-details-console-container" id="console">
-          <h1 class="console-heading"></h1>
+        <div id="console" class="dashboard-details-console-container">
           <pre class="console-container"></pre>
           <div class="clear-console-btn">
-            <button class="btn console-btn" @click="clearConsole">Clear console</button>
+            <button type="button" class="btn console-btn" @click="clearConsole">Clear console</button>
           </div>
         </div>
       </div>
@@ -135,35 +135,35 @@
 </template>
 
 <script lang="ts">
-import { getED25519Key } from "@toruslabs/openlogin-ed25519";
-import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
-import { EthereumSigningProvider as EthMpcPrivKeyProvider } from "@web3auth-mpc/ethereum-provider";
-import * as bs58 from "bs58";
-import { generatePrivate } from "@toruslabs/eccrypto";
-import { defineComponent } from "vue";
-import BN from "bn.js";
-import { Client, getDKLSCoeff, setupSockets } from "@toruslabs/tss-client";
 import { TORUS_SAPPHIRE_NETWORK_TYPE } from "@toruslabs/constants";
-
-import * as ethWeb3 from "./lib/ethWeb3";
-import { CURVE, DELIMITERS } from "./constants";
-import whitelabel from "./lib/whitelabel";
+import { generatePrivate } from "@toruslabs/eccrypto";
 import OpenLogin from "@toruslabs/openlogin";
+import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import {
-  LoginParams,
+  BUILD_ENV,
+  LANGUAGE_TYPE,
   LOGIN_PROVIDER,
   LOGIN_PROVIDER_TYPE,
-  UX_MODE,
-  UX_MODE_TYPE,
+  LoginParams,
   OPENLOGIN_NETWORK,
   OPENLOGIN_NETWORK_TYPE,
-  BUILD_ENV,
   storageAvailable,
-  LANGUAGE_TYPE,
-SUPPORTED_KEY_CURVES,
+  SUPPORTED_KEY_CURVES,
+  UX_MODE,
+  UX_MODE_TYPE,
 } from "@toruslabs/openlogin-utils";
-import loginConfig from "./lib/loginConfig";
+import { Client, getDKLSCoeff, setupSockets } from "@toruslabs/tss-client";
+import { EthereumSigningProvider } from "@web3auth/ethereum-mpc-provider";
+import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
+import BN from "bn.js";
+import bs58 from "bs58";
 import { keccak256 } from "ethereum-cryptography/keccak";
+import { defineComponent } from "vue";
+
+import { CURVE, DELIMITERS } from "./constants";
+import * as ethWeb3 from "./lib/ethWeb3";
+import loginConfig from "./lib/loginConfig";
+import whitelabel from "./lib/whitelabel";
 import { generateTSSEndpoints, getTSSEndpoints } from "./utils";
 
 const OPENLOGIN_PROJECT_IDS: Record<OPENLOGIN_NETWORK_TYPE, string> = {
@@ -201,27 +201,75 @@ const vueapp = defineComponent({
       loading: false,
       enableAllFactors: false,
       privKey: "",
-      ethereumPrivateKeyProvider: null as EthereumPrivateKeyProvider | EthMpcPrivKeyProvider | null,
-      LOGIN_PROVIDER: LOGIN_PROVIDER,
+      ethereumPrivateKeyProvider: null as EthereumPrivateKeyProvider | EthereumSigningProvider | null,
+      LOGIN_PROVIDER,
       selectedLoginProvider: LOGIN_PROVIDER.GOOGLE as LOGIN_PROVIDER_TYPE,
       login_hint: "",
       isWhiteLabelEnabled: false,
-      UX_MODE: UX_MODE,
+      UX_MODE,
       selectedUxMode: UX_MODE.REDIRECT as UX_MODE_TYPE,
       selectedLanguage: LANGUAGE.en as LANGUAGE_TYPE,
-      LANGUAGE: LANGUAGE,
-      OPENLOGIN_NETWORK: OPENLOGIN_NETWORK,
-      BUILD_ENV: BUILD_ENV,
+      LANGUAGE,
+      OPENLOGIN_NETWORK,
+      BUILD_ENV,
       selectedOpenloginNetwork: OPENLOGIN_NETWORK.SAPPHIRE_DEVNET as OPENLOGIN_NETWORK_TYPE,
       useMpc: false,
       useWalletKey: false,
       selectedBuildEnv: BUILD_ENV.PRODUCTION,
       emailFlowType: EMAIL_FLOW.code,
-      EMAIL_FLOW: EMAIL_FLOW,
+      EMAIL_FLOW,
       enableEd25519Key: false,
       isEnableMFA: false,
       customSdkUrl: "",
     };
+  },
+  computed: {
+    computedLoginProviders(): LOGIN_PROVIDER_TYPE[] {
+      return Object.values(LOGIN_PROVIDER).filter((x) => x !== "jwt" && x !== "webauthn");
+    },
+    isLoginHintAvailable(): boolean {
+      if (this.selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS || this.selectedLoginProvider === LOGIN_PROVIDER.SMS_PASSWORDLESS) {
+        if (!this.login_hint) {
+          return false;
+        }
+        if (this.selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS && !this.login_hint.match(/^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i)) {
+          return false;
+        }
+        if (this.selectedLoginProvider === LOGIN_PROVIDER.SMS_PASSWORDLESS && !(this.login_hint.startsWith("+") && this.login_hint.includes("-"))) {
+          return false;
+        }
+      }
+      return true;
+    },
+    isLongLines(): boolean {
+      return ([LOGIN_PROVIDER.EMAIL_PASSWORDLESS, LOGIN_PROVIDER.SMS_PASSWORDLESS] as LOGIN_PROVIDER_TYPE[]).includes(this.selectedLoginProvider);
+    },
+    openloginInstance(): OpenLogin {
+      const currentClientId = OPENLOGIN_PROJECT_IDS[this.selectedOpenloginNetwork];
+      const op = new OpenLogin({
+        clientId: currentClientId,
+        network: this.selectedOpenloginNetwork,
+        uxMode: this.selectedUxMode,
+        whiteLabel: this.isWhiteLabelEnabled ? { ...whitelabel, defaultLanguage: this.selectedLanguage } : {},
+        loginConfig,
+        useMpc: this.useMpc,
+        buildEnv: this.selectedBuildEnv,
+        sdkUrl: this.customSdkUrl,
+        mfaSettings: this.enableAllFactors
+          ? {
+              backUpShareFactor: { enable: true },
+              deviceShareFactor: { enable: true },
+              passwordFactor: { enable: true },
+              socialBackupFactor: { enable: true },
+            }
+          : undefined,
+      });
+      op.init();
+      return op;
+    },
+    showEmailFlow(): boolean {
+      return this.selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS;
+    },
   },
   async created() {
     if (storageAvailable("sessionStorage")) {
@@ -264,54 +312,6 @@ const vueapp = defineComponent({
     const data = { ...this.$data };
     Reflect.deleteProperty(data, "privKey");
     if (storageAvailable("sessionStorage")) sessionStorage.setItem("state", JSON.stringify(data));
-  },
-  computed: {
-    computedLoginProviders(): LOGIN_PROVIDER_TYPE[] {
-      return Object.values(LOGIN_PROVIDER).filter((x) => x !== "jwt" && x !== "webauthn");
-    },
-    isLoginHintAvailable(): boolean {
-      if (this.selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS || this.selectedLoginProvider === LOGIN_PROVIDER.SMS_PASSWORDLESS) {
-        if (!this.login_hint) {
-          return false;
-        }
-        if (this.selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS && !this.login_hint.match(/^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i)) {
-          return false;
-        }
-        if (this.selectedLoginProvider === LOGIN_PROVIDER.SMS_PASSWORDLESS && !(this.login_hint.startsWith("+") && this.login_hint.includes("-"))) {
-          return false;
-        }
-      }
-      return true;
-    },
-    isLongLines(): boolean {
-      return ([LOGIN_PROVIDER.EMAIL_PASSWORDLESS, LOGIN_PROVIDER.SMS_PASSWORDLESS] as LOGIN_PROVIDER_TYPE[]).includes(this.selectedLoginProvider);
-    },
-    openloginInstance(): OpenLogin {
-      const currentClientId = OPENLOGIN_PROJECT_IDS[this.selectedOpenloginNetwork];
-      const op = new OpenLogin({
-        clientId: currentClientId,
-        network: this.selectedOpenloginNetwork,
-        uxMode: this.selectedUxMode,
-        whiteLabel: this.isWhiteLabelEnabled ? { ...whitelabel, defaultLanguage: this.selectedLanguage } : {},
-        loginConfig: loginConfig,
-        useMpc: this.useMpc,
-        buildEnv: this.selectedBuildEnv,
-        sdkUrl: this.customSdkUrl,
-        mfaSettings: this.enableAllFactors
-          ? {
-              backUpShareFactor: { enable: true },
-              deviceShareFactor: { enable: true },
-              passwordFactor: { enable: true },
-              socialBackupFactor: { enable: true },
-            }
-          : undefined,
-      });
-      op.init();
-      return op;
-    },
-    showEmailFlow(): boolean {
-      return this.selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS;
-    },
   },
   methods: {
     async login() {
@@ -372,9 +372,9 @@ const vueapp = defineComponent({
         if (this.selectedUxMode === "redirect") sessionStorage.setItem("startTime", startTime.toString());
         await this.openloginInstance.login(openLoginObj);
         if (this.openloginInstance.privKey || this.openloginInstance.state.walletKey) {
-          const loginTime = (Date.now() - startTime)  / 1000;
+          const loginTime = (Date.now() - startTime) / 1000;
           console.log("Login time", `${loginTime}s`);
-          
+
           this.privKey = this.openloginInstance.privKey || this.openloginInstance.state.walletKey || "";
           await this.setProvider(this.privKey);
         }
@@ -388,15 +388,16 @@ const vueapp = defineComponent({
     async setProvider(privKey: string) {
       if (this.useMpc) {
         const { factorKey, tssPubKey, tssShareIndex, userInfo, tssShare, tssNonce, signatures } = this.openloginInstance.state;
-        this.ethereumPrivateKeyProvider = new EthMpcPrivKeyProvider({
+        this.ethereumPrivateKeyProvider = new EthereumSigningProvider({
           config: {
             chainConfig: {
               chainId: "0x1",
               rpcTarget: `https://rpc.ankr.com/eth`,
               displayName: "Mainnet",
-              blockExplorer: "https://etherscan.io/",
+              blockExplorerUrl: "https://etherscan.io/",
               ticker: "ETH",
               tickerName: "Ethereum",
+              chainNamespace: "eip155",
             },
           },
         });
@@ -439,17 +440,16 @@ const vueapp = defineComponent({
 
           const client = new Client(currentSession, clientIndex, partyIndexes, endpoints, sockets, share, tssPubKey, true, tssImportUrl);
           const serverCoeffs: Record<number, string> = {};
-          for (let i = 0; i < participatingServerDKGIndexes.length; i++) {
+          for (let i = 0; i < participatingServerDKGIndexes.length; i += 1) {
             const serverIndex = participatingServerDKGIndexes[i];
             serverCoeffs[serverIndex] = getDKLSCoeff(false, participatingServerDKGIndexes, tssShareIndex as number, serverIndex).toString("hex");
           }
-          client.precompute(tss, { signatures, server_coeffs: serverCoeffs });
+          client.precompute({ signatures, server_coeffs: serverCoeffs });
           await client.ready();
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { r, s, recoveryParam } = await client.sign(tss as any, Buffer.from(msgHash).toString("base64"), true, "", "keccak256", {
+          const { r, s, recoveryParam } = await client.sign(Buffer.from(msgHash).toString("base64"), true, "", "keccak256", {
             signatures,
           });
-          await client.cleanup(tss, { signatures, server_coeffs: serverCoeffs });
+          await client.cleanup({ signatures, server_coeffs: serverCoeffs });
           return { v: recoveryParam, r: r.toArrayLike(Buffer, "be", 64), s: s.toArrayLike(Buffer, "be", 64) };
         };
 
@@ -464,9 +464,10 @@ const vueapp = defineComponent({
               chainId: "0x1",
               rpcTarget: `https://rpc.ankr.com/eth`,
               displayName: "Mainnet",
-              blockExplorer: "https://etherscan.io/",
+              blockExplorerUrl: "https://etherscan.io/",
               ticker: "ETH",
               tickerName: "Ethereum",
+              chainNamespace: "eip155",
             },
           },
         });
@@ -546,7 +547,7 @@ const vueapp = defineComponent({
       try {
         await this.ethereumPrivateKeyProvider.provider.sendAsync({
           method: "wallet_switchEthereumChain",
-          params: [{ chainId: "0x5" }],
+          params: [{ chainId: "0xaa36a7" }],
         });
         this.printToConsole("Switched Chain", { ...this.ethereumPrivateKeyProvider.state, ...this.ethereumPrivateKeyProvider.config });
       } catch (error) {
@@ -562,15 +563,15 @@ const vueapp = defineComponent({
           method: "wallet_addEthereumChain",
           params: [
             {
-              chainId: "0x5",
-              chainName: "goerli",
+              chainId: "0xaa36a7",
+              chainName: "sepolia",
               nativeCurrency: {
                 name: "ether",
                 symbol: "ETH",
                 decimals: 18,
               },
-              rpcUrls: ["https://rpc.ankr.com/eth_goerli"],
-              blockExplorerUrls: [`https://goerli.etherscan.io/`],
+              rpcUrls: ["https://rpc.ankr.com/eth_sepolia"],
+              blockExplorerUrls: [`https://sepolia.etherscan.io/`],
             },
           ],
         });
