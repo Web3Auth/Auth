@@ -438,7 +438,7 @@ const vueapp = defineComponent({
             throw new Error(`Signature does not exist ${signatures}`);
           }
 
-          const client = new Client(currentSession, clientIndex, partyIndexes, endpoints, sockets, share, tssPubKey, true, tssImportUrl);
+          const client = new Client(currentSession, clientIndex, partyIndexes, endpoints, sockets, share, tssPubKey, true, tss);
           const serverCoeffs: Record<number, string> = {};
           for (let i = 0; i < participatingServerDKGIndexes.length; i += 1) {
             const serverIndex = participatingServerDKGIndexes[i];
