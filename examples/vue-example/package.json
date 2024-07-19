@@ -23,7 +23,6 @@
     "@web3auth/ethereum-mpc-provider": "^8.10.2",
     "@toruslabs/vue-components": "^7.8.3",
     "@toruslabs/vue-icons": "^7.6.2",
-    "@web3auth-mpc/ethereum-provider": "^3.0.0",
     "bn.js": "^5.2.1",
     "bs58": "^6.0.0",
     "core-js": "^3.37.1",

@@ -81,7 +81,7 @@
                 pill
                 @click="enableMFA"
               >
-                Enable MFA
+                MFA
               </Button>
             </div>
             <div class="mb-4">
@@ -136,7 +136,7 @@
                 :disabled="!ethereumPrivateKeyProvider?.provider"
                 @click="addChain"
               >
-                Add Goerli
+                Add Sepolia
               </Button>
             </div>
             <div class="mb-4">
@@ -149,7 +149,7 @@
                 :disabled="!ethereumPrivateKeyProvider?.provider"
                 @click="switchChain"
               >
-                Switch to Goerli
+                Switch to Sepolia
               </Button>
             </div>
             <div class="mb-4">
@@ -192,7 +192,7 @@
           <div class="text-app-gray-500 mt-2">This demo show how to use Openlogin SDK to login and sign messages using Openlogin SDK.</div>
           <div class="grid grid-cols-2 gap-5 mt-5">
             <div class="flex items-start w-full gap-2">
-              <Toggle id="mpc" v-model="useMpc" :show-label="true" :size="'small'" :label-disabled="'Disable MPC'" :label-enabled="'Enable MPC'" />
+              <Toggle id="mpc" v-model="useMpc" :show-label="true" :size="'small'" :label-disabled="'MPC'" :label-enabled="'MPC'" />
             </div>
             <div class="flex items-start w-full gap-2">
               <Toggle
@@ -200,8 +200,8 @@
                 v-model="enableAllFactors"
                 :show-label="true"
                 :size="'small'"
-                :label-disabled="'Disable All MFA Factors'"
-                :label-enabled="'Enable All MFA Factors'"
+                :label-disabled="'All MFA Factors'"
+                :label-enabled="'All MFA Factors'"
               />
             </div>
             <div class="flex items-start w-full gap-2">
@@ -210,8 +210,8 @@
                 v-model="useWalletKey"
                 :show-label="true"
                 :size="'small'"
-                :label-disabled="'Disable Wallet Key'"
-                :label-enabled="'Enable Wallet Key'"
+                :label-disabled="'Wallet Key'"
+                :label-enabled="'Wallet Key'"
               />
             </div>
             <div class="flex items-start w-full gap-2">
@@ -220,8 +220,8 @@
                 v-model="isWhiteLabelEnabled"
                 :show-label="true"
                 :size="'small'"
-                :label-disabled="'Disable Whitelabel'"
-                :label-enabled="'Enable Whitelabel'"
+                :label-disabled="'Whitelabel'"
+                :label-enabled="'Whitelabel'"
               />
             </div>
             <div class="flex items-start w-full gap-2">
@@ -230,19 +230,12 @@
                 v-model="enableEd25519Key"
                 :show-label="true"
                 :size="'small'"
-                :label-disabled="'Disable ED25519 Key'"
-                :label-enabled="'Enable ED25519 Key'"
+                :label-disabled="'ED25519 Key'"
+                :label-enabled="'ED25519 Key'"
               />
             </div>
             <div class="flex items-start w-full gap-2">
-              <Toggle
-                id="enableMFA"
-                v-model="isEnableMFA"
-                :show-label="true"
-                :size="'small'"
-                :label-disabled="'Disable MFA'"
-                :label-enabled="'Enable MFA'"
-              />
+              <Toggle id="enableMFA" v-model="isEnableMFA" :show-label="true" :size="'small'" :label-disabled="'MFA'" :label-enabled="'MFA'" />
             </div>
 
             <div>
@@ -389,15 +382,16 @@ import {
   storageAvailable,
   SUPPORTED_KEY_CURVES,
   UX_MODE,
+  UX_MODE_TYPE,
 } from "@toruslabs/openlogin-utils";
 import { Client, getDKLSCoeff, setupSockets } from "@toruslabs/tss-client";
 import { Button, Card, Select, TextField, Toggle } from "@toruslabs/vue-components";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
-import { EthereumSigningProvider as EthMpcPrivKeyProvider } from "@web3auth-mpc/ethereum-provider";
+import { EthereumSigningProvider } from "@web3auth/ethereum-mpc-provider";
 import BN from "bn.js";
 import bs58 from "bs58";
 import { keccak256 } from "ethereum-cryptography/keccak";
-import { computed, onBeforeMount, ref } from "vue";
+import { computed, onUpdated, ref } from "vue";
 
 import { CURVE, DELIMITERS } from "./constants";
 import * as ethWeb3 from "./lib/ethWeb3";
@@ -436,7 +430,7 @@ const EMAIL_FLOW = {
 const loading = ref(false);
 const enableAllFactors = ref(false);
 const privKey = ref("");
-const ethereumPrivateKeyProvider = ref(null as EthMpcPrivKeyProvider | EthereumPrivateKeyProvider | null);
+const ethereumPrivateKeyProvider = ref(null as EthereumSigningProvider | EthereumPrivateKeyProvider | null);
 // const LOGIN_PROVIDER = ref(LOGIN_PROVIDER);
 const selectedLoginProvider = ref(LOGIN_PROVIDER.GOOGLE as LOGIN_PROVIDER_TYPE);
 const login_hint = ref("");
@@ -457,20 +451,43 @@ const enableEd25519Key = ref(false);
 const isEnableMFA = ref(false);
 const customSdkUrl = ref("");
 
-const openloginInstance = ref({} as OpenLogin);
+const openloginInstance = computed(() => {
+  const currentClientId = OPENLOGIN_PROJECT_IDS[selectedOpenloginNetwork.value];
+  const op = new OpenLogin({
+    clientId: currentClientId,
+    network: selectedOpenloginNetwork.value,
+    uxMode: selectedUxMode.value,
+    whiteLabel: isWhiteLabelEnabled.value ? { ...whitelabel, defaultLanguage: selectedLanguage.value } : undefined,
+    loginConfig,
+    useMpc: useMpc.value,
+    buildEnv: selectedBuildEnv.value,
+    sdkUrl: customSdkUrl.value,
+    mfaSettings: enableAllFactors.value
+      ? {
+          backUpShareFactor: { enable: true },
+          deviceShareFactor: { enable: true },
+          passwordFactor: { enable: true },
+          socialBackupFactor: { enable: true },
+        }
+      : undefined,
+  });
+  op.init();
+  return op;
+});
 
 const setProvider = async (_privKey: string) => {
   if (useMpc.value) {
     const { factorKey, tssPubKey, tssShareIndex, userInfo, tssShare, tssNonce, signatures } = openloginInstance.value.state;
-    ethereumPrivateKeyProvider.value = new EthMpcPrivKeyProvider({
+    ethereumPrivateKeyProvider.value = new EthereumSigningProvider({
       config: {
         chainConfig: {
           chainId: "0x1",
           rpcTarget: `https://rpc.ankr.com/eth`,
           displayName: "Mainnet",
-          blockExplorer: "https://etherscan.io/",
+          blockExplorerUrl: "https://etherscan.io/",
           ticker: "ETH",
           tickerName: "Ethereum",
+          chainNamespace: "eip155",
         },
       },
     });
@@ -549,26 +566,6 @@ const setProvider = async (_privKey: string) => {
 };
 
 const init = async () => {
-  const currentClientId = OPENLOGIN_PROJECT_IDS[selectedOpenloginNetwork.value];
-  openloginInstance.value = new OpenLogin({
-    clientId: currentClientId,
-    network: selectedOpenloginNetwork.value,
-    uxMode: selectedUxMode.value,
-    whiteLabel: isWhiteLabelEnabled.value ? { ...whitelabel, defaultLanguage: selectedLanguage.value } : undefined,
-    loginConfig,
-    useMpc: useMpc.value,
-    buildEnv: selectedBuildEnv.value,
-    sdkUrl: customSdkUrl.value,
-    mfaSettings: enableAllFactors.value
-      ? {
-          backUpShareFactor: { enable: true },
-          deviceShareFactor: { enable: true },
-          passwordFactor: { enable: true },
-          socialBackupFactor: { enable: true },
-        }
-      : undefined,
-  });
-  openloginInstance.value?.init();
   if (storageAvailable("sessionStorage")) {
     const data = sessionStorage.getItem("state");
     if (data) {
@@ -654,7 +651,7 @@ const isLoginHintAvailable = computed(() => {
 });
 
 const isLongLines = computed(() =>
-  ([LOGIN_PROVIDER.EMAIL_PASSWORDLESS, LOGIN_PROVIDER.SMS_PASSWORDLESS] as LOGIN_PROVIDER_TYPE[]).includes(selectedLoginProvider.value)
+  ([LOGIN_PROVIDER.EMAIL_PASSWORDLESS, LOGIN_PROVIDER.SMS_PASSWORDLESS] as LOGIN_PROVIDER_TYPE[]).includes(selectedLoginProvider.value),
 );
 
 const login = async () => {
@@ -800,7 +797,7 @@ const switchChain = async () => {
   try {
     await ethereumPrivateKeyProvider.value.provider.sendAsync({
       method: "wallet_switchEthereumChain",
-      params: [{ chainId: "0x5" }],
+      params: [{ chainId: "0xaa36a7" }],
     });
     printToConsole("Switched Chain", { ...ethereumPrivateKeyProvider.value.state, ...ethereumPrivateKeyProvider.value.config });
   } catch (error) {
@@ -816,15 +813,15 @@ const addChain = async () => {
       method: "wallet_addEthereumChain",
       params: [
         {
-          chainId: "0x5",
-          chainName: "goerli",
+          chainId: "0xaa36a7",
+          chainName: "sepolia",
           nativeCurrency: {
             name: "ether",
             symbol: "ETH",
             decimals: 18,
           },
-          rpcUrls: ["https://rpc.ankr.com/eth_goerli"],
-          blockExplorerUrls: [`https://goerli.etherscan.io/`],
+          rpcUrls: ["https://rpc.ankr.com/eth_sepolia"],
+          blockExplorerUrls: [`https://sepolia.etherscan.io/`],
         },
       ],
     });
@@ -860,7 +857,7 @@ const clearConsole = () => {
   }
 };
 
-onBeforeMount(() => {
+onUpdated(() => {
   const data = {
     loading: loading.value,
     enableAllFactors: enableAllFactors.value,
