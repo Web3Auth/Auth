@@ -134,6 +134,14 @@
               <div class="leading-tight text-xl font-extrabold">Whitelabel Setting</div>
               <div class="text-app-gray-500 mt-2">Customize the look and feel of the Openlogin modal.</div>
               <div class="mt-3">
+                <TextField v-model="whitelabelConfig.appName" class="mt-3" label="Enter App Name" aria-label="Enter App Name"
+                  placeholder="Enter App Name" />
+              </div>
+              <div class="mt-3">
+                <TextField v-model="whitelabelConfig.appUrl" class="mt-3" label="Enter App URL"
+                  aria-label="Enter App URL" placeholder="Enter App URL" />
+              </div>
+              <div class="mt-3">
                 <Select v-model="selectedLanguage" class="mt-3" label="Select Language*" aria-label="Select Language*"
                   placeholder="Select Language" :options="Object.values(languages)"
                   :helper-text="`Selected Language: ${selectedLanguage}`" :error="!selectedLanguage" />
@@ -209,11 +217,6 @@
               <Select v-model="selectedUxMode" class="mt-3" label="Select UX Mode*" aria-label="Select UX Mode*"
                 placeholder="Select UX Mode" :options="Object.values(UX_MODE).map((x) => ({ name: x, value: x }))"
                 :helper-text="`Selected UX Mode: ${selectedUxMode}`" :error="!selectedUxMode" />
-            </div>
-            <div>
-              <Select v-if="isWhiteLabelEnabled" v-model="selectedLanguage" class="mt-3" label="Select Language*"
-                aria-label="Select Language*" placeholder="Select Language" :options="Object.values(languages)"
-                :helper-text="`Selected Language: ${selectedLanguage}`" :error="!selectedLanguage" />
             </div>
             <div>
               <Select v-model="selectedLoginProvider" class="mt-3" label="Select Login Provider*"
