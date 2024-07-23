@@ -887,7 +887,7 @@ const signMessage = async () => {
 
 const signMpcMessage = async () => {
   if (!ethereumPrivateKeyProvider.value?.provider) throw new Error("provider not set");
-  const signedMessage = await ethWeb3.ethSignTypedMessage(ethereumPrivateKeyProvider.value.provider);
+  const signedMessage = await ethWeb3.ethSignMpcMessage(ethereumPrivateKeyProvider.value.provider);
   printToConsole("Signed Message", signedMessage);
 };
 
