@@ -191,15 +191,15 @@
                 :helper-text="`Selected Build Env: ${selectedBuildEnv}`" :error="!selectedBuildEnv" />
             </div>
             <div>
-              <Select v-model="whitelabelConfig.mfaLevel" class="mt-3" label="Select MFA level" aria-label="Select MFA level"
+              <Select v-model="selectedMfaLevel" class="mt-3" label="Select MFA level" aria-label="Select MFA level"
                 placeholder="Select MFA level" :options="Object.values(MFA_LEVELS).map((x) => ({ name: x, value: x }))"
-                :helper-text="`Selected MFA Level: ${whitelabelConfig.mfaLevel}`" />
+                :helper-text="`Selected MFA Level: ${selectedMfaLevel}`" />
             </div>
             <div>
-              <Select v-model="whitelabelConfig.curve" class="mt-3" label="Select Curve Type" aria-label="Select Curve Type"
+              <Select v-model="selectedCurve" class="mt-3" label="Select Curve Type" aria-label="Select Curve Type"
                 placeholder="Select Curve Type"
                 :options="Object.values(SUPPORTED_KEY_CURVES).map((x) => ({ name: x, value: x }))"
-                :helper-text="`Selected Curve Type: ${whitelabelConfig.curve}`" />
+                :helper-text="`Selected Curve Type: ${selectedCurve}`" />
             </div>
 
             <div>
@@ -292,11 +292,6 @@ import whitelabel from "./lib/whitelabel";
 import { WhiteLabelData } from "@toruslabs/openlogin-utils";
 import { generateTSSEndpoints, getTSSEndpoints } from "./utils";
 
-type WhitelabelConfig  = Partial<WhiteLabelData> & {
-  mfaLevel?: MfaLevelType;
-  curve?: SUPPORTED_KEY_CURVES_TYPE;
-}
-
 const OPENLOGIN_PROJECT_IDS: Record<OPENLOGIN_NETWORK_TYPE, string> = {
   [OPENLOGIN_NETWORK.MAINNET]: "BJRZ6qdDTbj6Vd5YXvV994TYCqY42-PxldCetmvGTUdoq6pkCqdpuC1DIehz76zuYdaq1RJkXGHuDraHRhCQHvA",
   [OPENLOGIN_NETWORK.TESTNET]: "BHr_dKcxC0ecKn_2dZQmQeNdjPgWykMkcodEHkVvPMo71qzOV6SgtoN8KCvFdLN7bf34JOm89vWQMLFmSfIo84A",
@@ -339,7 +334,9 @@ const useWalletKey = ref(false);
 const selectedBuildEnv = ref(BUILD_ENV.PRODUCTION);
 const emailFlowType = ref(EMAIL_FLOW.code);
 const customSdkUrl = ref("");
-const whitelabelConfig = ref(whitelabel as WhitelabelConfig)
+const whitelabelConfig = ref(whitelabel as WhiteLabelData)
+const selectedMfaLevel = ref(MFA_LEVELS.NONE as MfaLevelType);
+const selectedCurve = ref(SUPPORTED_KEY_CURVES.ED25519 as SUPPORTED_KEY_CURVES_TYPE);
 
 const openloginInstance = computed(() => {
   const currentClientId = OPENLOGIN_PROJECT_IDS[selectedOpenloginNetwork.value];
@@ -473,6 +470,8 @@ const init = async () => {
       selectedBuildEnv.value = state.selectedBuildEnv;
       emailFlowType.value = state.emailFlowType;
       whitelabelConfig.value = state.whitelabelConfig;
+      selectedCurve.value = state.selectedCurve;
+      selectedMfaLevel.value = state.selectedMfaLevel;
       customSdkUrl.value = state.customSdkUrl;
     }
   }
@@ -562,11 +561,10 @@ const login = async () => {
     // in popup mode (with third party cookies available) or if user is already logged in this function will
     // return priv key , in redirect mode or if third party cookies are blocked then priv key be injected to
     // sdk instance after calling init on redirect url page.
-    const { curve, mfaLevel } = whitelabelConfig.value;
     const openLoginObj: LoginParams = {
-      curve,
+      curve: selectedCurve.value,
       loginProvider: selectedLoginProvider.value,
-      mfaLevel,
+      mfaLevel: selectedMfaLevel.value,
       getWalletKey: useWalletKey.value,
       // pass empty string '' as loginProvider to open default torus modal
       // with all default supported login providers or you can pass specific
@@ -761,6 +759,9 @@ onUpdated(() => {
     selectedBuildEnv: selectedBuildEnv.value,
     emailFlowType: emailFlowType.value,
     customSdkUrl: customSdkUrl.value,
+    whitelabelConfig: whitelabelConfig.value,
+    selectedMfaLevel: selectedMfaLevel.value,
+    selectedCurve: selectedCurve.value,
   };
   Reflect.deleteProperty(data, "privKey");
   if (storageAvailable("sessionStorage")) sessionStorage.setItem("state", JSON.stringify(data));
