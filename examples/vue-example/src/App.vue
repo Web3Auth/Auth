@@ -186,11 +186,11 @@
         </div>
       </div>
       <div v-else class="grid grid-cols-8 gap-0">
-        <div class="col-span-2"></div>
-        <Card class="h-auto px-12 py-16 col-span-4">
+        <div class="col-span-0 sm:col-span-1 lg:col-span-2"></div>
+        <Card class="h-auto px-12 py-16 col-span-8 sm:col-span-6 lg:col-span-4">
           <div class="leading-tight text-2xl font-extrabold">Login in with Openlogin</div>
           <div class="text-app-gray-500 mt-2">This demo show how to use Openlogin SDK to login and sign messages using Openlogin SDK.</div>
-          <div class="grid grid-cols-2 gap-5 mt-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-5">
             <div class="flex items-start w-full gap-2">
               <Toggle id="mpc" v-model="useMpc" :show-label="true" :size="'small'" :label-disabled="'MPC'" :label-enabled="'MPC'" />
             </div>
@@ -224,20 +224,121 @@
                 :label-enabled="'Whitelabel'"
               />
             </div>
-            <div class="flex items-start w-full gap-2">
-              <Toggle
-                id="curveType"
-                v-model="enableEd25519Key"
-                :show-label="true"
-                :size="'small'"
-                :label-disabled="'ED25519 Key'"
-                :label-enabled="'ED25519 Key'"
-              />
-            </div>
-            <div class="flex items-start w-full gap-2">
-              <Toggle id="enableMFA" v-model="isEnableMFA" :show-label="true" :size="'small'" :label-disabled="'MFA'" :label-enabled="'MFA'" />
-            </div>
-
+            <Card
+              v-if="isWhiteLabelEnabled"
+              :shadow="false"
+              :border="isWhiteLabelEnabled"
+              class="col-span-1 sm:col-span-2 grid grid-cols-1 h-auto px-4 py-4"
+            >
+              <div class="leading-tight text-xl font-extrabold">Whitelabel Setting</div>
+              <div class="text-app-gray-500 mt-2">Customize the look and feel of the Openlogin modal.</div>
+              <div class="mt-3">
+                <TextField
+                  v-model="whitelabelConfig.appName"
+                  class="mt-3"
+                  label="Enter App Name"
+                  aria-label="Enter App Name"
+                  placeholder="Enter App Name"
+                />
+              </div>
+              <div class="mt-3">
+                <TextField
+                  v-model="whitelabelConfig.appUrl"
+                  class="mt-3"
+                  label="Enter App URL"
+                  aria-label="Enter App URL"
+                  placeholder="Enter App URL"
+                />
+              </div>
+              <div class="mt-3">
+                <Select
+                  v-model="whitelabelConfig.defaultLanguage"
+                  class="mt-3"
+                  label="Select Language*"
+                  aria-label="Select Language*"
+                  placeholder="Select Language"
+                  :options="Object.values(languages)"
+                  :helper-text="`Selected Language: ${whitelabelConfig.defaultLanguage}`"
+                  :error="!whitelabelConfig.defaultLanguage"
+                />
+              </div>
+              <div class="mt-3">
+                <TextField
+                  v-model="whitelabelConfig.logoLight"
+                  class="mt-3"
+                  label="Enter logo url"
+                  aria-label="Enter logo url"
+                  placeholder="Enter logo url"
+                />
+              </div>
+              <div class="mt-3">
+                <TextField
+                  v-model="whitelabelConfig.logoDark"
+                  class="mt-3"
+                  label="Enter dark logo url"
+                  aria-label="Enter dark logo url"
+                  placeholder="Enter dark logo url"
+                />
+              </div>
+              <div class="mt-3">
+                <Toggle
+                  id="useLogoLoader"
+                  v-model="whitelabelConfig.useLogoLoader"
+                  :show-label="true"
+                  :size="'small'"
+                  :label-disabled="'Use Logo Loader'"
+                  :label-enabled="'Use Logo Loader'"
+                />
+              </div>
+              <div class="mt-3">
+                <TextField
+                  :model-value="whitelabelConfig.theme?.primary"
+                  class="mt-3"
+                  label="Enter primary color"
+                  aria-label="Enter primary color"
+                  placeholder="Enter primary color"
+                >
+                  <template #endIconSlot>
+                    <input
+                      id="primary-color-picker"
+                      class="color-picker"
+                      type="color"
+                      :value="whitelabelConfig.theme?.primary"
+                      @input="
+                        (e) => {
+                          const color = (e.target as InputHTMLAttributes).value;
+                          whitelabelConfig.theme = { ...whitelabelConfig.theme, primary: color };
+                        }
+                      "
+                    />
+                  </template>
+                </TextField>
+              </div>
+              <div class="mt-3">
+                <TextField
+                  :model-value="whitelabelConfig.theme?.onPrimary"
+                  class="mt-3"
+                  label="Enter primary color"
+                  aria-label="Enter primary color"
+                  placeholder="Enter primary color"
+                >
+                  <template #endIconSlot>
+                    <input
+                      id="primary-color-picker"
+                      class="color-picker"
+                      type="color"
+                      :value="whitelabelConfig.theme?.onPrimary"
+                      @input="
+                        (e) => {
+                          const color = (e.target as InputHTMLAttributes).value;
+                          whitelabelConfig.theme = { ...whitelabelConfig.theme, onPrimary: color };
+                        }
+                      "
+                    />
+                  </template>
+                </TextField>
+              </div>
+            </Card>
             <div>
               <Select
                 v-model="selectedBuildEnv"
@@ -248,6 +349,28 @@
                 :options="Object.values(BUILD_ENV).map((x) => ({ name: x, value: x }))"
                 :helper-text="`Selected Build Env: ${selectedBuildEnv}`"
                 :error="!selectedBuildEnv"
+              />
+            </div>
+            <div>
+              <Select
+                v-model="selectedMfaLevel"
+                class="mt-3"
+                label="Select MFA level"
+                aria-label="Select MFA level"
+                placeholder="Select MFA level"
+                :options="Object.values(MFA_LEVELS).map((x) => ({ name: x, value: x }))"
+                :helper-text="`Selected MFA Level: ${selectedMfaLevel}`"
+              />
+            </div>
+            <div>
+              <Select
+                v-model="selectedCurve"
+                class="mt-3"
+                label="Select Curve Type"
+                aria-label="Select Curve Type"
+                placeholder="Select Curve Type"
+                :options="Object.values(SUPPORTED_KEY_CURVES).map((x) => ({ name: x, value: x }))"
+                :helper-text="`Selected Curve Type: ${selectedCurve}`"
               />
             </div>
 
@@ -283,19 +406,6 @@
                 :options="Object.values(UX_MODE).map((x) => ({ name: x, value: x }))"
                 :helper-text="`Selected UX Mode: ${selectedUxMode}`"
                 :error="!selectedUxMode"
-              />
-            </div>
-            <div>
-              <Select
-                v-if="isWhiteLabelEnabled"
-                v-model="selectedLanguage"
-                class="mt-3"
-                label="Select Language*"
-                aria-label="Select Language*"
-                placeholder="Select Language"
-                :options="Object.values(LANGUAGE).map((x) => ({ name: x, value: x }))"
-                :helper-text="`Selected Language: ${selectedLanguage}`"
-                :error="!selectedLanguage"
               />
             </div>
             <div>
@@ -360,7 +470,7 @@
             </Button>
           </div>
         </Card>
-        <div class="col-span-2"></div>
+        <div class="col-span-0 sm:col-span-1 lg:col-span-2"></div>
       </div>
     </div>
   </main>
@@ -373,25 +483,31 @@ import OpenLogin from "@toruslabs/openlogin";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import {
   BUILD_ENV,
+  BUILD_ENV_TYPE,
   LANGUAGE_TYPE,
+  LANGUAGES,
   LOGIN_PROVIDER,
   LOGIN_PROVIDER_TYPE,
   LoginParams,
+  MFA_LEVELS,
+  MfaLevelType,
   OPENLOGIN_NETWORK,
   OPENLOGIN_NETWORK_TYPE,
   storageAvailable,
   SUPPORTED_KEY_CURVES,
+  SUPPORTED_KEY_CURVES_TYPE,
   UX_MODE,
   UX_MODE_TYPE,
+  WhiteLabelData,
 } from "@toruslabs/openlogin-utils";
 import { Client, getDKLSCoeff, setupSockets } from "@toruslabs/tss-client";
 import { Button, Card, Select, TextField, Toggle } from "@toruslabs/vue-components";
-import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { EthereumSigningProvider } from "@web3auth/ethereum-mpc-provider";
+import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import BN from "bn.js";
 import bs58 from "bs58";
 import { keccak256 } from "ethereum-cryptography/keccak";
-import { computed, onUpdated, ref } from "vue";
+import { computed, InputHTMLAttributes, ref, watchEffect } from "vue";
 
 import { CURVE, DELIMITERS } from "./constants";
 import * as ethWeb3 from "./lib/ethWeb3";
@@ -409,47 +525,43 @@ const OPENLOGIN_PROJECT_IDS: Record<OPENLOGIN_NETWORK_TYPE, string> = {
   [OPENLOGIN_NETWORK.CELESTE]: "openlogin",
 };
 
-const LANGUAGE: Record<LANGUAGE_TYPE, string> = {
-  en: "en",
-  de: "de",
-  ja: "ja",
-  ko: "ko",
-  zh: "zh",
-  es: "es",
-  fr: "fr",
-  pt: "pt",
-  tr: "tr",
-  nl: "nl",
-};
+const languages: { name: string; value: LANGUAGE_TYPE }[] = [
+  { name: "English", value: LANGUAGES.en },
+  { name: "German", value: LANGUAGES.de },
+  { name: "Japanese", value: LANGUAGES.ja },
+  { name: "Korean", value: LANGUAGES.ko },
+  { name: "Mandarin", value: LANGUAGES.zh },
+  { name: "Spanish", value: LANGUAGES.es },
+  { name: "French", value: LANGUAGES.fr },
+  { name: "Portuguese", value: LANGUAGES.pt },
+  { name: "Dutch", value: LANGUAGES.nl },
+  { name: "Turkish", value: LANGUAGES.tr },
+];
 
 const EMAIL_FLOW = {
   link: "link",
   code: "code",
-};
+} as const;
+
+type EMAIL_FLOW_TYPE = (typeof EMAIL_FLOW)[keyof typeof EMAIL_FLOW];
 
 const loading = ref(false);
 const enableAllFactors = ref(false);
 const privKey = ref("");
-const ethereumPrivateKeyProvider = ref(null as EthereumSigningProvider | EthereumPrivateKeyProvider | null);
-// const LOGIN_PROVIDER = ref(LOGIN_PROVIDER);
-const selectedLoginProvider = ref(LOGIN_PROVIDER.GOOGLE as LOGIN_PROVIDER_TYPE);
+const ethereumPrivateKeyProvider = ref<EthereumSigningProvider | EthereumPrivateKeyProvider | null>(null);
+const selectedLoginProvider = ref<LOGIN_PROVIDER_TYPE>(LOGIN_PROVIDER.GOOGLE);
 const login_hint = ref("");
 const isWhiteLabelEnabled = ref(false);
-// const UX_MODE = ref(UX_MODE);
-const selectedUxMode = ref(UX_MODE.REDIRECT as UX_MODE_TYPE);
-const selectedLanguage = ref(LANGUAGE.en as LANGUAGE_TYPE);
-// const LANGUAGE = ref(LANGUAGE);
-// const OPENLOGIN_NETWORK = ref(OPENLOGIN_NETWORK);
-// const BUILD_ENV = ref(BUILD_ENV);
-const selectedOpenloginNetwork = ref(OPENLOGIN_NETWORK.SAPPHIRE_DEVNET);
+const selectedUxMode = ref<UX_MODE_TYPE>(UX_MODE.REDIRECT);
+const selectedOpenloginNetwork = ref<OPENLOGIN_NETWORK_TYPE>(OPENLOGIN_NETWORK.SAPPHIRE_DEVNET);
 const useMpc = ref(false);
 const useWalletKey = ref(false);
-const selectedBuildEnv = ref(BUILD_ENV.PRODUCTION);
-const emailFlowType = ref(EMAIL_FLOW.code);
-// const EMAIL_FLOW = ref(EMAIL_FLOW);
-const enableEd25519Key = ref(false);
-const isEnableMFA = ref(false);
+const selectedBuildEnv = ref<BUILD_ENV_TYPE>(BUILD_ENV.PRODUCTION);
+const emailFlowType = ref<EMAIL_FLOW_TYPE>(EMAIL_FLOW.code);
 const customSdkUrl = ref("");
+const whitelabelConfig = ref<WhiteLabelData>(whitelabel);
+const selectedMfaLevel = ref<MfaLevelType>(MFA_LEVELS.NONE);
+const selectedCurve = ref<SUPPORTED_KEY_CURVES_TYPE>(SUPPORTED_KEY_CURVES.ED25519);
 
 const openloginInstance = computed(() => {
   const currentClientId = OPENLOGIN_PROJECT_IDS[selectedOpenloginNetwork.value];
@@ -457,7 +569,7 @@ const openloginInstance = computed(() => {
     clientId: currentClientId,
     network: selectedOpenloginNetwork.value,
     uxMode: selectedUxMode.value,
-    whiteLabel: isWhiteLabelEnabled.value ? { ...whitelabel, defaultLanguage: selectedLanguage.value } : undefined,
+    whiteLabel: isWhiteLabelEnabled.value ? (whitelabelConfig as WhiteLabelData) : undefined,
     loginConfig,
     useMpc: useMpc.value,
     buildEnv: selectedBuildEnv.value,
@@ -572,25 +684,24 @@ const init = async () => {
       const state = JSON.parse(data);
       loading.value = state.loading;
       enableAllFactors.value = state.enableAllFactors;
-      privKey.value = state.privKey;
       selectedLoginProvider.value = state.selectedLoginProvider;
       login_hint.value = state.login_hint;
       isWhiteLabelEnabled.value = state.isWhiteLabelEnabled;
       selectedUxMode.value = state.selectedUxMode;
-      selectedLanguage.value = state.selectedLanguage;
       selectedOpenloginNetwork.value = state.selectedOpenloginNetwork;
       useMpc.value = state.useMpc;
       useWalletKey.value = state.useWalletKey;
       selectedBuildEnv.value = state.selectedBuildEnv;
       emailFlowType.value = state.emailFlowType;
-      enableEd25519Key.value = state.enableEd25519Key;
-      isEnableMFA.value = state.isEnableMFA;
+      whitelabelConfig.value = state.whitelabelConfig;
+      selectedCurve.value = state.selectedCurve;
+      selectedMfaLevel.value = state.selectedMfaLevel;
       customSdkUrl.value = state.customSdkUrl;
     }
   }
 
   openloginInstance.value.options.uxMode = selectedUxMode.value;
-  openloginInstance.value.options.whiteLabel = isWhiteLabelEnabled.value ? { ...whitelabel, defaultLanguage: selectedLanguage.value } : {};
+  openloginInstance.value.options.whiteLabel = isWhiteLabelEnabled.value ? whitelabelConfig.value : undefined;
   openloginInstance.value.options.mfaSettings = enableAllFactors.value
     ? {
         backUpShareFactor: { enable: true },
@@ -662,7 +773,7 @@ const login = async () => {
       return;
     }
     openloginInstance.value.options.uxMode = selectedUxMode.value;
-    openloginInstance.value.options.whiteLabel = isWhiteLabelEnabled.value ? { ...whitelabel, defaultLanguage: selectedLanguage.value } : {};
+    openloginInstance.value.options.whiteLabel = isWhiteLabelEnabled.value ? whitelabelConfig.value : undefined;
     openloginInstance.value.options.mfaSettings = enableAllFactors.value
       ? {
           backUpShareFactor: { enable: true },
@@ -675,9 +786,9 @@ const login = async () => {
     // return priv key , in redirect mode or if third party cookies are blocked then priv key be injected to
     // sdk instance after calling init on redirect url page.
     const openLoginObj: LoginParams = {
-      curve: enableEd25519Key.value ? SUPPORTED_KEY_CURVES.ED25519 : SUPPORTED_KEY_CURVES.SECP256K1,
+      curve: selectedCurve.value,
       loginProvider: selectedLoginProvider.value,
-      mfaLevel: isEnableMFA.value ? "optional" : "none",
+      mfaLevel: selectedMfaLevel.value,
       getWalletKey: useWalletKey.value,
       // pass empty string '' as loginProvider to open default torus modal
       // with all default supported login providers or you can pass specific
@@ -776,7 +887,7 @@ const signMessage = async () => {
 
 const signMpcMessage = async () => {
   if (!ethereumPrivateKeyProvider.value?.provider) throw new Error("provider not set");
-  const signedMessage = await ethWeb3.ethSignTypedMessage(ethereumPrivateKeyProvider.value.provider);
+  const signedMessage = await ethWeb3.ethSignMpcMessage(ethereumPrivateKeyProvider.value.provider);
   printToConsole("Signed Message", signedMessage);
 };
 
@@ -857,26 +968,24 @@ const clearConsole = () => {
   }
 };
 
-onUpdated(() => {
+watchEffect(() => {
   const data = {
     loading: loading.value,
     enableAllFactors: enableAllFactors.value,
-    privKey: privKey.value,
     selectedLoginProvider: selectedLoginProvider.value,
     login_hint: login_hint.value,
     isWhiteLabelEnabled: isWhiteLabelEnabled.value,
     selectedUxMode: selectedUxMode.value,
-    selectedLanguage: selectedLanguage.value,
     selectedOpenloginNetwork: selectedOpenloginNetwork.value,
     useMpc: useMpc.value,
     useWalletKey: useWalletKey.value,
     selectedBuildEnv: selectedBuildEnv.value,
     emailFlowType: emailFlowType.value,
-    enableEd25519Key: enableEd25519Key.value,
-    isEnableMFA: isEnableMFA.value,
     customSdkUrl: customSdkUrl.value,
+    whitelabelConfig: { ...whitelabelConfig.value },
+    selectedMfaLevel: selectedMfaLevel.value,
+    selectedCurve: selectedCurve.value,
   };
-  Reflect.deleteProperty(data, "privKey");
   if (storageAvailable("sessionStorage")) sessionStorage.setItem("state", JSON.stringify(data));
 });
 </script>
