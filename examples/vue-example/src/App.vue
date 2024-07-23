@@ -506,7 +506,7 @@ import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import BN from "bn.js";
 import bs58 from "bs58";
 import { keccak256 } from "ethereum-cryptography/keccak";
-import { computed, InputHTMLAttributes, onUpdated, ref } from "vue";
+import { computed, InputHTMLAttributes, ref, watchEffect } from "vue";
 
 import { CURVE, DELIMITERS } from "./constants";
 import * as ethWeb3 from "./lib/ethWeb3";
@@ -966,7 +966,7 @@ const clearConsole = () => {
   }
 };
 
-onUpdated(() => {
+watchEffect(() => {
   const data = {
     loading: loading.value,
     enableAllFactors: enableAllFactors.value,
@@ -981,7 +981,7 @@ onUpdated(() => {
     selectedBuildEnv: selectedBuildEnv.value,
     emailFlowType: emailFlowType.value,
     customSdkUrl: customSdkUrl.value,
-    whitelabelConfig: whitelabelConfig.value,
+    whitelabelConfig: { ...whitelabelConfig.value },
     selectedMfaLevel: selectedMfaLevel.value,
     selectedCurve: selectedCurve.value,
   };
