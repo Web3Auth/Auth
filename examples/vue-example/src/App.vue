@@ -142,9 +142,9 @@
                   aria-label="Enter App URL" placeholder="Enter App URL" />
               </div>
               <div class="mt-3">
-                <Select v-model="selectedLanguage" class="mt-3" label="Select Language*" aria-label="Select Language*"
+                <Select v-model="whitelabelConfig.defaultLanguage" class="mt-3" label="Select Language*" aria-label="Select Language*"
                   placeholder="Select Language" :options="Object.values(languages)"
-                  :helper-text="`Selected Language: ${selectedLanguage}`" :error="!selectedLanguage" />
+                  :helper-text="`Selected Language: ${whitelabelConfig.defaultLanguage}`" :error="!whitelabelConfig.defaultLanguage" />
               </div>
               <div class="mt-3">
                 <TextField v-model="whitelabelConfig.logoLight" class="mt-3" label="Enter logo url"
@@ -191,15 +191,15 @@
                 :helper-text="`Selected Build Env: ${selectedBuildEnv}`" :error="!selectedBuildEnv" />
             </div>
             <div>
-              <Select v-model="selectedMFALevel" class="mt-3" label="Select MFA level" aria-label="Select MFA level"
+              <Select v-model="whitelabelConfig.mfaLevel" class="mt-3" label="Select MFA level" aria-label="Select MFA level"
                 placeholder="Select MFA level" :options="Object.values(MFA_LEVELS).map((x) => ({ name: x, value: x }))"
-                :helper-text="`Selected MFA Level: ${selectedMFALevel}`" />
+                :helper-text="`Selected MFA Level: ${whitelabelConfig.mfaLevel}`" />
             </div>
             <div>
-              <Select v-model="selectedCurveType" class="mt-3" label="Select Curve Type" aria-label="Select Curve Type"
+              <Select v-model="whitelabelConfig.curve" class="mt-3" label="Select Curve Type" aria-label="Select Curve Type"
                 placeholder="Select Curve Type"
                 :options="Object.values(SUPPORTED_KEY_CURVES).map((x) => ({ name: x, value: x }))"
-                :helper-text="`Selected Curve Type: ${selectedCurveType}`" />
+                :helper-text="`Selected Curve Type: ${whitelabelConfig.curve}`" />
             </div>
 
             <div>
@@ -283,7 +283,7 @@ import { EthereumSigningProvider } from "@web3auth/ethereum-mpc-provider";
 import BN from "bn.js";
 import bs58 from "bs58";
 import { keccak256 } from "ethereum-cryptography/keccak";
-import { computed, onUpdated, ref } from "vue";
+import { computed, InputHTMLAttributes, onUpdated, ref } from "vue";
 
 import { CURVE, DELIMITERS } from "./constants";
 import * as ethWeb3 from "./lib/ethWeb3";
@@ -291,6 +291,11 @@ import loginConfig from "./lib/loginConfig";
 import whitelabel from "./lib/whitelabel";
 import { WhiteLabelData } from "@toruslabs/openlogin-utils";
 import { generateTSSEndpoints, getTSSEndpoints } from "./utils";
+
+type WhitelabelConfig  = Partial<WhiteLabelData> & {
+  mfaLevel?: MfaLevelType;
+  curve?: SUPPORTED_KEY_CURVES_TYPE;
+}
 
 const OPENLOGIN_PROJECT_IDS: Record<OPENLOGIN_NETWORK_TYPE, string> = {
   [OPENLOGIN_NETWORK.MAINNET]: "BJRZ6qdDTbj6Vd5YXvV994TYCqY42-PxldCetmvGTUdoq6pkCqdpuC1DIehz76zuYdaq1RJkXGHuDraHRhCQHvA",
@@ -324,26 +329,17 @@ const loading = ref(false);
 const enableAllFactors = ref(false);
 const privKey = ref("");
 const ethereumPrivateKeyProvider = ref(null as EthereumSigningProvider | EthereumPrivateKeyProvider | null);
-// const LOGIN_PROVIDER = ref(LOGIN_PROVIDER);
 const selectedLoginProvider = ref(LOGIN_PROVIDER.GOOGLE as LOGIN_PROVIDER_TYPE);
 const login_hint = ref("");
 const isWhiteLabelEnabled = ref(false);
-// const UX_MODE = ref(UX_MODE);
 const selectedUxMode = ref(UX_MODE.REDIRECT as UX_MODE_TYPE);
-const selectedLanguage = ref('en' as LANGUAGE_TYPE);
-// const LANGUAGE = ref(LANGUAGE);
-// const OPENLOGIN_NETWORK = ref(OPENLOGIN_NETWORK);
-// const BUILD_ENV = ref(BUILD_ENV);
 const selectedOpenloginNetwork = ref(OPENLOGIN_NETWORK.SAPPHIRE_DEVNET);
 const useMpc = ref(false);
 const useWalletKey = ref(false);
 const selectedBuildEnv = ref(BUILD_ENV.PRODUCTION);
 const emailFlowType = ref(EMAIL_FLOW.code);
-// const EMAIL_FLOW = ref(EMAIL_FLOW);
 const customSdkUrl = ref("");
-const selectedMFALevel = ref("optional" as MfaLevelType);
-const selectedCurveType = ref(SUPPORTED_KEY_CURVES.SECP256K1 as SUPPORTED_KEY_CURVES_TYPE);
-const whitelabelConfig = ref(whitelabel as WhiteLabelData)
+const whitelabelConfig = ref(whitelabel as WhitelabelConfig)
 
 const openloginInstance = computed(() => {
   const currentClientId = OPENLOGIN_PROJECT_IDS[selectedOpenloginNetwork.value];
@@ -351,7 +347,7 @@ const openloginInstance = computed(() => {
     clientId: currentClientId,
     network: selectedOpenloginNetwork.value,
     uxMode: selectedUxMode.value,
-    whiteLabel: isWhiteLabelEnabled.value ? { ...whitelabelConfig, defaultLanguage: selectedLanguage.value } : undefined,
+    whiteLabel: isWhiteLabelEnabled.value ? whitelabelConfig as WhiteLabelData : undefined,
     loginConfig,
     useMpc: useMpc.value,
     buildEnv: selectedBuildEnv.value,
@@ -471,20 +467,18 @@ const init = async () => {
       login_hint.value = state.login_hint;
       isWhiteLabelEnabled.value = state.isWhiteLabelEnabled;
       selectedUxMode.value = state.selectedUxMode;
-      selectedLanguage.value = state.selectedLanguage;
       selectedOpenloginNetwork.value = state.selectedOpenloginNetwork;
       useMpc.value = state.useMpc;
       useWalletKey.value = state.useWalletKey;
       selectedBuildEnv.value = state.selectedBuildEnv;
       emailFlowType.value = state.emailFlowType;
-      selectedMFALevel.value = state.selectedMFALevel;
-      selectedCurveType.value = state.selectedCurveType;
+      whitelabelConfig.value = state.whitelabelConfig;
       customSdkUrl.value = state.customSdkUrl;
     }
   }
 
   openloginInstance.value.options.uxMode = selectedUxMode.value;
-  openloginInstance.value.options.whiteLabel = isWhiteLabelEnabled.value ? { ...whitelabelConfig, defaultLanguage: selectedLanguage.value } : {};
+  openloginInstance.value.options.whiteLabel = isWhiteLabelEnabled.value ? whitelabel as WhiteLabelData : {};
   openloginInstance.value.options.mfaSettings = enableAllFactors.value
     ? {
       backUpShareFactor: { enable: true },
@@ -556,7 +550,7 @@ const login = async () => {
       return;
     }
     openloginInstance.value.options.uxMode = selectedUxMode.value;
-    openloginInstance.value.options.whiteLabel = isWhiteLabelEnabled.value ? { ...whitelabelConfig, defaultLanguage: selectedLanguage.value } : {};
+    openloginInstance.value.options.whiteLabel = isWhiteLabelEnabled.value ? whitelabel as WhiteLabelData : {};
     openloginInstance.value.options.mfaSettings = enableAllFactors.value
       ? {
         backUpShareFactor: { enable: true },
@@ -568,10 +562,11 @@ const login = async () => {
     // in popup mode (with third party cookies available) or if user is already logged in this function will
     // return priv key , in redirect mode or if third party cookies are blocked then priv key be injected to
     // sdk instance after calling init on redirect url page.
+    const { curve, mfaLevel } = whitelabelConfig.value;
     const openLoginObj: LoginParams = {
-      curve: selectedCurveType.value,
+      curve,
       loginProvider: selectedLoginProvider.value,
-      mfaLevel: selectedMFALevel.value,
+      mfaLevel,
       getWalletKey: useWalletKey.value,
       // pass empty string '' as loginProvider to open default torus modal
       // with all default supported login providers or you can pass specific
@@ -760,14 +755,11 @@ onUpdated(() => {
     login_hint: login_hint.value,
     isWhiteLabelEnabled: isWhiteLabelEnabled.value,
     selectedUxMode: selectedUxMode.value,
-    selectedLanguage: selectedLanguage.value,
     selectedOpenloginNetwork: selectedOpenloginNetwork.value,
     useMpc: useMpc.value,
     useWalletKey: useWalletKey.value,
     selectedBuildEnv: selectedBuildEnv.value,
     emailFlowType: emailFlowType.value,
-    selectedMFALevel: selectedMFALevel.value,
-    selectedCurveType: selectedCurveType.value,
     customSdkUrl: customSdkUrl.value,
   };
   Reflect.deleteProperty(data, "privKey");
