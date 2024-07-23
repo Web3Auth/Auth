@@ -580,6 +580,7 @@ const openloginInstance = computed(() => {
           deviceShareFactor: { enable: true },
           passwordFactor: { enable: true },
           socialBackupFactor: { enable: true },
+          authenticatorFactor: { enable: true }
         }
       : undefined,
   });
