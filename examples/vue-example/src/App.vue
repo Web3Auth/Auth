@@ -561,7 +561,7 @@ const emailFlowType = ref<EMAIL_FLOW_TYPE>(EMAIL_FLOW.code);
 const customSdkUrl = ref("");
 const whitelabelConfig = ref<WhiteLabelData>(whitelabel);
 const selectedMfaLevel = ref<MfaLevelType>(MFA_LEVELS.NONE);
-const selectedCurve = ref<SUPPORTED_KEY_CURVES_TYPE>(SUPPORTED_KEY_CURVES.ED25519);
+const selectedCurve = ref<SUPPORTED_KEY_CURVES_TYPE>(SUPPORTED_KEY_CURVES.SECP256K1);
 
 const openloginInstance = computed(() => {
   const currentClientId = OPENLOGIN_PROJECT_IDS[selectedOpenloginNetwork.value];
