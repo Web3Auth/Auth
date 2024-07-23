@@ -483,6 +483,7 @@ import OpenLogin from "@toruslabs/openlogin";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import {
   BUILD_ENV,
+  BUILD_ENV_TYPE,
   LANGUAGE_TYPE,
   LANGUAGES,
   LOGIN_PROVIDER,
@@ -540,25 +541,27 @@ const languages: { name: string; value: LANGUAGE_TYPE }[] = [
 const EMAIL_FLOW = {
   link: "link",
   code: "code",
-};
+} as const;
+
+type EMAIL_FLOW_TYPE = (typeof EMAIL_FLOW)[keyof typeof EMAIL_FLOW];
 
 const loading = ref(false);
 const enableAllFactors = ref(false);
 const privKey = ref("");
-const ethereumPrivateKeyProvider = ref(null as EthereumSigningProvider | EthereumPrivateKeyProvider | null);
-const selectedLoginProvider = ref(LOGIN_PROVIDER.GOOGLE as LOGIN_PROVIDER_TYPE);
+const ethereumPrivateKeyProvider = ref<EthereumSigningProvider | EthereumPrivateKeyProvider | null>(null);
+const selectedLoginProvider = ref<LOGIN_PROVIDER_TYPE>(LOGIN_PROVIDER.GOOGLE);
 const login_hint = ref("");
 const isWhiteLabelEnabled = ref(false);
-const selectedUxMode = ref(UX_MODE.REDIRECT as UX_MODE_TYPE);
-const selectedOpenloginNetwork = ref(OPENLOGIN_NETWORK.SAPPHIRE_DEVNET);
+const selectedUxMode = ref<UX_MODE_TYPE>(UX_MODE.REDIRECT);
+const selectedOpenloginNetwork = ref<OPENLOGIN_NETWORK_TYPE>(OPENLOGIN_NETWORK.SAPPHIRE_DEVNET);
 const useMpc = ref(false);
 const useWalletKey = ref(false);
-const selectedBuildEnv = ref(BUILD_ENV.PRODUCTION);
-const emailFlowType = ref(EMAIL_FLOW.code);
+const selectedBuildEnv = ref<BUILD_ENV_TYPE>(BUILD_ENV.PRODUCTION);
+const emailFlowType = ref<EMAIL_FLOW_TYPE>(EMAIL_FLOW.code);
 const customSdkUrl = ref("");
-const whitelabelConfig = ref(whitelabel as WhiteLabelData);
-const selectedMfaLevel = ref(MFA_LEVELS.NONE as MfaLevelType);
-const selectedCurve = ref(SUPPORTED_KEY_CURVES.ED25519 as SUPPORTED_KEY_CURVES_TYPE);
+const whitelabelConfig = ref<WhiteLabelData>(whitelabel);
+const selectedMfaLevel = ref<MfaLevelType>(MFA_LEVELS.NONE);
+const selectedCurve = ref<SUPPORTED_KEY_CURVES_TYPE>(SUPPORTED_KEY_CURVES.ED25519);
 
 const openloginInstance = computed(() => {
   const currentClientId = OPENLOGIN_PROJECT_IDS[selectedOpenloginNetwork.value];
@@ -681,7 +684,6 @@ const init = async () => {
       const state = JSON.parse(data);
       loading.value = state.loading;
       enableAllFactors.value = state.enableAllFactors;
-      privKey.value = state.privKey;
       selectedLoginProvider.value = state.selectedLoginProvider;
       login_hint.value = state.login_hint;
       isWhiteLabelEnabled.value = state.isWhiteLabelEnabled;
@@ -699,7 +701,7 @@ const init = async () => {
   }
 
   openloginInstance.value.options.uxMode = selectedUxMode.value;
-  openloginInstance.value.options.whiteLabel = isWhiteLabelEnabled.value ? (whitelabel as WhiteLabelData) : {};
+  openloginInstance.value.options.whiteLabel = isWhiteLabelEnabled.value ? whitelabelConfig.value : undefined;
   openloginInstance.value.options.mfaSettings = enableAllFactors.value
     ? {
         backUpShareFactor: { enable: true },
@@ -760,7 +762,7 @@ const isLoginHintAvailable = computed(() => {
 });
 
 const isLongLines = computed(() =>
-  ([LOGIN_PROVIDER.EMAIL_PASSWORDLESS, LOGIN_PROVIDER.SMS_PASSWORDLESS] as LOGIN_PROVIDER_TYPE[]).includes(selectedLoginProvider.value)
+  ([LOGIN_PROVIDER.EMAIL_PASSWORDLESS, LOGIN_PROVIDER.SMS_PASSWORDLESS] as LOGIN_PROVIDER_TYPE[]).includes(selectedLoginProvider.value),
 );
 
 const login = async () => {
@@ -771,7 +773,7 @@ const login = async () => {
       return;
     }
     openloginInstance.value.options.uxMode = selectedUxMode.value;
-    openloginInstance.value.options.whiteLabel = isWhiteLabelEnabled.value ? (whitelabel as WhiteLabelData) : {};
+    openloginInstance.value.options.whiteLabel = isWhiteLabelEnabled.value ? whitelabelConfig.value : undefined;
     openloginInstance.value.options.mfaSettings = enableAllFactors.value
       ? {
           backUpShareFactor: { enable: true },
@@ -970,7 +972,6 @@ watchEffect(() => {
   const data = {
     loading: loading.value,
     enableAllFactors: enableAllFactors.value,
-    privKey: privKey.value,
     selectedLoginProvider: selectedLoginProvider.value,
     login_hint: login_hint.value,
     isWhiteLabelEnabled: isWhiteLabelEnabled.value,
@@ -985,7 +986,6 @@ watchEffect(() => {
     selectedMfaLevel: selectedMfaLevel.value,
     selectedCurve: selectedCurve.value,
   };
-  Reflect.deleteProperty(data, "privKey");
   if (storageAvailable("sessionStorage")) sessionStorage.setItem("state", JSON.stringify(data));
 });
 </script>
