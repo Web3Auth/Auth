@@ -121,10 +121,21 @@
               <Toggle id="whitelabel" v-model="isWhiteLabelEnabled" :show-label="true" :size="'small'"
                 :label-disabled="'Whitelabel'" :label-enabled="'Whitelabel'" />
             </div>
+            <div>
+              <Select v-model="selectedBuildEnv" class="mt-3" label="Select Build Env*" aria-label="Select Build Env*"
+                placeholder="Select Build Env" :options="Object.values(BUILD_ENV).map((x) => ({ name: x, value: x }))"
+                :helper-text="`Selected Build Env: ${selectedBuildEnv}`" :error="!selectedBuildEnv" />
+            </div>
             <div class="flex items-start w-full gap-2">
               <Select v-model="selectedMFAFactors" class="mt-3" label="Select MFA Factors"
                 aria-label="Select MFA Factor" placeholder="Select MFA Factor" :multiple="true" :show-check-box="true"
-                :options="Object.entries(MFA_FACTOR).map(([k, v]) => ({ name: k, value: v }))" />
+                :options="Object.entries(MFA_FACTOR).map(([k, v]) => ({ name: k, value: v }))" 
+                />
+            </div>
+            <div class="flex items-start w-full gap-2">
+              <Select v-model="selectedMandatoryMFAFactors" class="mt-3" label="Select Mandatory MFA Factors"
+                aria-label="Select Mandatory MFA Factor" placeholder="Select Mandatory MFA Factor" :multiple="true" :show-check-box="true"
+                :options="Object.entries(MFA_FACTOR).filter(([_,v]) => selectedMFAFactors.includes(v as MFA_FACTOR_TYPE)).map(([k, v]) => ({ name: k, value: v }))" />
             </div>
             <Card v-if="isWhiteLabelEnabled" :shadow="false" :border="isWhiteLabelEnabled"
               class="col-span-1 sm:col-span-2 grid grid-cols-1 h-auto px-4 py-4">
@@ -183,11 +194,7 @@
                 </TextField>
               </div>
             </Card>
-            <div>
-              <Select v-model="selectedBuildEnv" class="mt-3" label="Select Build Env*" aria-label="Select Build Env*"
-                placeholder="Select Build Env" :options="Object.values(BUILD_ENV).map((x) => ({ name: x, value: x }))"
-                :helper-text="`Selected Build Env: ${selectedBuildEnv}`" :error="!selectedBuildEnv" />
-            </div>
+            
             <div>
               <Select v-model="selectedMfaLevel" class="mt-3" label="Select MFA level" aria-label="Select MFA level"
                 placeholder="Select MFA level" :options="Object.values(MFA_LEVELS).map((x) => ({ name: x, value: x }))"
@@ -287,7 +294,7 @@ import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import BN from "bn.js";
 import bs58 from "bs58";
 import { keccak256 } from "ethereum-cryptography/keccak";
-import { computed, InputHTMLAttributes, ref, watchEffect } from "vue";
+import { computed, InputHTMLAttributes, ref, watch, watchEffect } from "vue";
 
 import { CURVE, DELIMITERS } from "./constants";
 import * as ethWeb3 from "./lib/ethWeb3";
@@ -342,6 +349,7 @@ const whitelabelConfig = ref<WhiteLabelData>(whitelabel);
 const selectedMfaLevel = ref<MfaLevelType>(MFA_LEVELS.NONE);
 const selectedCurve = ref<SUPPORTED_KEY_CURVES_TYPE>(SUPPORTED_KEY_CURVES.SECP256K1);
 const selectedMFAFactors = ref<MFA_FACTOR_TYPE[]>([]);
+const selectedMandatoryMFAFactors = ref<MFA_FACTOR_TYPE[]>([]);
 
 const mfaSettings = computed(() => {
   if (!selectedMFAFactors.value?.length) return {};
@@ -735,6 +743,10 @@ const clearConsole = () => {
     consoleBtn.style.display = "none";
   }
 };
+
+watch(selectedMFAFactors, () => {
+  selectedMandatoryMFAFactors.value = selectedMandatoryMFAFactors.value.filter((x) => selectedMFAFactors.value.includes(x));
+});
 
 watchEffect(() => {
   const data = {
