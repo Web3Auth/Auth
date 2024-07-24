@@ -583,7 +583,7 @@ const mfaSettings = computed(() => {
   if (!selectedMFAFactors.value?.length) return {};
   const mfaSettings: Record<string, MFA_SETTINGS> = {};
   selectedMFAFactors.value.forEach((factor) => {
-    mfaSettings[factor] = { enable: true, mandatory: true };
+    mfaSettings[factor] = { enable: true, mandatory: selectedMandatoryMFAFactors.value.includes(factor) };
   });
   return mfaSettings;
 });
@@ -702,6 +702,7 @@ const init = async () => {
       const state = JSON.parse(data);
       loading.value = state.loading;
       selectedMFAFactors.value = state.selectedMFAFactors;
+      selectedMandatoryMFAFactors.value = state.selectedMandatoryMFAFactors;
       selectedLoginProvider.value = state.selectedLoginProvider;
       login_hint.value = state.login_hint;
       isWhiteLabelEnabled.value = state.isWhiteLabelEnabled;
@@ -980,6 +981,7 @@ watchEffect(() => {
   const data = {
     loading: loading.value,
     selectedMFAFactors: selectedMFAFactors.value,
+    selectedMandatoryMFAFactors: selectedMandatoryMFAFactors.value,
     selectedLoginProvider: selectedLoginProvider.value,
     login_hint: login_hint.value,
     isWhiteLabelEnabled: isWhiteLabelEnabled.value,
