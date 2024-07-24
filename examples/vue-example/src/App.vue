@@ -585,7 +585,6 @@ const mfaSettings = computed(() => {
   selectedMFAFactors.value.forEach((factor) => {
     mfaSettings[factor] = { enable: true, mandatory: selectedMandatoryMFAFactors.value.includes(factor) };
   });
-  console.log("mfaSettings", mfaSettings);
   return mfaSettings;
 });
 
