@@ -709,6 +709,7 @@ const init = async () => {
         deviceShareFactor: { enable: true },
         passwordFactor: { enable: true },
         socialBackupFactor: { enable: true },
+        authenticatorFactor: { enable: true }
       }
     : undefined;
   await openloginInstance.value.init();
@@ -781,6 +782,7 @@ const login = async () => {
           deviceShareFactor: { enable: true },
           passwordFactor: { enable: true },
           socialBackupFactor: { enable: true },
+          authenticatorFactor: { enable: true }
         }
       : undefined;
     // in popup mode (with third party cookies available) or if user is already logged in this function will
