@@ -18,9 +18,9 @@
   <main class="flex-1 p-1">
     <div class="relative">
       <div v-if="privKey" class="flex-wrap items-center justify-between p-4">
-        <div class="grid grid-cols-6 gap-0">
+        <div class="grid grid-cols-8 gap-0">
           <div class="col-span-1"></div>
-          <Card class="px-4 py-4 gird col-span-1">
+          <Card class="px-4 py-4 gird col-span-2">
             <div class="mb-4">
               <p class="btn-label">User info</p>
             </div>
@@ -29,7 +29,7 @@
                 :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']"
                 type="button"
                 block
-                size="xl"
+                size="md"
                 pill
                 @click="getUserInfo"
               >
@@ -41,7 +41,7 @@
                 :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']"
                 type="button"
                 block
-                size="xl"
+                size="md"
                 pill
                 @click="getOpenloginState"
               >
@@ -53,7 +53,7 @@
                 :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']"
                 type="button"
                 block
-                size="xl"
+                size="md"
                 pill
                 @click="getEd25519Key"
               >
@@ -66,7 +66,7 @@
                 :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']"
                 type="button"
                 block
-                size="xl"
+                size="md"
                 pill
                 @click="manageMFA"
               >
@@ -77,11 +77,11 @@
                 :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']"
                 type="button"
                 block
-                size="xl"
+                size="md"
                 pill
                 @click="enableMFA"
               >
-                MFA
+                Enable MFA
               </Button>
             </div>
             <div class="mb-4">
@@ -92,7 +92,7 @@
                 :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']"
                 type="button"
                 block
-                size="xl"
+                size="md"
                 pill
                 :disabled="!ethereumPrivateKeyProvider?.provider"
                 @click="signMessage"
@@ -105,7 +105,7 @@
                 :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']"
                 type="button"
                 block
-                size="xl"
+                size="md"
                 pill
                 :disabled="!ethereumPrivateKeyProvider?.provider"
                 @click="signMpcMessage"
@@ -118,7 +118,7 @@
                 :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']"
                 type="button"
                 block
-                size="xl"
+                size="md"
                 pill
                 :disabled="!ethereumPrivateKeyProvider?.provider"
                 @click="latestBlock"
@@ -131,7 +131,7 @@
                 :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']"
                 type="button"
                 block
-                size="xl"
+                size="md"
                 pill
                 :disabled="!ethereumPrivateKeyProvider?.provider"
                 @click="addChain"
@@ -144,7 +144,7 @@
                 :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']"
                 type="button"
                 block
-                size="xl"
+                size="md"
                 pill
                 :disabled="!ethereumPrivateKeyProvider?.provider"
                 @click="switchChain"
@@ -157,7 +157,7 @@
                 :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']"
                 type="button"
                 block
-                size="xl"
+                size="md"
                 pill
                 :disabled="!ethereumPrivateKeyProvider?.provider"
                 @click="signV1Message"
@@ -166,16 +166,16 @@
               </Button>
             </div>
           </Card>
-          <Card id="console" class="px-4 py-4 col-span-3 overflow-y-auto">
+          <Card id="console" class="px-4 py-4 col-span-4 overflow-y-auto">
             <pre
               class="whitespace-pre-line overflow-x-auto font-normal text-base leading-6 text-black break-words overflow-y-auto max-h-screen"
             ></pre>
-            <div class="absolute top-8 right-8">
+            <div class="absolute top-2 right-8">
               <Button
                 :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']"
                 type="button"
                 block
-                size="xl"
+                size="md"
                 pill
                 @click="clearConsole"
               >
@@ -191,20 +191,8 @@
           <div class="leading-tight text-2xl font-extrabold">Login in with Openlogin</div>
           <div class="text-app-gray-500 mt-2">This demo show how to use Openlogin SDK to login and sign messages using Openlogin SDK.</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-5">
-            <div class="flex items-start w-full gap-2">
+            <div class="flex items-start w-full gap-2 grid grid-cols-1">
               <Toggle id="mpc" v-model="useMpc" :show-label="true" :size="'small'" :label-disabled="'MPC'" :label-enabled="'MPC'" />
-            </div>
-            <div class="flex items-start w-full gap-2">
-              <Toggle
-                id="mfa"
-                v-model="enableAllFactors"
-                :show-label="true"
-                :size="'small'"
-                :label-disabled="'All MFA Factors'"
-                :label-enabled="'All MFA Factors'"
-              />
-            </div>
-            <div class="flex items-start w-full gap-2">
               <Toggle
                 id="walletKey"
                 v-model="useWalletKey"
@@ -213,8 +201,6 @@
                 :label-disabled="'Wallet Key'"
                 :label-enabled="'Wallet Key'"
               />
-            </div>
-            <div class="flex items-start w-full gap-2">
               <Toggle
                 id="whitelabel"
                 v-model="isWhiteLabelEnabled"
@@ -222,6 +208,48 @@
                 :size="'small'"
                 :label-disabled="'Whitelabel'"
                 :label-enabled="'Whitelabel'"
+              />
+            </div>
+            <div>
+              <div>
+                <Select
+                  v-model="selectedBuildEnv"
+                  class="mt-3"
+                  label="Select Build Env*"
+                  aria-label="Select Build Env*"
+                  placeholder="Select Build Env"
+                  :options="Object.values(BUILD_ENV).map((x) => ({ name: x, value: x }))"
+                  :helper-text="`Selected Build Env: ${selectedBuildEnv}`"
+                  :error="!selectedBuildEnv"
+                />
+              </div>
+            </div>
+            <div class="flex items-start w-full gap-2">
+              <Select
+                v-model="selectedMFAFactors"
+                class="mt-3"
+                label="Select MFA Factors"
+                aria-label="Select MFA Factor"
+                placeholder="Select MFA Factor"
+                :multiple="true"
+                :show-check-box="true"
+                :options="Object.entries(MFA_FACTOR).map(([k, v]) => ({ name: k, value: v }))"
+              />
+            </div>
+            <div class="flex items-start w-full gap-2">
+              <Select
+                v-model="selectedMandatoryMFAFactors"
+                class="mt-3"
+                label="Select Mandatory MFA Factors"
+                aria-label="Select Mandatory MFA Factor"
+                placeholder="Select Mandatory MFA Factor"
+                :multiple="true"
+                :show-check-box="true"
+                :options="
+                  Object.entries(MFA_FACTOR)
+                    .filter(([_, v]) => selectedMFAFactors.includes(v as MFA_FACTOR_TYPE))
+                    .map(([k, v]) => ({ name: k, value: v }))
+                "
               />
             </div>
             <Card
@@ -341,18 +369,6 @@
             </Card>
             <div>
               <Select
-                v-model="selectedBuildEnv"
-                class="mt-3"
-                label="Select Build Env*"
-                aria-label="Select Build Env*"
-                placeholder="Select Build Env"
-                :options="Object.values(BUILD_ENV).map((x) => ({ name: x, value: x }))"
-                :helper-text="`Selected Build Env: ${selectedBuildEnv}`"
-                :error="!selectedBuildEnv"
-              />
-            </div>
-            <div>
-              <Select
                 v-model="selectedMfaLevel"
                 class="mt-3"
                 label="Select MFA level"
@@ -416,7 +432,7 @@
                 aria-label="Select Login Provider*"
                 placeholder="Select Login Provider"
                 :options="computedLoginProviders.map((x) => ({ name: x.replaceAll('_', ' '), value: x }))"
-                :helper-text="`Selected Login Provider: ${selectedLoginProvider.replaceAll('_', ' ')}`"
+                :helper-text="`Selected Login Provider: ${(selectedLoginProvider || '').replaceAll('_', ' ')}`"
                 :error="!selectedLoginProvider"
               />
             </div>
@@ -462,7 +478,7 @@
               :disabled="!isLoginHintAvailable"
               type="button"
               block
-              size="xl"
+              size="md"
               pill
               @click="login"
             >
@@ -489,7 +505,10 @@ import {
   LOGIN_PROVIDER,
   LOGIN_PROVIDER_TYPE,
   LoginParams,
+  MFA_FACTOR,
+  MFA_FACTOR_TYPE,
   MFA_LEVELS,
+  MFA_SETTINGS,
   MfaLevelType,
   OPENLOGIN_NETWORK,
   OPENLOGIN_NETWORK_TYPE,
@@ -507,7 +526,7 @@ import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import BN from "bn.js";
 import bs58 from "bs58";
 import { keccak256 } from "ethereum-cryptography/keccak";
-import { computed, InputHTMLAttributes, ref, watchEffect } from "vue";
+import { computed, InputHTMLAttributes, ref, watch, watchEffect } from "vue";
 
 import { CURVE, DELIMITERS } from "./constants";
 import * as ethWeb3 from "./lib/ethWeb3";
@@ -546,7 +565,6 @@ const EMAIL_FLOW = {
 type EMAIL_FLOW_TYPE = (typeof EMAIL_FLOW)[keyof typeof EMAIL_FLOW];
 
 const loading = ref(false);
-const enableAllFactors = ref(false);
 const privKey = ref("");
 const ethereumPrivateKeyProvider = ref<EthereumSigningProvider | EthereumPrivateKeyProvider | null>(null);
 const selectedLoginProvider = ref<LOGIN_PROVIDER_TYPE>(LOGIN_PROVIDER.GOOGLE);
@@ -561,7 +579,18 @@ const emailFlowType = ref<EMAIL_FLOW_TYPE>(EMAIL_FLOW.code);
 const customSdkUrl = ref("");
 const whitelabelConfig = ref<WhiteLabelData>(whitelabel);
 const selectedMfaLevel = ref<MfaLevelType>(MFA_LEVELS.NONE);
-const selectedCurve = ref<SUPPORTED_KEY_CURVES_TYPE>(SUPPORTED_KEY_CURVES.ED25519);
+const selectedCurve = ref<SUPPORTED_KEY_CURVES_TYPE>(SUPPORTED_KEY_CURVES.SECP256K1);
+const selectedMFAFactors = ref<MFA_FACTOR_TYPE[]>(["deviceShareFactor", "socialBackupFactor"]);
+const selectedMandatoryMFAFactors = ref<MFA_FACTOR_TYPE[]>(["deviceShareFactor", "socialBackupFactor"]);
+
+const mfaSettings = computed(() => {
+  if (!selectedMFAFactors.value?.length) return {};
+  const mfaSettings: Record<string, MFA_SETTINGS> = {};
+  selectedMFAFactors.value.forEach((factor) => {
+    mfaSettings[factor] = { enable: true, mandatory: selectedMandatoryMFAFactors.value.includes(factor) };
+  });
+  return mfaSettings;
+});
 
 const openloginInstance = computed(() => {
   const currentClientId = OPENLOGIN_PROJECT_IDS[selectedOpenloginNetwork.value];
@@ -574,15 +603,7 @@ const openloginInstance = computed(() => {
     useMpc: useMpc.value,
     buildEnv: selectedBuildEnv.value,
     sdkUrl: customSdkUrl.value,
-    mfaSettings: enableAllFactors.value
-      ? {
-          backUpShareFactor: { enable: true },
-          deviceShareFactor: { enable: true },
-          passwordFactor: { enable: true },
-          socialBackupFactor: { enable: true },
-          authenticatorFactor: { enable: true }
-        }
-      : undefined,
+    mfaSettings: mfaSettings.value,
   });
   op.init();
   return op;
@@ -684,7 +705,8 @@ const init = async () => {
     if (data) {
       const state = JSON.parse(data);
       loading.value = state.loading;
-      enableAllFactors.value = state.enableAllFactors;
+      selectedMFAFactors.value = state.selectedMFAFactors;
+      selectedMandatoryMFAFactors.value = state.selectedMandatoryMFAFactors;
       selectedLoginProvider.value = state.selectedLoginProvider;
       login_hint.value = state.login_hint;
       isWhiteLabelEnabled.value = state.isWhiteLabelEnabled;
@@ -703,15 +725,7 @@ const init = async () => {
 
   openloginInstance.value.options.uxMode = selectedUxMode.value;
   openloginInstance.value.options.whiteLabel = isWhiteLabelEnabled.value ? whitelabelConfig.value : undefined;
-  openloginInstance.value.options.mfaSettings = enableAllFactors.value
-    ? {
-        backUpShareFactor: { enable: true },
-        deviceShareFactor: { enable: true },
-        passwordFactor: { enable: true },
-        socialBackupFactor: { enable: true },
-        authenticatorFactor: { enable: true }
-      }
-    : undefined;
+  openloginInstance.value.options.mfaSettings = mfaSettings.value;
   await openloginInstance.value.init();
   if (openloginInstance.value.state.factorKey) {
     useMpc.value = true;
@@ -776,15 +790,7 @@ const login = async () => {
     }
     openloginInstance.value.options.uxMode = selectedUxMode.value;
     openloginInstance.value.options.whiteLabel = isWhiteLabelEnabled.value ? whitelabelConfig.value : undefined;
-    openloginInstance.value.options.mfaSettings = enableAllFactors.value
-      ? {
-          backUpShareFactor: { enable: true },
-          deviceShareFactor: { enable: true },
-          passwordFactor: { enable: true },
-          socialBackupFactor: { enable: true },
-          authenticatorFactor: { enable: true }
-        }
-      : undefined;
+    openloginInstance.value.options.mfaSettings = mfaSettings.value;
     // in popup mode (with third party cookies available) or if user is already logged in this function will
     // return priv key , in redirect mode or if third party cookies are blocked then priv key be injected to
     // sdk instance after calling init on redirect url page.
@@ -971,10 +977,17 @@ const clearConsole = () => {
   }
 };
 
+watch(selectedMFAFactors, () => {
+  selectedMandatoryMFAFactors.value = selectedMandatoryMFAFactors.value
+    ? selectedMandatoryMFAFactors.value.filter((x) => selectedMFAFactors.value.includes(x))
+    : [];
+});
+
 watchEffect(() => {
   const data = {
     loading: loading.value,
-    enableAllFactors: enableAllFactors.value,
+    selectedMFAFactors: selectedMFAFactors.value,
+    selectedMandatoryMFAFactors: selectedMandatoryMFAFactors.value,
     selectedLoginProvider: selectedLoginProvider.value,
     login_hint: login_hint.value,
     isWhiteLabelEnabled: isWhiteLabelEnabled.value,
