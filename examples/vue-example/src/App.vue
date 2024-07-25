@@ -212,17 +212,17 @@
             </div>
             <div>
               <div>
-              <Select
-                v-model="selectedBuildEnv"
-                class="mt-3"
-                label="Select Build Env*"
-                aria-label="Select Build Env*"
-                placeholder="Select Build Env"
-                :options="Object.values(BUILD_ENV).map((x) => ({ name: x, value: x }))"
-                :helper-text="`Selected Build Env: ${selectedBuildEnv}`"
-                :error="!selectedBuildEnv"
-              />
-            </div>
+                <Select
+                  v-model="selectedBuildEnv"
+                  class="mt-3"
+                  label="Select Build Env*"
+                  aria-label="Select Build Env*"
+                  placeholder="Select Build Env"
+                  :options="Object.values(BUILD_ENV).map((x) => ({ name: x, value: x }))"
+                  :helper-text="`Selected Build Env: ${selectedBuildEnv}`"
+                  :error="!selectedBuildEnv"
+                />
+              </div>
             </div>
             <div class="flex items-start w-full gap-2">
               <Select
@@ -237,15 +237,19 @@
               />
             </div>
             <div class="flex items-start w-full gap-2">
-              <Select 
-                v-model="selectedMandatoryMFAFactors" 
-                class="mt-3" 
+              <Select
+                v-model="selectedMandatoryMFAFactors"
+                class="mt-3"
                 label="Select Mandatory MFA Factors"
-                aria-label="Select Mandatory MFA Factor" 
-                placeholder="Select Mandatory MFA Factor" 
-                :multiple="true" 
+                aria-label="Select Mandatory MFA Factor"
+                placeholder="Select Mandatory MFA Factor"
+                :multiple="true"
                 :show-check-box="true"
-                :options="Object.entries(MFA_FACTOR).filter(([_,v]) => selectedMFAFactors.includes(v as MFA_FACTOR_TYPE)).map(([k, v]) => ({ name: k, value: v }))"
+                :options="
+                  Object.entries(MFA_FACTOR)
+                    .filter(([_, v]) => selectedMFAFactors.includes(v as MFA_FACTOR_TYPE))
+                    .map(([k, v]) => ({ name: k, value: v }))
+                "
               />
             </div>
             <Card
@@ -576,8 +580,8 @@ const customSdkUrl = ref("");
 const whitelabelConfig = ref<WhiteLabelData>(whitelabel);
 const selectedMfaLevel = ref<MfaLevelType>(MFA_LEVELS.NONE);
 const selectedCurve = ref<SUPPORTED_KEY_CURVES_TYPE>(SUPPORTED_KEY_CURVES.SECP256K1);
-const selectedMFAFactors = ref<MFA_FACTOR_TYPE[]>([]);
-const selectedMandatoryMFAFactors = ref<MFA_FACTOR_TYPE[]>([]);
+const selectedMFAFactors = ref<MFA_FACTOR_TYPE[]>(["deviceShareFactor", "socialBackupFactor"]);
+const selectedMandatoryMFAFactors = ref<MFA_FACTOR_TYPE[]>(["deviceShareFactor", "socialBackupFactor"]);
 
 const mfaSettings = computed(() => {
   if (!selectedMFAFactors.value?.length) return {};
@@ -974,7 +978,9 @@ const clearConsole = () => {
 };
 
 watch(selectedMFAFactors, () => {
-  selectedMandatoryMFAFactors.value = selectedMandatoryMFAFactors.value ? selectedMandatoryMFAFactors.value.filter((x) => selectedMFAFactors.value.includes(x)) : [];
+  selectedMandatoryMFAFactors.value = selectedMandatoryMFAFactors.value
+    ? selectedMandatoryMFAFactors.value.filter((x) => selectedMFAFactors.value.includes(x))
+    : [];
 });
 
 watchEffect(() => {
