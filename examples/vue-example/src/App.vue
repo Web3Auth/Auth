@@ -192,9 +192,10 @@
           <div class="text-app-gray-500 mt-2">This demo show how to use Openlogin SDK to login and sign messages using Openlogin SDK.</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-5">
             <div class="flex items-start w-full gap-2 grid grid-cols-1">
-              <Toggle id="mpc" v-model="useMpc" :show-label="true" :size="'small'" :label-disabled="'MPC'" :label-enabled="'MPC'" />
+              <Toggle id="mpc" v-model="useMpc" :show-label="true" :size="'small'" :label-disabled="'MPC'" :label-enabled="'MPC'" data-testid="mpc"/>
               <Toggle
                 id="walletKey"
+                data-testid="walletKey"
                 v-model="useWalletKey"
                 :show-label="true"
                 :size="'small'"
@@ -203,6 +204,7 @@
               />
               <Toggle
                 id="whitelabel"
+                data-testid="whitelabel"
                 v-model="isWhiteLabelEnabled"
                 :show-label="true"
                 :size="'small'"
@@ -214,6 +216,7 @@
               <div>
                 <Select
                   v-model="selectedBuildEnv"
+                  data-testid="buildEnv"
                   class="mt-3"
                   label="Select Build Env*"
                   aria-label="Select Build Env*"
@@ -227,6 +230,7 @@
             <div class="flex items-start w-full gap-2">
               <Select
                 v-model="selectedMFAFactors"
+                data-testid="mfaFactors"
                 class="mt-3"
                 label="Select MFA Factors"
                 aria-label="Select MFA Factor"
@@ -239,6 +243,7 @@
             <div class="flex items-start w-full gap-2">
               <Select
                 v-model="selectedMandatoryMFAFactors"
+                data-testid="mandatoryMfaFactors"
                 class="mt-3"
                 label="Select Mandatory MFA Factors"
                 aria-label="Select Mandatory MFA Factor" 
@@ -265,6 +270,7 @@
               <div class="mt-3">
                 <TextField
                   v-model="whitelabelConfig.appName"
+                  data-testid="appName"
                   class="mt-3"
                   label="Enter App Name"
                   aria-label="Enter App Name"
@@ -274,6 +280,7 @@
               <div class="mt-3">
                 <TextField
                   v-model="whitelabelConfig.appUrl"
+                  data-testid="appUrl"
                   class="mt-3"
                   label="Enter App URL"
                   aria-label="Enter App URL"
@@ -283,6 +290,7 @@
               <div class="mt-3">
                 <Select
                   v-model="whitelabelConfig.defaultLanguage"
+                  data-testid="defaultLanguage"
                   class="mt-3"
                   label="Select Language*"
                   aria-label="Select Language*"
@@ -295,6 +303,7 @@
               <div class="mt-3">
                 <TextField
                   v-model="whitelabelConfig.logoLight"
+                  data-testid="logoLight"
                   class="mt-3"
                   label="Enter logo url"
                   aria-label="Enter logo url"
@@ -304,6 +313,7 @@
               <div class="mt-3">
                 <TextField
                   v-model="whitelabelConfig.logoDark"
+                  data-testid="logoDark"
                   class="mt-3"
                   label="Enter dark logo url"
                   aria-label="Enter dark logo url"
@@ -313,6 +323,7 @@
               <div class="mt-3">
                 <Toggle
                   id="useLogoLoader"
+                  data-testid="useLogoLoader"
                   v-model="whitelabelConfig.useLogoLoader"
                   :show-label="true"
                   :size="'small'"
@@ -323,6 +334,7 @@
               <div class="mt-3">
                 <TextField
                   :model-value="whitelabelConfig.theme?.primary"
+                  data-testid="primaryColor"
                   class="mt-3"
                   label="Enter primary color"
                   aria-label="Enter primary color"
@@ -347,6 +359,7 @@
               <div class="mt-3">
                 <TextField
                   :model-value="whitelabelConfig.theme?.onPrimary"
+                  data-testid="onPrimaryColor"
                   class="mt-3"
                   label="Enter primary color"
                   aria-label="Enter primary color"
@@ -372,6 +385,7 @@
             <div>
               <Select
                 v-model="selectedMfaLevel"
+                data-testid="mfaLevel"
                 class="mt-3"
                 label="Select MFA level"
                 aria-label="Select MFA level"
@@ -395,6 +409,7 @@
             <div>
               <TextField
                 v-model="customSdkUrl"
+                data-testid="customSdkUrl"
                 class="mt-3"
                 label="Enter custom url"
                 aria-label="Enter custom url"
@@ -405,6 +420,7 @@
             <div>
               <Select
                 v-model="selectedOpenloginNetwork"
+                data-testid="openloginNetwork"
                 class="mt-3"
                 label="Select Openlogin Network*"
                 aria-label="Select Openlogin Network*"
@@ -417,6 +433,7 @@
             <div>
               <Select
                 v-model="selectedUxMode"
+                data-testid="uxMode"
                 class="mt-3"
                 label="Select UX Mode*"
                 aria-label="Select UX Mode*"
@@ -429,6 +446,7 @@
             <div>
               <Select
                 v-model="selectedLoginProvider"
+                data-testid="loginProvider"
                 class="mt-3"
                 label="Select Login Provider*"
                 aria-label="Select Login Provider*"
@@ -442,6 +460,7 @@
               <Select
                 v-if="showEmailFlow"
                 v-model="emailFlowType"
+                data-testid="emailFlow"
                 class="mt-3"
                 label="Select Email Flow*"
                 aria-label="Select Email Flow*"
@@ -455,6 +474,7 @@
               <TextField
                 v-if="selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS"
                 v-model="login_hint"
+                data-testid="loginHint"
                 class="mt-3"
                 label="Enter an email"
                 aria-label="Enter an email"
@@ -468,6 +488,7 @@
               <TextField
                 v-if="selectedLoginProvider === LOGIN_PROVIDER.SMS_PASSWORDLESS"
                 v-model="login_hint"
+                data-testid="loginHint"
                 class="mt-3"
                 label="Eg: (+{cc}-{number})"
                 aria-label="Eg: (+{cc}-{number})"
@@ -481,6 +502,7 @@
           <div class="flex justify-center mt-5">
             <Button
               :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']"
+              data-testid="loginButton"
               :disabled="!isValidForm"
               type="button"
               block
