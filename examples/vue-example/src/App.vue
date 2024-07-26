@@ -32,6 +32,7 @@
                 size="md"
                 pill
                 @click="getUserInfo"
+                data-testid="btnGetUserInfo"
               >
                 Get user info
               </Button>
@@ -44,6 +45,7 @@
                 size="md"
                 pill
                 @click="getOpenloginState"
+                data-testid="btnGetOpenloginState"
               >
                 Get openlogin state
               </Button>
@@ -56,6 +58,7 @@
                 size="md"
                 pill
                 @click="getEd25519Key"
+                data-testid="btnGetEd25519Key"
               >
                 Get Ed25519Key
               </Button>
@@ -69,6 +72,7 @@
                 size="md"
                 pill
                 @click="manageMFA"
+                data-testid="btnManageMFA"
               >
                 Manage MFA
               </Button>
@@ -80,6 +84,7 @@
                 size="md"
                 pill
                 @click="enableMFA"
+                data-testid="btnEnableMFA"
               >
                 Enable MFA
               </Button>
@@ -96,6 +101,7 @@
                 pill
                 :disabled="!ethereumPrivateKeyProvider?.provider"
                 @click="signMessage"
+                data-testid="btnSignMessage"
               >
                 Sign test Eth Message
               </Button>
@@ -109,6 +115,7 @@
                 pill
                 :disabled="!ethereumPrivateKeyProvider?.provider"
                 @click="signMpcMessage"
+                data-testid="btnSignMpcMessage"
               >
                 Sign test Eth Message (MPC)
               </Button>
@@ -122,6 +129,7 @@
                 pill
                 :disabled="!ethereumPrivateKeyProvider?.provider"
                 @click="latestBlock"
+                data-testid="btnLatestBlock"
               >
                 Fetch latest block
               </Button>
@@ -135,6 +143,7 @@
                 pill
                 :disabled="!ethereumPrivateKeyProvider?.provider"
                 @click="addChain"
+                data-testid="btnAddChain"
               >
                 Add Sepolia
               </Button>
@@ -148,6 +157,7 @@
                 pill
                 :disabled="!ethereumPrivateKeyProvider?.provider"
                 @click="switchChain"
+                data-testid="btnSwitchChain"
               >
                 Switch to Sepolia
               </Button>
@@ -161,6 +171,7 @@
                 pill
                 :disabled="!ethereumPrivateKeyProvider?.provider"
                 @click="signV1Message"
+                data-testid="btnSignV1Message"
               >
                 Sign Typed data v1 test msg
               </Button>
@@ -178,6 +189,7 @@
                 size="md"
                 pill
                 @click="clearConsole"
+                data-testid="btnClearConsole"
               >
                 Clear console
               </Button>
@@ -626,7 +638,7 @@ const isValidForm = computed(() => {
 })
 
 const isValidMFASelection = computed(() => {
-  if (!selectedMandatoryMFAFactors.value.length) return true;
+  if (selectedMFAFactors.value?.length && !selectedMandatoryMFAFactors.value.length) return false;
   if (selectedMandatoryMFAFactors.value.every((x) => x === MFA_FACTOR.DEVICE)) return false;
   return true;
 });
