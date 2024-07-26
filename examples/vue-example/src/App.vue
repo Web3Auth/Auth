@@ -241,9 +241,11 @@
                 v-model="selectedMandatoryMFAFactors"
                 class="mt-3"
                 label="Select Mandatory MFA Factors"
-                aria-label="Select Mandatory MFA Factor"
+                aria-label="Select Mandatory MFA Factor" 
                 placeholder="Select Mandatory MFA Factor"
-                :multiple="true"
+                :helperText="!isValidMFASelection ? `One factor other than device factor must be mandatory` : ''"
+                :error="!isValidMFASelection"
+                :multiple="true" 
                 :show-check-box="true"
                 :options="
                   Object.entries(MFA_FACTOR)
@@ -457,6 +459,8 @@
                 label="Enter an email"
                 aria-label="Enter an email"
                 placeholder="Enter an email"
+                :error="!isLoginHintAvailable"
+                :helper-text="!isLoginHintAvailable ? `Email should be valid` : ''"
                 required
               />
             </div>
@@ -468,6 +472,8 @@
                 label="Eg: (+{cc}-{number})"
                 aria-label="Eg: (+{cc}-{number})"
                 placeholder="Eg: (+{cc}-{number})"
+                :error="!isLoginHintAvailable"
+                :helper-text="!isLoginHintAvailable ? `Phone should be valid` : ''"
                 required
               />
             </div>
@@ -475,7 +481,7 @@
           <div class="flex justify-center mt-5">
             <Button
               :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']"
-              :disabled="!isLoginHintAvailable"
+              :disabled="!isValidForm"
               type="button"
               block
               size="md"
@@ -589,7 +595,18 @@ const mfaSettings = computed(() => {
   selectedMFAFactors.value.forEach((factor) => {
     mfaSettings[factor] = { enable: true, mandatory: selectedMandatoryMFAFactors.value.includes(factor) };
   });
+  console.log("mfaSettings", mfaSettings);  
   return mfaSettings;
+});
+
+const isValidForm = computed(() => {
+  return isValidMFASelection.value && isLoginHintAvailable.value;
+})
+
+const isValidMFASelection = computed(() => {
+  if (!selectedMandatoryMFAFactors.value.length) return true;
+  if (selectedMandatoryMFAFactors.value.every((x) => x === MFA_FACTOR.DEVICE)) return false;
+  return true;
 });
 
 const openloginInstance = computed(() => {
@@ -782,6 +799,8 @@ const isLongLines = computed(() =>
 );
 
 const login = async () => {
+  if (!isValidForm.value) return
+
   try {
     loading.value = true;
     if (!openloginInstance.value) {
