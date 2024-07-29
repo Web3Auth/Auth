@@ -24,14 +24,14 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build
-        run: npm run pack:lerna
-
       - name: Lint
         run: npm run lint
 
       - name: Test
         run: npm run test
+
+      - name: Build
+        run: npm run build
 
       - name: Pack and build example
         if: github.ref == 'refs/heads/master'
