@@ -14,6 +14,9 @@ export default defineConfig({
       "bn.js": resolve(__dirname, "node_modules/bn.js"),
     },
   },
+  build: {
+    sourcemap: true,
+  },
   define: {
     global: "globalThis",
   },

@@ -2,16 +2,6 @@
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit"
   },
-  "eslint.workingDirectories": [
-    {
-      "directory": "packages/*",
-      "changeProcessCWD": true
-    },
-    {
-      "directory": "examples/*/*",
-      "changeProcessCWD": true
-    }
-  ],
   "cSpell.words": [
     "bowser",
     "eslintcache",

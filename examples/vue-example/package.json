@@ -6,45 +6,43 @@
     "dev": "vite",
     "serve": "vite preview",
     "build": "vite build",
-    "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src"
+    "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src",
+    "analyze": "source-map-explorer dist/assets/*.js dist/assets/*.map --no-border-checks"
   },
   "dependencies": {
+    "@toruslabs/constants": "^14.0.0",
     "@toruslabs/eccrypto": "^5.0.4",
     "@toruslabs/fnd-base": "^14.0.0",
-    "@toruslabs/openlogin": "file:../../packages/openlogin",
-    "@toruslabs/openlogin-ed25519": "file:../../packages/openlogin-ed25519/",
-    "@toruslabs/openlogin-jrpc": "file:../../packages/openlogin-jrpc/",
-    "@toruslabs/openlogin-subkey": "file:../../packages/openlogin-subkey/",
-    "@toruslabs/openlogin-utils": "file:../../packages/openlogin-utils/",
     "@toruslabs/tss-client": "^3.0.0",
     "@toruslabs/tss-lib": "^2.3.0",
-    "@web3auth/base": "^8.8.0",
-    "@web3auth/ethereum-provider": "^8.10.2",
-    "@web3auth/ethereum-mpc-provider": "^8.10.2",
     "@toruslabs/vue-components": "^7.8.3",
     "@toruslabs/vue-icons": "^7.6.2",
+    "@web3auth/auth": "/Users/architgupta/Desktop/web3auth/OpenLoginSdk/web3auth-auth-8.0.0.tgz",
+    "@web3auth/base": "^8.8.0",
+    "@web3auth/ethereum-mpc-provider": "^8.10.2",
+    "@web3auth/ethereum-provider": "^8.10.2",
     "bn.js": "^5.2.1",
     "bs58": "^6.0.0",
     "core-js": "^3.37.1",
     "elliptic": "^6.5.6",
     "ethereum-cryptography": "^2.2.1",
     "ethers": "^6.13.1",
-    "vue": "^3.4.31",
-    "@toruslabs/constants": "^14.0.0"
+    "vue": "^3.4.31"
   },
   "devDependencies": {
     "@toruslabs/eslint-config-vue": "^3.3.1",
     "@types/bs58": "^4.0.4",
     "@types/elliptic": "^6.4.18",
+    "@vitejs/plugin-vue": "^5.0.5",
     "autoprefixer": "^10.4.19",
     "buffer": "^6.0.3",
     "empty-module": "^0.0.2",
     "eslint": "^8.54.0",
     "postcss": "^8.4.39",
     "prettier": "^3.3.3",
+    "source-map-explorer": "^2.5.3",
     "tailwindcss": "^3.4.6",
     "typescript": "~5.5.3",
-    "vite": "^5.3.3",
-    "@vitejs/plugin-vue": "^5.0.5"
+    "vite": "^5.3.3"
   }
 }

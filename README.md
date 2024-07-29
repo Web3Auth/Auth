@@ -1,4 +1,4 @@
-# OpenLoginSdk by Web3Auth
+# Auth SDK by Web3Auth
 
 > [Web3Auth](https://web3auth.io) is where passwordless auth meets non-custodial key infrastructure for Web3 apps and wallets. By aggregating OAuth (Google, Twitter, Discord) logins, different wallets and innovative Multi Party Computation (MPC) - Web3Auth provides a seamless login experience to every user on your application.
 

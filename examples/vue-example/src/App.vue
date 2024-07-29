@@ -479,8 +479,6 @@
 <script setup lang="ts">
 import { TORUS_SAPPHIRE_NETWORK_TYPE } from "@toruslabs/constants";
 import { generatePrivate } from "@toruslabs/eccrypto";
-import OpenLogin from "@toruslabs/openlogin";
-import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import {
   BUILD_ENV,
   BUILD_ENV_TYPE,
@@ -499,7 +497,9 @@ import {
   UX_MODE,
   UX_MODE_TYPE,
   WhiteLabelData,
-} from "@toruslabs/openlogin-utils";
+  OpenLogin, 
+  getED25519Key
+} from "@web3auth/auth";
 import { Client, getDKLSCoeff, setupSockets } from "@toruslabs/tss-client";
 import { Button, Card, Select, TextField, Toggle } from "@toruslabs/vue-components";
 import { EthereumSigningProvider } from "@web3auth/ethereum-mpc-provider";
