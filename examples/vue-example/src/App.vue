@@ -877,7 +877,7 @@ const login = async () => {
     if (emailFlowType.value) {
       openLoginObj.extraLoginOptions = {
         ...openLoginObj.extraLoginOptions,
-        flow_type: emailFlowType,
+        flow_type: emailFlowType.value,
       };
     }
 
