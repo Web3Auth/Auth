@@ -204,7 +204,7 @@
           <div class="text-app-gray-500 mt-2">This demo show how to use Openlogin SDK to login and sign messages using Openlogin SDK.</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-5">
             <div class="flex items-start w-full gap-2 grid grid-cols-1">
-              <Toggle id="mpc" v-model="useMpc" :show-label="true" :size="'small'" :label-disabled="'MPC'" :label-enabled="'MPC'" data-testid="mpc"/>
+              <Toggle id="mpc" v-model="useMpc" :show-label="true" :size="'small'" :label-disabled="'MPC'" :label-enabled="'MPC'" data-testid="mpc" />
               <Toggle
                 id="walletKey"
                 data-testid="walletKey"
@@ -258,11 +258,11 @@
                 data-testid="mandatoryMfaFactors"
                 class="mt-3"
                 label="Select Mandatory MFA Factors"
-                aria-label="Select Mandatory MFA Factor" 
+                aria-label="Select Mandatory MFA Factor"
                 placeholder="Select Mandatory MFA Factor"
                 :helperText="!isValidMFASelection ? `One factor other than device factor must be mandatory` : ''"
                 :error="!isValidMFASelection"
-                :multiple="true" 
+                :multiple="true"
                 :show-check-box="true"
                 :options="
                   Object.entries(MFA_FACTOR)
@@ -622,20 +622,21 @@ const selectedMfaLevel = ref<MfaLevelType>(MFA_LEVELS.NONE);
 const selectedCurve = ref<SUPPORTED_KEY_CURVES_TYPE>(SUPPORTED_KEY_CURVES.SECP256K1);
 const selectedMFAFactors = ref<MFA_FACTOR_TYPE[]>(["deviceShareFactor", "socialBackupFactor"]);
 const selectedMandatoryMFAFactors = ref<MFA_FACTOR_TYPE[]>(["deviceShareFactor", "socialBackupFactor"]);
+const allMFAFactors = Object.values(MFA_FACTOR);
 
 const mfaSettings = computed(() => {
   if (!selectedMFAFactors.value?.length) return {};
   const mfaSettings: Record<string, MFA_SETTINGS> = {};
-  selectedMFAFactors.value.forEach((factor) => {
-    mfaSettings[factor] = { enable: true, mandatory: selectedMandatoryMFAFactors.value.includes(factor) };
+  allMFAFactors.forEach((factor) => {
+    mfaSettings[factor] = { enable: selectedMFAFactors.value.includes(factor), mandatory: selectedMandatoryMFAFactors.value.includes(factor) };
   });
-  console.log("mfaSettings", mfaSettings);  
+  console.log("mfaSettings", mfaSettings);
   return mfaSettings;
 });
 
 const isValidForm = computed(() => {
   return isValidMFASelection.value && isLoginHintAvailable.value;
-})
+});
 
 const isValidMFASelection = computed(() => {
   if (selectedMFAFactors.value?.length && !selectedMandatoryMFAFactors.value.length) return false;
@@ -833,7 +834,7 @@ const isLongLines = computed(() =>
 );
 
 const login = async () => {
-  if (!isValidForm.value) return
+  if (!isValidForm.value) return;
 
   try {
     loading.value = true;
