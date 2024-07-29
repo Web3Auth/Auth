@@ -54,6 +54,9 @@
     "tsx": "^4.16.2",
     "typescript": "^5.5.4"
   },
+  "peerDependencies": {
+    "@babel/runtime": "7.x"
+  },
   "optionalDependencies": {
     "@nx/nx-linux-x64-gnu": "^19.5.3",
     "@rollup/rollup-linux-x64-gnu": "^4.19.0"

@@ -2,32 +2,13 @@
 
 > [Web3Auth](https://web3auth.io) is where passwordless auth meets non-custodial key infrastructure for Web3 apps and wallets. By aggregating OAuth (Google, Twitter, Discord) logins, different wallets and innovative Multi Party Computation (MPC) - Web3Auth provides a seamless login experience to every user on your application.
 
-[![lerna](https://img.shields.io/badge/maintained%20with-lerna-cc00ff.svg)](https://lerna.js.org/)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
-![npm](https://img.shields.io/npm/dw/@toruslabs/openlogin)
-
-| Packages                        | `@latest` Version                                                                                                                                               | Size                                                                                                                                                                       | Description                                                                      |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| 🏠 **Core**                     |
-| `@toruslabs/openlogin`          | [![npm version](https://img.shields.io/npm/v/@toruslabs/openlogin?label=%22%22)](https://www.npmjs.com/package/@toruslabs/openlogin/v/latest)                   | [![minzip](https://img.shields.io/bundlephobia/minzip/@toruslabs/openlogin?label=%22%22)](https://bundlephobia.com/result?p=@toruslabs/openlogin@latest)                   | Default package to be used to work with OpenLogin auth system                    |
-| `openlogin`                     | [![npm version](https://img.shields.io/npm/v/openlogin?label=%22%22)](https://www.npmjs.com/package/openlogin/v/latest)                                         | [![minzip](https://img.shields.io/bundlephobia/minzip/openlogin?label=%22%22)](https://bundlephobia.com/result?p=openlogin@latest)                                         | Wrapper package for @toruslabs/openlogin                                         |
-| 🔌 **Modules**                  |
-| `@toruslabs/openlogin-jrpc`     | [![npm version](https://img.shields.io/npm/v/@toruslabs/openlogin-jrpc?label=%22%22)](https://www.npmjs.com/package/@toruslabs/openlogin-jrpc/v/latest)         | [![minzip](https://img.shields.io/bundlephobia/minzip/@toruslabs/openlogin-jrpc?label=%22%22)](https://bundlephobia.com/result?p=@toruslabs/openlogin-jrpc@latest)         | Allows you to make JRPC requests easily. Creates & Manages JRPC Engines          |
-| `@toruslabs/openlogin-ed25519`  | [![npm version](https://img.shields.io/npm/v/@toruslabs/openlogin-ed25519?label=%22%22)](https://www.npmjs.com/package/@toruslabs/openlogin-ed25519/v/latest)   | [![minzip](https://img.shields.io/bundlephobia/minzip/@toruslabs/openlogin-ed25519?label=%22%22)](https://bundlephobia.com/result?p=@toruslabs/openlogin-ed25519@latest)   | Allows you to get an ed25519 private key from a secp256k1 private key            |
-| `@toruslabs/openlogin-subkey`   | [![npm version](https://img.shields.io/npm/v/@toruslabs/openlogin-subkey?label=%22%22)](https://www.npmjs.com/package/@toruslabs/openlogin-subkey/v/latest)     | [![minzip](https://img.shields.io/bundlephobia/minzip/@toruslabs/openlogin-subkey?label=%22%22)](https://bundlephobia.com/result?p=@toruslabs/openlogin-subkey@latest)     | Allows you to derive an app-scoped key from a root key + client id via mimc hash |
-| `@toruslabs/openlogin-starkkey` | [![npm version](https://img.shields.io/npm/v/@toruslabs/openlogin-starkkey?label=%22%22)](https://www.npmjs.com/package/@toruslabs/openlogin-starkkey/v/latest) | [![minzip](https://img.shields.io/bundlephobia/minzip/@toruslabs/openlogin-starkkey?label=%22%22)](https://bundlephobia.com/result?p=@toruslabs/openlogin-starkkey@latest) | Allows you to get a starknet compatible private key from a secp256k1 private key |
-|                                 |
-| 🐉 **Low-Level**                |
-| `@toruslabs/openlogin-utils`    | [![npm version](https://img.shields.io/npm/v/@toruslabs/openlogin-utils?label=%22%22)](https://www.npmjs.com/package/@toruslabs/openlogin-utils/v/latest)       | [![minzip](https://img.shields.io/bundlephobia/minzip/@toruslabs/openlogin-utils?label=%22%22)](https://bundlephobia.com/result?p=@toruslabs/openlogin-utils@latest)       | Shared [TypeScript](https://www.typescriptlang.org/) Types                       |
+![npm](https://img.shields.io/npm/dw/@web3auth/auth)                      |
 
 ## Introduction
 
-Your OpenLogin account is a cryptographic key that acts as a proxy to traditional SSOs. Accounts are secured across user devices and authentication methods - there is no central server, no data honey pot.
+Your Web3Auth account is a cryptographic key that acts as a proxy to traditional SSOs. Accounts are secured across user devices and authentication methods - there is no central server, no data honey pot.
 It combines both [CustomAuth](https://github.com/torusresearch/CustomAuth) and [tKey](https://github.com/tkey/tkey) and provides you with a nice UI and UX flows
-
-This module generates the javascript to include in a DApp via a script tag.
-It creates an iframe that loads the OpenLogin page and sets up communication streams between
-the iframe and the DApp javascript context.
 
 ## Features
 
@@ -72,8 +53,8 @@ unpkg
 Ensure you have a `Node.JS` development environment setup:
 
 ```
-git clone https://github.com/torusresearch/OpenLoginSdk.git
-cd OpenLoginSdk
+git clone https://github.com/web3auth/auth.git
+cd auth
 npm i
 npm run build
 ```
