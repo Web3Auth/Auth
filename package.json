@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@babel/register": "^7.24.6",
-    "@babel/runtime": "^7.24.8",
+    "@babel/runtime": "^7.25.0",
     "@rollup/plugin-replace": "^5.0.7",
     "@toruslabs/config": "^2.1.0",
     "@toruslabs/eslint-config-typescript": "^3.3.1",
@@ -41,7 +41,7 @@
     "@types/readable-stream": "^4.0.15",
     "cross-env": "^7.0.3",
     "eslint": "^8.56.0",
-    "husky": "^9.1.2",
+    "husky": "^9.1.4",
     "jsdom": "^24.1.1",
     "jsdom-global": "^3.0.2",
     "lint-staged": "^15.2.7",
@@ -59,7 +59,7 @@
   },
   "optionalDependencies": {
     "@nx/nx-linux-x64-gnu": "^19.5.3",
-    "@rollup/rollup-linux-x64-gnu": "^4.19.0"
+    "@rollup/rollup-linux-x64-gnu": "^4.19.1"
   },
   "author": "Torus Labs",
   "license": "MIT",
@@ -77,7 +77,7 @@
     "npm": ">=9.x"
   },
   "dependencies": {
-    "@ethereumjs/util": "^8.0.5",
+    "@ethereumjs/util": "^9.0.3",
     "@metamask/rpc-errors": "^6.3.1",
     "@toruslabs/constants": "^14.0.0",
     "@toruslabs/eccrypto": "^5.0.4",
@@ -85,7 +85,7 @@
     "@toruslabs/metadata-helpers": "^6.0.0",
     "@toruslabs/secure-pub-sub": "^1.0.0",
     "@toruslabs/session-manager": "^1.0.0",
-    "@toruslabs/starkware-crypto": "^3.1.0",
+    "@toruslabs/starkware-crypto": "^4.0.0",
     "@toruslabs/tweetnacl-js": "^1.0.4",
     "base64url": "^3.0.1",
     "bip39": "^3.1.0",

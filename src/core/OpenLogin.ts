@@ -9,14 +9,14 @@ import {
   jsonToBase64,
   LoginParams,
   OPENLOGIN_ACTIONS,
+  OPENLOGIN_LEGACY_NETWORK,
+  type OPENLOGIN_LEGACY_NETWORK_TYPE,
   OPENLOGIN_NETWORK,
   OpenLoginOptions,
   OpenloginSessionConfig,
   OpenloginSessionData,
   OpenloginUserInfo,
   SocialMfaModParams,
-  TORUS_LEGACY_NETWORK,
-  type TORUS_LEGACY_NETWORK_TYPE,
   UX_MODE,
 } from "../utils";
 import { InitializationError, LoginError } from "./errors";
@@ -61,7 +61,7 @@ export class OpenLogin {
     }
 
     if (options.useMpc && !options.sdkUrl) {
-      if (Object.values(TORUS_LEGACY_NETWORK).includes(options.network as TORUS_LEGACY_NETWORK_TYPE))
+      if (Object.values(OPENLOGIN_LEGACY_NETWORK).includes(options.network as OPENLOGIN_LEGACY_NETWORK_TYPE))
         throw InitializationError.invalidParams("MPC is not supported on legacy networks, please use sapphire_devnet or sapphire_mainnet.");
       if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
         options.sdkUrl = "http://localhost:3000";

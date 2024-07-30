@@ -46,7 +46,7 @@ export function getStarkHDAccount(privKey: string, accountIndex: number, starkne
   if (privKeyBuffer.length !== 32) {
     throw new Error("Invalid privKey size");
   }
-  const ethAddress = privateToAddress(privKeyBuffer).toString("hex");
+  const ethAddress = Buffer.from(privateToAddress(privKeyBuffer)).toString("hex");
   const sanitizedEthAddr = isHexPrefixed(ethAddress) ? ethAddress : `0x${ethAddress}`;
   const mnemonic = entropyToMnemonic(privKey);
   const application = STARKNET_NETWORK_ID_MAP[starknetType];
