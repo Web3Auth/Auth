@@ -1,8 +1,9 @@
-import { type TORUS_LEGACY_NETWORK_TYPE } from "@toruslabs/constants";
+import { type TORUS_LEGACY_NETWORK_TYPE, type TORUS_SAPPHIRE_NETWORK_TYPE } from "@toruslabs/constants";
 
-import { BUILD_ENV, LOGIN_PROVIDER, MFA_LEVELS, OPENLOGIN_ACTIONS, OPENLOGIN_NETWORK, SUPPORTED_KEY_CURVES, UX_MODE } from "./constants";
+import { AUTH_ACTIONS, BUILD_ENV, LOGIN_PROVIDER, MFA_LEVELS, SUPPORTED_KEY_CURVES, UX_MODE, WEB3AUTH_NETWORK } from "./constants";
 
-export type OPENLOGIN_LEGACY_NETWORK_TYPE = TORUS_LEGACY_NETWORK_TYPE;
+export type WEB3AUTH_LEGACY_NETWORK_TYPE = TORUS_LEGACY_NETWORK_TYPE;
+export type WEB3AUTH_SAPPHIRE_NETWORK_TYPE = TORUS_SAPPHIRE_NETWORK_TYPE;
 
 export type UX_MODE_TYPE = (typeof UX_MODE)[keyof typeof UX_MODE];
 
@@ -35,7 +36,7 @@ export type BaseRedirectParams = {
  */
 export type LOGIN_PROVIDER_TYPE = (typeof LOGIN_PROVIDER)[keyof typeof LOGIN_PROVIDER];
 
-export type OPENLOGIN_ACTIONS_TYPE = (typeof OPENLOGIN_ACTIONS)[keyof typeof OPENLOGIN_ACTIONS];
+export type AUTH_ACTIONS_TYPE = (typeof AUTH_ACTIONS)[keyof typeof AUTH_ACTIONS];
 
 // autocomplete workaround https://github.com/microsoft/TypeScript/issues/29729
 export type CUSTOM_LOGIN_PROVIDER_TYPE = string & { toString?: (radix?: number) => string };
@@ -44,7 +45,7 @@ export type MfaLevelType = (typeof MFA_LEVELS)[keyof typeof MFA_LEVELS];
 
 export type SUPPORTED_KEY_CURVES_TYPE = (typeof SUPPORTED_KEY_CURVES)[keyof typeof SUPPORTED_KEY_CURVES];
 
-export type OPENLOGIN_NETWORK_TYPE = (typeof OPENLOGIN_NETWORK)[keyof typeof OPENLOGIN_NETWORK];
+export type WEB3AUTH_NETWORK_TYPE = (typeof WEB3AUTH_NETWORK)[keyof typeof WEB3AUTH_NETWORK];
 
 export type BUILD_ENV_TYPE = (typeof BUILD_ENV)[keyof typeof BUILD_ENV];
 
@@ -201,9 +202,8 @@ export type LoginParams = BaseRedirectParams & {
    * - `'secp256k1'`: secp256k1 based pub key is added as a wallet public key in jwt token to use.
    * - `'ed25519'`: ed25519 based pub key is added as a wallet public key in jwt token to use.
    *
-   * Note: This parameter won't change format of private key returned by openlogin. Private key returned
-   * by openlogin is always `secp256k1`. As of now you have to convert it to `'ed25519'` if you want.
-   * You can use `@toruslabs/openlogin-ed25519` npm package for this purpose.
+   * Note: This parameter won't change format of private key returned by auth. Private key returned
+   * by auth is always `secp256k1`.
    *
    *
    * @defaultValue secp256k1
@@ -418,7 +418,7 @@ export type LoginConfig = Record<
     typeOfLogin: TypeOfLogin;
 
     /**
-     * Display Name. If not provided, we use the default for openlogin app
+     * Display Name. If not provided, we use the default for auth app
      */
     name?: string;
 
@@ -428,24 +428,24 @@ export type LoginConfig = Record<
     description?: string;
 
     /**
-     * Custom client_id. If not provided, we use the default for openlogin app
+     * Custom client_id. If not provided, we use the default for auth app
      */
     clientId?: string;
 
     verifierSubIdentifier?: string;
 
     /**
-     * Logo to be shown on mouse hover. If not provided, we use the default for openlogin app
+     * Logo to be shown on mouse hover. If not provided, we use the default for auth app
      */
     logoHover?: string;
 
     /**
-     * Logo to be shown on dark background (dark theme). If not provided, we use the default for openlogin app
+     * Logo to be shown on dark background (dark theme). If not provided, we use the default for auth app
      */
     logoLight?: string;
 
     /**
-     * Logo to be shown on light background (light theme). If not provided, we use the default for openlogin app
+     * Logo to be shown on light background (light theme). If not provided, we use the default for auth app
      */
     logoDark?: string;
 
@@ -483,7 +483,7 @@ export type LoginConfig = Record<
   }
 >;
 
-export type OpenloginUserInfo = {
+export type AuthUserInfo = {
   email?: string;
   name?: string;
   profileImage?: string;
@@ -515,7 +515,7 @@ export type OpenloginUserInfo = {
 
 export type KeyMode = "v1" | "1/1" | "2/n";
 
-export interface OpenloginSessionData {
+export interface AuthSessionData {
   privKey?: string;
   coreKitKey?: string;
   ed25519PrivKey?: string;
@@ -524,7 +524,7 @@ export interface OpenloginSessionData {
   oAuthPrivateKey?: string;
   tKey?: string;
   walletKey?: string;
-  userInfo?: OpenloginUserInfo;
+  userInfo?: AuthUserInfo;
   keyMode?: KeyMode;
   metadataNonce?: string;
   authToken?: string;
@@ -556,7 +556,7 @@ export type MFA_SETTINGS = {
 
 export type MfaSettings = Partial<Record<MFA_FACTOR_TYPE, MFA_SETTINGS>>;
 
-export type OpenLoginOptions = {
+export type AuthOptions = {
   /**
    * You can get your clientId/projectId by registering your
    * dapp on {@link "https://dashboard.web3auth.io"| developer dashboard}
@@ -566,10 +566,10 @@ export type OpenLoginOptions = {
   /**
    * network specifies the web3auth network to be used.
    */
-  network: OPENLOGIN_NETWORK_TYPE;
+  network: WEB3AUTH_NETWORK_TYPE;
 
   /**
-   * This parameter will be used to change the build environment of openlogin sdk.
+   * This parameter will be used to change the build environment of auth sdk.
    * @defaultValue production
    */
   buildEnv?: BUILD_ENV_TYPE;
@@ -655,7 +655,7 @@ export type OpenLoginOptions = {
   dashboardUrl?: string;
 
   /**
-   * options for whitelabling default openlogin modal.
+   * options for whitelabling default auth modal.
    */
   whiteLabel?: WhiteLabelData;
 
@@ -697,7 +697,7 @@ export type OpenLoginOptions = {
   mfaSettings?: MfaSettings;
 
   /**
-   * This parameter will be used to use openlogin mpc
+   * This parameter will be used to use auth mpc
    * @defaultValue false
    */
   useMpc?: boolean;
@@ -715,9 +715,9 @@ export interface BaseLoginParams {
   storageServerUrl?: string;
 }
 
-export interface OpenloginSessionConfig {
-  actionType: OPENLOGIN_ACTIONS_TYPE;
-  options: OpenLoginOptions;
+export interface AuthSessionConfig {
+  actionType: AUTH_ACTIONS_TYPE;
+  options: AuthOptions;
   params: Partial<LoginParams>;
   sessionId?: string;
 }

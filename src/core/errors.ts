@@ -1,6 +1,6 @@
 import { CustomError } from "ts-custom-error";
 
-export interface IOpenloginError extends CustomError {
+export interface IAuthError extends CustomError {
   code: number;
   message: string;
   toString(): string;
@@ -10,7 +10,7 @@ export type ErrorCodes = {
   [key: number]: string;
 };
 
-export abstract class OpenloginError extends CustomError implements IOpenloginError {
+export abstract class AuthError extends CustomError implements IAuthError {
   code: number;
 
   message: string;
@@ -22,10 +22,10 @@ export abstract class OpenloginError extends CustomError implements IOpenloginEr
     this.code = code;
     this.message = message || "";
     // Set name explicitly as minification can mangle class names
-    Object.defineProperty(this, "name", { value: "OpenloginError" });
+    Object.defineProperty(this, "name", { value: "AuthError" });
   }
 
-  toJSON(): IOpenloginError {
+  toJSON(): IAuthError {
     return {
       name: this.name,
       code: this.code,
@@ -38,7 +38,7 @@ export abstract class OpenloginError extends CustomError implements IOpenloginEr
   }
 }
 
-export class InitializationError extends OpenloginError {
+export class InitializationError extends AuthError {
   protected static messages: ErrorCodes = {
     5000: "Custom",
     5001: "Invalid constructor params",
@@ -53,15 +53,15 @@ export class InitializationError extends OpenloginError {
     Object.defineProperty(this, "name", { value: "InitializationError" });
   }
 
-  public static fromCode(code: number, extraMessage = ""): OpenloginError {
+  public static fromCode(code: number, extraMessage = ""): AuthError {
     return new InitializationError(code, `${InitializationError.messages[code]}, ${extraMessage}`);
   }
 
-  public static invalidParams(extraMessage = ""): OpenloginError {
+  public static invalidParams(extraMessage = ""): AuthError {
     return InitializationError.fromCode(5001, extraMessage);
   }
 
-  public static notInitialized(extraMessage = ""): OpenloginError {
+  public static notInitialized(extraMessage = ""): AuthError {
     return InitializationError.fromCode(5002, extraMessage);
   }
 }
@@ -70,7 +70,7 @@ export class InitializationError extends OpenloginError {
  * login errors
  */
 
-export class LoginError extends OpenloginError {
+export class LoginError extends AuthError {
   protected static messages: ErrorCodes = {
     5000: "Custom",
     5111: "Invalid login params",
@@ -90,35 +90,35 @@ export class LoginError extends OpenloginError {
     Object.defineProperty(this, "name", { value: "LoginError" });
   }
 
-  public static fromCode(code: number, extraMessage = ""): OpenloginError {
+  public static fromCode(code: number, extraMessage = ""): AuthError {
     return new LoginError(code, `${LoginError.messages[code]}, ${extraMessage}`);
   }
 
-  public static invalidLoginParams(extraMessage = ""): OpenloginError {
+  public static invalidLoginParams(extraMessage = ""): AuthError {
     return LoginError.fromCode(5111, extraMessage);
   }
 
-  public static userNotLoggedIn(extraMessage = ""): OpenloginError {
+  public static userNotLoggedIn(extraMessage = ""): AuthError {
     return LoginError.fromCode(5112, extraMessage);
   }
 
-  public static popupClosed(extraMessage = ""): OpenloginError {
+  public static popupClosed(extraMessage = ""): AuthError {
     return LoginError.fromCode(5113, extraMessage);
   }
 
-  public static loginFailed(extraMessage = ""): OpenloginError {
+  public static loginFailed(extraMessage = ""): AuthError {
     return LoginError.fromCode(5114, extraMessage);
   }
 
-  public static popupBlocked(extraMessage = ""): OpenloginError {
+  public static popupBlocked(extraMessage = ""): AuthError {
     return LoginError.fromCode(5115, extraMessage);
   }
 
-  public static mfaAlreadyEnabled(extraMessage = ""): OpenloginError {
+  public static mfaAlreadyEnabled(extraMessage = ""): AuthError {
     return LoginError.fromCode(5116, extraMessage);
   }
 
-  public static mfaNotEnabled(extraMessage = ""): OpenloginError {
+  public static mfaNotEnabled(extraMessage = ""): AuthError {
     return LoginError.fromCode(5117, extraMessage);
   }
 }

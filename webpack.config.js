@@ -1,17 +1,15 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
+const { EnvironmentPlugin } = require("webpack");
+const pkg = require("./package.json");
 
-function generateWebpackConfig({ alias, plugins = [] }) {
-  const baseConfig = {
-    resolve: {
-      plugins: [new TsconfigPathsPlugin()],
-      alias: {
-        ...alias,
-      },
-    },
-    plugins,
-  };
-  return { baseConfig };
+exports.baseConfig = {
+  resolve: {
+    plugins: [new TsconfigPathsPlugin() ],
+  },
+  plugins: [
+    new EnvironmentPlugin({ AUTH_VERSION: pkg.version })
+  ],
 }
 
-module.exports = generateWebpackConfig;
+console.log("webpack config loaded", process.env.AUTH_VERSION);

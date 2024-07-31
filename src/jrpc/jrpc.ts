@@ -30,11 +30,11 @@ export function createErrorMiddleware(log: ConsoleLike): JRPCMiddleware<unknown,
         if (!error) {
           return done();
         }
-        log.error(`OpenLogin - RPC Error: ${error.message}`, error);
+        log.error(`Auth - RPC Error: ${error.message}`, error);
         return done();
       });
     } catch (error: unknown) {
-      log.error(`OpenLogin - RPC Error thrown: ${(error as Error).message}`, error);
+      log.error(`Auth - RPC Error thrown: ${(error as Error).message}`, error);
       res.error = new SerializableError({ code: -32603, message: (error as Error).message });
       end();
     }

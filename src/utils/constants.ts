@@ -1,17 +1,17 @@
 import { TORUS_LEGACY_NETWORK, TORUS_SAPPHIRE_NETWORK } from "@toruslabs/constants";
 
 export const storeKey = "openlogin_store";
-export const OPENLOGIN_LEGACY_NETWORK = TORUS_LEGACY_NETWORK;
-export const OPENLOGIN_SAPPHIRE_NETWORK = TORUS_SAPPHIRE_NETWORK;
+export const WEB3AUTH_LEGACY_NETWORK = TORUS_LEGACY_NETWORK;
+export const WEB3AUTH_SAPPHIRE_NETWORK = TORUS_SAPPHIRE_NETWORK;
 
 export const UX_MODE = {
   POPUP: "popup",
   REDIRECT: "redirect",
 } as const;
 
-export const OPENLOGIN_NETWORK = {
-  ...OPENLOGIN_SAPPHIRE_NETWORK,
-  ...OPENLOGIN_LEGACY_NETWORK,
+export const WEB3AUTH_NETWORK = {
+  ...WEB3AUTH_SAPPHIRE_NETWORK,
+  ...WEB3AUTH_LEGACY_NETWORK,
 } as const;
 
 export const SUPPORTED_KEY_CURVES = {
@@ -47,7 +47,7 @@ export const MFA_LEVELS = {
   NONE: "none",
 } as const;
 
-export const OPENLOGIN_ACTIONS = {
+export const AUTH_ACTIONS = {
   LOGIN: "login",
   ENABLE_MFA: "enable_mfa",
   MANAGE_MFA: "manage_mfa",

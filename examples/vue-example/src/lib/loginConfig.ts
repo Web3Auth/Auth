@@ -1,4 +1,4 @@
-import { LOGIN_PROVIDER, LoginConfig } from "@web3auth/auth";
+import { LOGIN_PROVIDER, type LoginConfig } from "@web3auth/auth";
 
 export default {
   // email_passwordless: {

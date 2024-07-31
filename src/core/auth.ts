@@ -2,34 +2,34 @@ import { SESSION_SERVER } from "@toruslabs/constants";
 import { OpenloginSessionManager } from "@toruslabs/session-manager";
 
 import {
+  AUTH_ACTIONS,
+  AuthOptions,
+  AuthSessionConfig,
+  AuthSessionData,
+  AuthUserInfo,
   BaseLoginParams,
   BaseRedirectParams,
   BrowserStorage,
   BUILD_ENV,
   jsonToBase64,
   LoginParams,
-  OPENLOGIN_ACTIONS,
-  OPENLOGIN_LEGACY_NETWORK,
-  type OPENLOGIN_LEGACY_NETWORK_TYPE,
-  OPENLOGIN_NETWORK,
-  OpenLoginOptions,
-  OpenloginSessionConfig,
-  OpenloginSessionData,
-  OpenloginUserInfo,
   SocialMfaModParams,
   UX_MODE,
+  WEB3AUTH_LEGACY_NETWORK,
+  type WEB3AUTH_LEGACY_NETWORK_TYPE,
+  WEB3AUTH_NETWORK,
 } from "../utils";
 import { InitializationError, LoginError } from "./errors";
 import { loglevel as log } from "./logger";
 import PopupHandler, { PopupResponse } from "./PopupHandler";
 import { constructURL, getHashQueryParams, getTimeout, version } from "./utils";
 
-export class OpenLogin {
-  state: OpenloginSessionData = {};
+export class Auth {
+  state: AuthSessionData = {};
 
-  options: OpenLoginOptions;
+  options: AuthOptions;
 
-  private sessionManager: OpenloginSessionManager<OpenloginSessionData>;
+  private sessionManager: OpenloginSessionManager<AuthSessionData>;
 
   private currentStorage: BrowserStorage;
 
@@ -39,9 +39,9 @@ export class OpenLogin {
 
   private addVersionInUrls = true;
 
-  constructor(options: OpenLoginOptions) {
+  constructor(options: AuthOptions) {
     if (!options.clientId) throw InitializationError.invalidParams("clientId is required");
-    if (!options.network) options.network = OPENLOGIN_NETWORK.SAPPHIRE_MAINNET;
+    if (!options.network) options.network = WEB3AUTH_NETWORK.SAPPHIRE_MAINNET;
     if (!options.buildEnv) options.buildEnv = BUILD_ENV.PRODUCTION;
     if (options.buildEnv === BUILD_ENV.DEVELOPMENT || options.buildEnv === BUILD_ENV.TESTING || options.sdkUrl) this.addVersionInUrls = false;
     if (!options.sdkUrl && !options.useMpc) {
@@ -61,7 +61,7 @@ export class OpenLogin {
     }
 
     if (options.useMpc && !options.sdkUrl) {
-      if (Object.values(OPENLOGIN_LEGACY_NETWORK).includes(options.network as OPENLOGIN_LEGACY_NETWORK_TYPE))
+      if (Object.values(WEB3AUTH_LEGACY_NETWORK).includes(options.network as WEB3AUTH_LEGACY_NETWORK_TYPE))
         throw InitializationError.invalidParams("MPC is not supported on legacy networks, please use sapphire_devnet or sapphire_mainnet.");
       if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
         options.sdkUrl = "http://localhost:3000";
@@ -143,7 +143,7 @@ export class OpenLogin {
       sessionId,
     });
 
-    if (this.options.network === OPENLOGIN_NETWORK.TESTNET || this.options.network === OPENLOGIN_NETWORK.SAPPHIRE_DEVNET) {
+    if (this.options.network === WEB3AUTH_NETWORK.TESTNET || this.options.network === WEB3AUTH_NETWORK.SAPPHIRE_DEVNET) {
       // using console log because it shouldn't be affected by loglevel config
       // eslint-disable-next-line no-console
       console.log(
@@ -195,13 +195,13 @@ export class OpenLogin {
       ...params,
     };
 
-    const dataObject: OpenloginSessionConfig = {
-      actionType: OPENLOGIN_ACTIONS.LOGIN,
+    const dataObject: AuthSessionConfig = {
+      actionType: AUTH_ACTIONS.LOGIN,
       options: this.options,
       params: loginParams,
     };
 
-    const result = await this.openloginHandler(`${this.baseUrl}/start`, dataObject, getTimeout(params.loginProvider));
+    const result = await this.authHandler(`${this.baseUrl}/start`, dataObject, getTimeout(params.loginProvider));
     if (this.options.uxMode === UX_MODE.REDIRECT) return null;
     if (result.error) {
       this.dappState = result.state;
@@ -264,8 +264,8 @@ export class OpenLogin {
       redirectUrl: this.options.redirectUrl,
     };
 
-    const dataObject: OpenloginSessionConfig = {
-      actionType: OPENLOGIN_ACTIONS.ENABLE_MFA,
+    const dataObject: AuthSessionConfig = {
+      actionType: AUTH_ACTIONS.ENABLE_MFA,
       options: this.options,
       params: {
         ...defaultParams,
@@ -279,7 +279,7 @@ export class OpenLogin {
       sessionId: this.sessionId,
     };
 
-    const result = await this.openloginHandler(`${this.baseUrl}/start`, dataObject, getTimeout(dataObject.params.loginProvider));
+    const result = await this.authHandler(`${this.baseUrl}/start`, dataObject, getTimeout(dataObject.params.loginProvider));
     if (this.options.uxMode === UX_MODE.REDIRECT) return null;
     if (result.error) {
       this.dappState = result.state;
@@ -305,8 +305,8 @@ export class OpenLogin {
 
     const loginId = OpenloginSessionManager.generateRandomSessionKey();
 
-    const dataObject: OpenloginSessionConfig = {
-      actionType: OPENLOGIN_ACTIONS.MANAGE_MFA,
+    const dataObject: AuthSessionConfig = {
+      actionType: AUTH_ACTIONS.MANAGE_MFA,
       options: this.options,
       params: {
         ...defaultParams,
@@ -344,8 +344,8 @@ export class OpenLogin {
       redirectUrl: this.options.redirectUrl,
     };
 
-    const dataObject: OpenloginSessionConfig = {
-      actionType: OPENLOGIN_ACTIONS.MODIFY_SOCIAL_FACTOR,
+    const dataObject: AuthSessionConfig = {
+      actionType: AUTH_ACTIONS.MODIFY_SOCIAL_FACTOR,
       options: this.options,
       params: {
         ...defaultParams,
@@ -354,23 +354,23 @@ export class OpenLogin {
       sessionId: this.sessionId,
     };
 
-    const result = await this.openloginHandler(`${this.baseUrl}/start`, dataObject);
+    const result = await this.authHandler(`${this.baseUrl}/start`, dataObject);
     if (this.options.uxMode === UX_MODE.REDIRECT) return undefined;
     if (result.error) return false;
     return true;
   }
 
-  getUserInfo(): OpenloginUserInfo {
+  getUserInfo(): AuthUserInfo {
     if (!this.sessionManager.sessionId) {
       throw LoginError.userNotLoggedIn();
     }
     return this.state.userInfo;
   }
 
-  private async createLoginSession(loginId: string, data: OpenloginSessionConfig, timeout = 600, skipAwait = false): Promise<void> {
+  private async createLoginSession(loginId: string, data: AuthSessionConfig, timeout = 600, skipAwait = false): Promise<void> {
     if (!this.sessionManager) throw InitializationError.notInitialized();
 
-    const loginSessionMgr = new OpenloginSessionManager<OpenloginSessionConfig>({
+    const loginSessionMgr = new OpenloginSessionManager<AuthSessionConfig>({
       sessionServerBaseUrl: data.options.storageServerUrl,
       sessionNamespace: data.options.sessionNamespace,
       sessionTime: timeout, // each login key must be used with 10 mins (might be used at the end of popup redirect)
@@ -384,7 +384,7 @@ export class OpenLogin {
     }
   }
 
-  private async _authorizeSession(): Promise<OpenloginSessionData> {
+  private async _authorizeSession(): Promise<AuthSessionData> {
     try {
       if (!this.sessionManager.sessionId) return {};
       const result = await this.sessionManager.authorizeSession();
@@ -395,7 +395,7 @@ export class OpenLogin {
     }
   }
 
-  private updateState(data: Partial<OpenloginSessionData>) {
+  private updateState(data: Partial<AuthSessionData>) {
     this.state = { ...this.state, ...data };
   }
 
@@ -404,7 +404,7 @@ export class OpenLogin {
     this.updateState(result);
   }
 
-  private async openloginHandler(url: string, dataObject: OpenloginSessionConfig, popupTimeout = 1000 * 10): Promise<PopupResponse | undefined> {
+  private async authHandler(url: string, dataObject: AuthSessionConfig, popupTimeout = 1000 * 10): Promise<PopupResponse | undefined> {
     const loginId = OpenloginSessionManager.generateRandomSessionKey();
     await this.createLoginSession(loginId, dataObject);
     const configParams: BaseLoginParams = {

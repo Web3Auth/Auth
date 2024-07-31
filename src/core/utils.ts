@@ -6,7 +6,7 @@ import { base64url, LOGIN_PROVIDER, safeatob } from "../utils";
 import { loglevel as log } from "./logger";
 
 // don't use destructuring for process.env cause it messes up webpack env plugin
-export const version = process.env.OPENLOGIN_VERSION;
+export const version = process.env.AUTH_VERSION;
 
 export async function whitelistUrl(clientId: string, appKey: string, origin: string): Promise<string> {
   const appKeyBuf = Buffer.from(appKey.padStart(64, "0"), "hex");
