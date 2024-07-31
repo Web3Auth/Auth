@@ -10,7 +10,12 @@ export interface PopupResponse {
   state?: string;
   error?: string;
 }
-class PopupHandler extends EventEmitter {
+
+export interface PopupHandlerEvents {
+  close: void;
+}
+
+class PopupHandler extends EventEmitter<PopupHandlerEvents> {
   url: string;
 
   target: string;
