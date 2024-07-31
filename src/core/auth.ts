@@ -33,7 +33,7 @@ export class Auth {
 
   private currentStorage: BrowserStorage;
 
-  private _storageBaseKey = "openlogin_store";
+  private _storageBaseKey = "auth_store";
 
   private dappState: string;
 

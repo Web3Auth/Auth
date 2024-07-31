@@ -1,6 +1,6 @@
 import { TORUS_LEGACY_NETWORK, TORUS_SAPPHIRE_NETWORK } from "@toruslabs/constants";
 
-export const storeKey = "openlogin_store";
+export const storeKey = "auth_store";
 export const WEB3AUTH_LEGACY_NETWORK = TORUS_LEGACY_NETWORK;
 export const WEB3AUTH_SAPPHIRE_NETWORK = TORUS_SAPPHIRE_NETWORK;
 

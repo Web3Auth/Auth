@@ -3,7 +3,7 @@
 > [Web3Auth](https://web3auth.io) is where passwordless auth meets non-custodial key infrastructure for Web3 apps and wallets. By aggregating OAuth (Google, Twitter, Discord) logins, different wallets and innovative Multi Party Computation (MPC) - Web3Auth provides a seamless login experience to every user on your application.
 
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
-![npm](https://img.shields.io/npm/dw/@web3auth/auth)                      |
+![npm](https://img.shields.io/npm/dw/@web3auth/auth) |
 
 ## Introduction
 
@@ -79,4 +79,6 @@ npm test
 
 ## License
 
-`OpenLoginSdk` is [MIT Licensed](LICENSE)
+`AuthSdk` is [MIT Licensed](LICENSE)
+
+TODO: fix demo app ci
