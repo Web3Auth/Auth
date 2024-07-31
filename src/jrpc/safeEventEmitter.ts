@@ -26,8 +26,8 @@ function arrayClone<T>(arr: T[]): T[] {
   return copy;
 }
 
-export default class SafeEventEmitter extends EventEmitter {
-  emit(type: string, ...args: any[]): boolean {
+export class SafeEventEmitter<T extends EventEmitter.ValidEventTypes> extends EventEmitter<T> {
+  emit(type: EventEmitter.EventNames<T>, ...args: any[]): boolean {
     let doError = type === "error";
 
     const events: EventMap = (this as any)._events;
@@ -54,7 +54,7 @@ export default class SafeEventEmitter extends EventEmitter {
       throw err; // Unhandled 'error' event
     }
 
-    const handler = events[type];
+    const handler = events[type as string];
 
     if (handler === undefined) {
       return false;

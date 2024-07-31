@@ -1,5 +1,5 @@
 import { SESSION_SERVER } from "@toruslabs/constants";
-import { OpenloginSessionManager } from "@toruslabs/session-manager";
+import { SessionManager } from "@toruslabs/session-manager";
 
 import {
   AUTH_ACTIONS,
@@ -29,7 +29,7 @@ export class Auth {
 
   options: AuthOptions;
 
-  private sessionManager: OpenloginSessionManager<AuthSessionData>;
+  private sessionManager: SessionManager<AuthSessionData>;
 
   private currentStorage: BrowserStorage;
 
@@ -136,7 +136,7 @@ export class Auth {
 
     const sessionId = this.currentStorage.get<string>("sessionId");
 
-    this.sessionManager = new OpenloginSessionManager({
+    this.sessionManager = new SessionManager({
       sessionServerBaseUrl: this.options.storageServerUrl,
       sessionNamespace: this.options.sessionNamespace,
       sessionTime: this.options.sessionTime,
@@ -303,7 +303,7 @@ export class Auth {
       dappUrl: `${window.location.origin}${window.location.pathname}`,
     };
 
-    const loginId = OpenloginSessionManager.generateRandomSessionKey();
+    const loginId = SessionManager.generateRandomSessionKey();
 
     const dataObject: AuthSessionConfig = {
       actionType: AUTH_ACTIONS.MANAGE_MFA,
@@ -370,7 +370,7 @@ export class Auth {
   private async createLoginSession(loginId: string, data: AuthSessionConfig, timeout = 600, skipAwait = false): Promise<void> {
     if (!this.sessionManager) throw InitializationError.notInitialized();
 
-    const loginSessionMgr = new OpenloginSessionManager<AuthSessionConfig>({
+    const loginSessionMgr = new SessionManager<AuthSessionConfig>({
       sessionServerBaseUrl: data.options.storageServerUrl,
       sessionNamespace: data.options.sessionNamespace,
       sessionTime: timeout, // each login key must be used with 10 mins (might be used at the end of popup redirect)
@@ -405,7 +405,7 @@ export class Auth {
   }
 
   private async authHandler(url: string, dataObject: AuthSessionConfig, popupTimeout = 1000 * 10): Promise<PopupResponse | undefined> {
-    const loginId = OpenloginSessionManager.generateRandomSessionKey();
+    const loginId = SessionManager.generateRandomSessionKey();
     await this.createLoginSession(loginId, dataObject);
     const configParams: BaseLoginParams = {
       loginId,

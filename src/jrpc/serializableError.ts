@@ -1,6 +1,6 @@
 import stringify from "json-stable-stringify";
 
-export default class SerializableError<T> extends Error {
+export class SerializableError<T> extends Error {
   public code: number;
 
   public data: T;

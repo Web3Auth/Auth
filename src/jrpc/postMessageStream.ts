@@ -1,6 +1,6 @@
-import BasePostMessageStream from "./basePostMessageStream";
+import { BasePostMessageStream } from "./basePostMessageStream";
 
-export default class PostMessageStream extends BasePostMessageStream {
+export class PostMessageStream extends BasePostMessageStream {
   _postMessage(data: unknown): void {
     let originConstraint = this._targetOrigin;
     if (typeof data === "object") {
