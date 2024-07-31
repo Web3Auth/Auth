@@ -1,18 +1,5 @@
+/* eslint-disable import/extensions */
 import register from "@babel/register";
+import config from "@toruslabs/config/babel-test.config.js";
 
-import currentPkg from "../package.json" assert { type: "json" };
-
-const runtimeVersion = currentPkg.peerDependencies["@babel/runtime"];
-
-register({
-  presets: [["@babel/env", { bugfixes: true }], "@babel/typescript"],
-  plugins: [
-    "@babel/plugin-syntax-bigint",
-    "@babel/plugin-transform-object-rest-spread",
-    "@babel/plugin-transform-class-properties",
-    ["@babel/transform-runtime", { version: runtimeVersion }],
-    "@babel/plugin-transform-numeric-separator",
-  ],
-  sourceType: "unambiguous",
-  extensions: [".ts", ".js"],
-});
+register(config);
