@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { EventEmitter } from "events";
+import { EventEmitter } from "eventemitter3";
 
 type Handler = (...args: any[]) => void;
 interface EventMap {

@@ -34,6 +34,7 @@
     "@types/color": "^3.0.6",
     "@types/elliptic": "^6.4.18",
     "@types/end-of-stream": "^1.4.4",
+    "@types/json-stable-stringify": "^1.0.36",
     "@types/mocha": "^10.0.7",
     "@types/node": "^20",
     "@types/once": "^1.4.4",
@@ -78,7 +79,7 @@
   },
   "dependencies": {
     "@ethereumjs/util": "^9.0.3",
-    "@metamask/rpc-errors": "^6.3.1",
+    "@metamask/rpc-errors": "6.2.1",
     "@toruslabs/constants": "^14.0.0",
     "@toruslabs/eccrypto": "^5.0.4",
     "@toruslabs/ffjavascript": "^3.0.0",
@@ -95,13 +96,12 @@
     "elliptic": "^6.5.6",
     "enc-utils": "^3.0.0",
     "end-of-stream": "^1.4.4",
-    "events": "^3.3.0",
-    "fast-safe-stringify": "^2.1.1",
+    "eventemitter3": "^5.0.1",
+    "json-stable-stringify": "^1.1.1",
     "loglevel": "^1.9.1",
     "once": "^1.4.0",
     "pump": "^3.0.0",
     "readable-stream": "^4.5.2",
-    "ts-custom-error": "^3.3.1",
-    "ts-node": "^10.9.2"
+    "ts-custom-error": "^3.3.1"
   }
 }

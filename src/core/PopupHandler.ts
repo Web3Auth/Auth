@@ -1,5 +1,5 @@
 import { SecurePubSub } from "@toruslabs/secure-pub-sub";
-import { EventEmitter } from "events";
+import { EventEmitter } from "eventemitter3";
 
 import { LoginError } from "./errors";
 import { getPopupFeatures } from "./utils";

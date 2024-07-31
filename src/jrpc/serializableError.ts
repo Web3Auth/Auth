@@ -1,4 +1,4 @@
-import stringify from "fast-safe-stringify";
+import stringify from "json-stable-stringify";
 
 export default class SerializableError<T> extends Error {
   public code: number;
