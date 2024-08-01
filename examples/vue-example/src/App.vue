@@ -9,8 +9,8 @@
       </div>
       <div id="navbar-sticky" class="items-center justify-between w-full md:flex md:w-auto md:order-1">
         <div class="max-sm:w-full">
-          <h1 class="leading-tight text-3xl font-extrabold">demo-openlogin.web3auth.io</h1>
-          <p v-if="privKey" class="leading-tight text-1xl">Openlogin Private key : {{ privKey }}</p>
+          <h1 class="leading-tight text-3xl font-extrabold">demo-auth.web3auth.io</h1>
+          <p v-if="privKey" class="leading-tight text-1xl">Web3Auth Private key : {{ privKey }}</p>
         </div>
       </div>
     </div>
@@ -47,7 +47,7 @@
                 @click="getOpenloginState"
                 data-testid="btnGetOpenloginState"
               >
-                Get openlogin state
+                Get web3auth state
               </Button>
             </div>
             <div class="mb-4">
@@ -200,8 +200,8 @@
       <div v-else class="grid grid-cols-8 gap-0">
         <div class="col-span-0 sm:col-span-1 lg:col-span-2"></div>
         <Card class="h-auto px-12 py-16 col-span-8 sm:col-span-6 lg:col-span-4">
-          <div class="leading-tight text-2xl font-extrabold">Login in with Openlogin</div>
-          <div class="text-app-gray-500 mt-2">This demo show how to use Openlogin SDK to login and sign messages using Openlogin SDK.</div>
+          <div class="leading-tight text-2xl font-extrabold">Login in with Auth</div>
+          <div class="text-app-gray-500 mt-2">This demo show how to use Auth SDK to login and sign messages using Auth SDK.</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-5">
             <div class="flex items-start w-full gap-2 grid grid-cols-1">
               <Toggle id="mpc" v-model="useMpc" :show-label="true" :size="'small'" :label-disabled="'MPC'" :label-enabled="'MPC'" data-testid="mpc" />
@@ -278,7 +278,7 @@
               class="col-span-1 sm:col-span-2 grid grid-cols-1 h-auto px-4 py-4"
             >
               <div class="leading-tight text-xl font-extrabold">Whitelabel Setting</div>
-              <div class="text-app-gray-500 mt-2">Customize the look and feel of the Openlogin modal.</div>
+              <div class="text-app-gray-500 mt-2">Customize the look and feel of the Auth modal.</div>
               <div class="mt-3">
                 <TextField
                   v-model="whitelabelConfig.appName"
