@@ -141,5 +141,8 @@
     "pump": "^3.0.0",
     "readable-stream": "^4.5.2",
     "ts-custom-error": "^3.3.1"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
