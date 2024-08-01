@@ -15,15 +15,15 @@ import {
 import { SafeEventEmitter } from "./safeEventEmitter";
 import { SerializableError } from "./serializableError";
 
-export interface JrpcEnginEvents {
-  notification: (arg1: string) => boolean;
+export interface JrpcEngineEvents {
+  notification: (arg1: string) => void;
 }
 
 /**
  * A JSON-RPC request and response processor.
  * Give it a stack of middleware, pass it requests, and get back responses.
  */
-export class JRPCEngine extends SafeEventEmitter<JrpcEnginEvents> {
+export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
   private _middleware: JRPCMiddleware<unknown, unknown>[];
 
   constructor() {

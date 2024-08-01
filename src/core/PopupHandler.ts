@@ -12,7 +12,7 @@ export interface PopupResponse {
 }
 
 export interface PopupHandlerEvents {
-  close: void;
+  close: [];
 }
 
 class PopupHandler extends EventEmitter<PopupHandlerEvents> {
