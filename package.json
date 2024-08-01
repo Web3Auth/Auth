@@ -54,6 +54,7 @@
     "start": "cross-env FORCE_COLOR=1 torus-scripts start",
     "dev": "rimraf dist/ && cross-env NODE_ENV=development torus-scripts start",
     "build": "cross-env FORCE_COLOR=1 torus-scripts build",
+    "release": "cross-env FORCE_COLOR=1 torus-scripts release",
     "lint": "eslint --fix 'src/**/*.ts'",
     "prepack": "npm run build",
     "pre-commit": "lint-staged --cwd .",
