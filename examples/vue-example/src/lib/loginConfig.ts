@@ -1,4 +1,4 @@
-import { LOGIN_PROVIDER, LoginConfig } from "@toruslabs/openlogin-utils";
+import { LOGIN_PROVIDER, type LoginConfig } from "@web3auth/auth";
 
 export default {
   // email_passwordless: {

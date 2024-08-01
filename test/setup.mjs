@@ -1,6 +1,5 @@
-import Register from "@babel/register";
+/* eslint-disable import/extensions */
+import register from "@babel/register";
+import config from "@toruslabs/config/babel-test.config.js";
 
-Register({
-  extensions: [".ts", ".js"],
-  rootMode: "upward",
-});
+register(config);

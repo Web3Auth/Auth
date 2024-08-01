@@ -1,4 +1,4 @@
-import { WhiteLabelData } from "@toruslabs/openlogin-utils";
+import { type WhiteLabelData } from "@web3auth/auth";
 
 const whiteLabel: WhiteLabelData = {
   appName: "HelloDemo",

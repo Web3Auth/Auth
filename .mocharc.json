@@ -1,7 +1,7 @@
 {
-  "node-option": ["experimental-specifier-resolution=node"],
+  "node-option": ["experimental-specifier-resolution=node", "import=tsx"],
   "extension": ["ts", "js"],
-  "require": ["../../test/setup.mjs"],
+  "require": ["./test/setup.mjs"],
   "timeout": 0,
   "exit": true
 }

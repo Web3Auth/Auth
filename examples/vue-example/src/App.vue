@@ -437,7 +437,7 @@
                 label="Select Openlogin Network*"
                 aria-label="Select Openlogin Network*"
                 placeholder="Select Openlogin Network"
-                :options="Object.values(OPENLOGIN_NETWORK).map((x) => ({ name: x, value: x }))"
+                :options="Object.values(WEB3AUTH_NETWORK).map((x) => ({ name: x, value: x }))"
                 :helper-text="`Selected Openlogin Network: ${selectedOpenloginNetwork}`"
                 :error="!selectedOpenloginNetwork"
               />
@@ -533,10 +533,7 @@
 </template>
 
 <script setup lang="ts">
-import { TORUS_SAPPHIRE_NETWORK_TYPE } from "@toruslabs/constants";
 import { generatePrivate } from "@toruslabs/eccrypto";
-import OpenLogin from "@toruslabs/openlogin";
-import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import {
   BUILD_ENV,
   BUILD_ENV_TYPE,
@@ -550,15 +547,18 @@ import {
   MFA_LEVELS,
   MFA_SETTINGS,
   MfaLevelType,
-  OPENLOGIN_NETWORK,
-  OPENLOGIN_NETWORK_TYPE,
+  WEB3AUTH_NETWORK,
+  WEB3AUTH_NETWORK_TYPE,
+  WEB3AUTH_SAPPHIRE_NETWORK_TYPE,
   storageAvailable,
   SUPPORTED_KEY_CURVES,
   SUPPORTED_KEY_CURVES_TYPE,
   UX_MODE,
   UX_MODE_TYPE,
   WhiteLabelData,
-} from "@toruslabs/openlogin-utils";
+  Auth, 
+  getED25519Key
+} from "@web3auth/auth";
 import { Client, getDKLSCoeff, setupSockets } from "@toruslabs/tss-client";
 import { Button, Card, Select, TextField, Toggle } from "@toruslabs/vue-components";
 import { EthereumSigningProvider } from "@web3auth/ethereum-mpc-provider";
@@ -574,14 +574,14 @@ import loginConfig from "./lib/loginConfig";
 import whitelabel from "./lib/whitelabel";
 import { generateTSSEndpoints, getTSSEndpoints } from "./utils";
 
-const OPENLOGIN_PROJECT_IDS: Record<OPENLOGIN_NETWORK_TYPE, string> = {
-  [OPENLOGIN_NETWORK.MAINNET]: "BJRZ6qdDTbj6Vd5YXvV994TYCqY42-PxldCetmvGTUdoq6pkCqdpuC1DIehz76zuYdaq1RJkXGHuDraHRhCQHvA",
-  [OPENLOGIN_NETWORK.TESTNET]: "BHr_dKcxC0ecKn_2dZQmQeNdjPgWykMkcodEHkVvPMo71qzOV6SgtoN8KCvFdLN7bf34JOm89vWQMLFmSfIo84A",
-  [OPENLOGIN_NETWORK.AQUA]: "BM34K7ZqV3QwbDt0lvJFCdr4DxS9gyn7XZ2wZUaaf0Ddr71nLjPCNNYtXuGWxxc4i7ivYdgQzFqKlIot4IWrWCE",
-  [OPENLOGIN_NETWORK.CYAN]: "BEglQSgt4cUWcj6SKRdu5QkOXTsePmMcusG5EAoyjyOYKlVRjIF1iCNnMOTfpzCiunHRrMui8TIwQPXdkQ8Yxuk",
-  [OPENLOGIN_NETWORK.SAPPHIRE_DEVNET]: "BHgArYmWwSeq21czpcarYh0EVq2WWOzflX-NTK-tY1-1pauPzHKRRLgpABkmYiIV_og9jAvoIxQ8L3Smrwe04Lw",
-  [OPENLOGIN_NETWORK.SAPPHIRE_MAINNET]: "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ",
-  [OPENLOGIN_NETWORK.CELESTE]: "openlogin",
+const OPENLOGIN_PROJECT_IDS: Record<WEB3AUTH_NETWORK_TYPE, string> = {
+  [WEB3AUTH_NETWORK.MAINNET]: "BJRZ6qdDTbj6Vd5YXvV994TYCqY42-PxldCetmvGTUdoq6pkCqdpuC1DIehz76zuYdaq1RJkXGHuDraHRhCQHvA",
+  [WEB3AUTH_NETWORK.TESTNET]: "BHr_dKcxC0ecKn_2dZQmQeNdjPgWykMkcodEHkVvPMo71qzOV6SgtoN8KCvFdLN7bf34JOm89vWQMLFmSfIo84A",
+  [WEB3AUTH_NETWORK.AQUA]: "BM34K7ZqV3QwbDt0lvJFCdr4DxS9gyn7XZ2wZUaaf0Ddr71nLjPCNNYtXuGWxxc4i7ivYdgQzFqKlIot4IWrWCE",
+  [WEB3AUTH_NETWORK.CYAN]: "BEglQSgt4cUWcj6SKRdu5QkOXTsePmMcusG5EAoyjyOYKlVRjIF1iCNnMOTfpzCiunHRrMui8TIwQPXdkQ8Yxuk",
+  [WEB3AUTH_NETWORK.SAPPHIRE_DEVNET]: "BHgArYmWwSeq21czpcarYh0EVq2WWOzflX-NTK-tY1-1pauPzHKRRLgpABkmYiIV_og9jAvoIxQ8L3Smrwe04Lw",
+  [WEB3AUTH_NETWORK.SAPPHIRE_MAINNET]: "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ",
+  [WEB3AUTH_NETWORK.CELESTE]: "openlogin",
 };
 
 const languages: { name: string; value: LANGUAGE_TYPE }[] = [
@@ -611,7 +611,7 @@ const selectedLoginProvider = ref<LOGIN_PROVIDER_TYPE>(LOGIN_PROVIDER.GOOGLE);
 const login_hint = ref("");
 const isWhiteLabelEnabled = ref(false);
 const selectedUxMode = ref<UX_MODE_TYPE>(UX_MODE.REDIRECT);
-const selectedOpenloginNetwork = ref<OPENLOGIN_NETWORK_TYPE>(OPENLOGIN_NETWORK.SAPPHIRE_DEVNET);
+const selectedOpenloginNetwork = ref<WEB3AUTH_NETWORK_TYPE>(WEB3AUTH_NETWORK.SAPPHIRE_DEVNET);
 const useMpc = ref(false);
 const useWalletKey = ref(false);
 const selectedBuildEnv = ref<BUILD_ENV_TYPE>(BUILD_ENV.PRODUCTION);
@@ -646,7 +646,7 @@ const isValidMFASelection = computed(() => {
 
 const openloginInstance = computed(() => {
   const currentClientId = OPENLOGIN_PROJECT_IDS[selectedOpenloginNetwork.value];
-  const op = new OpenLogin({
+  const op = new Auth({
     clientId: currentClientId,
     network: selectedOpenloginNetwork.value,
     uxMode: selectedUxMode.value,
@@ -691,7 +691,7 @@ const setProvider = async (_privKey: string) => {
       const tss = await import("@toruslabs/tss-lib");
       // 1. setup
       // generate endpoints for servers
-      const tssNodeEndpoints = getTSSEndpoints(selectedOpenloginNetwork.value as TORUS_SAPPHIRE_NETWORK_TYPE);
+      const tssNodeEndpoints = getTSSEndpoints(selectedOpenloginNetwork.value as WEB3AUTH_SAPPHIRE_NETWORK_TYPE);
       const { endpoints, tssWSEndpoints, partyIndexes } = generateTSSEndpoints(tssNodeEndpoints, parties, clientIndex);
       const randomSessionNonce = Buffer.from(keccak256(Buffer.from(generatePrivate().toString("hex") + Date.now(), "utf8"))).toString("hex");
       const tssImportUrl = `${tssNodeEndpoints[0]}/v1/clientWasm`;

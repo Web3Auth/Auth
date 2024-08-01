@@ -9,7 +9,7 @@ module.exports = {
     ecmaVersion: 2022,
     project: "./tsconfig.json",
   },
-  ignorePatterns: ["*.config.js", ".eslintrc.js"],
+  ignorePatterns: ["*.config.js", ".eslintrc.js", "*.config.mjs"],
   globals: {
     atob: true,
     btoa: true,

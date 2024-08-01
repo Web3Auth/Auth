@@ -24,14 +24,14 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build
-        run: npm run pack:lerna
-
       - name: Lint
         run: npm run lint
 
       - name: Test
         run: npm run test
+
+      - name: Build
+        run: npm run build
 
       - name: Pack and build example
         if: github.ref == 'refs/heads/master'
@@ -57,7 +57,7 @@ jobs:
         env:
           SOURCE_DIR: "./examples/vue-example/dist"
           AWS_REGION: "us-east-1"
-          AWS_S3_BUCKET: "demo-openlogin.web3auth.io"
+          AWS_S3_BUCKET: "demo-auth.web3auth.io"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
