@@ -5,7 +5,7 @@ import { Duplex } from "readable-stream";
 import type { Readable, Writable } from "stream";
 
 import { BufferEncoding } from "./interfaces";
-import Substream from "./substream";
+import { Substream } from "./substream";
 
 export const IGNORE_SUBSTREAM = Symbol("IGNORE_SUBSTREAM");
 
