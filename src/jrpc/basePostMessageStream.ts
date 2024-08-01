@@ -8,7 +8,7 @@ const SYN = "SYN";
 const ACK = "ACK";
 const BRK = "BRK";
 
-export default class BasePostMessageStream extends Duplex {
+export class BasePostMessageStream extends Duplex {
   _init: boolean;
 
   _haveSyn: boolean;

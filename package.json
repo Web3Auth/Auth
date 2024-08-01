@@ -13,6 +13,43 @@
     "dist",
     "src"
   ],
+  "exports": {
+    ".": {
+      "import": "./dist/lib.esm/index.js",
+      "require": "./dist/lib.cjs/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./core": {
+      "import": "./dist/lib.esm/core/index.js",
+      "require": "./dist/lib.cjs/core/index.js",
+      "types": "./dist/types/core/index.d.ts"
+    },
+    "./ed25519": {
+      "import": "./dist/lib.esm/ed25519/index.js",
+      "require": "./dist/lib.cjs/ed25519/index.js",
+      "types": "./dist/types/ed25519/index.d.ts"
+    },
+    "./jrpc": {
+      "import": "./dist/lib.esm/jrpc/index.js",
+      "require": "./dist/lib.cjs/jrpc/index.js",
+      "types": "./dist/types/jrpc/index.d.ts"
+    },
+    "./starkey": {
+      "import": "./dist/lib.esm/starkey/index.js",
+      "require": "./dist/lib.cjs/starkey/index.js",
+      "types": "./dist/types/starkey/index.d.ts"
+    },
+    "./subkey": {
+      "import": "./dist/lib.esm/subkey/index.js",
+      "require": "./dist/lib.cjs/subkey/index.js",
+      "types": "./dist/types/subkey/index.d.ts"
+    },
+    "./utils": {
+      "import": "./dist/lib.esm/utils/index.js",
+      "require": "./dist/lib.cjs/utils/index.js",
+      "types": "./dist/types/utils/index.d.ts"
+    }
+  },
   "scripts": {
     "start": "cross-env FORCE_COLOR=1 torus-scripts start",
     "dev": "rimraf dist/ && cross-env NODE_ENV=development torus-scripts start",
@@ -29,8 +66,8 @@
     "@babel/runtime": "^7.25.0",
     "@rollup/plugin-replace": "^5.0.7",
     "@toruslabs/config": "^2.1.1",
-    "@toruslabs/eslint-config-typescript": "^3.3.2",
-    "@toruslabs/torus-scripts": "^6.0.2",
+    "@toruslabs/eslint-config-typescript": "^3.3.3",
+    "@toruslabs/torus-scripts": "^6.0.3",
     "@types/color": "^3.0.6",
     "@types/elliptic": "^6.4.18",
     "@types/end-of-stream": "^1.4.4",
@@ -85,7 +122,7 @@
     "@toruslabs/ffjavascript": "^3.0.0",
     "@toruslabs/metadata-helpers": "^6.0.0",
     "@toruslabs/secure-pub-sub": "^1.0.0",
-    "@toruslabs/session-manager": "^1.0.0",
+    "@toruslabs/session-manager": "^2.0.0",
     "@toruslabs/starkware-crypto": "^4.0.0",
     "@toruslabs/tweetnacl-js": "^1.0.4",
     "base64url": "^3.0.1",

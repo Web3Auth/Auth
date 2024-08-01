@@ -12,14 +12,18 @@ import {
   RequestArguments,
   SendCallBack,
 } from "./interfaces";
-import SafeEventEmitter from "./safeEventEmitter";
-import SerializableError from "./serializableError";
+import { SafeEventEmitter } from "./safeEventEmitter";
+import { SerializableError } from "./serializableError";
+
+export interface JrpcEngineEvents {
+  notification: (arg1: string) => void;
+}
 
 /**
  * A JSON-RPC request and response processor.
  * Give it a stack of middleware, pass it requests, and get back responses.
  */
-export class JRPCEngine extends SafeEventEmitter {
+export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
   private _middleware: JRPCMiddleware<unknown, unknown>[];
 
   constructor() {
@@ -405,14 +409,18 @@ export function createEngineStream(opts: EngineStreamOptions): Duplex {
   return stream;
 }
 
-export interface SafeEventEmitterProvider extends SafeEventEmitter {
+export interface ProviderEvents {
+  data: (error: unknown, message: string) => void;
+}
+
+export interface SafeEventEmitterProvider extends SafeEventEmitter<ProviderEvents> {
   sendAsync: <T, U>(req: JRPCRequest<T>) => Promise<U>;
   send: <T, U>(req: JRPCRequest<T>, callback: SendCallBack<JRPCResponse<U>>) => void;
   request: <T, U>(args: RequestArguments<T>) => Promise<Maybe<U>>;
 }
 
 export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider {
-  const provider: SafeEventEmitterProvider = new SafeEventEmitter() as SafeEventEmitterProvider;
+  const provider: SafeEventEmitterProvider = new SafeEventEmitter<ProviderEvents>() as SafeEventEmitterProvider;
   // handle both rpc send methods
   provider.sendAsync = async <T, U>(req: JRPCRequest<T>) => {
     const res = await engine.handle(req);
