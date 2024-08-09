@@ -4,32 +4,8 @@ import { errorCodes, errorValues } from "./error-constants";
 const FALLBACK_ERROR_CODE = errorCodes.rpc.internal;
 const FALLBACK_MESSAGE = "Unspecified error message. This is a bug, please report it.";
 
-/**
- * A data object, that must be either:
- *
- * - A JSON-serializable object.
- * - An object with a `cause` property that is an error-like value, and any
- * other properties that are JSON-serializable.
- */
-export type DataWithOptionalCause =
-  | Json
-  | {
-      // Unfortunately we can't use just `Json` here, because all properties of
-      // an object with an index signature must be assignable to the index
-      // signature's type. So we have to use `Json | unknown` instead.
-      [key: string]: Json | unknown;
-      cause?: unknown;
-    };
-
-/**
- * A data object, that must be either:
- *
- * - A valid DataWithOptionalCause value.
- * - undefined.
- */
-export type OptionalDataWithOptionalCause = undefined | DataWithOptionalCause;
-
 export const JSON_RPC_SERVER_ERROR_MESSAGE = "Unspecified server error.";
+declare type PropertyKey = string | number | symbol;
 
 type ErrorValueKey = keyof typeof errorValues;
 
@@ -42,6 +18,21 @@ type ErrorValueKey = keyof typeof errorValues;
  */
 export function isValidCode(code: unknown): code is number {
   return Number.isInteger(code);
+}
+
+export function isValidString(value: unknown): value is string {
+  return typeof value === "string" && value.length > 0;
+}
+
+/**
+ * A type guard for {@link RuntimeObject}.
+ *
+ * @param value - The value to check.
+ * @returns Whether the specified value has a runtime type of `object` and is
+ * neither `null` nor an `Array`.
+ */
+export function isObject(value: unknown): value is Record<PropertyKey, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
 /**
@@ -76,6 +67,14 @@ function isJsonRpcServerError(code: number): boolean {
   return code >= -32099 && code <= -32000;
 }
 
+function isJsonRpcError(value: unknown): value is JRPCError {
+  const castValue = value as JRPCError;
+  if (!castValue) return false;
+  if (!isValidCode(castValue.code) || !isValidString(castValue.message)) return false;
+  if (castValue.stack && !isValidString(castValue.stack)) return false;
+  return true;
+}
+
 /**
  * Gets the message for a given code, or a fallback message if the code has
  * no corresponding message.
@@ -108,8 +107,25 @@ const FALLBACK_ERROR: JRPCError = {
 
 function isValidJson(str: unknown): boolean {
   try {
-    if (typeof str === "string") JSON.parse(str as string);
-    else JSON.stringify(str);
+    JSON.parse(
+      JSON.stringify(str, (strKey, strVal) => {
+        if (strKey === "__proto__" || strKey === "constructor") {
+          throw new Error("Not valid json");
+        }
+        if (typeof strVal === "function" || typeof strVal === "symbol") {
+          throw new Error("Not valid json");
+        }
+        return strVal;
+      }),
+      (propKey, propValue) => {
+        // Strip __proto__ and constructor properties to prevent prototype pollution.
+        if (propKey === "__proto__" || propKey === "constructor") {
+          return undefined;
+        }
+        return propValue;
+      }
+    );
+    // this means, it's a valid json so far
   } catch (e) {
     return false;
   }
@@ -122,7 +138,7 @@ function isValidJson(str: unknown): boolean {
  * @param object - The object in question.
  * @returns An object containing all the JSON-serializable properties.
  */
-function serializeObject(object: Record<string, unknown>): Json {
+function serializeObject(object: Record<PropertyKey, unknown>): Json {
   return Object.getOwnPropertyNames(object).reduce<Record<string, Json>>((acc, key) => {
     const value = object[key];
     if (isValidJson(value)) {
@@ -144,13 +160,13 @@ export function serializeCause(error: unknown): Json {
     return error.map((entry) => {
       if (isValidJson(entry)) {
         return entry;
-      } else if (typeof entry === "object") {
+      } else if (isObject(entry)) {
         return serializeObject(entry);
       }
       return null;
     });
-  } else if (typeof error === "object") {
-    return serializeObject(error as Record<string, unknown>);
+  } else if (isObject(error)) {
+    return serializeObject(error as Record<PropertyKey, unknown>);
   }
 
   if (isValidJson(error)) {
@@ -173,7 +189,7 @@ function buildError(error: unknown, fallbackError: JRPCError): JRPCError {
     return error.serialize();
   }
 
-  if (error && (error as JRPCError).code && (error as JRPCError).message) {
+  if (isJsonRpcError(error)) {
     return error as JRPCError;
   }
 
@@ -201,7 +217,7 @@ function buildError(error: unknown, fallbackError: JRPCError): JRPCError {
  * @returns The serialized error.
  */
 export function serializeError(error: unknown, { fallbackError = FALLBACK_ERROR, shouldIncludeStack = true } = {}): JRPCError {
-  if (!(fallbackError.message && fallbackError.code)) {
+  if (!isJsonRpcError(fallbackError)) {
     throw new Error("Must provide fallback error with integer number code and string message.");
   }
 
@@ -224,5 +240,5 @@ export function dataHasCause(data: unknown): data is {
   [key: string]: Json | unknown;
   cause: object;
 } {
-  return typeof data === "object" && Object.hasOwn(data, "cause") && typeof (data as { cause?: unknown }).cause === "object";
+  return isObject(data) && Object.hasOwn(data, "cause") && isObject(data.cause);
 }

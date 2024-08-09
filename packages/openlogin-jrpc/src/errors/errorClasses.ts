@@ -1,7 +1,7 @@
 import safeStringify from "fast-safe-stringify";
 
-import type { JRPCError as SerializedJRPCError, Json } from "../interfaces";
-import { dataHasCause, isPlainObject, type OptionalDataWithOptionalCause, serializeCause } from "./utils";
+import type { JRPCError as SerializedJRPCError, Json, OptionalDataWithOptionalCause } from "../interfaces";
+import { dataHasCause, isPlainObject, serializeCause } from "./utils";
 
 /**
  * Check if the given code is a valid JSON-RPC error code.
@@ -67,6 +67,7 @@ export class JsonRpcError<Data extends OptionalDataWithOptionalCause> extends Er
     }
 
     this.code = code;
+    this.cause = (data as { cause?: unknown })?.cause;
   }
 
   /**
@@ -87,7 +88,7 @@ export class JsonRpcError<Data extends OptionalDataWithOptionalCause> extends Er
       serialized.data = this.data as { [key: string]: Json };
 
       if (isPlainObject(this.data)) {
-        (serialized.data as { cause?: Json }).cause = serializeCause((this.data as { cause?: Json }).cause);
+        serialized.data.cause = serializeCause((this.data as { cause?: unknown }).cause);
       }
     }
 

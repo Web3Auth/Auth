@@ -1,7 +1,7 @@
 import { Duplex } from "readable-stream";
 
 import { JsonRpcErrorsArg, rpcErrors } from "./errors/errors";
-import { OptionalDataWithOptionalCause, serializeError } from "./errors/utils";
+import { serializeError } from "./errors/utils";
 import {
   JRPCEngineEndCallback,
   JRPCEngineNextCallback,
@@ -10,6 +10,7 @@ import {
   JRPCRequest,
   JRPCResponse,
   Maybe,
+  OptionalDataWithOptionalCause,
   RequestArguments,
   SendCallBack,
 } from "./interfaces";

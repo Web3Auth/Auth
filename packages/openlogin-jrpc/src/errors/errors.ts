@@ -1,6 +1,7 @@
+import { OptionalDataWithOptionalCause } from "../interfaces";
 import { errorCodes } from "./error-constants";
 import { EthereumProviderError, JsonRpcError } from "./errorClasses";
-import { getMessageFromCode, type OptionalDataWithOptionalCause } from "./utils";
+import { getMessageFromCode } from "./utils";
 
 type EthereumErrorOptions<Data extends OptionalDataWithOptionalCause> = {
   message?: string;
