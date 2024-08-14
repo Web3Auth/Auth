@@ -1,4 +1,4 @@
-import safeStringify from "fast-safe-stringify";
+import stringify from "json-stable-stringify";
 
 import type { JRPCError as SerializedJRPCError, Json, OptionalDataWithOptionalCause } from "../interfaces";
 import { dataHasCause, isPlainObject, serializeCause } from "./utils";
@@ -106,7 +106,7 @@ export class JsonRpcError<Data extends OptionalDataWithOptionalCause> extends Er
    * @returns A string representation of the serialized error.
    */
   toString(): string {
-    return safeStringify(this.serialize(), stringifyReplacer, 2);
+    return stringify(this.serialize(), { replacer: stringifyReplacer, space: 2 });
   }
 }
 
