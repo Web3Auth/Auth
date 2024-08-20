@@ -1,33 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { EventEmitter } from "eventemitter3";
+import EventEmitter from "events";
+import type { default as TypedEmitter, EventMap } from "typed-emitter";
 
-type Handler = (...args: any[]) => void;
-interface EventMap {
-  [k: string]: Handler | Handler[] | undefined;
-}
-
-function safeApply<T, A extends any[]>(handler: (this: T, ...handlerArgs: A) => void, context: T, args: A): void {
-  try {
-    Reflect.apply(handler, context, args);
-  } catch (err) {
-    // Throw error after timeout so as not to interrupt the stack
-    setTimeout(() => {
-      throw err;
-    });
-  }
-}
-
-function arrayClone<T>(arr: T[]): T[] {
-  const n = arr.length;
-  const copy = new Array(n);
-  for (let i = 0; i < n; i += 1) {
-    copy[i] = arr[i];
-  }
-  return copy;
-}
-
-export class SafeEventEmitter<T extends EventEmitter.ValidEventTypes> extends EventEmitter<T> {
-  emit(type: EventEmitter.EventNames<T>, ...args: any[]): boolean {
+export class SafeEventEmitter<T extends EventMap = EventMap> extends (EventEmitter as { new <E extends EventMap>(): TypedEmitter<E> })<T> {
+  emit<E extends keyof T>(type: E, ...args: Parameters<T[E]>): boolean {
     let doError = type === "error";
 
     const events: EventMap = (this as any)._events;
@@ -54,21 +30,7 @@ export class SafeEventEmitter<T extends EventEmitter.ValidEventTypes> extends Ev
       throw err; // Unhandled 'error' event
     }
 
-    const handler = events[type as string];
-
-    if (handler === undefined) {
-      return false;
-    }
-
-    if (typeof handler === "function") {
-      safeApply(handler, this, args);
-    } else {
-      const len = handler.length;
-      const listeners = arrayClone(handler);
-      for (let i = 0; i < len; i += 1) {
-        safeApply(listeners[i], this, args);
-      }
-    }
+    super.emit(type, ...args);
 
     return true;
   }

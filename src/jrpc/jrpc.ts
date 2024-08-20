@@ -41,9 +41,9 @@ export function createErrorMiddleware(log: ConsoleLike): JRPCMiddleware<unknown,
   };
 }
 
-export interface StreamEvents {
+export type StreamEvents = {
   notification: (arg1: JRPCRequest<unknown>) => boolean;
-}
+};
 
 export function createStreamMiddleware(): { events: SafeEventEmitter<StreamEvents>; middleware: JRPCMiddleware<unknown, unknown>; stream: Duplex } {
   const idMap: IdMap = {};

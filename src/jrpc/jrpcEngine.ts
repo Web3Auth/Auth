@@ -17,9 +17,9 @@ import {
 import { SafeEventEmitter } from "./safeEventEmitter";
 import { SerializableError } from "./serializableError";
 
-export interface JrpcEngineEvents {
-  notification: (arg1: string) => void;
-}
+export type JrpcEngineEvents = {
+  notification: (...args: unknown[]) => void;
+};
 
 /**
  * A JSON-RPC request and response processor.
@@ -411,9 +411,9 @@ export function createEngineStream(opts: EngineStreamOptions): Duplex {
   return stream;
 }
 
-export interface ProviderEvents {
-  data: (error: unknown, message: string) => void;
-}
+export type ProviderEvents = {
+  data: (error: unknown, message: unknown) => void;
+};
 
 export interface SafeEventEmitterProvider extends SafeEventEmitter<ProviderEvents> {
   sendAsync: <T, U>(req: JRPCRequest<T>) => Promise<U>;
@@ -452,7 +452,7 @@ export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider
   };
   // forward notifications
   if (engine.on) {
-    engine.on("notification", (message: string) => {
+    engine.on("notification", (message) => {
       provider.emit("data", null, message);
     });
   }

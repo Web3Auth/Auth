@@ -91,6 +91,7 @@
     "tsconfig-paths-webpack-plugin": "^4.1.0",
     "tslib": "^2.6.3",
     "tsx": "^4.16.3",
+    "typed-emitter": "^2.1.0",
     "typescript": "^5.5.4"
   },
   "peerDependencies": {
@@ -133,7 +134,7 @@
     "elliptic": "^6.5.6",
     "enc-utils": "^3.0.0",
     "end-of-stream": "^1.4.4",
-    "eventemitter3": "^5.0.1",
+    "events": "^3.3.0",
     "fast-safe-stringify": "^2.1.1",
     "json-stable-stringify": "^1.1.1",
     "loglevel": "^1.9.1",
