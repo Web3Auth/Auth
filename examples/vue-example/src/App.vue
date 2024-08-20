@@ -215,7 +215,7 @@ const vueapp = defineComponent({
       if (startTime) {
         const loginTime = (Date.now() - parseInt(startTime, 10)) / 1000;
         console.log("Login time", `${loginTime}s`);
-        sessionStorage.deleteItem("startTime");
+        sessionStorage.removeItem("startTime");
       }
       this.privKey = this.openloginInstance.privKey || (this.openloginInstance.state.factorKey as string) || (this.openloginInstance.state.walletKey as string);
       await this.setProvider(this.privKey);
