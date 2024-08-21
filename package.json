@@ -91,7 +91,6 @@
     "tsconfig-paths-webpack-plugin": "^4.1.0",
     "tslib": "^2.6.3",
     "tsx": "^4.16.3",
-    "typed-emitter": "^2.1.0",
     "typescript": "^5.5.4"
   },
   "peerDependencies": {
@@ -141,7 +140,8 @@
     "once": "^1.4.0",
     "pump": "^3.0.0",
     "readable-stream": "^4.5.2",
-    "ts-custom-error": "^3.3.1"
+    "ts-custom-error": "^3.3.1",
+    "typed-emitter": "^2.1.0"
   },
   "publishConfig": {
     "access": "public"
