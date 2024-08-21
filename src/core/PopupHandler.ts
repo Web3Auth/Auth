@@ -1,5 +1,5 @@
 import { SecurePubSub } from "@toruslabs/secure-pub-sub";
-import EventEmitter from "events";
+import { EventEmitter } from "events";
 import type { default as TypedEmitter } from "typed-emitter";
 
 import { LoginError } from "./errors";

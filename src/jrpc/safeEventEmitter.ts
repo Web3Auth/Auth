@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import EventEmitter from "events";
+import { EventEmitter } from "events";
 import type { default as TypedEmitter, EventMap } from "typed-emitter";
 
 export class SafeEventEmitter<T extends EventMap = EventMap> extends (EventEmitter as { new <E extends EventMap>(): TypedEmitter<E> })<T> {
