@@ -1,5 +1,6 @@
 import { SecurePubSub } from "@toruslabs/secure-pub-sub";
-import { EventEmitter } from "eventemitter3";
+import { EventEmitter } from "events";
+import type { default as TypedEmitter } from "typed-emitter";
 
 import { LoginError } from "./errors";
 import { getPopupFeatures } from "./utils";
@@ -11,11 +12,11 @@ export interface PopupResponse {
   error?: string;
 }
 
-export interface PopupHandlerEvents {
-  close: [];
-}
+export type PopupHandlerEvents = {
+  close: () => void;
+};
 
-class PopupHandler extends EventEmitter<PopupHandlerEvents> {
+class PopupHandler extends (EventEmitter as new () => TypedEmitter<PopupHandlerEvents>) {
   url: string;
 
   target: string;
@@ -31,6 +32,8 @@ class PopupHandler extends EventEmitter<PopupHandlerEvents> {
   timeout: number;
 
   constructor({ url, target, features, timeout = 30000 }: { url: string; target?: string; features?: string; timeout?: number }) {
+    // Disabling the rule here, as it is a false positive.
+    // eslint-disable-next-line constructor-super
     super();
     this.url = url;
     this.target = target || "_blank";

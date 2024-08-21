@@ -1,10 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { EventEmitter } from "eventemitter3";
-
-type Handler = (...args: any[]) => void;
-interface EventMap {
-  [k: string]: Handler | Handler[] | undefined;
-}
+import { EventEmitter } from "events";
+import type { default as TypedEmitter, EventMap } from "typed-emitter";
 
 function safeApply<T, A extends any[]>(handler: (this: T, ...handlerArgs: A) => void, context: T, args: A): void {
   try {
@@ -26,8 +22,8 @@ function arrayClone<T>(arr: T[]): T[] {
   return copy;
 }
 
-export class SafeEventEmitter<T extends EventEmitter.ValidEventTypes> extends EventEmitter<T> {
-  emit(type: EventEmitter.EventNames<T>, ...args: any[]): boolean {
+export class SafeEventEmitter<T extends EventMap = EventMap> extends (EventEmitter as { new <E extends EventMap>(): TypedEmitter<E> })<T> {
+  emit<E extends keyof T>(type: E, ...args: Parameters<T[E]>): boolean {
     let doError = type === "error";
 
     const events: EventMap = (this as any)._events;
@@ -63,8 +59,8 @@ export class SafeEventEmitter<T extends EventEmitter.ValidEventTypes> extends Ev
     if (typeof handler === "function") {
       safeApply(handler, this, args);
     } else {
-      const len = handler.length;
-      const listeners = arrayClone(handler);
+      const len = (handler as any[]).length;
+      const listeners = arrayClone(handler as any[]);
       for (let i = 0; i < len; i += 1) {
         safeApply(listeners[i], this, args);
       }
