@@ -415,7 +415,7 @@ export type ProviderEvents = {
   data: (error: unknown, message: unknown) => void;
 };
 
-export interface SafeEventEmitterProvider extends SafeEventEmitter<ProviderEvents> {
+export interface SafeEventEmitterProvider<E extends ProviderEvents = ProviderEvents> extends SafeEventEmitter<E> {
   sendAsync: <T, U>(req: JRPCRequest<T>) => Promise<U>;
   send: <T, U>(req: JRPCRequest<T>, callback: SendCallBack<JRPCResponse<U>>) => void;
   request: <T, U>(args: RequestArguments<T>) => Promise<Maybe<U>>;
