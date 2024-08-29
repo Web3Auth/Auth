@@ -1,19 +1,10 @@
-import { getPublic, sign } from "@toruslabs/eccrypto";
-import { keccak256 } from "@toruslabs/metadata-helpers";
 import bowser from "bowser";
 
-import { base64url, LOGIN_PROVIDER, safeatob } from "../utils";
+import { LOGIN_PROVIDER, safeatob } from "../utils";
 import { loglevel as log } from "./logger";
 
 // don't use destructuring for process.env cause it messes up webpack env plugin
 export const version = process.env.AUTH_VERSION;
-
-export async function whitelistUrl(clientId: string, appKey: string, origin: string): Promise<string> {
-  const appKeyBuf = Buffer.from(appKey.padStart(64, "0"), "hex");
-  if (base64url.encode(getPublic(appKeyBuf)) !== clientId) throw new Error("appKey mismatch");
-  const sig = await sign(appKeyBuf, keccak256(Buffer.from(origin, "utf8")));
-  return base64url.encode(sig);
-}
 
 export type HashQueryParamResult = {
   sessionId?: string;

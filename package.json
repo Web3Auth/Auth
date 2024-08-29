@@ -118,7 +118,6 @@
   "dependencies": {
     "@ethereumjs/util": "^9.1.0",
     "@toruslabs/constants": "^14.0.0",
-    "@toruslabs/eccrypto": "^5.0.4",
     "@toruslabs/ffjavascript": "^4.0.0",
     "@toruslabs/metadata-helpers": "^6.0.0",
     "@toruslabs/secure-pub-sub": "^1.0.0",
@@ -130,7 +129,6 @@
     "bn.js": "^5.2.1",
     "bowser": "^2.11.0",
     "color": "^4.2.3",
-    "elliptic": "^6.5.7",
     "enc-utils": "^3.0.0",
     "end-of-stream": "^1.4.4",
     "events": "^3.3.0",
