@@ -626,12 +626,16 @@ const allMFAFactors = Object.values(MFA_FACTOR);
 
 const mfaSettings = computed(() => {
   if (!selectedMFAFactors.value?.length) return {};
-  const mfaSettings: Record<string, MFA_SETTINGS> = {};
-  allMFAFactors.forEach((factor) => {
-    mfaSettings[factor] = { enable: selectedMFAFactors.value.includes(factor), mandatory: selectedMandatoryMFAFactors.value.includes(factor) };
-  });
-  console.log("mfaSettings", mfaSettings);
-  return mfaSettings;
+  const newMfaSettings = allMFAFactors.reduce(
+    (acc, factor) => {
+      acc[factor] = { enable: selectedMFAFactors.value.includes(factor), mandatory: selectedMandatoryMFAFactors.value.includes(factor) };
+      return acc;
+    },
+    {} as Record<string, MFA_SETTINGS>
+  );
+
+  console.log("newMfaSettings", newMfaSettings);
+  return newMfaSettings;
 });
 
 const isValidForm = computed(() => {
