@@ -640,7 +640,7 @@ const isValidForm = computed(() => {
 
 const isValidMFASelection = computed(() => {
   if (selectedMFAFactors.value?.length && !selectedMandatoryMFAFactors.value.length) return false;
-  if (selectedMandatoryMFAFactors.value.every((x) => x === MFA_FACTOR.DEVICE)) return false;
+  if (selectedMandatoryMFAFactors.value.every((x) => x === MFA_FACTOR.DEVICE || x === MFA_FACTOR.PASSKEYS )) return false;
   return true;
 });
 
