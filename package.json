@@ -121,7 +121,7 @@
     "@toruslabs/ffjavascript": "^4.0.0",
     "@toruslabs/metadata-helpers": "^6.0.0",
     "@toruslabs/secure-pub-sub": "^1.0.0",
-    "@toruslabs/session-manager": "^2.0.0",
+    "@toruslabs/session-manager": "^3.0.0",
     "@toruslabs/starkware-crypto": "^4.0.0",
     "@toruslabs/tweetnacl-js": "^1.0.4",
     "base64url": "^3.0.1",
