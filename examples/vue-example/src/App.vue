@@ -260,7 +260,7 @@
                 label="Select Mandatory MFA Factors"
                 aria-label="Select Mandatory MFA Factor"
                 placeholder="Select Mandatory MFA Factor"
-                :helperText="!isValidMFASelection ? `One factor other than device factor must be mandatory` : ''"
+                :helperText="!isValidMFASelection ? `One factor other than device and passkeys factors must be mandatory` : ''"
                 :error="!isValidMFASelection"
                 :multiple="true"
                 :show-check-box="true"
@@ -556,8 +556,8 @@ import {
   UX_MODE,
   UX_MODE_TYPE,
   WhiteLabelData,
-  Auth, 
-  getED25519Key
+  Auth,
+  getED25519Key,
 } from "@web3auth/auth";
 import { Client, getDKLSCoeff, setupSockets } from "@toruslabs/tss-client";
 import { Button, Card, Select, TextField, Toggle } from "@toruslabs/vue-components";
@@ -631,7 +631,7 @@ const mfaSettings = computed(() => {
       acc[factor] = { enable: selectedMFAFactors.value.includes(factor), mandatory: selectedMandatoryMFAFactors.value.includes(factor) };
       return acc;
     },
-    {} as Record<string, MFA_SETTINGS>
+    {} as Record<string, MFA_SETTINGS>,
   );
 
   console.log("newMfaSettings", newMfaSettings);
@@ -644,7 +644,7 @@ const isValidForm = computed(() => {
 
 const isValidMFASelection = computed(() => {
   if (selectedMFAFactors.value?.length && !selectedMandatoryMFAFactors.value.length) return false;
-  if (selectedMandatoryMFAFactors.value.every((x) => x === MFA_FACTOR.DEVICE || x === MFA_FACTOR.PASSKEYS )) return false;
+  if (selectedMandatoryMFAFactors.value.every((x) => x === MFA_FACTOR.DEVICE || x === MFA_FACTOR.PASSKEYS)) return false;
   return true;
 });
 
