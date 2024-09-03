@@ -5,11 +5,7 @@ const pkg = require("./package.json");
 
 exports.baseConfig = {
   resolve: {
-    plugins: [new TsconfigPathsPlugin() ],
+    plugins: [new TsconfigPathsPlugin()],
   },
-  plugins: [
-    new EnvironmentPlugin({ AUTH_VERSION: pkg.version })
-  ],
-}
-
-console.log("webpack config loaded", process.env.AUTH_VERSION);
+  plugins: [new EnvironmentPlugin({ AUTH_VERSION: pkg.version })],
+};
