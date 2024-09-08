@@ -234,6 +234,7 @@ export type SocialMfaModParams = {
    */
   extraLoginOptions?: ExtraLoginOptions;
 };
+
 export const LANGUAGES = {
   en: "en",
   ja: "ja",

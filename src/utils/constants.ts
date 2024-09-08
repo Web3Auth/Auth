@@ -38,6 +38,8 @@ export const LOGIN_PROVIDER = {
   SMS_PASSWORDLESS: "sms_passwordless",
   WEBAUTHN: "webauthn",
   JWT: "jwt",
+  PASSKEYS: "passkeys",
+  AUTHENTICATOR: "authenticator",
 } as const;
 
 export const MFA_LEVELS = {
@@ -52,6 +54,8 @@ export const AUTH_ACTIONS = {
   ENABLE_MFA: "enable_mfa",
   MANAGE_MFA: "manage_mfa",
   MODIFY_SOCIAL_FACTOR: "modify_social_factor",
+  ADD_AUTHENTICATOR_FACTOR: "add_authenticator_factor",
+  ADD_PASSKEY_FACTOR: "add_passkey_factor",
 } as const;
 
 export const BUILD_ENV = {
