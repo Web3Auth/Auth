@@ -19,6 +19,10 @@
       "require": "./dist/lib.cjs/index.js",
       "types": "./dist/types/index.d.ts"
     },
+    "./package.json": {
+      "import": "./package.json",
+      "require": "./package.json"
+    },
     "./core": {
       "import": "./dist/lib.esm/core/index.js",
       "require": "./dist/lib.cjs/core/index.js",
