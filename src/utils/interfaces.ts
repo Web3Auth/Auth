@@ -367,7 +367,9 @@ export type TypeOfLogin =
   | "email_password"
   | "passwordless"
   | "jwt"
-  | "webauthn";
+  | "passkeys"
+  | "email_passwordless"
+  | "sms_passwordless";
 
 export interface JwtParameters extends BaseLoginOptions {
   /**
