@@ -351,7 +351,6 @@ export class Auth {
       params: {
         ...defaultParams,
         ...params,
-        loginProvider: "authenticator",
       },
       sessionId: this.sessionId,
     };
