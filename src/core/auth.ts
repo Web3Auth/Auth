@@ -12,6 +12,7 @@ import {
   BrowserStorage,
   BUILD_ENV,
   jsonToBase64,
+  LOGIN_PROVIDER,
   LoginParams,
   SocialMfaModParams,
   UX_MODE,
@@ -350,6 +351,58 @@ export class Auth {
       params: {
         ...defaultParams,
         ...params,
+      },
+      sessionId: this.sessionId,
+    };
+
+    const result = await this.authHandler(`${this.baseUrl}/start`, dataObject);
+    if (this.options.uxMode === UX_MODE.REDIRECT) return undefined;
+    if (result.error) return false;
+    return true;
+  }
+
+  async addAuthenticatorFactor(params: Partial<BaseRedirectParams>): Promise<boolean> {
+    if (!this.sessionId) throw LoginError.userNotLoggedIn();
+
+    // in case of redirect mode, redirect url will be dapp specified
+    // in case of popup mode, redirect url will be sdk specified
+    const defaultParams: BaseRedirectParams = {
+      redirectUrl: this.options.redirectUrl,
+    };
+
+    const dataObject: AuthSessionConfig = {
+      actionType: AUTH_ACTIONS.ADD_AUTHENTICATOR_FACTOR,
+      options: this.options,
+      params: {
+        ...defaultParams,
+        ...params,
+        loginProvider: LOGIN_PROVIDER.AUTHENTICATOR,
+      },
+      sessionId: this.sessionId,
+    };
+
+    const result = await this.authHandler(`${this.baseUrl}/start`, dataObject);
+    if (this.options.uxMode === UX_MODE.REDIRECT) return undefined;
+    if (result.error) return false;
+    return true;
+  }
+
+  async addPasskeyFactor(params: Partial<BaseRedirectParams>): Promise<boolean> {
+    if (!this.sessionId) throw LoginError.userNotLoggedIn();
+
+    // in case of redirect mode, redirect url will be dapp specified
+    // in case of popup mode, redirect url will be sdk specified
+    const defaultParams: BaseRedirectParams = {
+      redirectUrl: this.options.redirectUrl,
+    };
+
+    const dataObject: AuthSessionConfig = {
+      actionType: AUTH_ACTIONS.ADD_PASSKEY_FACTOR,
+      options: this.options,
+      params: {
+        ...defaultParams,
+        ...params,
+        loginProvider: LOGIN_PROVIDER.PASSKEYS,
       },
       sessionId: this.sessionId,
     };
