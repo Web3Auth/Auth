@@ -53,6 +53,7 @@ export const AUTH_ACTIONS = {
   LOGIN: "login",
   ENABLE_MFA: "enable_mfa",
   MANAGE_MFA: "manage_mfa",
+  ADD_SOCIAL_FACTOR: "add_social_factor",
   MODIFY_SOCIAL_FACTOR: "modify_social_factor",
   ADD_AUTHENTICATOR_FACTOR: "add_authenticator_factor",
   ADD_PASSKEY_FACTOR: "add_passkey_factor",
