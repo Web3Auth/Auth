@@ -3,6 +3,7 @@ import { SessionManager } from "@toruslabs/session-manager";
 
 import {
   AUTH_ACTIONS,
+  AUTH_ACTIONS_TYPE,
   AuthOptions,
   AuthSessionConfig,
   AuthSessionData,
@@ -336,7 +337,7 @@ export class Auth {
     window.open(loginUrl, "_blank");
   }
 
-  async changeSocialFactor(params: SocialMfaModParams & Partial<BaseRedirectParams>): Promise<boolean> {
+  async manageSocialFactor(actionType: AUTH_ACTIONS_TYPE, params: SocialMfaModParams & Partial<BaseRedirectParams>): Promise<boolean> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
 
     // in case of redirect mode, redirect url will be dapp specified
@@ -346,7 +347,7 @@ export class Auth {
     };
 
     const dataObject: AuthSessionConfig = {
-      actionType: AUTH_ACTIONS.MODIFY_SOCIAL_FACTOR,
+      actionType,
       options: this.options,
       params: {
         ...defaultParams,
