@@ -10,8 +10,7 @@
   "jsdelivr": "dist/auth.umd.min.js",
   "types": "dist/types/index.d.ts",
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "exports": {
     ".": {
