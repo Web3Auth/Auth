@@ -816,7 +816,7 @@ const printToConsole = (...args: unknown[]) => {
   }
 };
 
-const computedLoginProviders = computed(() => Object.values(LOGIN_PROVIDER).filter((x) => x !== "jwt" && x !== "webauthn"));
+const computedLoginProviders = computed(() => Object.values(LOGIN_PROVIDER).filter((x) => x !== "jwt" && x !== "webauthn" && x !== "passkeys" && x !== "authenticator"));
 const showEmailFlow = computed(() => selectedLoginProvider.value === LOGIN_PROVIDER.EMAIL_PASSWORDLESS);
 const isLoginHintAvailable = computed(() => {
   if (selectedLoginProvider.value === LOGIN_PROVIDER.EMAIL_PASSWORDLESS || selectedLoginProvider.value === LOGIN_PROVIDER.SMS_PASSWORDLESS) {
