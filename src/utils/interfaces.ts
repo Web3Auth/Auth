@@ -537,6 +537,7 @@ export interface AuthSessionData {
   tssPubKey?: string;
   tssShare?: string;
   tssNonce?: number;
+  tssTag?: string;
   nodeIndexes?: number[];
   useCoreKitKey?: boolean;
 }
