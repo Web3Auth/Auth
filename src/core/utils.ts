@@ -56,14 +56,15 @@ export function getHashQueryParams(replaceUrl = false): HashQueryParamResult {
   if (replaceUrl) {
     const cleanUrl = new URL(window.location.origin + window.location.pathname);
     // https://dapp.com/#b64Params=asacsdnvdfv&state=sldjvndfkjvn&dappValue=sdjvndf
-    if (queryUrlParams.size > 0) {
+    // NB: `params.size !== 0` evaluates to true even if `.size` isn't implemented and returns `undefined`, like in Safari <17 and Chrome <113.
+    if (queryUrlParams.size !== 0) {
       queryUrlParams.delete("error");
       queryUrlParams.delete("state");
       queryUrlParams.delete("b64Params");
       queryUrlParams.delete("sessionNamespace");
       cleanUrl.search = queryUrlParams.toString();
     }
-    if (hashUrlParams.size > 0) {
+    if (hashUrlParams.size !== 0) {
       hashUrlParams.delete("error");
       hashUrlParams.delete("state");
       hashUrlParams.delete("b64Params");
