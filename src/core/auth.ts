@@ -43,10 +43,14 @@ export class Auth {
 
   constructor(options: AuthOptions) {
     if (!options.clientId) throw InitializationError.invalidParams("clientId is required");
+    if (options.useMpc) {
+      if (Object.values(WEB3AUTH_LEGACY_NETWORK).includes(options.network as WEB3AUTH_LEGACY_NETWORK_TYPE))
+        throw InitializationError.invalidParams("MPC is not supported on legacy networks, please use sapphire_devnet or sapphire_mainnet.");
+    }
     if (!options.network) options.network = WEB3AUTH_NETWORK.SAPPHIRE_MAINNET;
     if (!options.buildEnv) options.buildEnv = BUILD_ENV.PRODUCTION;
     if (options.buildEnv === BUILD_ENV.DEVELOPMENT || options.buildEnv === BUILD_ENV.TESTING || options.sdkUrl) this.addVersionInUrls = false;
-    if (!options.sdkUrl && !options.useMpc) {
+    if (!options.sdkUrl) {
       if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
         options.sdkUrl = "http://localhost:3000";
         options.dashboardUrl = "http://localhost:5173/wallet/account";
@@ -59,20 +63,6 @@ export class Auth {
       } else {
         options.sdkUrl = "https://auth.web3auth.io";
         options.dashboardUrl = "https://account.web3auth.io/wallet/account";
-      }
-    }
-
-    if (options.useMpc && !options.sdkUrl) {
-      if (Object.values(WEB3AUTH_LEGACY_NETWORK).includes(options.network as WEB3AUTH_LEGACY_NETWORK_TYPE))
-        throw InitializationError.invalidParams("MPC is not supported on legacy networks, please use sapphire_devnet or sapphire_mainnet.");
-      if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
-        options.sdkUrl = "http://localhost:3000";
-      } else if (options.buildEnv === BUILD_ENV.STAGING) {
-        options.sdkUrl = "https://staging-mpc-auth.web3auth.io";
-      } else if (options.buildEnv === BUILD_ENV.TESTING) {
-        options.sdkUrl = "https://develop-mpc-auth.web3auth.io";
-      } else {
-        options.sdkUrl = "https://mpc-auth.web3auth.io";
       }
     }
 
