@@ -1,4 +1,4 @@
-import { SESSION_SERVER } from "@toruslabs/constants";
+import { SESSION_SERVER_API_URL, SESSION_SERVER_SOCKET_URL } from "@toruslabs/constants";
 import { SessionManager } from "@toruslabs/session-manager";
 
 import {
@@ -85,7 +85,8 @@ export class Auth {
     if (!options.whiteLabel) options.whiteLabel = {};
     if (!options.loginConfig) options.loginConfig = {};
     if (!options.mfaSettings) options.mfaSettings = {};
-    if (!options.storageServerUrl) options.storageServerUrl = SESSION_SERVER;
+    if (!options.storageServerUrl) options.storageServerUrl = SESSION_SERVER_API_URL;
+    if (!options.sessionSocketUrl) options.sessionSocketUrl = SESSION_SERVER_SOCKET_URL;
     if (!options.storageKey) options.storageKey = "local";
     if (!options.webauthnTransports) options.webauthnTransports = ["internal"];
     if (!options.sessionTime) options.sessionTime = 86400;
@@ -480,7 +481,12 @@ export class Auth {
       baseURL: url,
       hash: { b64Params: jsonToBase64(configParams) },
     });
-    const currentWindow = new PopupHandler({ url: loginUrl, timeout: popupTimeout });
+    const currentWindow = new PopupHandler({
+      url: loginUrl,
+      timeout: popupTimeout,
+      sessionServerUrl: this.options.storageServerUrl,
+      sessionSocketUrl: this.options.sessionSocketUrl,
+    });
 
     return new Promise((resolve, reject) => {
       currentWindow.on("close", () => {

@@ -665,10 +665,17 @@ export type AuthOptions = {
 
   /**
    * Specify a custom storage server url
-   * @defaultValue https://session.web3auth.io
+   * @defaultValue https://api.web3auth.io/session-service
    * @internal
    */
   storageServerUrl?: string;
+
+  /**
+   * Specify a custom session socket server url
+   * @defaultValue https://session.web3auth.io
+   * @internal
+   */
+  sessionSocketUrl?: string;
 
   /**
    * setting to "local" will persist social login session across browser tabs.

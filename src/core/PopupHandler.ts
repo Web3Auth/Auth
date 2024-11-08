@@ -1,3 +1,4 @@
+import { SESSION_SERVER_API_URL, SESSION_SERVER_SOCKET_URL } from "@toruslabs/constants";
 import { SecurePubSub } from "@toruslabs/secure-pub-sub";
 import { EventEmitter } from "events";
 import type { default as TypedEmitter } from "typed-emitter";
@@ -31,7 +32,25 @@ class PopupHandler extends (EventEmitter as new () => TypedEmitter<PopupHandlerE
 
   timeout: number;
 
-  constructor({ url, target, features, timeout = 30000 }: { url: string; target?: string; features?: string; timeout?: number }) {
+  sessionSocketUrl: string;
+
+  sessionServerUrl: string;
+
+  constructor({
+    url,
+    target,
+    features,
+    timeout = 30000,
+    sessionSocketUrl,
+    sessionServerUrl,
+  }: {
+    url: string;
+    target?: string;
+    features?: string;
+    timeout?: number;
+    sessionSocketUrl?: string;
+    sessionServerUrl?: string;
+  }) {
     // Disabling the rule here, as it is a false positive.
     // eslint-disable-next-line constructor-super
     super();
@@ -42,6 +61,8 @@ class PopupHandler extends (EventEmitter as new () => TypedEmitter<PopupHandlerE
     this.windowTimer = undefined;
     this.iClosedWindow = false;
     this.timeout = timeout;
+    this.sessionServerUrl = sessionServerUrl || SESSION_SERVER_API_URL;
+    this.sessionSocketUrl = sessionSocketUrl || SESSION_SERVER_SOCKET_URL;
     this._setupTimer();
   }
 
@@ -83,7 +104,7 @@ class PopupHandler extends (EventEmitter as new () => TypedEmitter<PopupHandlerE
   }
 
   async listenOnChannel(loginId: string): Promise<PopupResponse> {
-    const securePubSub = new SecurePubSub();
+    const securePubSub = new SecurePubSub({ serverUrl: this.sessionServerUrl, socketUrl: this.sessionSocketUrl });
     const data = await securePubSub.subscribe(loginId);
     this.close();
     securePubSub.cleanup();
