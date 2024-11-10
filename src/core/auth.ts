@@ -144,6 +144,7 @@ export class Auth {
       sessionNamespace: this.options.sessionNamespace,
       sessionTime: this.options.sessionTime,
       sessionId,
+      allowedOrigin: this.options.sdkUrl,
     });
 
     if (this.options.network === WEB3AUTH_NETWORK.TESTNET || this.options.network === WEB3AUTH_NETWORK.SAPPHIRE_DEVNET) {
@@ -430,6 +431,7 @@ export class Auth {
       sessionNamespace: data.options.sessionNamespace,
       sessionTime: timeout, // each login key must be used with 10 mins (might be used at the end of popup redirect)
       sessionId: loginId,
+      allowedOrigin: this.options.sdkUrl,
     });
 
     const promise = loginSessionMgr.createSession(JSON.parse(JSON.stringify(data)));
