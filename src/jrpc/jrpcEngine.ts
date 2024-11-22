@@ -7,6 +7,7 @@ import {
   JRPCEngineEndCallback,
   JRPCEngineNextCallback,
   JRPCEngineReturnHandler,
+  JRPCError,
   JRPCMiddleware,
   JRPCRequest,
   JRPCResponse,
@@ -21,6 +22,22 @@ import { SerializableError } from "./serializableError";
 export type JrpcEngineEvents = {
   notification: (...args: unknown[]) => void;
 };
+
+function constructFallbackError(error: Error): JRPCError {
+  const {
+    message = "",
+    code = -32603,
+    stack = "Stack trace is not available.",
+    data = "",
+  } = error as { message?: string; code?: number; stack?: string; data?: string };
+  const codeNumber = parseInt(code?.toString() || "-32603");
+  return {
+    message: message || error?.toString() || getMessageFromCode(codeNumber),
+    code: codeNumber,
+    stack,
+    data: data || message || error?.toString(),
+  };
+}
 
 /**
  * A JSON-RPC request and response processor.
@@ -87,12 +104,7 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
 
           res.error = serializeError(error, {
             shouldIncludeStack: true,
-            fallbackError: {
-              message: error?.message || error?.toString() || getMessageFromCode(error?.code || -32603),
-              code: error?.code || -32603,
-              stack: error?.stack || "Stack trace is not available.",
-              data: error?.data || error?.message || error?.toString(),
-            },
+            fallbackError: constructFallbackError(error),
           });
         }
         // True indicates that the request should end
@@ -333,12 +345,7 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
         log.error(error);
         res.error = serializeError(error, {
           shouldIncludeStack: true,
-          fallbackError: {
-            message: error?.message || error?.toString() || getMessageFromCode((error as { code?: number })?.code || -32603),
-            code: (error as { code?: number })?.code || -32603,
-            stack: error?.stack || "Stack trace is not available.",
-            data: (error as { data?: string })?.data || error?.message || error?.toString(),
-          },
+          fallbackError: constructFallbackError(error),
         });
       }
     }
@@ -432,12 +439,7 @@ export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider
       if (typeof res.error === "object" && Object.keys(res.error).includes("stack") === false) res.error.stack = "Stack trace is not available.";
       log.error(res.error);
       const err = serializeError(res.error, {
-        fallbackError: {
-          message: res.error?.message || res.error?.toString() || getMessageFromCode(res.error?.code || -32603),
-          code: res.error?.code || -32603,
-          stack: res.error?.stack || "Stack trace is not available.",
-          data: res.error?.data || res.error?.message || res.error?.toString(),
-        },
+        fallbackError: constructFallbackError(res.error),
         shouldIncludeStack: true,
       });
 
