@@ -1,7 +1,8 @@
 import { Duplex } from "readable-stream";
 
+import { loglevel as log } from "../utils/logger";
 import { JsonRpcErrorsArg, rpcErrors } from "./errors/errors";
-import { serializeError } from "./errors/utils";
+import { getMessageFromCode, serializeError } from "./errors/utils";
 import {
   JRPCEngineEndCallback,
   JRPCEngineNextCallback,
@@ -82,11 +83,12 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
         const error = err || res.error;
         if (error) {
           if (typeof error === "object" && Object.keys(error).includes("stack") === false) error.stack = "Stack trace is not available.";
+          log.error(error);
 
           res.error = serializeError(error, {
             shouldIncludeStack: true,
             fallbackError: {
-              message: error?.message || error?.toString(),
+              message: error?.message || error?.toString() || getMessageFromCode(error?.code || -32603),
               code: error?.code || -32603,
               stack: error?.stack || "Stack trace is not available.",
               data: error?.data || error?.message || error?.toString(),
@@ -328,11 +330,11 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
       delete res.result;
       if (!res.error) {
         if (typeof error === "object" && Object.keys(error).includes("stack") === false) error.stack = "Stack trace is not available.";
-
+        log.error(error);
         res.error = serializeError(error, {
           shouldIncludeStack: true,
           fallbackError: {
-            message: error?.message || error?.toString(),
+            message: error?.message || error?.toString() || getMessageFromCode((error as { code?: number })?.code || -32603),
             code: (error as { code?: number })?.code || -32603,
             stack: error?.stack || "Stack trace is not available.",
             data: (error as { data?: string })?.data || error?.message || error?.toString(),
@@ -428,10 +430,10 @@ export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider
     const res = await engine.handle(req);
     if (res.error) {
       if (typeof res.error === "object" && Object.keys(res.error).includes("stack") === false) res.error.stack = "Stack trace is not available.";
-
+      log.error(res.error);
       const err = serializeError(res.error, {
         fallbackError: {
-          message: res.error?.message || res.error?.toString(),
+          message: res.error?.message || res.error?.toString() || getMessageFromCode(res.error?.code || -32603),
           code: res.error?.code || -32603,
           stack: res.error?.stack || "Stack trace is not available.",
           data: res.error?.data || res.error?.message || res.error?.toString(),

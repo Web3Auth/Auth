@@ -1,7 +1,7 @@
 import bowser from "bowser";
 
 import { LOGIN_PROVIDER, safeatob } from "../utils";
-import { loglevel as log } from "./logger";
+import { loglevel as log } from "../utils/logger";
 
 // don't use destructuring for process.env cause it messes up webpack env plugin
 export const version = process.env.AUTH_VERSION;
