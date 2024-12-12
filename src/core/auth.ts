@@ -131,8 +131,8 @@ export class Auth {
 
   private get dashboardUrl(): string {
     // testing and develop don't have versioning
-    if (!this.addVersionInUrls) return `${this.options.sdkUrl}`;
-    return `${this.options.sdkUrl}/v${version.split(".")[0]}`;
+    if (!this.addVersionInUrls) return `${this.options.dashboardUrl}`;
+    return `${this.options.dashboardUrl}/v${version.split(".")[0]}`;
   }
 
   async init(): Promise<void> {
