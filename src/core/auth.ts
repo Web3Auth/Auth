@@ -49,16 +49,16 @@ export class Auth {
     if (!options.sdkUrl && !options.useMpc) {
       if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
         options.sdkUrl = "http://localhost:3000";
-        options.dashboardUrl = "http://localhost:5173/wallet/account";
+        options.dashboardUrl = "http://localhost:5173";
       } else if (options.buildEnv === BUILD_ENV.STAGING) {
         options.sdkUrl = "https://staging-auth.web3auth.io";
-        options.dashboardUrl = "https://staging-account.web3auth.io/wallet/account";
+        options.dashboardUrl = "https://staging-account.web3auth.io";
       } else if (options.buildEnv === BUILD_ENV.TESTING) {
         options.sdkUrl = "https://develop-auth.web3auth.io";
-        options.dashboardUrl = "https://develop-account.web3auth.io/wallet/account";
+        options.dashboardUrl = "https://develop-account.web3auth.io";
       } else {
         options.sdkUrl = "https://auth.web3auth.io";
-        options.dashboardUrl = "https://account.web3auth.io/wallet/account";
+        options.dashboardUrl = "https://account.web3auth.io";
       }
     }
 
@@ -124,6 +124,12 @@ export class Auth {
   }
 
   private get baseUrl(): string {
+    // testing and develop don't have versioning
+    if (!this.addVersionInUrls) return `${this.options.sdkUrl}`;
+    return `${this.options.sdkUrl}/v${version.split(".")[0]}`;
+  }
+
+  private get dashboardUrl(): string {
     // testing and develop don't have versioning
     if (!this.addVersionInUrls) return `${this.options.sdkUrl}`;
     return `${this.options.sdkUrl}/v${version.split(".")[0]}`;
@@ -303,7 +309,7 @@ export class Auth {
     // in case of redirect mode, redirect url will be dapp specified
     // in case of popup mode, redirect url will be sdk specified
     const defaultParams = {
-      redirectUrl: this.options.dashboardUrl,
+      redirectUrl: `${this.dashboardUrl}/wallet/account`,
       dappUrl: `${window.location.origin}${window.location.pathname}`,
     };
 
