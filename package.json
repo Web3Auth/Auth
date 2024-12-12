@@ -86,9 +86,9 @@
     "husky": "^9.1.7",
     "jsdom": "^25.0.1",
     "jsdom-global": "^3.0.2",
-    "lint-staged": "^15.2.10",
+    "lint-staged": "^15.2.11",
     "mocha": "^10.8.2",
-    "prettier": "^3.3.3",
+    "prettier": "^3.4.2",
     "rimraf": "^6.0.1",
     "tsconfig-paths": "^4.2.0",
     "tsconfig-paths-webpack-plugin": "^4.2.0",
@@ -100,8 +100,8 @@
     "@babel/runtime": "7.x"
   },
   "optionalDependencies": {
-    "@nx/nx-linux-x64-gnu": "^20.1.2",
-    "@rollup/rollup-linux-x64-gnu": "^4.27.3"
+    "@nx/nx-linux-x64-gnu": "^20.2.2",
+    "@rollup/rollup-linux-x64-gnu": "^4.28.1"
   },
   "author": "Torus Labs",
   "license": "MIT",
@@ -120,7 +120,7 @@
   },
   "dependencies": {
     "@ethereumjs/util": "^9.1.0",
-    "@toruslabs/constants": "^14.1.1",
+    "@toruslabs/constants": "^14.2.0",
     "@toruslabs/ffjavascript": "^4.0.0",
     "@toruslabs/metadata-helpers": "^6.0.0",
     "@toruslabs/secure-pub-sub": "^1.1.0",
