@@ -186,6 +186,8 @@ export class Auth {
       if (Object.keys(data).length === 0) {
         // If session is invalid, unset the sessionId from localStorage.
         this.currentStorage.set("sessionId", "");
+      } else {
+        this.updateState({ sessionId: this.sessionManager.sessionId });
       }
     }
   }
