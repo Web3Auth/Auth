@@ -687,8 +687,8 @@ export type AuthOptions = {
   /**
    * How long should a login session last at a minimum in seconds
    *
-   * @defaultValue 86400 seconds
-   * @remarks Max value of sessionTime can be 7 * 86400 (7 days)
+   * @defaultValue 30 * 86400 seconds
+   * @remarks Max value of sessionTime can be 30 * 86400 (30 days)
    */
   sessionTime?: number;
 
