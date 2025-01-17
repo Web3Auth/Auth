@@ -319,7 +319,8 @@ export class Auth {
 
     const dataObject: AuthSessionConfig = {
       actionType: AUTH_ACTIONS.MANAGE_MFA,
-      options: this.options,
+      // manage mfa always opens in a new tab, so need to fix the uxMode to redirect.
+      options: { ...this.options, uxMode: "redirect" },
       params: {
         ...defaultParams,
         ...params,
