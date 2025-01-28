@@ -660,6 +660,7 @@ const openloginInstance = computed(() => {
     buildEnv: selectedBuildEnv.value,
     sdkUrl: customSdkUrl.value,
     mfaSettings: mfaSettings.value,
+    sessionTime: 3600,
   });
   op.init();
   return op;
@@ -816,7 +817,9 @@ const printToConsole = (...args: unknown[]) => {
   }
 };
 
-const computedLoginProviders = computed(() => Object.values(LOGIN_PROVIDER).filter((x) => x !== "jwt" && x !== "webauthn" && x !== "passkeys" && x !== "authenticator"));
+const computedLoginProviders = computed(() =>
+  Object.values(LOGIN_PROVIDER).filter((x) => x !== "jwt" && x !== "webauthn" && x !== "passkeys" && x !== "authenticator"),
+);
 const showEmailFlow = computed(() => selectedLoginProvider.value === LOGIN_PROVIDER.EMAIL_PASSWORDLESS);
 const isLoginHintAvailable = computed(() => {
   if (selectedLoginProvider.value === LOGIN_PROVIDER.EMAIL_PASSWORDLESS || selectedLoginProvider.value === LOGIN_PROVIDER.SMS_PASSWORDLESS) {
