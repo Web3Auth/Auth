@@ -22,9 +22,9 @@ Please refer to docs for API Reference available [here](https://docs.tor.us/open
 
 Each sub package is distributed in 3 formats
 
-- `esm` build `dist/<MODULE_NAME>.esm.js` in es6 format
-- `commonjs` build `dist/<MODULE_NAME>.cjs.js` in es5 format
-- `umd` build `dist/<MODULE_NAME>.umd.min.js` in es5 format without polyfilling corejs minified
+- `esm` build `dist/lib.esm.js` in es6 format
+- `commonjs` build `dist/lib.cjs.js` in es5 format
+- `umd` build `dist/auth.umd.min.js` in es5 format without polyfilling corejs minified
 
 By default, the appropriate format is used for your specified usecase
 You can use a different format (if you know what you're doing) by referencing the correct file
@@ -39,13 +39,13 @@ CDN's serve the non-core-js polyfilled version by default. You can use a differe
 jsdeliver
 
 ```js
-<script src="https://cdn.jsdelivr.net/npm/<MODULE_NAME>"></script>
+<script src="https://cdn.jsdelivr.net/npm/auth"></script>
 ```
 
 unpkg
 
 ```js
-<script src="https://unpkg.com/<MODULE_NAME>"></script>
+<script src="https://unpkg.com/auth"></script>
 ```
 
 ## Build
@@ -53,8 +53,8 @@ unpkg
 Ensure you have a `Node.JS` development environment setup:
 
 ```
-git clone https://github.com/web3auth/auth.git
-cd auth
+git clone https://github.com/web3auth/Auth.git
+cd Auth
 npm i
 npm run build
 ```
@@ -68,7 +68,7 @@ npm test
 ## Requirements
 
 - This package requires a peer dependency of `@babel/runtime`
-- Node 16+
+- Node 20+
 - You will need to whitelist your domain on [developer dashboard](https://dashboard.web3auth.io)
 
 ## 💬 Troubleshooting and Discussions

@@ -52,7 +52,7 @@ class PopupHandler extends (EventEmitter as new () => TypedEmitter<PopupHandlerE
     sessionServerUrl?: string;
   }) {
     // Disabling the rule here, as it is a false positive.
-    // eslint-disable-next-line constructor-super
+
     super();
     this.url = url;
     this.target = target || "_blank";

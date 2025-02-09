@@ -1,24 +1,26 @@
 import { sign } from "@toruslabs/tweetnacl-js";
-import { strictEqual } from "assert";
+import { describe, expect, it } from "vitest";
 
 import { getED25519Key } from "../src/ed25519";
 
 const hex = "464482ca33a3bbc47278deab1f5b896a28d36fa509b65cde837f871f3253c5ba";
 
-describe("ED25519", function () {
+describe("ED25519", () => {
   // let privKey: { sk: Buffer; pk: Buffer };
 
   // before("setup", function () {
   // });
 
-  it("#signing should create a tweetnacl compatible key", async function () {
+  it("should create a tweetnacl compatible key", async () => {
     const privKey = getED25519Key(hex);
     const kp = sign.keyPair.fromSecretKey(privKey.sk);
     const sig = sign.detached(Buffer.from("message"), kp.secretKey);
-    strictEqual(sign.detached.verify(Buffer.from("message"), sig, kp.publicKey), true, "Signature could not be verified");
+
+    expect(sign.detached.verify(Buffer.from("message"), sig, kp.publicKey)).toBe(true);
+
     const kp2 = sign.keyPair();
     const sig2 = sign.detached(Buffer.from("message"), kp2.secretKey);
-    strictEqual(sign.detached.verify(Buffer.from("message"), sig2, kp2.publicKey), true, "Signature is not equal for default");
+    expect(sign.detached.verify(Buffer.from("message"), sig2, kp2.publicKey)).toBe(true);
   });
 
   // it("#encrypting should create a tweetnacl compatible key", async function () {

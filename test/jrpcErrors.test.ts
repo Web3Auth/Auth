@@ -1,79 +1,77 @@
-/* eslint-disable mocha/max-top-level-suites */
-import assert from "assert";
+import { describe, expect, it } from "vitest";
 
 import { errorCodes, getMessageFromCode, isPlainObject, JSON_RPC_SERVER_ERROR_MESSAGE, providerErrors, rpcErrors } from "../src/jrpc/errors";
 import { CUSTOM_ERROR_CODE, CUSTOM_ERROR_MESSAGE, dummyData, dummyDataWithCause, dummyMessage, SERVER_ERROR_CODE } from "./__fixtures__";
 
-describe("rpcErrors.invalidInput", function () {
-  it("accepts a single string argument where appropriate", function () {
+describe("rpcErrors.invalidInput", () => {
+  it("accepts a single string argument where appropriate", () => {
     const error = rpcErrors.invalidInput(CUSTOM_ERROR_MESSAGE);
-    assert.strictEqual(error.code, errorCodes.rpc.invalidInput);
-    assert.strictEqual(error.message, CUSTOM_ERROR_MESSAGE);
+    expect(error.code).toBe(errorCodes.rpc.invalidInput);
+    expect(error.message).toBe(CUSTOM_ERROR_MESSAGE);
   });
 });
 
-describe("providerErrors.unauthorized", function () {
-  it("accepts a single string argument where appropriate", function () {
+describe("providerErrors.unauthorized", () => {
+  it("accepts a single string argument where appropriate", () => {
     const error = providerErrors.unauthorized(CUSTOM_ERROR_MESSAGE);
-    assert.strictEqual(error.code, errorCodes.provider.unauthorized);
-    assert.strictEqual(error.message, CUSTOM_ERROR_MESSAGE);
+    expect(error.code).toBe(errorCodes.provider.unauthorized);
+    expect(error.message).toBe(CUSTOM_ERROR_MESSAGE);
   });
 });
 
-describe("custom provider error options", function () {
-  it("throws if the value is not an options object", function () {
-    assert.throws(() => {
+describe("custom provider error options", () => {
+  it("throws if the value is not an options object", () => {
+    expect(() => {
       // @ts-expect-error Invalid input
       providerErrors.custom("bar");
-    }, new Error("Ethereum Provider custom errors must provide single object argument."));
+    }).toThrow("Ethereum Provider custom errors must provide single object argument.");
   });
 
-  it("throws if the value is invalid", function () {
-    assert.throws(() => {
+  it("throws if the value is invalid", () => {
+    expect(() => {
       // @ts-expect-error Invalid input
       providerErrors.custom({ code: 4009, message: 2 });
-    }, new Error('"message" must be a nonempty string'));
+    }).toThrow('"message" must be a nonempty string');
 
-    assert.throws(() => {
+    expect(() => {
       providerErrors.custom({ code: 4009, message: "" });
-    }, new Error('"message" must be a nonempty string'));
+    }).toThrow('"message" must be a nonempty string');
   });
 });
 
-describe("rpcErrors.server", function () {
-  it("throws on invalid input", function () {
-    assert.throws(() => {
+describe("rpcErrors.server", () => {
+  it("throws on invalid input", () => {
+    expect(() => {
       // @ts-expect-error Invalid input
       rpcErrors.server("bar");
-    }, new Error("Ethereum RPC Server errors must provide single object argument."));
+    }).toThrow("Ethereum RPC Server errors must provide single object argument.");
 
-    assert.throws(() => {
+    expect(() => {
       // @ts-expect-error Invalid input
       rpcErrors.server({ code: "bar" });
-    }, new Error('"code" must be an integer such that: -32099 <= code <= -32005'));
+    }).toThrow('"code" must be an integer such that: -32099 <= code <= -32005');
 
-    assert.throws(() => {
+    expect(() => {
       rpcErrors.server({ code: 1 });
-    }, new Error('"code" must be an integer such that: -32099 <= code <= -32005'));
+    }).toThrow('"code" must be an integer such that: -32099 <= code <= -32005');
   });
 
-  it("returns appropriate value", function () {
+  it("returns appropriate value", () => {
     const error = rpcErrors.server({
       code: SERVER_ERROR_CODE,
       data: { ...dummyData },
     });
 
-    assert.strictEqual(error.code <= -32000 && error.code >= -32099, true);
-    assert.strictEqual(error.message, JSON_RPC_SERVER_ERROR_MESSAGE);
+    expect(error.code <= -32000 && error.code >= -32099).toBe(true);
+    expect(error.message).toBe(JSON_RPC_SERVER_ERROR_MESSAGE);
   });
 });
 
-describe("rpcErrors", function () {
-  // eslint-disable-next-line mocha/no-setup-in-describe
+describe("rpcErrors", () => {
   Object.entries(rpcErrors)
     .filter(([key]) => key !== "server")
     .forEach(([key, value]) => {
-      it(`${key} returns appropriate value`, function () {
+      it(`${key} returns appropriate value`, () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const createError = value as any;
         const error = createError({
@@ -82,17 +80,16 @@ describe("rpcErrors", function () {
         });
         // @ts-expect-error TypeScript does not like indexing into this with the key
         const rpcCode = errorCodes.rpc[key];
-        assert.strictEqual(Object.values(errorCodes.rpc).includes(error.code) || (error.code <= -32000 && error.code >= -32099), true);
-        assert.strictEqual(error.code, rpcCode);
-        assert.strictEqual(error.message, getMessageFromCode(rpcCode));
+        expect(Object.values(errorCodes.rpc).includes(error.code) || (error.code <= -32000 && error.code >= -32099)).toBe(true);
+        expect(error.code).toBe(rpcCode);
+        expect(error.message).toBe(getMessageFromCode(rpcCode));
       });
     });
 
-  // eslint-disable-next-line mocha/no-setup-in-describe
   Object.entries(rpcErrors)
     .filter(([key]) => key !== "server")
     .forEach(([key, value]) => {
-      it(`${key} propagates data.cause if set`, function () {
+      it(`${key} propagates data.cause if set`, () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const createError = value as any;
         const error = createError({
@@ -101,12 +98,12 @@ describe("rpcErrors", function () {
         });
         // @ts-expect-error TypeScript does not like indexing into this with the key
         const rpcCode = errorCodes.rpc[key];
-        assert.strictEqual(error.message, getMessageFromCode(rpcCode));
-        assert.strictEqual(error.cause.message, dummyMessage);
+        expect(error.message).toBe(getMessageFromCode(rpcCode));
+        expect(error.cause.message).toBe(dummyMessage);
       });
     });
 
-  it("serializes a cause", function () {
+  it("serializes a cause", () => {
     const error = rpcErrors.invalidInput({
       data: {
         foo: "bar",
@@ -115,38 +112,15 @@ describe("rpcErrors", function () {
     });
 
     const serializedError = error.serialize();
-    assert(serializedError.data);
-    assert(isPlainObject(serializedError.data));
+    expect(serializedError.data).toBeTruthy();
+    expect(isPlainObject(serializedError.data)).toBe(true);
 
-    assert.ok(!((serializedError.data as { cause?: unknown }).cause instanceof Error));
-    assert.equal(
-      (
-        serializedError.data as {
-          foo: string;
-          cause: Error;
-        }
-      ).foo,
-      "bar"
-    );
-    assert.equal(
-      (
-        serializedError.data as {
-          foo: string;
-          cause: Error;
-        }
-      ).cause.message,
-      "foo"
-    );
-    // assert.deepEqual(serializedError.data, {
-    //   foo: "bar",
-    //   cause: {
-    //     message: "foo",
-    //     stack: "Error: foo",
-    //   },
-    // });
+    expect(!((serializedError.data as { cause?: unknown }).cause instanceof Error)).toBe(true);
+    expect((serializedError.data as { foo: string; cause: Error }).foo).toBe("bar");
+    expect((serializedError.data as { foo: string; cause: Error }).cause.message).toBe("foo");
   });
 
-  it("serializes a non-Error-instance cause", function () {
+  it("serializes a non-Error-instance cause", () => {
     const error = rpcErrors.invalidInput({
       data: {
         foo: "bar",
@@ -155,23 +129,22 @@ describe("rpcErrors", function () {
     });
 
     const serializedError = error.serialize();
-    assert(serializedError.data);
-    assert(isPlainObject(serializedError.data));
+    expect(serializedError.data).toBeTruthy();
+    expect(isPlainObject(serializedError.data)).toBe(true);
 
-    assert.ok(!((serializedError.data as { cause?: unknown }).cause instanceof Error));
-    assert.deepStrictEqual(serializedError.data, {
+    expect(!((serializedError.data as { cause?: unknown }).cause instanceof Error)).toBe(true);
+    expect(serializedError.data).toStrictEqual({
       foo: "bar",
       cause: "foo",
     });
   });
 });
 
-describe("providerErrors", function () {
-  // eslint-disable-next-line mocha/no-setup-in-describe
+describe("providerErrors", () => {
   Object.entries(providerErrors)
     .filter(([key]) => key !== "custom")
     .forEach(([key, value]) => {
-      it(`${key} returns appropriate value`, function () {
+      it(`${key} returns appropriate value`, () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const createError = value as any;
         const error = createError({
@@ -180,17 +153,16 @@ describe("providerErrors", function () {
         });
         // @ts-expect-error TypeScript does not like indexing into this with the key
         const providerCode = errorCodes.provider[key];
-        assert.strictEqual(error.code >= 1000 && error.code < 5000, true);
-        assert.strictEqual(error.code, providerCode);
-        assert.strictEqual(error.message, getMessageFromCode(providerCode));
+        expect(error.code >= 1000 && error.code < 5000).toBe(true);
+        expect(error.code).toBe(providerCode);
+        expect(error.message).toBe(getMessageFromCode(providerCode));
       });
     });
 
-  // eslint-disable-next-line mocha/no-setup-in-describe
   Object.entries(providerErrors)
     .filter(([key]) => key !== "custom")
     .forEach(([key, value]) => {
-      it(`${key} propagates data.cause if set`, function () {
+      it(`${key} propagates data.cause if set`, () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const createError = value as any;
         const error = createError({
@@ -199,23 +171,23 @@ describe("providerErrors", function () {
         });
         // @ts-expect-error TypeScript does not like indexing into this with the key
         const providerCode = errorCodes.provider[key];
-        assert.strictEqual(error.message, getMessageFromCode(providerCode));
-        assert.strictEqual(error.cause.message, dummyMessage);
+        expect(error.message).toBe(getMessageFromCode(providerCode));
+        expect(error.cause.message).toBe(dummyMessage);
       });
     });
 
-  it("custom returns appropriate value", function () {
+  it("custom returns appropriate value", () => {
     const error = providerErrors.custom({
       code: CUSTOM_ERROR_CODE,
       message: CUSTOM_ERROR_MESSAGE,
       data: { ...dummyData },
     });
-    assert.equal(error.code >= 1000 && error.code < 5000, true);
-    assert.equal(error.code, CUSTOM_ERROR_CODE);
-    assert.equal(error.message, CUSTOM_ERROR_MESSAGE);
+    expect(error.code >= 1000 && error.code < 5000).toBe(true);
+    expect(error.code).toBe(CUSTOM_ERROR_CODE);
+    expect(error.message).toBe(CUSTOM_ERROR_MESSAGE);
   });
 
-  it("serializes a cause", function () {
+  it("serializes a cause", () => {
     const error = providerErrors.unauthorized({
       data: {
         foo: "bar",
@@ -224,31 +196,15 @@ describe("providerErrors", function () {
     });
 
     const serializedError = error.serialize();
-    assert(serializedError.data);
-    assert(isPlainObject(serializedError.data));
+    expect(serializedError.data).toBeTruthy();
+    expect(isPlainObject(serializedError.data)).toBe(true);
 
-    assert.ok(!((serializedError.data as { cause?: unknown }).cause instanceof Error));
-    assert.equal(
-      (
-        serializedError.data as {
-          foo: string;
-          cause: Error;
-        }
-      ).foo,
-      "bar"
-    );
-    assert.equal(
-      (
-        serializedError.data as {
-          foo: string;
-          cause: Error;
-        }
-      ).cause.message,
-      "foo"
-    );
+    expect(!((serializedError.data as { cause?: unknown }).cause instanceof Error)).toBe(true);
+    expect((serializedError.data as { foo: string; cause: Error }).foo).toBe("bar");
+    expect((serializedError.data as { foo: string; cause: Error }).cause.message).toBe("foo");
   });
 
-  it("serializes a non-Error-instance cause", function () {
+  it("serializes a non-Error-instance cause", () => {
     const error = providerErrors.unauthorized({
       data: {
         foo: "bar",
@@ -257,11 +213,11 @@ describe("providerErrors", function () {
     });
 
     const serializedError = error.serialize();
-    assert(serializedError.data);
-    assert(isPlainObject(serializedError.data));
+    expect(serializedError.data).toBeTruthy();
+    expect(isPlainObject(serializedError.data)).toBe(true);
 
-    assert.ok(!((serializedError.data as { cause?: unknown }).cause instanceof Error));
-    assert.deepStrictEqual(serializedError.data, {
+    expect(!((serializedError.data as { cause?: unknown }).cause instanceof Error)).toBe(true);
+    expect(serializedError.data).toStrictEqual({
       foo: "bar",
       cause: "foo",
     });

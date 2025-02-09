@@ -1,4 +1,4 @@
-import assert from "assert";
+import { describe, expect, it } from "vitest";
 
 import { dataHasCause, errorCodes, getMessageFromCode, rpcErrors, serializeError } from "../src/jrpc/errors";
 import {
@@ -24,7 +24,7 @@ const rpcCodes = errorCodes.rpc;
 describe("serializeError", function () {
   it("handles invalid error: non-object", function () {
     const result = serializeError(invalidError0);
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: rpcCodes.internal,
       message: getMessageFromCode(rpcCodes.internal),
       data: { cause: invalidError0 },
@@ -33,7 +33,7 @@ describe("serializeError", function () {
 
   it("handles invalid error: null", function () {
     const result = serializeError(invalidError5);
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: rpcCodes.internal,
       message: getMessageFromCode(rpcCodes.internal),
       data: { cause: invalidError5 },
@@ -42,7 +42,7 @@ describe("serializeError", function () {
 
   it("handles invalid error: undefined", function () {
     const result = serializeError(invalidError6);
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: rpcCodes.internal,
       message: getMessageFromCode(rpcCodes.internal),
       data: { cause: null },
@@ -51,7 +51,7 @@ describe("serializeError", function () {
 
   it("handles invalid error: array", function () {
     const result = serializeError(invalidError1);
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: rpcCodes.internal,
       message: getMessageFromCode(rpcCodes.internal),
       data: { cause: invalidError1 },
@@ -60,7 +60,7 @@ describe("serializeError", function () {
 
   it("handles invalid error: invalid code", function () {
     const result = serializeError(invalidError2);
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: rpcCodes.internal,
       message: getMessageFromCode(rpcCodes.internal),
       data: { cause: invalidError2 },
@@ -69,7 +69,7 @@ describe("serializeError", function () {
 
   it("handles invalid error: valid code, undefined message", function () {
     const result = serializeError(invalidError3);
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: errorCodes.rpc.internal,
       message: getMessageFromCode(errorCodes.rpc.internal),
       data: {
@@ -82,7 +82,7 @@ describe("serializeError", function () {
 
   it("handles invalid error: non-string message with data", function () {
     const result = serializeError(invalidError4);
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: rpcCodes.internal,
       message: getMessageFromCode(rpcCodes.internal),
       data: {
@@ -97,7 +97,7 @@ describe("serializeError", function () {
 
   it("handles invalid error: invalid code with string message", function () {
     const result = serializeError(invalidError7);
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: rpcCodes.internal,
       message: getMessageFromCode(rpcCodes.internal),
       data: {
@@ -114,7 +114,7 @@ describe("serializeError", function () {
     const result = serializeError(invalidError2, {
       fallbackError: { code: rpcCodes.methodNotFound, message: "foo" },
     });
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: rpcCodes.methodNotFound,
       message: "foo",
       data: { cause: { ...invalidError2 } },
@@ -123,7 +123,7 @@ describe("serializeError", function () {
 
   it("handles valid error: code and message only", function () {
     const result = serializeError(validError0);
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: 4001,
       message: validError0.message,
     });
@@ -131,7 +131,7 @@ describe("serializeError", function () {
 
   it("handles valid error: code, message, and data", function () {
     const result = serializeError(validError1);
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: 4001,
       message: validError1.message,
       data: { ...validError1.data },
@@ -140,7 +140,7 @@ describe("serializeError", function () {
 
   it("handles valid error: instantiated error", function () {
     const result = serializeError(validError2);
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: rpcCodes.parse,
       message: getMessageFromCode(rpcCodes.parse),
     });
@@ -148,7 +148,7 @@ describe("serializeError", function () {
 
   it("handles valid error: other instantiated error", function () {
     const result = serializeError(validError3);
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: rpcCodes.parse,
       message: dummyMessage,
     });
@@ -156,7 +156,7 @@ describe("serializeError", function () {
 
   it("handles valid error: instantiated error with custom message and data", function () {
     const result = serializeError(validError4);
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: rpcCodes.parse,
       message: validError4.message,
       data: { ...validError4.data },
@@ -165,7 +165,7 @@ describe("serializeError", function () {
 
   it("handles valid error: message and data", function () {
     const result = serializeError({ ...validError1 });
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: 4001,
       message: validError1.message,
       data: { ...validError1.data },
@@ -174,7 +174,7 @@ describe("serializeError", function () {
 
   it("handles including stack: no stack present", function () {
     const result = serializeError(validError1);
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: 4001,
       message: validError1.message,
       data: { ...validError1.data },
@@ -183,7 +183,7 @@ describe("serializeError", function () {
 
   it("handles including stack: string stack present", function () {
     const result = serializeError({ ...validError1, stack: "foo" });
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: 4001,
       message: validError1.message,
       data: { ...validError1.data },
@@ -193,7 +193,7 @@ describe("serializeError", function () {
 
   it("handles removing stack", function () {
     const result = serializeError({ ...validError1, stack: "foo" }, { shouldIncludeStack: false });
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: 4001,
       message: validError1.message,
       data: { ...validError1.data },
@@ -203,7 +203,7 @@ describe("serializeError", function () {
   it("handles regular Error()", function () {
     const error = new Error("foo");
     const result = serializeError(error);
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: errorCodes.rpc.internal,
       message: getMessageFromCode(errorCodes.rpc.internal),
       data: {
@@ -214,7 +214,7 @@ describe("serializeError", function () {
       },
     });
 
-    assert.deepEqual(JSON.parse(JSON.stringify(result)), {
+    expect(JSON.parse(JSON.stringify(result))).toStrictEqual({
       code: errorCodes.rpc.internal,
       message: getMessageFromCode(errorCodes.rpc.internal),
       data: {
@@ -229,13 +229,13 @@ describe("serializeError", function () {
   it("handles JsonRpcError", function () {
     const error = rpcErrors.invalidParams();
     const result = serializeError(error);
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: error.code,
       message: error.message,
       stack: error.stack,
     });
 
-    assert.deepEqual(JSON.parse(JSON.stringify(result)), {
+    expect(JSON.parse(JSON.stringify(result))).toStrictEqual({
       code: error.code,
       message: error.message,
       stack: error.stack,
@@ -250,12 +250,12 @@ describe("serializeError", function () {
     }
     const error = new MockClass();
     const result = serializeError(error);
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: 1,
       message: "foo",
     });
 
-    assert.deepEqual(JSON.parse(JSON.stringify(result)), {
+    expect(JSON.parse(JSON.stringify(result))).toStrictEqual({
       code: 1,
       message: "foo",
     });
@@ -266,7 +266,7 @@ describe("serializeError", function () {
     // @ts-expect-error Intentionally using wrong type
     error.message = () => undefined;
     const result = serializeError(error);
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: errorCodes.rpc.internal,
       message: getMessageFromCode(errorCodes.rpc.internal),
       data: {
@@ -278,18 +278,16 @@ describe("serializeError", function () {
   });
 
   it("throws if fallback is invalid", function () {
-    assert.throws(
-      () =>
-        // @ts-expect-error Intentionally using wrong type
-        serializeError(new Error(), { fallbackError: new Error() }),
-      new Error("Must provide fallback error with integer number code and string message.")
-    );
+    expect(() =>
+      // @ts-expect-error Intentionally using wrong type
+      serializeError(new Error(), { fallbackError: new Error() })
+    ).toThrow(new Error("Must provide fallback error with integer number code and string message."));
   });
 
   it("handles arrays passed as error", function () {
     const error = ["foo", Symbol("bar"), { baz: "qux", symbol: Symbol("") }];
     const result = serializeError(error);
-    assert.deepEqual(result, {
+    expect(result).toStrictEqual({
       code: rpcCodes.internal,
       message: getMessageFromCode(rpcCodes.internal),
       data: {
@@ -297,7 +295,7 @@ describe("serializeError", function () {
       },
     });
 
-    assert.deepEqual(JSON.parse(JSON.stringify(result)), {
+    expect(JSON.parse(JSON.stringify(result))).toStrictEqual({
       code: rpcCodes.internal,
       message: getMessageFromCode(rpcCodes.internal),
       data: {
@@ -307,25 +305,24 @@ describe("serializeError", function () {
   });
 });
 
-// eslint-disable-next-line mocha/max-top-level-suites
 describe("dataHasCause", function () {
   it("returns false for invalid data types", function () {
     [undefined, null, "hello", 1234].forEach((data) => {
       const result = dataHasCause(data);
-      assert.deepEqual(result, false);
+      expect(result).toBe(false);
     });
   });
 
   it("returns false for invalid cause types", function () {
     [undefined, null, "hello", 1234].forEach((cause) => {
       const result = dataHasCause({ cause });
-      assert.deepEqual(result, false);
+      expect(result).toBe(false);
     });
   });
 
   it("returns true when cause is object", function () {
     const data = { cause: {} };
     const result = dataHasCause(data);
-    assert.deepEqual(result, true);
+    expect(result).toBe(true);
   });
 });
