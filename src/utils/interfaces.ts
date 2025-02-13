@@ -1,6 +1,6 @@
 import { type TORUS_LEGACY_NETWORK_TYPE, type TORUS_SAPPHIRE_NETWORK_TYPE } from "@toruslabs/constants";
 
-import { AUTH_ACTIONS, BUILD_ENV, LOGIN_PROVIDER, MFA_LEVELS, SUPPORTED_KEY_CURVES, UX_MODE, WEB3AUTH_NETWORK } from "./constants";
+import { APP_PLATFORMS, AUTH_ACTIONS, BUILD_ENV, LOGIN_PROVIDER, MFA_LEVELS, SUPPORTED_KEY_CURVES, UX_MODE, WEB3AUTH_NETWORK } from "./constants";
 
 export type WEB3AUTH_LEGACY_NETWORK_TYPE = TORUS_LEGACY_NETWORK_TYPE;
 export type WEB3AUTH_SAPPHIRE_NETWORK_TYPE = TORUS_SAPPHIRE_NETWORK_TYPE;
@@ -42,6 +42,8 @@ export type AUTH_ACTIONS_TYPE = (typeof AUTH_ACTIONS)[keyof typeof AUTH_ACTIONS]
 export type CUSTOM_LOGIN_PROVIDER_TYPE = string & { toString?: (radix?: number) => string };
 
 export type MfaLevelType = (typeof MFA_LEVELS)[keyof typeof MFA_LEVELS];
+
+export type APP_PLATFORMS_TYPE = (typeof APP_PLATFORMS)[keyof typeof APP_PLATFORMS];
 
 export type SUPPORTED_KEY_CURVES_TYPE = (typeof SUPPORTED_KEY_CURVES)[keyof typeof SUPPORTED_KEY_CURVES];
 
@@ -215,6 +217,12 @@ export type LoginParams = BaseRedirectParams & {
    *
    */
   dappUrl?: string;
+
+  /**
+   * Allows the dapp to set a platform for the manage mfa flow.
+   *
+   */
+  platform?: APP_PLATFORMS_TYPE;
 };
 
 export type SocialMfaModParams = {

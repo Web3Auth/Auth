@@ -66,3 +66,13 @@ export const BUILD_ENV = {
   STAGING: "staging",
   TESTING: "testing",
 } as const;
+
+export const APP_PLATFORMS = {
+  ANDROID: "android",
+  IOS: "ios",
+  NATIVE: "react-native",
+  FLUTTER: "flutter",
+  UNITY: "unity",
+  UNREAL: "unreal",
+  EMBED: "embed",
+} as const;
