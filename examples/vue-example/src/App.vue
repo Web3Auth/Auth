@@ -888,7 +888,7 @@ const login = async () => {
     console.log(openLoginObj, "OPENLOGIN");
     const startTime = Date.now();
     if (selectedUxMode.value === "redirect") sessionStorage.setItem("startTime", startTime.toString());
-    await openloginInstance.value.login(openLoginObj);
+    await openloginInstance.value.loginWithSocial(openLoginObj);
     if (openloginInstance.value.privKey || openloginInstance.value.state.walletKey) {
       const loginTime = (Date.now() - startTime) / 1000;
       console.log("Login time", `${loginTime}s`);

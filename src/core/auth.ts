@@ -1,6 +1,8 @@
 import { SESSION_SERVER_API_URL, SESSION_SERVER_SOCKET_URL } from "@toruslabs/constants";
 import { SessionManager } from "@toruslabs/session-manager";
+import deepmerge from "deepmerge";
 
+import { getLoginConfig } from "../config/loginConfig";
 import {
   AUTH_ACTIONS,
   AUTH_ACTIONS_TYPE,
@@ -12,9 +14,13 @@ import {
   BaseRedirectParams,
   BrowserStorage,
   BUILD_ENV,
+  cloneDeep,
   jsonToBase64,
   LOGIN_PROVIDER,
+  LoginConfig,
+  LoginConfigItem,
   LoginParams,
+  SDK_MODE,
   SocialMfaModParams,
   UX_MODE,
   WEB3AUTH_LEGACY_NETWORK,
@@ -22,6 +28,7 @@ import {
   WEB3AUTH_NETWORK,
 } from "../utils";
 import { loglevel as log } from "../utils/logger";
+import { AuthProvider } from "./AuthProvider";
 import { InitializationError, LoginError } from "./errors";
 import PopupHandler, { PopupResponse } from "./PopupHandler";
 import { constructURL, getHashQueryParams, getTimeout, version } from "./utils";
@@ -41,10 +48,16 @@ export class Auth {
 
   private addVersionInUrls = true;
 
+  private authProvider: AuthProvider;
+
+  private customLoginConfig: Partial<LoginConfig> = {};
+
   constructor(options: AuthOptions) {
     if (!options.clientId) throw InitializationError.invalidParams("clientId is required");
     if (!options.network) options.network = WEB3AUTH_NETWORK.SAPPHIRE_MAINNET;
     if (!options.buildEnv) options.buildEnv = BUILD_ENV.PRODUCTION;
+    if (!options.sdkMode) options.sdkMode = SDK_MODE.DEFAULT;
+
     if (options.buildEnv === BUILD_ENV.DEVELOPMENT || options.buildEnv === BUILD_ENV.TESTING || options.sdkUrl) this.addVersionInUrls = false;
     if (!options.sdkUrl && !options.useMpc) {
       if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
@@ -92,6 +105,15 @@ export class Auth {
     if (!options.sessionTime) options.sessionTime = 86400;
 
     this.options = options;
+
+    if (options.loginConfig) {
+      Object.keys(options.loginConfig).forEach((y) => {
+        this.modifyCustomLoginConfig({
+          loginProvider: y,
+          cfg: (options.loginConfig || {})[y],
+        });
+      });
+    }
   }
 
   get privKey(): string {
@@ -123,7 +145,7 @@ export class Auth {
     return this.state.userInfo.appState || this.dappState || "";
   }
 
-  private get baseUrl(): string {
+  get baseUrl(): string {
     // testing and develop don't have versioning
     if (!this.addVersionInUrls) return `${this.options.sdkUrl}`;
     return `${this.options.sdkUrl}/v${version.split(".")[0]}`;
@@ -136,6 +158,10 @@ export class Auth {
   }
 
   async init(): Promise<void> {
+    if (this.options.sdkMode === SDK_MODE.IFRAME) {
+      this.authProvider = new AuthProvider({ sdkUrl: this.options.sdkUrl });
+      await this.authProvider.loadIframe();
+    }
     // get sessionNamespace from the redirect result.
     const params = getHashQueryParams(this.options.replaceUrlOnRedirect);
     if (params.sessionNamespace) this.options.sessionNamespace = params.sessionNamespace;
@@ -190,6 +216,20 @@ export class Auth {
         this.updateState({ sessionId: this.sessionManager.sessionId });
       }
     }
+
+    if (this.options.sdkMode === SDK_MODE.IFRAME) {
+      // TODO: come back to this, we can optimize this.
+      await this.authProvider.postInitMessage({ network: this.options.network, clientId: this.options.clientId });
+      if (params.nonce) {
+        await this.postLoginInitiatedMessage(JSON.parse(params.loginParams), params.nonce);
+      }
+    }
+  }
+
+  public getDappLoginConfig(): LoginConfig {
+    const localLoginConfig = cloneDeep(getLoginConfig(this.options.buildEnv, this.options.network));
+    const finalConfig = deepmerge(localLoginConfig, this.customLoginConfig);
+    return finalConfig;
   }
 
   async login(params: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string } | null> {
@@ -224,6 +264,25 @@ export class Auth {
     this.currentStorage.set("sessionId", result.sessionId);
     await this.rehydrateSession();
     return { privKey: this.privKey };
+  }
+
+  async postLoginInitiatedMessage(params: LoginParams & Partial<BaseRedirectParams>, nonce?: string): Promise<void> {
+    if (this.options.sdkMode !== SDK_MODE.IFRAME) throw LoginError.invalidLoginParams("Cannot perform this action in default mode.");
+    if (!this.authProvider || !this.authProvider.initialized) throw InitializationError.notInitialized();
+
+    const result = await this.authProvider.postLoginInitiatedMessage({ params, options: this.options }, nonce);
+    if (result.error) throw LoginError.loginFailed(result.error);
+    this.sessionManager.sessionId = result.sessionId;
+    this.options.sessionNamespace = result.sessionNamespace;
+    this.currentStorage.set("sessionId", result.sessionId);
+    await this.rehydrateSession();
+  }
+
+  async postLoginCancelledMessage(nonce: string): Promise<void> {
+    if (this.options.sdkMode !== SDK_MODE.IFRAME) throw LoginError.invalidLoginParams("Cannot perform this action in default mode.");
+    if (!this.authProvider || !this.authProvider.initialized) throw InitializationError.notInitialized();
+
+    this.authProvider.postLoginCancelledMessage(nonce);
   }
 
   async logout(): Promise<void> {
@@ -512,5 +571,42 @@ export class Auth {
         reject(error);
       }
     });
+  }
+
+  private modifyCustomLoginConfig(params: { cfg: LoginConfigItem; loginProvider: string }): void {
+    const { cfg, loginProvider } = params;
+    const localConfig = { ...this.customLoginConfig };
+    const currCfg = localConfig[loginProvider];
+
+    if (!currCfg) {
+      if (!cfg.verifier) {
+        // This will allow the default verifierSubIdentifier to be used.
+        // This is useful for dapps which are just toggling on/off the login method.
+        localConfig[loginProvider] = { ...cfg };
+      } else if (!cfg.verifierSubIdentifier) {
+        // prevent verifierSubIdentifier from being overridden later in get loginConfig function.
+        localConfig[loginProvider] = { ...cfg, verifierSubIdentifier: "" };
+      } else {
+        localConfig[loginProvider] = { ...cfg };
+      }
+    } else if (
+      Object.prototype.hasOwnProperty.call(cfg, "verifier") &&
+      cfg.verifier !== currCfg.verifier &&
+      !Object.prototype.hasOwnProperty.call(cfg, "verifierSubIdentifier") &&
+      Object.prototype.hasOwnProperty.call(localConfig[loginProvider], "verifierSubIdentifier")
+    ) {
+      // a custom verifier might be sent without verifierSubIdentifier key
+      // in custom config, in that case we should prevent it from getting overriden
+      // by default loginProvider verifierSubIdentifier.
+      localConfig[loginProvider] = { ...deepmerge(currCfg, cfg), verifierSubIdentifier: "" };
+    } else {
+      localConfig[loginProvider] = { ...deepmerge(currCfg, cfg) };
+    }
+
+    const finalConfigItem = localConfig[loginProvider];
+
+    if (finalConfigItem && !finalConfigItem.walletVerifier) finalConfigItem.walletVerifier = finalConfigItem.verifier;
+
+    this.customLoginConfig = localConfig;
   }
 }

@@ -1,6 +1,6 @@
 import { type TORUS_LEGACY_NETWORK_TYPE, type TORUS_SAPPHIRE_NETWORK_TYPE } from "@toruslabs/constants";
 
-import { AUTH_ACTIONS, BUILD_ENV, LOGIN_PROVIDER, MFA_LEVELS, SUPPORTED_KEY_CURVES, UX_MODE, WEB3AUTH_NETWORK } from "./constants";
+import { AUTH_ACTIONS, BUILD_ENV, LOGIN_PROVIDER, MFA_LEVELS, SDK_MODE, SUPPORTED_KEY_CURVES, UX_MODE, WEB3AUTH_NETWORK } from "./constants";
 
 export type WEB3AUTH_LEGACY_NETWORK_TYPE = TORUS_LEGACY_NETWORK_TYPE;
 export type WEB3AUTH_SAPPHIRE_NETWORK_TYPE = TORUS_SAPPHIRE_NETWORK_TYPE;
@@ -48,6 +48,8 @@ export type SUPPORTED_KEY_CURVES_TYPE = (typeof SUPPORTED_KEY_CURVES)[keyof type
 export type WEB3AUTH_NETWORK_TYPE = (typeof WEB3AUTH_NETWORK)[keyof typeof WEB3AUTH_NETWORK];
 
 export type BUILD_ENV_TYPE = (typeof BUILD_ENV)[keyof typeof BUILD_ENV];
+
+export type SDK_MODE_TYPE = (typeof SDK_MODE)[keyof typeof SDK_MODE];
 
 export interface BaseLoginOptions {
   /**
@@ -109,6 +111,10 @@ export interface BaseLoginOptions {
    * the Login Widget.
    */
   connection?: string;
+  /**
+   * id token for jwt login
+   */
+  id_token?: string;
 }
 
 export interface ExtraLoginOptions extends BaseLoginOptions {
@@ -410,81 +416,86 @@ export interface JwtParameters extends BaseLoginOptions {
   isVerifierIdCaseSensitive?: boolean;
 }
 
-export type LoginConfig = Record<
-  string,
-  {
-    verifier: string;
+export type LoginConfigItem = {
+  verifier: string;
 
-    /**
-     * The type of login. Refer to enum `LOGIN_TYPE`
-     */
-    typeOfLogin: TypeOfLogin;
+  /**
+   * The type of login. Refer to enum `LOGIN_TYPE`
+   */
+  typeOfLogin: TypeOfLogin;
 
-    /**
-     * Display Name. If not provided, we use the default for auth app
-     */
-    name?: string;
+  /**
+   * Display Name. If not provided, we use the default for auth app
+   */
+  name?: string;
 
-    /**
-     * Description for button. If provided, it renders as a full length button. else, icon button
-     */
-    description?: string;
+  /**
+   * Description for button. If provided, it renders as a full length button. else, icon button
+   */
+  description?: string;
 
-    /**
-     * Custom client_id. If not provided, we use the default for auth app
-     */
-    clientId?: string;
+  /**
+   * Custom client_id. If not provided, we use the default for auth app
+   */
+  clientId?: string;
 
-    verifierSubIdentifier?: string;
+  verifierSubIdentifier?: string;
 
-    /**
-     * Logo to be shown on mouse hover. If not provided, we use the default for auth app
-     */
-    logoHover?: string;
+  /**
+   * Logo to be shown on mouse hover. If not provided, we use the default for auth app
+   */
+  logoHover?: string;
 
-    /**
-     * Logo to be shown on dark background (dark theme). If not provided, we use the default for auth app
-     */
-    logoLight?: string;
+  /**
+   * Logo to be shown on dark background (dark theme). If not provided, we use the default for auth app
+   */
+  logoLight?: string;
 
-    /**
-     * Logo to be shown on light background (light theme). If not provided, we use the default for auth app
-     */
-    logoDark?: string;
+  /**
+   * Logo to be shown on light background (light theme). If not provided, we use the default for auth app
+   */
+  logoDark?: string;
 
-    /**
-     * Show login button on the main list
-     */
-    mainOption?: boolean;
+  /**
+   * Show login button on the main list
+   */
+  mainOption?: boolean;
 
-    /**
-     * Whether to show the login button on modal or not
-     */
-    showOnModal?: boolean;
+  /**
+   * Whether to show the login button on modal or not
+   */
+  showOnModal?: boolean;
 
-    /**
-     * Whether to show the login button on desktop
-     */
-    showOnDesktop?: boolean;
+  /**
+   * Whether to show the login button on desktop
+   */
+  showOnDesktop?: boolean;
 
-    /**
-     * Whether to show the login button on mobile
-     */
-    showOnMobile?: boolean;
+  /**
+   * Whether to show the login button on mobile
+   */
+  showOnMobile?: boolean;
 
-    /**
-     * If we are using social logins as a backup factor,
-     * then this option will be used to show the type of social login
-     * on the social backup login screen.
-     */
-    showOnSocialBackupFactor?: boolean;
+  /**
+   * If we are using social logins as a backup factor,
+   * then this option will be used to show the type of social login
+   * on the social backup login screen.
+   */
+  showOnSocialBackupFactor?: boolean;
 
-    /**
-     * Custom jwt parameters to configure the login. Useful for Auth0 configuration
-     */
-    jwtParameters?: JwtParameters;
-  }
->;
+  /**
+   * Custom jwt parameters to configure the login. Useful for Auth0 configuration
+   */
+  jwtParameters?: JwtParameters;
+
+  /**
+   * Wallet verifier. If not provided, we use the verifier as the wallet verifier
+   * Used for internal purposes only.
+   */
+  walletVerifier?: string;
+};
+
+export type LoginConfig = Record<string, LoginConfigItem>;
 
 export type AuthUserInfo = {
   email?: string;
@@ -718,6 +729,12 @@ export type AuthOptions = {
    * @defaultValue false
    */
   useCoreKitKey?: boolean;
+
+  /**
+   * This parameter will be used to select core kit key.
+   * @defaultValue false
+   */
+  sdkMode?: SDK_MODE_TYPE;
 };
 
 export interface BaseLoginParams {

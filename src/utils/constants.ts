@@ -66,3 +66,61 @@ export const BUILD_ENV = {
   STAGING: "staging",
   TESTING: "testing",
 } as const;
+
+export const SDK_MODE = {
+  DEFAULT: "default",
+  IFRAME: "iframe",
+} as const;
+
+export const JRPC_METHODS = {
+  INIT_DAPP: "init_dapp",
+  LOGIN_INITIATED: "login_initiated",
+  LOGIN_CANCELLED: "login_cancelled",
+  LOGIN_FAILED: "login_failed",
+  LOGIN_SUCCESS: "login_success",
+} as const;
+
+// Passwordless backend service
+export const PASSWORDLESS_SERVER_API_URL = "https://api.web3auth.io/passwordless-service";
+export const PASSWORDLESS_SERVER_SOCKET_URL = "https://api-passwordless.web3auth.io";
+export const DEVELOP_PASSWORDLESS_SERVER_API_URL = "https://api-develop.web3auth.io/passwordless-service";
+export const DEVELOP_PASSWORDLESS_SERVER_SOCKET_URL = "https://api-develop-passwordless.web3auth.io";
+
+// Auth backend service
+export const AUTH_SERVER_URL = "https://api.web3auth.io/auth-service";
+export const DEVELOP_AUTH_SERVER_URL = "https://api-develop.web3auth.io/auth-service";
+
+export const IFRAME_MODAL_ID = "auth-iframe";
+
+export const GOOGLE = "google";
+export const FACEBOOK = "facebook";
+export const REDDIT = "reddit";
+export const DISCORD = "discord";
+export const TWITCH = "twitch";
+export const APPLE = "apple";
+export const LINE = "line";
+export const GITHUB = "github";
+export const LINKEDIN = "linkedin";
+export const TWITTER = "twitter";
+export const WEIBO = "weibo";
+export const JWT = "jwt";
+export const PASSKEYS = "passkeys";
+
+export const GOOGLE_LOGIN_PROVIDER = "google";
+export const FACEBOOK_LOGIN_PROVIDER = "facebook";
+export const REDDIT_LOGIN_PROVIDER = "reddit";
+export const DISCORD_LOGIN_PROVIDER = "discord";
+export const TWITCH_LOGIN_PROVIDER = "twitch";
+export const APPLE_LOGIN_PROVIDER = "apple";
+export const LINE_LOGIN_PROVIDER = "line";
+export const GITHUB_LOGIN_PROVIDER = "github";
+export const KAKAO_LOGIN_PROVIDER = "kakao";
+export const LINKEDIN_LOGIN_PROVIDER = "linkedin";
+export const TWITTER_LOGIN_PROVIDER = "twitter";
+export const WEIBO_LOGIN_PROVIDER = "weibo";
+export const WECHAT_LOGIN_PROVIDER = "wechat";
+export const EMAIL_PASSWORDLESS_LOGIN_PROVIDER = "email_passwordless";
+export const FARCASTER_LOGIN_PROVIDER = "farcaster";
+export const AUTHENTICATOR_LOGIN_PROVIDER = "authenticator";
+export const SMS_PASSWORDLESS_LOGIN_PROVIDER = "sms_passwordless";
+export const PASSKEYS_LOGIN_PROVIDER = "passkeys";
