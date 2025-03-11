@@ -15,22 +15,6 @@ export type UserData = {
   [P in string]: string;
 };
 
-export type BaseRedirectParams = {
-  /**
-   * redirectUrl is the dapp's url where user will be redirected after login.
-   *
-   * @remarks
-   * Register this url at {@link "https://dashboard.web3auth.io"| developer dashboard}
-   * else initialization will give error.
-   */
-  redirectUrl?: string;
-  /**
-   * Any custom state you wish to pass along. This will be returned to you post redirect.
-   * Use this to store data that you want to be available to the dapp after login.
-   */
-  appState?: string;
-};
-
 /**
  * {@label loginProviderType}
  */
@@ -129,20 +113,6 @@ export interface ExtraLoginOptions extends BaseLoginOptions {
    */
   client_id?: string;
   /**
-   * The default URL where Auth0 will redirect your browser to with
-   * the authentication result. It must be whitelisted in
-   * the "Allowed Callback URLs" field in your Auth0 Application's
-   * settings. If not provided here, it should be provided in the other
-   * methods that provide authentication.
-   */
-  redirect_uri?: string;
-  /**
-   * The value in seconds used to account for clock skew in JWT expirations.
-   * Typically, this value is no more than a minute or two at maximum.
-   * Defaults to 60s.
-   */
-  leeway?: number;
-  /**
    * The field in jwt token which maps to verifier id
    */
   verifierIdField?: string;
@@ -153,7 +123,13 @@ export interface ExtraLoginOptions extends BaseLoginOptions {
   isVerifierIdCaseSensitive?: boolean;
 }
 
-export type LoginParams = BaseRedirectParams & {
+export type LoginParams = {
+  /**
+   * Any custom state you wish to pass along. This will be returned to you post redirect.
+   * Use this to store data that you want to be available to the dapp after login.
+   */
+  appState?: string;
+
   /**
    * loginProvider sets the oauth login method to be used.
    * You can use any of the valid loginProvider from the supported list.
@@ -342,21 +318,15 @@ export type WhiteLabelData = {
   /**
    * Language specific link for terms and conditions on torus-website. See (examples/vue-app) to configure
    * e.g.
-   * tncLink: {
-   *  en: "http://example.com/tnc/en",
-   *  ja: "http://example.com/tnc/ja",
-   * }
+   * tncLink: http://example.com/tnc
    */
-  tncLink?: Partial<Record<LANGUAGE_TYPE, string>>;
+  tncLink?: string;
   /**
    * Language specific link for privacy policy on torus-website. See (examples/vue-app) to configure
    * e.g.
-   * privacyPolicy: {
-   *  en: "http://example.com/tnc/en",
-   *  ja: "http://example.com/tnc/ja",
-   * }
+   * privacyPolicy: http://example.com/privacy
    */
-  privacyPolicy?: Partial<Record<LANGUAGE_TYPE, string>>;
+  privacyPolicy?: string;
 };
 
 export type TypeOfLogin =
@@ -425,57 +395,11 @@ export type LoginConfigItem = {
   typeOfLogin: TypeOfLogin;
 
   /**
-   * Display Name. If not provided, we use the default for auth app
-   */
-  name?: string;
-
-  /**
-   * Description for button. If provided, it renders as a full length button. else, icon button
-   */
-  description?: string;
-
-  /**
    * Custom client_id. If not provided, we use the default for auth app
    */
   clientId?: string;
 
   verifierSubIdentifier?: string;
-
-  /**
-   * Logo to be shown on mouse hover. If not provided, we use the default for auth app
-   */
-  logoHover?: string;
-
-  /**
-   * Logo to be shown on dark background (dark theme). If not provided, we use the default for auth app
-   */
-  logoLight?: string;
-
-  /**
-   * Logo to be shown on light background (light theme). If not provided, we use the default for auth app
-   */
-  logoDark?: string;
-
-  /**
-   * Show login button on the main list
-   */
-  mainOption?: boolean;
-
-  /**
-   * Whether to show the login button on modal or not
-   */
-  showOnModal?: boolean;
-
-  /**
-   * Whether to show the login button on desktop
-   */
-  showOnDesktop?: boolean;
-
-  /**
-   * Whether to show the login button on mobile
-   */
-  showOnMobile?: boolean;
-
   /**
    * If we are using social logins as a backup factor,
    * then this option will be used to show the type of social login
@@ -645,17 +569,6 @@ export type AuthOptions = {
   loginConfig?: LoginConfig;
 
   /**
-   * webauthnTransport enables you to configure the transport type user can use
-   * for saving their share.
-   *
-   * @defaultValue ["internal"]
-   *
-   * @remarks
-   * This is only available for v1 users.
-   */
-  webauthnTransports?: AuthenticatorTransport[];
-
-  /**
    * sdkUrl is for internal development use only and is used to override the
    * `network` parameter.
    * @internal
@@ -693,7 +606,14 @@ export type AuthOptions = {
    *
    * @defaultValue "local"
    */
-  storageKey?: "session" | "local";
+  storage?: "session" | "local";
+
+  /**
+   * sessionKey is the key to be used to override the default key used to store session data.
+   *
+   * @defaultValue auth_store
+   */
+  sessionKey?: string;
 
   /**
    * How long should a login session last at a minimum in seconds

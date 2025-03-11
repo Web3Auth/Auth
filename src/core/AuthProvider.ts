@@ -27,8 +27,6 @@ export class AuthProvider {
 
   public initialized: boolean = false;
 
-  private targetOrigin: string;
-
   private iframeElem: HTMLIFrameElement;
 
   private iframeLoadPromise: Promise<void> | null = null;
@@ -39,8 +37,10 @@ export class AuthProvider {
 
   constructor({ sdkUrl }: { sdkUrl: string }) {
     this.sdkUrl = sdkUrl;
-    this.targetOrigin = new URL(this.sdkUrl).origin;
-    log.info("target origin", this.targetOrigin);
+  }
+
+  get targetOrigin(): string {
+    return new URL(this.sdkUrl).origin;
   }
 
   async loadIframe(): Promise<void> {
@@ -122,24 +122,24 @@ export class AuthProvider {
   }
 
   private setupMessageListener() {
-    log.info("setting up message listener");
     window.addEventListener("message", this.handleMessage.bind(this));
   }
 
   private handleMessage(event: MessageEvent) {
-    log.info("message events in auth provider", event, this.targetOrigin);
     const { origin, data } = event as {
       origin: string;
       data: { type: string; data: { sessionId?: string; sessionNamespace?: string; error?: string } };
     };
+    // the origin should be the same as the target origin
     if (origin !== this.targetOrigin) return;
-    const { type, data: messageData } = data;
+    const { type } = data;
+    const messageData = data.data;
     switch (type) {
       case JRPC_METHODS.LOGIN_FAILED:
         this.loginCallbackFailed?.(messageData?.error || "Login failed, reason: unknown");
         break;
       case JRPC_METHODS.LOGIN_SUCCESS:
-        log.info("LOGIN_SUCCESS", messageData, this.loginCallbackSuccess);
+        log.info("LOGIN_SUCCESS", messageData);
         if (messageData?.sessionId) this.loginCallbackSuccess?.(messageData);
         break;
       default:

@@ -11,7 +11,6 @@ import {
   AuthSessionData,
   AuthUserInfo,
   BaseLoginParams,
-  BaseRedirectParams,
   BrowserStorage,
   BUILD_ENV,
   cloneDeep,
@@ -100,8 +99,7 @@ export class Auth {
     if (!options.mfaSettings) options.mfaSettings = {};
     if (!options.storageServerUrl) options.storageServerUrl = SESSION_SERVER_API_URL;
     if (!options.sessionSocketUrl) options.sessionSocketUrl = SESSION_SERVER_SOCKET_URL;
-    if (!options.storageKey) options.storageKey = "local";
-    if (!options.webauthnTransports) options.webauthnTransports = ["internal"];
+    if (!options.storage) options.storage = "local";
     if (!options.sessionTime) options.sessionTime = 86400;
 
     this.options = options;
@@ -166,8 +164,9 @@ export class Auth {
     const params = getHashQueryParams(this.options.replaceUrlOnRedirect);
     if (params.sessionNamespace) this.options.sessionNamespace = params.sessionNamespace;
 
-    const storageKey = this.options.sessionNamespace ? `${this._storageBaseKey}_${this.options.sessionNamespace}` : this._storageBaseKey;
-    this.currentStorage = BrowserStorage.getInstance(storageKey, this.options.storageKey);
+    const storageKey =
+      this.options.sessionKey || this.options.sessionNamespace ? `${this._storageBaseKey}_${this.options.sessionNamespace}` : this._storageBaseKey;
+    this.currentStorage = BrowserStorage.getInstance(storageKey, this.options.storage);
 
     const sessionId = this.currentStorage.get<string>("sessionId");
 
@@ -232,18 +231,11 @@ export class Auth {
     return finalConfig;
   }
 
-  async login(params: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string } | null> {
+  async login(params: LoginParams): Promise<{ privKey: string } | null> {
     if (!params.loginProvider) throw LoginError.invalidLoginParams(`loginProvider is required`);
-
-    // in case of redirect mode, redirect url will be dapp specified
-    // in case of popup mode, redirect url will be sdk specified
-    const defaultParams: BaseRedirectParams = {
-      redirectUrl: this.options.redirectUrl,
-    };
 
     const loginParams: LoginParams = {
       loginProvider: params.loginProvider,
-      ...defaultParams,
       ...params,
     };
 
@@ -266,7 +258,7 @@ export class Auth {
     return { privKey: this.privKey };
   }
 
-  async postLoginInitiatedMessage(params: LoginParams & Partial<BaseRedirectParams>, nonce?: string): Promise<void> {
+  async postLoginInitiatedMessage(params: LoginParams, nonce?: string): Promise<void> {
     if (this.options.sdkMode !== SDK_MODE.IFRAME) throw LoginError.invalidLoginParams("Cannot perform this action in default mode.");
     if (!this.authProvider || !this.authProvider.initialized) throw InitializationError.notInitialized();
 
@@ -329,17 +321,11 @@ export class Auth {
   async enableMFA(params: Partial<LoginParams>): Promise<boolean> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
     if (this.state.userInfo.isMfaEnabled) throw LoginError.mfaAlreadyEnabled();
-    // in case of redirect mode, redirect url will be dapp specified
-    // in case of popup mode, redirect url will be sdk specified
-    const defaultParams: BaseRedirectParams = {
-      redirectUrl: this.options.redirectUrl,
-    };
 
     const dataObject: AuthSessionConfig = {
       actionType: AUTH_ACTIONS.ENABLE_MFA,
       options: this.options,
       params: {
-        ...defaultParams,
         ...params,
         loginProvider: this.state.userInfo.typeOfLogin,
         extraLoginOptions: {
@@ -407,20 +393,13 @@ export class Auth {
     window.open(loginUrl, "_blank");
   }
 
-  async manageSocialFactor(actionType: AUTH_ACTIONS_TYPE, params: SocialMfaModParams & Partial<BaseRedirectParams>): Promise<boolean> {
+  async manageSocialFactor(actionType: AUTH_ACTIONS_TYPE, params: SocialMfaModParams & Pick<LoginParams, "appState">): Promise<boolean> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
-
-    // in case of redirect mode, redirect url will be dapp specified
-    // in case of popup mode, redirect url will be sdk specified
-    const defaultParams: BaseRedirectParams = {
-      redirectUrl: this.options.redirectUrl,
-    };
 
     const dataObject: AuthSessionConfig = {
       actionType,
       options: this.options,
       params: {
-        ...defaultParams,
         ...params,
       },
       sessionId: this.sessionId,
@@ -432,20 +411,13 @@ export class Auth {
     return true;
   }
 
-  async addAuthenticatorFactor(params: Partial<BaseRedirectParams>): Promise<boolean> {
+  async addAuthenticatorFactor(params: Pick<LoginParams, "appState">): Promise<boolean> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
-
-    // in case of redirect mode, redirect url will be dapp specified
-    // in case of popup mode, redirect url will be sdk specified
-    const defaultParams: BaseRedirectParams = {
-      redirectUrl: this.options.redirectUrl,
-    };
 
     const dataObject: AuthSessionConfig = {
       actionType: AUTH_ACTIONS.ADD_AUTHENTICATOR_FACTOR,
       options: this.options,
       params: {
-        ...defaultParams,
         ...params,
         loginProvider: LOGIN_PROVIDER.AUTHENTICATOR,
       },
@@ -458,20 +430,13 @@ export class Auth {
     return true;
   }
 
-  async addPasskeyFactor(params: Partial<BaseRedirectParams>): Promise<boolean> {
+  async addPasskeyFactor(params: Pick<LoginParams, "appState">): Promise<boolean> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
-
-    // in case of redirect mode, redirect url will be dapp specified
-    // in case of popup mode, redirect url will be sdk specified
-    const defaultParams: BaseRedirectParams = {
-      redirectUrl: this.options.redirectUrl,
-    };
 
     const dataObject: AuthSessionConfig = {
       actionType: AUTH_ACTIONS.ADD_PASSKEY_FACTOR,
       options: this.options,
       params: {
-        ...defaultParams,
         ...params,
         loginProvider: LOGIN_PROVIDER.PASSKEYS,
       },
