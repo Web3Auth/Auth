@@ -137,14 +137,14 @@ export interface ExtraLoginOptions extends BaseLoginOptions {
    */
   leeway?: number;
   /**
-   * The field in jwt token which maps to verifier id
+   * The field in jwt token which maps to user id
    */
-  verifierIdField?: string;
+  userIdField?: string;
   /**
-   * Whether the verifier id field is case sensitive
+   * Whether the user id field is case sensitive
    * @defaultValue true
    */
-  isVerifierIdCaseSensitive?: boolean;
+  isUserIdCaseSensitive?: boolean;
 }
 
 export type LoginParams = BaseRedirectParams & {
@@ -353,7 +353,7 @@ export type WhiteLabelData = {
   privacyPolicy?: Partial<Record<LANGUAGE_TYPE, string>>;
 };
 
-export type TypeOfLogin =
+export type AuthConnection =
   | "google"
   | "facebook"
   | "reddit"
@@ -399,26 +399,26 @@ export interface JwtParameters extends BaseLoginOptions {
   leeway?: number;
 
   /**
-   * The field in jwt token which maps to verifier id
+   * The field in jwt token which maps to user id
    */
-  verifierIdField?: string;
+  userIdField?: string;
 
   /**
-   * Whether the verifier id field is case sensitive
+   * Whether the user id field is case sensitive
    * @defaultValue true
    */
-  isVerifierIdCaseSensitive?: boolean;
+  isUserIdCaseSensitive?: boolean;
 }
 
 export type LoginConfig = Record<
   string,
   {
-    verifier: string;
+    authConnectionId: string;
 
     /**
      * The type of login. Refer to enum `LOGIN_TYPE`
      */
-    typeOfLogin: TypeOfLogin;
+    authConnection: AuthConnection;
 
     /**
      * Display Name. If not provided, we use the default for auth app
@@ -490,10 +490,10 @@ export type AuthUserInfo = {
   email?: string;
   name?: string;
   profileImage?: string;
-  aggregateVerifier?: string;
-  verifier: string;
-  verifierId: string;
-  typeOfLogin: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
+  groupedAuthConnectionId?: string;
+  authConnectionId: string;
+  userId: string;
+  authConnection: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
   dappShare?: string;
   /**
    * Token issued by Web3Auth.

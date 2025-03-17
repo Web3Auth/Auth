@@ -69,8 +69,8 @@
     "@babel/runtime": "^7.26.10",
     "@rollup/plugin-replace": "^6.0.2",
     "@toruslabs/config": "^3.1.0",
-    "@toruslabs/eslint-config-typescript": "^4.1.0",
-    "@toruslabs/torus-scripts": "^7.1.2",
+    "@toruslabs/eslint-config-typescript": "^4.1.1",
+    "@toruslabs/torus-scripts": "^7.1.3",
     "@types/color": "^4.2.0",
     "@types/elliptic": "^6.4.18",
     "@types/end-of-stream": "^1.4.4",
@@ -85,7 +85,7 @@
     "husky": "^9.1.7",
     "jsdom": "^26.0.0",
     "jsdom-global": "^3.0.2",
-    "lint-staged": "^15.4.3",
+    "lint-staged": "^15.5.0",
     "prettier": "^3.5.3",
     "rimraf": "^6.0.1",
     "tsconfig-paths": "^4.2.0",
@@ -99,7 +99,7 @@
     "@babel/runtime": "7.x"
   },
   "optionalDependencies": {
-    "@nx/nx-linux-x64-gnu": "^20.5.0",
+    "@nx/nx-linux-x64-gnu": "^20.6.0",
     "@rollup/rollup-linux-x64-gnu": "^4.35.0"
   },
   "author": "Torus Labs",
@@ -124,7 +124,7 @@
     "@toruslabs/metadata-helpers": "^7.0.2",
     "@toruslabs/secure-pub-sub": "^3.0.1",
     "@toruslabs/session-manager": "^4.0.2",
-    "@toruslabs/starkware-crypto": "^4.0.1",
+    "@toruslabs/starkware-crypto": "^5.0.0",
     "@toruslabs/tweetnacl-js": "^1.0.4",
     "base64url": "^3.0.1",
     "bip39": "^3.1.0",

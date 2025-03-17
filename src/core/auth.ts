@@ -248,10 +248,10 @@ export class Auth {
         oAuthAccessToken: "",
         appState: "",
         email: "",
-        verifier: "",
-        verifierId: "",
-        aggregateVerifier: "",
-        typeOfLogin: "",
+        authConnectionId: "",
+        userId: "",
+        groupedAuthConnectionId: "",
+        authConnection: "",
         isMfaEnabled: false,
       },
       authToken: "",
@@ -282,9 +282,9 @@ export class Auth {
       params: {
         ...defaultParams,
         ...params,
-        loginProvider: this.state.userInfo.typeOfLogin,
+        loginProvider: this.state.userInfo.authConnection,
         extraLoginOptions: {
-          login_hint: this.state.userInfo.verifierId,
+          login_hint: this.state.userInfo.userId,
         },
         mfaLevel: "mandatory",
       },
@@ -324,9 +324,9 @@ export class Auth {
       params: {
         ...defaultParams,
         ...params,
-        loginProvider: this.state.userInfo.typeOfLogin,
+        loginProvider: this.state.userInfo.authConnection,
         extraLoginOptions: {
-          login_hint: this.state.userInfo.verifierId,
+          login_hint: this.state.userInfo.userId,
         },
         appState: jsonToBase64({ loginId }),
       },
