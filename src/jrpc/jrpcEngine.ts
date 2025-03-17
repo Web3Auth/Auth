@@ -2,7 +2,7 @@ import { Duplex } from "readable-stream";
 
 import { loglevel as log } from "../utils/logger";
 import { JsonRpcErrorsArg, rpcErrors } from "./errors/errors";
-import { getMessageFromCode, serializeError } from "./errors/utils";
+import { getMessageFromCode, serializeJrpcError } from "./errors/utils";
 import {
   JRPCEngineEndCallback,
   JRPCEngineNextCallback,
@@ -102,7 +102,7 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
           if (typeof error === "object" && Object.keys(error).includes("stack") === false) error.stack = "Stack trace is not available.";
           log.error(error);
 
-          res.error = serializeError(error, {
+          res.error = serializeJrpcError(error, {
             shouldIncludeStack: true,
             fallbackError: constructFallbackError(error),
           });
@@ -343,7 +343,7 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
       if (!res.error) {
         if (typeof error === "object" && Object.keys(error).includes("stack") === false) error.stack = "Stack trace is not available.";
         log.error(error);
-        res.error = serializeError(error, {
+        res.error = serializeJrpcError(error, {
           shouldIncludeStack: true,
           fallbackError: constructFallbackError(error),
         });
@@ -438,7 +438,7 @@ export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider
     if (res.error) {
       if (typeof res.error === "object" && Object.keys(res.error).includes("stack") === false) res.error.stack = "Stack trace is not available.";
       log.error(res.error);
-      const err = serializeError(res.error, {
+      const err = serializeJrpcError(res.error, {
         fallbackError: constructFallbackError(res.error),
         shouldIncludeStack: true,
       });

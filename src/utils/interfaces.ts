@@ -1,11 +1,10 @@
 import { type TORUS_LEGACY_NETWORK_TYPE, type TORUS_SAPPHIRE_NETWORK_TYPE } from "@toruslabs/constants";
+import type { AUTH_CONNECTION_TYPE, Auth0ClientOptions, UX_MODE_TYPE } from "@toruslabs/customauth";
 
-import { AUTH_ACTIONS, BUILD_ENV, LOGIN_PROVIDER, MFA_LEVELS, SDK_MODE, SUPPORTED_KEY_CURVES, UX_MODE, WEB3AUTH_NETWORK } from "./constants";
+import { AUTH_ACTIONS, BUILD_ENV, MFA_LEVELS, SDK_MODE, SUPPORTED_KEY_CURVES, WEB3AUTH_NETWORK } from "./constants";
 
 export type WEB3AUTH_LEGACY_NETWORK_TYPE = TORUS_LEGACY_NETWORK_TYPE;
 export type WEB3AUTH_SAPPHIRE_NETWORK_TYPE = TORUS_SAPPHIRE_NETWORK_TYPE;
-
-export type UX_MODE_TYPE = (typeof UX_MODE)[keyof typeof UX_MODE];
 
 export type OriginData = {
   [P in string]: string;
@@ -14,11 +13,6 @@ export type OriginData = {
 export type UserData = {
   [P in string]: string;
 };
-
-/**
- * {@label loginProviderType}
- */
-export type LOGIN_PROVIDER_TYPE = (typeof LOGIN_PROVIDER)[keyof typeof LOGIN_PROVIDER];
 
 export type AUTH_ACTIONS_TYPE = (typeof AUTH_ACTIONS)[keyof typeof AUTH_ACTIONS];
 
@@ -35,93 +29,7 @@ export type BUILD_ENV_TYPE = (typeof BUILD_ENV)[keyof typeof BUILD_ENV];
 
 export type SDK_MODE_TYPE = (typeof SDK_MODE)[keyof typeof SDK_MODE];
 
-export interface BaseLoginOptions {
-  /**
-   * If you need to send custom parameters to the Authorization Server,
-   * make sure to use the original parameter name.
-   */
-  [key: string]: unknown;
-  /**
-   * - `'page'`: displays the UI with a full page view
-   * - `'popup'`: displays the UI with a popup window
-   * - `'touch'`: displays the UI in a way that leverages a touch interface
-   * - `'wap'`: displays the UI with a "feature phone" type interface
-   */
-  display?: "page" | "popup" | "touch" | "wap" | string;
-  /**
-   * - `'none'`: do not prompt user for login or consent on re-authentication
-   * - `'login'`: prompt user for re-authentication
-   * - `'consent'`: prompt user for consent before processing request
-   * - `'select_account'`: prompt user to select an account
-   */
-  prompt?: "none" | "login" | "consent" | "select_account" | string;
-  /**
-   * Maximum allowable elapsed time (in seconds) since authentication.
-   * If the last time the user authenticated is greater than this value,
-   * the user must be re-authenticated.
-   */
-  max_age?: string | number;
-  /**
-   * The space-separated list of language tags, ordered by preference.
-   * For example: `'fr-CA fr en'`.
-   */
-  ui_locales?: string;
-  /**
-   * Previously issued ID Token.
-   */
-  id_token_hint?: string;
-  /**
-   * The user's email address or other identifier. When your app knows
-   * which user is trying to authenticate, you can provide this parameter
-   * to pre-fill the email box or select the right session for sign-in.
-   *
-   * This currently only affects the classic Lock experience.
-   */
-  login_hint?: string;
-  acr_values?: string;
-  /**
-   * The default scope to be used on authentication requests.
-   * The defaultScope defined in the Auth0Client is included
-   * along with this scope
-   */
-  scope?: string;
-  /**
-   * The default audience to be used for requesting API access.
-   */
-  audience?: string;
-  /**
-   * The name of the connection configured for your application.
-   * If null, it will redirect to the Auth0 Login Page and show
-   * the Login Widget.
-   */
-  connection?: string;
-  /**
-   * id token for jwt login
-   */
-  id_token?: string;
-}
-
-export interface ExtraLoginOptions extends BaseLoginOptions {
-  /**
-   * Your Auth0 account domain such as `'example.auth0.com'`,
-   * `'example.eu.auth0.com'` or , `'example.mycompany.com'`
-   * (when using [custom domains](https://auth0.com/docs/custom-domains))
-   */
-  domain?: string;
-  /**
-   * The Client ID found on your Application settings page
-   */
-  client_id?: string;
-  /**
-   * The field in jwt token which maps to verifier id
-   */
-  verifierIdField?: string;
-  /**
-   * Whether the verifier id field is case sensitive
-   * @defaultValue true
-   */
-  isVerifierIdCaseSensitive?: boolean;
-}
+export type ExtraLoginOptions = Auth0ClientOptions;
 
 export type LoginParams = {
   /**
@@ -131,10 +39,10 @@ export type LoginParams = {
   appState?: string;
 
   /**
-   * loginProvider sets the oauth login method to be used.
-   * You can use any of the valid loginProvider from the supported list.
+   * loginProvider sets the auth connection to be used.
+   * You can use any of the valid authConnection from the supported list.
    */
-  loginProvider: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
+  loginProvider: AUTH_CONNECTION_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
 
   /**
    * You can set the `mfaLevel` to customize when mfa screen should be shown to user.
@@ -201,10 +109,10 @@ export type LoginParams = {
 
 export type SocialMfaModParams = {
   /**
-   * loginProvider sets the oauth login method to be used.
-   * You can use any of the valid loginProvider from the supported list.
+   * authConnection sets the auth connection to be used.
+   * You can use any of the valid authConnection from the supported list.
    */
-  loginProvider: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
+  authConnection: AUTH_CONNECTION_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
 
   /**
    * extraLoginOptions can be used to pass standard oauth login options to
@@ -329,77 +237,20 @@ export type WhiteLabelData = {
   privacyPolicy?: string;
 };
 
-export type TypeOfLogin =
-  | "google"
-  | "facebook"
-  | "reddit"
-  | "discord"
-  | "twitch"
-  | "apple"
-  | "github"
-  | "linkedin"
-  | "twitter"
-  | "weibo"
-  | "line"
-  | "email_password"
-  | "passwordless"
-  | "jwt"
-  | "passkeys"
-  | "email_passwordless"
-  | "sms_passwordless";
-
-export interface JwtParameters extends BaseLoginOptions {
-  /**
-   * Your Auth0 account domain such as `'example.auth0.com'`,
-   * `'example.eu.auth0.com'` or , `'example.mycompany.com'`
-   * (when using [custom domains](https://auth0.com/docs/custom-domains))
-   */
-  domain?: string;
-  /**
-   * The Client ID found on your Application settings page
-   */
-  client_id?: string;
-  /**
-   * The default URL where Auth0 will redirect your browser to with
-   * the authentication result. It must be whitelisted in
-   * the "Allowed Callback URLs" field in your Auth0 Application's
-   * settings. If not provided here, it should be provided in the other
-   * methods that provide authentication.
-   */
-  redirect_uri?: string;
-  /**
-   * The value in seconds used to account for clock skew in JWT expirations.
-   * Typically, this value is no more than a minute or two at maximum.
-   * Defaults to 60s.
-   */
-  leeway?: number;
+export type AuthConnectionConfigItem = {
+  authConnectionId: string;
 
   /**
-   * The field in jwt token which maps to verifier id
+   * The type of login. Refer to enum `AUTH_CONNECTION_TYPE`
    */
-  verifierIdField?: string;
-
-  /**
-   * Whether the verifier id field is case sensitive
-   * @defaultValue true
-   */
-  isVerifierIdCaseSensitive?: boolean;
-}
-
-export type LoginConfigItem = {
-  verifier: string;
-
-  /**
-   * The type of login. Refer to enum `LOGIN_TYPE`
-   */
-  typeOfLogin: TypeOfLogin;
+  authConnection: AUTH_CONNECTION_TYPE;
 
   /**
    * Custom client_id. If not provided, we use the default for auth app
    */
   clientId?: string;
 
-  verifierSubIdentifier?: string;
+  groupedAuthConnectionId?: string;
   /**
    * If we are using social logins as a backup factor,
    * then this option will be used to show the type of social login
@@ -410,25 +261,35 @@ export type LoginConfigItem = {
   /**
    * Custom jwt parameters to configure the login. Useful for Auth0 configuration
    */
-  jwtParameters?: JwtParameters;
+  jwtParameters?: Auth0ClientOptions;
 
   /**
-   * Wallet verifier. If not provided, we use the verifier as the wallet verifier
+   * Wallet AuthConnectionId. If not provided, we use the authConnectionId as the walletAuthConnectionId.
    * Used for internal purposes only.
    */
-  walletVerifier?: string;
+  walletAuthConnectionId?: string;
+
+  /**
+   * The provider identifier.
+   */
+  loginProvider?: string;
+
+  /**
+   * The display name of the login provider.
+   */
+  name?: string;
 };
 
-export type LoginConfig = Record<string, LoginConfigItem>;
+export type AuthConnectionConfig = Record<string, AuthConnectionConfigItem>;
 
 export type AuthUserInfo = {
   email?: string;
   name?: string;
   profileImage?: string;
-  aggregateVerifier?: string;
-  verifier: string;
-  verifierId: string;
-  typeOfLogin: LOGIN_PROVIDER_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
+  groupedAuthConnectionId?: string;
+  authConnectionId: string;
+  userId: string;
+  authConnection: AUTH_CONNECTION_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
   dappShare?: string;
   /**
    * Token issued by Web3Auth.
@@ -437,13 +298,13 @@ export type AuthUserInfo = {
 
   /**
    * Token issued by OAuth provider. Will be available only if you are using
-   * custom verifiers.
+   * custom auth connection.
    */
   oAuthIdToken?: string;
 
   /**
    * Access Token issued by OAuth provider. Will be available only if you are using
-   * custom verifiers.
+   * custom auth connection.
    */
   oAuthAccessToken?: string;
   appState?: string;
@@ -555,18 +416,18 @@ export type AuthOptions = {
   originData?: OriginData;
 
   /**
-   * loginConfig enables you to pass your own login verifiers configuration for various
-   * loginProviders.
+   * authConnectionConfig enables you to pass your own auth connection configuration for various
+   * auth connections.
    *
-   * loginConfig is key value map where each key should be a valid loginProvider and value
-   * should be custom configuration for that loginProvider
+   * authConnectionConfig is key value map where each key should be a valid auth connection and value
+   * should be custom configuration for that auth connection
    *
    * @remarks
-   * You can deploy your own verifiers from {@link "https://dashboard.web3auth.io"| developer dashboard}
+   * You can deploy your own auth connections from {@link "https://dashboard.web3auth.io"| developer dashboard}
    * to use here.
    *
    */
-  loginConfig?: LoginConfig;
+  authConnectionConfig?: AuthConnectionConfig;
 
   /**
    * sdkUrl is for internal development use only and is used to override the

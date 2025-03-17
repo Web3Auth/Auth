@@ -4,11 +4,6 @@ export const storeKey = "auth_store";
 export const WEB3AUTH_LEGACY_NETWORK = TORUS_LEGACY_NETWORK;
 export const WEB3AUTH_SAPPHIRE_NETWORK = TORUS_SAPPHIRE_NETWORK;
 
-export const UX_MODE = {
-  POPUP: "popup",
-  REDIRECT: "redirect",
-} as const;
-
 export const WEB3AUTH_NETWORK = {
   ...WEB3AUTH_SAPPHIRE_NETWORK,
   ...WEB3AUTH_LEGACY_NETWORK,
@@ -18,29 +13,6 @@ export const SUPPORTED_KEY_CURVES = {
   SECP256K1: "secp256k1",
   ED25519: "ed25519",
   OTHER: "other",
-} as const;
-
-export const LOGIN_PROVIDER = {
-  GOOGLE: "google",
-  FACEBOOK: "facebook",
-  REDDIT: "reddit",
-  DISCORD: "discord",
-  TWITCH: "twitch",
-  APPLE: "apple",
-  LINE: "line",
-  GITHUB: "github",
-  KAKAO: "kakao",
-  LINKEDIN: "linkedin",
-  TWITTER: "twitter",
-  WEIBO: "weibo",
-  WECHAT: "wechat",
-  FARCASTER: "farcaster",
-  EMAIL_PASSWORDLESS: "email_passwordless",
-  SMS_PASSWORDLESS: "sms_passwordless",
-  WEBAUTHN: "webauthn",
-  JWT: "jwt",
-  PASSKEYS: "passkeys",
-  AUTHENTICATOR: "authenticator",
 } as const;
 
 export const MFA_LEVELS = {
@@ -78,6 +50,8 @@ export const JRPC_METHODS = {
   LOGIN_CANCELLED: "login_cancelled",
   LOGIN_FAILED: "login_failed",
   LOGIN_SUCCESS: "login_success",
+  DISPLAY_IFRAME: "display_iframe",
+  HIDE_IFRAME: "hide_iframe",
 } as const;
 
 // Passwordless backend service
@@ -91,20 +65,6 @@ export const AUTH_SERVER_URL = "https://api.web3auth.io/auth-service";
 export const DEVELOP_AUTH_SERVER_URL = "https://api-develop.web3auth.io/auth-service";
 
 export const IFRAME_MODAL_ID = "auth-iframe";
-
-export const GOOGLE = "google";
-export const FACEBOOK = "facebook";
-export const REDDIT = "reddit";
-export const DISCORD = "discord";
-export const TWITCH = "twitch";
-export const APPLE = "apple";
-export const LINE = "line";
-export const GITHUB = "github";
-export const LINKEDIN = "linkedin";
-export const TWITTER = "twitter";
-export const WEIBO = "weibo";
-export const JWT = "jwt";
-export const PASSKEYS = "passkeys";
 
 export const GOOGLE_LOGIN_PROVIDER = "google";
 export const FACEBOOK_LOGIN_PROVIDER = "facebook";

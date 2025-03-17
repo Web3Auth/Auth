@@ -65,7 +65,7 @@ export class AuthProvider {
         class="web3auth-iframe"
         sandbox="allow-popups allow-scripts allow-same-origin allow-forms allow-modals allow-downloads"
         src="${authIframeUrl.href}"
-        style="display: none; position: fixed; top: 0; right: 0; width: 100%;
+        style="display: none; position: fixed; top: 0; right: 0; width: 100%; z-index: 10000000;
         height: 100%; border: none; border-radius: 0;"
       ></iframe>`
     );
@@ -138,8 +138,15 @@ export class AuthProvider {
       case JRPC_METHODS.LOGIN_FAILED:
         this.loginCallbackFailed?.(messageData?.error || "Login failed, reason: unknown");
         break;
+      case JRPC_METHODS.DISPLAY_IFRAME:
+        this.iframeElem.style.display = "block";
+        break;
+      case JRPC_METHODS.HIDE_IFRAME:
+        this.iframeElem.style.display = "none";
+        break;
       case JRPC_METHODS.LOGIN_SUCCESS:
         log.info("LOGIN_SUCCESS", messageData);
+        this.iframeElem.style.display = "none";
         if (messageData?.sessionId) this.loginCallbackSuccess?.(messageData);
         break;
       default:

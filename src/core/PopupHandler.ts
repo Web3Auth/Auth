@@ -1,10 +1,10 @@
 import { SESSION_SERVER_API_URL, SESSION_SERVER_SOCKET_URL } from "@toruslabs/constants";
+import { getPopupFeatures } from "@toruslabs/customauth";
 import { SecurePubSub } from "@toruslabs/secure-pub-sub";
 import { EventEmitter } from "events";
 import type { default as TypedEmitter } from "typed-emitter";
 
 import { LoginError } from "./errors";
-import { getPopupFeatures } from "./utils";
 
 export interface PopupResponse {
   sessionId?: string;

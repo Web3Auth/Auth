@@ -216,7 +216,7 @@ function buildError(error: unknown, fallbackError: JRPCError): JRPCError {
  * on the returned object.
  * @returns The serialized error.
  */
-export function serializeError(error: unknown, { fallbackError = FALLBACK_ERROR, shouldIncludeStack = true } = {}): JRPCError {
+export function serializeJrpcError(error: unknown, { fallbackError = FALLBACK_ERROR, shouldIncludeStack = true } = {}): JRPCError {
   if (!isJsonRpcError(fallbackError)) {
     throw new Error("Must provide fallback error with integer number code and string message.");
   }

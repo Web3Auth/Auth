@@ -1,11 +1,15 @@
 import { SESSION_SERVER_API_URL, SESSION_SERVER_SOCKET_URL } from "@toruslabs/constants";
+import { AUTH_CONNECTION_TYPE, constructURL, getTimeout, UX_MODE } from "@toruslabs/customauth";
 import { SessionManager } from "@toruslabs/session-manager";
 import deepmerge from "deepmerge";
 
-import { getLoginConfig } from "../config/loginConfig";
+import { getAuthConnectionConfig } from "../config/authConnectionConfig";
 import {
   AUTH_ACTIONS,
   AUTH_ACTIONS_TYPE,
+  AuthConnectionConfig,
+  AuthConnectionConfigItem,
+  AUTHENTICATOR_LOGIN_PROVIDER,
   AuthOptions,
   AuthSessionConfig,
   AuthSessionData,
@@ -15,13 +19,10 @@ import {
   BUILD_ENV,
   cloneDeep,
   jsonToBase64,
-  LOGIN_PROVIDER,
-  LoginConfig,
-  LoginConfigItem,
   LoginParams,
+  PASSKEYS_LOGIN_PROVIDER,
   SDK_MODE,
   SocialMfaModParams,
-  UX_MODE,
   WEB3AUTH_LEGACY_NETWORK,
   type WEB3AUTH_LEGACY_NETWORK_TYPE,
   WEB3AUTH_NETWORK,
@@ -30,7 +31,7 @@ import { loglevel as log } from "../utils/logger";
 import { AuthProvider } from "./AuthProvider";
 import { InitializationError, LoginError } from "./errors";
 import PopupHandler, { PopupResponse } from "./PopupHandler";
-import { constructURL, getHashQueryParams, getTimeout, version } from "./utils";
+import { getHashQueryParams, version } from "./utils";
 
 export class Auth {
   state: AuthSessionData = {};
@@ -49,7 +50,7 @@ export class Auth {
 
   private authProvider: AuthProvider;
 
-  private customLoginConfig: Partial<LoginConfig> = {};
+  private customAuthConnectionConfig: Partial<AuthConnectionConfig> = {};
 
   constructor(options: AuthOptions) {
     if (!options.clientId) throw InitializationError.invalidParams("clientId is required");
@@ -95,7 +96,7 @@ export class Auth {
     if (typeof options.replaceUrlOnRedirect !== "boolean") options.replaceUrlOnRedirect = true;
     if (!options.originData) options.originData = {};
     if (!options.whiteLabel) options.whiteLabel = {};
-    if (!options.loginConfig) options.loginConfig = {};
+    if (!options.authConnectionConfig) options.authConnectionConfig = {};
     if (!options.mfaSettings) options.mfaSettings = {};
     if (!options.storageServerUrl) options.storageServerUrl = SESSION_SERVER_API_URL;
     if (!options.sessionSocketUrl) options.sessionSocketUrl = SESSION_SERVER_SOCKET_URL;
@@ -104,11 +105,11 @@ export class Auth {
 
     this.options = options;
 
-    if (options.loginConfig) {
-      Object.keys(options.loginConfig).forEach((y) => {
-        this.modifyCustomLoginConfig({
+    if (options.authConnectionConfig) {
+      Object.keys(options.authConnectionConfig).forEach((y) => {
+        this.modifyCustomAuthConnectionConfig({
           loginProvider: y,
-          cfg: (options.loginConfig || {})[y],
+          cfg: (options.authConnectionConfig || {})[y],
         });
       });
     }
@@ -225,14 +226,14 @@ export class Auth {
     }
   }
 
-  public getDappLoginConfig(): LoginConfig {
-    const localLoginConfig = cloneDeep(getLoginConfig(this.options.buildEnv, this.options.network));
-    const finalConfig = deepmerge(localLoginConfig, this.customLoginConfig);
+  public getDappAuthConnectionConfig(): AuthConnectionConfig {
+    const localAuthConnectionConfig = cloneDeep(getAuthConnectionConfig(this.options.buildEnv, this.options.network));
+    const finalConfig = deepmerge(localAuthConnectionConfig, this.customAuthConnectionConfig);
     return finalConfig;
   }
 
   async login(params: LoginParams): Promise<{ privKey: string } | null> {
-    if (!params.loginProvider) throw LoginError.invalidLoginParams(`loginProvider is required`);
+    if (!params.loginProvider) throw LoginError.invalidLoginParams(`AuthConnection is required`);
 
     const loginParams: LoginParams = {
       loginProvider: params.loginProvider,
@@ -245,7 +246,7 @@ export class Auth {
       params: loginParams,
     };
 
-    const result = await this.authHandler(`${this.baseUrl}/start`, dataObject, getTimeout(params.loginProvider));
+    const result = await this.authHandler(`${this.baseUrl}/start`, dataObject, getTimeout(params.loginProvider as AUTH_CONNECTION_TYPE));
     if (this.options.uxMode === UX_MODE.REDIRECT) return null;
     if (result.error) {
       this.dappState = result.state;
@@ -299,10 +300,10 @@ export class Auth {
         oAuthAccessToken: "",
         appState: "",
         email: "",
-        verifier: "",
-        verifierId: "",
-        aggregateVerifier: "",
-        typeOfLogin: "",
+        authConnectionId: "",
+        userId: "",
+        groupedAuthConnectionId: "",
+        authConnection: "",
         isMfaEnabled: false,
       },
       authToken: "",
@@ -327,16 +328,16 @@ export class Auth {
       options: this.options,
       params: {
         ...params,
-        loginProvider: this.state.userInfo.typeOfLogin,
+        loginProvider: this.state.userInfo.authConnection,
         extraLoginOptions: {
-          login_hint: this.state.userInfo.verifierId,
+          login_hint: this.state.userInfo.userId,
         },
         mfaLevel: "mandatory",
       },
       sessionId: this.sessionId,
     };
 
-    const result = await this.authHandler(`${this.baseUrl}/start`, dataObject, getTimeout(dataObject.params.loginProvider));
+    const result = await this.authHandler(`${this.baseUrl}/start`, dataObject, getTimeout(dataObject.params.loginProvider as AUTH_CONNECTION_TYPE));
     if (this.options.uxMode === UX_MODE.REDIRECT) return null;
     if (result.error) {
       this.dappState = result.state;
@@ -369,9 +370,9 @@ export class Auth {
       params: {
         ...defaultParams,
         ...params,
-        loginProvider: this.state.userInfo.typeOfLogin,
+        loginProvider: this.state.userInfo.authConnection,
         extraLoginOptions: {
-          login_hint: this.state.userInfo.verifierId,
+          login_hint: this.state.userInfo.userId,
         },
         appState: jsonToBase64({ loginId }),
       },
@@ -419,7 +420,7 @@ export class Auth {
       options: this.options,
       params: {
         ...params,
-        loginProvider: LOGIN_PROVIDER.AUTHENTICATOR,
+        loginProvider: AUTHENTICATOR_LOGIN_PROVIDER,
       },
       sessionId: this.sessionId,
     };
@@ -438,7 +439,7 @@ export class Auth {
       options: this.options,
       params: {
         ...params,
-        loginProvider: LOGIN_PROVIDER.PASSKEYS,
+        loginProvider: PASSKEYS_LOGIN_PROVIDER,
       },
       sessionId: this.sessionId,
     };
@@ -538,40 +539,40 @@ export class Auth {
     });
   }
 
-  private modifyCustomLoginConfig(params: { cfg: LoginConfigItem; loginProvider: string }): void {
+  private modifyCustomAuthConnectionConfig(params: { cfg: AuthConnectionConfigItem; loginProvider: string }): void {
     const { cfg, loginProvider } = params;
-    const localConfig = { ...this.customLoginConfig };
+    const localConfig = { ...this.customAuthConnectionConfig };
     const currCfg = localConfig[loginProvider];
 
     if (!currCfg) {
-      if (!cfg.verifier) {
+      if (!cfg.authConnectionId) {
         // This will allow the default verifierSubIdentifier to be used.
         // This is useful for dapps which are just toggling on/off the login method.
         localConfig[loginProvider] = { ...cfg };
-      } else if (!cfg.verifierSubIdentifier) {
+      } else if (!cfg.groupedAuthConnectionId) {
         // prevent verifierSubIdentifier from being overridden later in get loginConfig function.
-        localConfig[loginProvider] = { ...cfg, verifierSubIdentifier: "" };
+        localConfig[loginProvider] = { ...cfg, groupedAuthConnectionId: "" };
       } else {
         localConfig[loginProvider] = { ...cfg };
       }
     } else if (
-      Object.prototype.hasOwnProperty.call(cfg, "verifier") &&
-      cfg.verifier !== currCfg.verifier &&
-      !Object.prototype.hasOwnProperty.call(cfg, "verifierSubIdentifier") &&
-      Object.prototype.hasOwnProperty.call(localConfig[loginProvider], "verifierSubIdentifier")
+      Object.prototype.hasOwnProperty.call(cfg, "authConnectionId") &&
+      cfg.authConnectionId !== currCfg.authConnectionId &&
+      !Object.prototype.hasOwnProperty.call(cfg, "groupedAuthConnectionId") &&
+      Object.prototype.hasOwnProperty.call(localConfig[loginProvider], "groupedAuthConnectionId")
     ) {
       // a custom verifier might be sent without verifierSubIdentifier key
       // in custom config, in that case we should prevent it from getting overriden
       // by default loginProvider verifierSubIdentifier.
-      localConfig[loginProvider] = { ...deepmerge(currCfg, cfg), verifierSubIdentifier: "" };
+      localConfig[loginProvider] = { ...deepmerge(currCfg, cfg), groupedAuthConnectionId: "" };
     } else {
       localConfig[loginProvider] = { ...deepmerge(currCfg, cfg) };
     }
 
     const finalConfigItem = localConfig[loginProvider];
 
-    if (finalConfigItem && !finalConfigItem.walletVerifier) finalConfigItem.walletVerifier = finalConfigItem.verifier;
+    if (finalConfigItem && !finalConfigItem.walletAuthConnectionId) finalConfigItem.walletAuthConnectionId = finalConfigItem.authConnectionId;
 
-    this.customLoginConfig = localConfig;
+    this.customAuthConnectionConfig = localConfig;
   }
 }

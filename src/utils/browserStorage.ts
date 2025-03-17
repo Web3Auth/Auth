@@ -1,4 +1,6 @@
-import { IStorage, storageAvailable } from "./utils";
+import { storageAvailable } from "@toruslabs/customauth";
+
+import { IStorage } from "./utils";
 
 export class MemoryStore implements IStorage {
   store: Map<string, string> = new Map();

@@ -4,3 +4,4 @@ export * from "./jrpc";
 export * from "./starkey";
 export * from "./subkey";
 export * from "./utils";
+export * from "@toruslabs/customauth";
