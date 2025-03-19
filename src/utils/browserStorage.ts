@@ -32,7 +32,7 @@ export class BrowserStorage {
       if (!storage.getItem(storeKey)) {
         this.resetStore();
       }
-    } catch (error) {
+    } catch {
       // Storage is not available
     }
   }

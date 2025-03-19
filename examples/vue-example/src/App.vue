@@ -659,6 +659,7 @@ const openloginInstance = computed(() => {
     buildEnv: selectedBuildEnv.value,
     sdkUrl: customSdkUrl.value,
     mfaSettings: mfaSettings.value,
+    sessionTime: 3600,
   });
   op.init();
   return op;

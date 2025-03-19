@@ -35,7 +35,7 @@ export const htmlToElement = <T extends Element>(html: string): T => {
 export function cloneDeep<T>(object: T): T {
   try {
     return structuredClone(object);
-  } catch (error) {
+  } catch {
     return JSON.parse(JSON.stringify(object));
   }
 }

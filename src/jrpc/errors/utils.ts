@@ -52,7 +52,7 @@ export function isPlainObject(value: unknown) {
       proto = Object.getPrototypeOf(proto);
     }
     return Object.getPrototypeOf(value) === proto;
-  } catch (_) {
+  } catch {
     return false;
   }
 }
@@ -126,7 +126,7 @@ function isValidJson(str: unknown): boolean {
       }
     );
     // this means, it's a valid json so far
-  } catch (e) {
+  } catch {
     return false;
   }
   return true;
