@@ -95,7 +95,7 @@ export class AuthProvider {
     );
   }
 
-  public postLoginInitiatedMessage(loginConfig: Pick<AuthSessionConfig, "options" | "params">, nonce?: string) {
+  public postLoginInitiatedMessage(loginConfig: AuthSessionConfig, nonce?: string) {
     if (!this.initialized) throw new Error("Iframe not initialized");
     this.iframeElem.contentWindow?.postMessage(
       {

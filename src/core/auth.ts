@@ -238,7 +238,7 @@ export class Auth {
     if (this.options.sdkMode !== SDK_MODE.IFRAME) throw LoginError.invalidLoginParams("Cannot perform this action in default mode.");
     if (!this.authProvider || !this.authProvider.initialized) throw InitializationError.notInitialized();
 
-    const result = await this.authProvider.postLoginInitiatedMessage({ params, options: this.options }, nonce);
+    const result = await this.authProvider.postLoginInitiatedMessage({ actionType: AUTH_ACTIONS.LOGIN, params, options: this.options }, nonce);
     if (result.error) throw LoginError.loginFailed(result.error);
     this.sessionManager.sessionId = result.sessionId;
     this.options.sessionNamespace = result.sessionNamespace;
