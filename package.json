@@ -8,7 +8,7 @@
   "module": "dist/lib.esm/index.js",
   "unpkg": "dist/auth.umd.min.js",
   "jsdelivr": "dist/auth.umd.min.js",
-  "types": "dist/types/index.d.ts",
+  "types": "dist/lib.cjs/types/index.d.ts",
   "files": [
     "dist"
   ],
