@@ -84,3 +84,4 @@ export const FARCASTER_LOGIN_PROVIDER = "farcaster";
 export const AUTHENTICATOR_LOGIN_PROVIDER = "authenticator";
 export const SMS_PASSWORDLESS_LOGIN_PROVIDER = "sms_passwordless";
 export const PASSKEYS_LOGIN_PROVIDER = "passkeys";
+export const POPUP_TIMEOUT = 1000 * 10; // 10 seconds;

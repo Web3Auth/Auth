@@ -17,7 +17,7 @@ export type UserData = {
 export type AUTH_ACTIONS_TYPE = (typeof AUTH_ACTIONS)[keyof typeof AUTH_ACTIONS];
 
 // autocomplete workaround https://github.com/microsoft/TypeScript/issues/29729
-export type CUSTOM_LOGIN_PROVIDER_TYPE = string & { toString?: (radix?: number) => string };
+export type CUSTOM_AUTH_CONNECTION_TYPE = string & { toString?: (radix?: number) => string };
 
 export type MfaLevelType = (typeof MFA_LEVELS)[keyof typeof MFA_LEVELS];
 
@@ -39,10 +39,19 @@ export type LoginParams = {
   appState?: string;
 
   /**
-   * loginProvider sets the auth connection to be used.
-   * You can use any of the valid authConnection from the supported list.
+   * The auth connection to be used for login.
    */
-  loginProvider: AUTH_CONNECTION_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
+  authConnection: AUTH_CONNECTION_TYPE | CUSTOM_AUTH_CONNECTION_TYPE;
+
+  /**
+   * The auth connection id to be used for login.
+   */
+  authConnectionId?: string;
+
+  /**
+   * The grouped auth connection id to be used for login.
+   */
+  groupedAuthConnectionId?: string;
 
   /**
    * You can set the `mfaLevel` to customize when mfa screen should be shown to user.
@@ -112,7 +121,7 @@ export type SocialMfaModParams = {
    * authConnection sets the auth connection to be used.
    * You can use any of the valid authConnection from the supported list.
    */
-  authConnection: AUTH_CONNECTION_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
+  authConnection: AUTH_CONNECTION_TYPE | CUSTOM_AUTH_CONNECTION_TYPE;
 
   /**
    * extraLoginOptions can be used to pass standard oauth login options to
@@ -238,49 +247,42 @@ export type WhiteLabelData = {
 };
 
 export type AuthConnectionConfigItem = {
+  /**
+   * The unique id for the auth connection.
+   * If groupedAuthConnectionId is provided, authConnectionId will become a sub identifier for the groupedAuthConnectionId.
+   */
   authConnectionId: string;
-
   /**
    * The type of login. Refer to enum `AUTH_CONNECTION_TYPE`
    */
   authConnection: AUTH_CONNECTION_TYPE;
-
   /**
    * Custom client_id. If not provided, we use the default for auth app
    */
   clientId?: string;
-
+  /**
+   * The grouped auth connection id.
+   * If provided, authConnectionId will become a sub identifier for the groupedAuthConnectionId.
+   */
   groupedAuthConnectionId?: string;
   /**
-   * If we are using social logins as a backup factor,
-   * then this option will be used to show the type of social login
-   * on the social backup login screen.
-   */
-  showOnSocialBackupFactor?: boolean;
-
-  /**
-   * Custom jwt parameters to configure the login. Useful for Auth0 configuration
+   * Custom jwt parameters to configure the login. Useful for Auth0 configuration or custom oAuth configuration.
    */
   jwtParameters?: Auth0ClientOptions;
-
   /**
    * Wallet AuthConnectionId. If not provided, we use the authConnectionId as the walletAuthConnectionId.
    * Used for internal purposes only.
+   *
+   * @internal
    */
   walletAuthConnectionId?: string;
-
-  /**
-   * The provider identifier.
-   */
-  loginProvider?: string;
-
   /**
    * The display name of the login provider.
    */
   name?: string;
 };
 
-export type AuthConnectionConfig = Record<string, AuthConnectionConfigItem>;
+export type AuthConnectionConfig = AuthConnectionConfigItem[];
 
 export type AuthUserInfo = {
   email?: string;
@@ -289,7 +291,7 @@ export type AuthUserInfo = {
   groupedAuthConnectionId?: string;
   authConnectionId: string;
   userId: string;
-  authConnection: AUTH_CONNECTION_TYPE | CUSTOM_LOGIN_PROVIDER_TYPE;
+  authConnection: AUTH_CONNECTION_TYPE | CUSTOM_AUTH_CONNECTION_TYPE;
   dappShare?: string;
   /**
    * Token issued by Web3Auth.
