@@ -1,14 +1,15 @@
 import { randomId } from "@toruslabs/customauth";
-import { IFRAME_MODAL_ID, JRPC_METHODS } from "../utils/constants";
+
+import { AUTH_SERVICE_PRODUCTION_URL, IFRAME_MODAL_ID, JRPC_METHODS } from "../utils/constants";
 import { AuthSessionConfig, THEME_MODE_TYPE, THEME_MODES, WEB3AUTH_NETWORK_TYPE, WhiteLabelData } from "../utils/interfaces";
 import { log } from "../utils/logger";
 import { htmlToElement } from "../utils/utils";
 
-(async function preloadIframe() {
+export async function preloadIframe() {
   try {
     if (typeof document === "undefined") return;
     const authIframeHtml = document.createElement("link");
-    authIframeHtml.href = "https://auth.web3auth.io/frame";
+    authIframeHtml.href = `${AUTH_SERVICE_PRODUCTION_URL}/frame`;
     authIframeHtml.crossOrigin = "anonymous";
     authIframeHtml.type = "text/html";
     authIframeHtml.rel = "prefetch";
@@ -20,9 +21,9 @@ import { htmlToElement } from "../utils/utils";
   } catch (error) {
     log.error(error);
   }
-})();
+}
 
-let authServiceIframeMap: Map<string, HTMLIFrameElement> = new Map();
+const authServiceIframeMap: Map<string, HTMLIFrameElement> = new Map();
 
 function getTheme(theme: THEME_MODE_TYPE): string {
   if (theme === THEME_MODES.light) return "light";
@@ -35,8 +36,6 @@ export class AuthProvider {
   public whiteLabel: WhiteLabelData;
 
   public initialized: boolean = false;
-
-  private iframeLoadPromise: Promise<void> | null = null;
 
   private loginCallbackSuccess: ((value: { sessionId?: string; sessionNamespace?: string }) => void) | null = null;
 
@@ -57,7 +56,7 @@ export class AuthProvider {
     return authServiceIframeMap.get(this.embedNonce) as HTMLIFrameElement;
   }
 
-  async loadIframe(): Promise<void> {
+  async init({ network, clientId }: { network: WEB3AUTH_NETWORK_TYPE; clientId: string }): Promise<void> {
     if (typeof window === "undefined" || typeof document === "undefined") throw new Error("window or document is not available");
     if (this.initialized) throw new Error("AuthProvider already initialized");
 
@@ -85,35 +84,57 @@ export class AuthProvider {
     );
     authServiceIframeMap.set(this.embedNonce, authServiceIframe);
 
-    window.document.body.appendChild(authServiceIframe);
-    this.iframeLoadPromise = new Promise<void>((resolve, reject) => {
-      const handleMessage = (event: MessageEvent) => {
-        if (event.origin !== this.targetOrigin) return;
-        const { message, nonce } = event.data;
-        if (message === JRPC_METHODS.INIT_DAPP && nonce === this.embedNonce) {
-          // TODO: use ack from the iframe to set this flag.
-          this.setupMessageListener();
-          this.initialized = true;
-          resolve();
-        }
-      };
-      window.addEventListener("message", handleMessage);
-    });
-  }
+    return new Promise<void>((resolve, reject) => {
+      try {
+        window.document.body.appendChild(authServiceIframe);
 
-  public async postInitMessage({ network, clientId }: { network: WEB3AUTH_NETWORK_TYPE; clientId: string }) {
-    await this.iframeLoadPromise;
-    if (!this.initialized) throw new Error("Iframe not initialized");
-    this.getAuthServiceIframe().contentWindow?.postMessage(
-      {
-        type: JRPC_METHODS.INIT_DAPP,
-        data: {
-          network,
-          clientId,
-        },
-      },
-      this.targetOrigin
-    );
+        const handleMessage = (event: MessageEvent) => {
+          if (event.origin !== this.targetOrigin) return;
+          const { data } = event as {
+            data: { type: string; data: { sessionId?: string; sessionNamespace?: string; error?: string } };
+          };
+          const { type } = data;
+          const messageData = data.data;
+          switch (type) {
+            case JRPC_METHODS.SETUP_COMPLETE:
+              this.getAuthServiceIframe()?.contentWindow?.postMessage(
+                {
+                  type: JRPC_METHODS.INIT_DAPP,
+                  data: {
+                    network,
+                    clientId,
+                  },
+                },
+                this.targetOrigin
+              );
+              this.initialized = true;
+              resolve();
+              break;
+            case JRPC_METHODS.LOGIN_FAILED:
+              this.loginCallbackFailed?.(messageData?.error || "Login failed, reason: unknown");
+              break;
+            case JRPC_METHODS.DISPLAY_IFRAME:
+              this.getAuthServiceIframe().style.display = "block";
+              break;
+            case JRPC_METHODS.HIDE_IFRAME:
+              this.getAuthServiceIframe().style.display = "none";
+              break;
+            case JRPC_METHODS.LOGIN_SUCCESS:
+              log.info("LOGIN_SUCCESS", messageData);
+              this.getAuthServiceIframe().style.display = "none";
+              if (messageData?.sessionId) this.loginCallbackSuccess?.(messageData);
+              break;
+            default:
+              log.warn(`Unknown message type: ${type}`);
+              break;
+          }
+        };
+
+        window.addEventListener("message", handleMessage);
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
   public postLoginInitiatedMessage(loginConfig: AuthSessionConfig, nonce?: string) {
@@ -140,39 +161,5 @@ export class AuthProvider {
       },
       this.targetOrigin
     );
-  }
-
-  private setupMessageListener() {
-    window.addEventListener("message", this.handleMessage.bind(this));
-  }
-
-  private handleMessage(event: MessageEvent) {
-    const { origin, data } = event as {
-      origin: string;
-      data: { type: string; data: { sessionId?: string; sessionNamespace?: string; error?: string } };
-    };
-    // the origin should be the same as the target origin
-    if (origin !== this.targetOrigin) return;
-    const { type } = data;
-    const messageData = data.data;
-    switch (type) {
-      case JRPC_METHODS.LOGIN_FAILED:
-        this.loginCallbackFailed?.(messageData?.error || "Login failed, reason: unknown");
-        break;
-      case JRPC_METHODS.DISPLAY_IFRAME:
-        this.getAuthServiceIframe().style.display = "block";
-        break;
-      case JRPC_METHODS.HIDE_IFRAME:
-        this.getAuthServiceIframe().style.display = "none";
-        break;
-      case JRPC_METHODS.LOGIN_SUCCESS:
-        log.info("LOGIN_SUCCESS", messageData);
-        this.getAuthServiceIframe().style.display = "none";
-        if (messageData?.sessionId) this.loginCallbackSuccess?.(messageData);
-        break;
-      default:
-        log.warn(`Unknown message type: ${type}`);
-        break;
-    }
   }
 }

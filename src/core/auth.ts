@@ -5,6 +5,14 @@ import { SessionManager } from "@toruslabs/session-manager";
 import {
   AUTH_ACTIONS,
   AUTH_ACTIONS_TYPE,
+  AUTH_DASHBOARD_DEVELOPMENT_URL,
+  AUTH_DASHBOARD_PRODUCTION_URL,
+  AUTH_DASHBOARD_STAGING_URL,
+  AUTH_DASHBOARD_TESTING_URL,
+  AUTH_SERVICE_DEVELOPMENT_URL,
+  AUTH_SERVICE_PRODUCTION_URL,
+  AUTH_SERVICE_STAGING_URL,
+  AUTH_SERVICE_TESTING_URL,
   AuthOptions,
   AuthSessionConfig,
   AuthSessionData,
@@ -17,8 +25,6 @@ import {
   POPUP_TIMEOUT,
   SDK_MODE,
   SocialMfaModParams,
-  WEB3AUTH_LEGACY_NETWORK,
-  type WEB3AUTH_LEGACY_NETWORK_TYPE,
   WEB3AUTH_NETWORK,
 } from "../utils";
 import { log } from "../utils/logger";
@@ -54,31 +60,17 @@ export class Auth {
     if (options.buildEnv === BUILD_ENV.DEVELOPMENT || options.buildEnv === BUILD_ENV.TESTING || options.sdkUrl) this.addVersionInUrls = false;
     if (!options.sdkUrl && !options.useMpc) {
       if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
-        options.sdkUrl = "http://localhost:3000";
-        options.dashboardUrl = "http://localhost:5173";
+        options.sdkUrl = AUTH_SERVICE_DEVELOPMENT_URL;
+        options.dashboardUrl = AUTH_DASHBOARD_DEVELOPMENT_URL;
       } else if (options.buildEnv === BUILD_ENV.STAGING) {
-        options.sdkUrl = "https://staging-auth.web3auth.io";
-        options.dashboardUrl = "https://staging-account.web3auth.io";
+        options.sdkUrl = AUTH_SERVICE_STAGING_URL;
+        options.dashboardUrl = AUTH_DASHBOARD_STAGING_URL;
       } else if (options.buildEnv === BUILD_ENV.TESTING) {
-        options.sdkUrl = "https://develop-auth.web3auth.io";
-        options.dashboardUrl = "https://develop-account.web3auth.io";
+        options.sdkUrl = AUTH_SERVICE_TESTING_URL;
+        options.dashboardUrl = AUTH_DASHBOARD_TESTING_URL;
       } else {
-        options.sdkUrl = "https://auth.web3auth.io";
-        options.dashboardUrl = "https://account.web3auth.io";
-      }
-    }
-
-    if (options.useMpc && !options.sdkUrl) {
-      if (Object.values(WEB3AUTH_LEGACY_NETWORK).includes(options.network as WEB3AUTH_LEGACY_NETWORK_TYPE))
-        throw InitializationError.invalidParams("MPC is not supported on legacy networks, please use sapphire_devnet or sapphire_mainnet.");
-      if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
-        options.sdkUrl = "http://localhost:3000";
-      } else if (options.buildEnv === BUILD_ENV.STAGING) {
-        options.sdkUrl = "https://staging-mpc-auth.web3auth.io";
-      } else if (options.buildEnv === BUILD_ENV.TESTING) {
-        options.sdkUrl = "https://develop-mpc-auth.web3auth.io";
-      } else {
-        options.sdkUrl = "https://mpc-auth.web3auth.io";
+        options.sdkUrl = AUTH_SERVICE_PRODUCTION_URL;
+        options.dashboardUrl = AUTH_DASHBOARD_PRODUCTION_URL;
       }
     }
 
@@ -141,10 +133,6 @@ export class Auth {
   }
 
   async init(): Promise<void> {
-    if (this.options.sdkMode === SDK_MODE.IFRAME) {
-      this.authProvider = new AuthProvider({ sdkUrl: this.options.sdkUrl, whiteLabel: this.options.whiteLabel });
-      await this.authProvider.loadIframe();
-    }
     // get sessionNamespace from the redirect result.
     const params = getHashQueryParams(this.options.replaceUrlOnRedirect);
     if (params.sessionNamespace) this.options.sessionNamespace = params.sessionNamespace;
@@ -202,10 +190,12 @@ export class Auth {
     }
 
     if (this.options.sdkMode === SDK_MODE.IFRAME) {
-      // TODO: come back to this, we can optimize this maybe.
-      await this.authProvider.postInitMessage({ network: this.options.network, clientId: this.options.clientId });
-      if (params.nonce) {
-        await this.postLoginInitiatedMessage(JSON.parse(params.loginParams), params.nonce);
+      this.authProvider = new AuthProvider({ sdkUrl: this.options.sdkUrl, whiteLabel: this.options.whiteLabel });
+      if (!this.state.sessionId) {
+        await this.authProvider.init({ network: this.options.network, clientId: this.options.clientId });
+        if (params.nonce) {
+          await this.postLoginInitiatedMessage(JSON.parse(params.loginParams), params.nonce);
+        }
       }
     }
   }
@@ -237,7 +227,10 @@ export class Auth {
 
   async postLoginInitiatedMessage(params: LoginParams, nonce?: string): Promise<void> {
     if (this.options.sdkMode !== SDK_MODE.IFRAME) throw LoginError.invalidLoginParams("Cannot perform this action in default mode.");
-    if (!this.authProvider || !this.authProvider.initialized) throw InitializationError.notInitialized();
+
+    if (!this.authProvider || !this.authProvider.initialized) {
+      await this.authProvider.init({ network: this.options.network, clientId: this.options.clientId });
+    }
 
     const result = await this.authProvider.postLoginInitiatedMessage({ actionType: AUTH_ACTIONS.LOGIN, params, options: this.options }, nonce);
     if (result.error) throw LoginError.loginFailed(result.error);

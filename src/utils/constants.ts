@@ -45,6 +45,7 @@ export const SDK_MODE = {
 } as const;
 
 export const JRPC_METHODS = {
+  SETUP_COMPLETE: "setup_complete",
   INIT_DAPP: "init_dapp",
   LOGIN_INITIATED: "login_initiated",
   LOGIN_CANCELLED: "login_cancelled",
@@ -55,4 +56,18 @@ export const JRPC_METHODS = {
 } as const;
 
 export const IFRAME_MODAL_ID = "auth-iframe";
-export const POPUP_TIMEOUT = 1000 * 10; // 10 seconds;
+
+// Auth service urls
+export const AUTH_SERVICE_DEVELOPMENT_URL = "http://localhost:3000";
+export const AUTH_SERVICE_STAGING_URL = "https://staging-auth.web3auth.io";
+export const AUTH_SERVICE_TESTING_URL = "https://develop-auth.web3auth.io";
+export const AUTH_SERVICE_PRODUCTION_URL = "https://auth.web3auth.io";
+
+// Auth Dashboard urls
+export const AUTH_DASHBOARD_DEVELOPMENT_URL = "http://localhost:5173";
+export const AUTH_DASHBOARD_STAGING_URL = "https://staging-account.web3auth.io";
+export const AUTH_DASHBOARD_TESTING_URL = "https://develop-account.web3auth.io";
+export const AUTH_DASHBOARD_PRODUCTION_URL = "https://account.web3auth.io";
+
+// 10 seconds
+export const POPUP_TIMEOUT = 1000 * 10;
