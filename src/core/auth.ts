@@ -50,6 +50,7 @@ export class Auth {
     if (!options.buildEnv) options.buildEnv = BUILD_ENV.PRODUCTION;
     if (!options.sdkMode) options.sdkMode = SDK_MODE.DEFAULT;
 
+    // TODO: move all urls to constants
     if (options.buildEnv === BUILD_ENV.DEVELOPMENT || options.buildEnv === BUILD_ENV.TESTING || options.sdkUrl) this.addVersionInUrls = false;
     if (!options.sdkUrl && !options.useMpc) {
       if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
@@ -141,7 +142,7 @@ export class Auth {
 
   async init(): Promise<void> {
     if (this.options.sdkMode === SDK_MODE.IFRAME) {
-      this.authProvider = new AuthProvider({ sdkUrl: this.options.sdkUrl });
+      this.authProvider = new AuthProvider({ sdkUrl: this.options.sdkUrl, whiteLabel: this.options.whiteLabel });
       await this.authProvider.loadIframe();
     }
     // get sessionNamespace from the redirect result.
