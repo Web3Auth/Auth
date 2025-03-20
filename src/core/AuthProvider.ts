@@ -1,7 +1,6 @@
-import log from "loglevel";
-
 import { IFRAME_MODAL_ID, JRPC_METHODS } from "../utils/constants";
 import { AuthSessionConfig, WEB3AUTH_NETWORK_TYPE } from "../utils/interfaces";
+import { log } from "../utils/logger";
 import { htmlToElement } from "../utils/utils";
 
 export const preloadIframe = (url: string) => {
@@ -44,7 +43,7 @@ export class AuthProvider {
   }
 
   async loadIframe(): Promise<void> {
-    if (!window || !window.document) throw new Error("window or document is not available");
+    if (typeof window === "undefined" || typeof document === "undefined") throw new Error("window or document is not available");
     const documentIFrameElem = document.getElementById(IFRAME_MODAL_ID) as HTMLIFrameElement;
     if (documentIFrameElem) {
       log.info("already initialized, removing previous modal iframe");
@@ -84,6 +83,7 @@ export class AuthProvider {
 
   public async postInitMessage({ network, clientId }: { network: WEB3AUTH_NETWORK_TYPE; clientId: string }) {
     await this.iframeLoadPromise;
+    if (!this.initialized) throw new Error("Iframe not initialized");
     authServiceIframe.contentWindow?.postMessage(
       {
         type: JRPC_METHODS.INIT_DAPP,

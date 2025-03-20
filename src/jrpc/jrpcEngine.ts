@@ -1,6 +1,6 @@
 import { Duplex } from "readable-stream";
 
-import { loglevel as log } from "../utils/logger";
+import { log } from "../utils/logger";
 import { JsonRpcErrorsArg, rpcErrors } from "./errors/errors";
 import { getMessageFromCode, serializeJrpcError } from "./errors/utils";
 import {

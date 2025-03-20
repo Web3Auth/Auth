@@ -21,7 +21,7 @@ import {
   type WEB3AUTH_LEGACY_NETWORK_TYPE,
   WEB3AUTH_NETWORK,
 } from "../utils";
-import { loglevel as log } from "../utils/logger";
+import { log } from "../utils/logger";
 import { AuthProvider } from "./AuthProvider";
 import { InitializationError, LoginError } from "./errors";
 import PopupHandler, { PopupResponse } from "./PopupHandler";
