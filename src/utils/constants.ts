@@ -54,34 +54,5 @@ export const JRPC_METHODS = {
   HIDE_IFRAME: "hide_iframe",
 } as const;
 
-// Passwordless backend service
-export const PASSWORDLESS_SERVER_API_URL = "https://api.web3auth.io/passwordless-service";
-export const PASSWORDLESS_SERVER_SOCKET_URL = "https://api-passwordless.web3auth.io";
-export const DEVELOP_PASSWORDLESS_SERVER_API_URL = "https://api-develop.web3auth.io/passwordless-service";
-export const DEVELOP_PASSWORDLESS_SERVER_SOCKET_URL = "https://api-develop-passwordless.web3auth.io";
-
-// Auth backend service
-export const AUTH_SERVER_URL = "https://api.web3auth.io/auth-service";
-export const DEVELOP_AUTH_SERVER_URL = "https://api-develop.web3auth.io/auth-service";
-
 export const IFRAME_MODAL_ID = "auth-iframe";
-
-export const GOOGLE_LOGIN_PROVIDER = "google";
-export const FACEBOOK_LOGIN_PROVIDER = "facebook";
-export const REDDIT_LOGIN_PROVIDER = "reddit";
-export const DISCORD_LOGIN_PROVIDER = "discord";
-export const TWITCH_LOGIN_PROVIDER = "twitch";
-export const APPLE_LOGIN_PROVIDER = "apple";
-export const LINE_LOGIN_PROVIDER = "line";
-export const GITHUB_LOGIN_PROVIDER = "github";
-export const KAKAO_LOGIN_PROVIDER = "kakao";
-export const LINKEDIN_LOGIN_PROVIDER = "linkedin";
-export const TWITTER_LOGIN_PROVIDER = "twitter";
-export const WEIBO_LOGIN_PROVIDER = "weibo";
-export const WECHAT_LOGIN_PROVIDER = "wechat";
-export const EMAIL_PASSWORDLESS_LOGIN_PROVIDER = "email_passwordless";
-export const FARCASTER_LOGIN_PROVIDER = "farcaster";
-export const AUTHENTICATOR_LOGIN_PROVIDER = "authenticator";
-export const SMS_PASSWORDLESS_LOGIN_PROVIDER = "sms_passwordless";
-export const PASSKEYS_LOGIN_PROVIDER = "passkeys";
 export const POPUP_TIMEOUT = 1000 * 10; // 10 seconds;

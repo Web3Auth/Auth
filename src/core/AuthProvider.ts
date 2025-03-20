@@ -22,12 +22,12 @@ export const preloadIframe = (url: string) => {
   }
 };
 
+let authServiceIframe: HTMLIFrameElement;
+
 export class AuthProvider {
   public sdkUrl: string;
 
   public initialized: boolean = false;
-
-  private iframeElem: HTMLIFrameElement;
 
   private iframeLoadPromise: Promise<void> | null = null;
 
@@ -44,6 +44,7 @@ export class AuthProvider {
   }
 
   async loadIframe(): Promise<void> {
+    if (!window || !window.document) throw new Error("window or document is not available");
     const documentIFrameElem = document.getElementById(IFRAME_MODAL_ID) as HTMLIFrameElement;
     if (documentIFrameElem) {
       log.info("already initialized, removing previous modal iframe");
@@ -59,7 +60,7 @@ export class AuthProvider {
 
     authIframeUrl.hash = hashParams.toString();
 
-    this.iframeElem = htmlToElement<HTMLIFrameElement>(
+    authServiceIframe = htmlToElement<HTMLIFrameElement>(
       `<iframe
         id=${IFRAME_MODAL_ID}
         class="web3auth-iframe"
@@ -70,9 +71,9 @@ export class AuthProvider {
       ></iframe>`
     );
 
-    document.body.appendChild(this.iframeElem);
+    document.body.appendChild(authServiceIframe);
     this.iframeLoadPromise = new Promise<void>((resolve) => {
-      this.iframeElem.onload = () => {
+      authServiceIframe.onload = () => {
         // TODO: use ack from the iframe to set this flag.
         this.initialized = true;
         this.setupMessageListener();
@@ -83,7 +84,7 @@ export class AuthProvider {
 
   public async postInitMessage({ network, clientId }: { network: WEB3AUTH_NETWORK_TYPE; clientId: string }) {
     await this.iframeLoadPromise;
-    this.iframeElem.contentWindow?.postMessage(
+    authServiceIframe.contentWindow?.postMessage(
       {
         type: JRPC_METHODS.INIT_DAPP,
         data: {
@@ -97,7 +98,7 @@ export class AuthProvider {
 
   public postLoginInitiatedMessage(loginConfig: AuthSessionConfig, nonce?: string) {
     if (!this.initialized) throw new Error("Iframe not initialized");
-    this.iframeElem.contentWindow?.postMessage(
+    authServiceIframe.contentWindow?.postMessage(
       {
         type: JRPC_METHODS.LOGIN_INITIATED,
         data: { loginConfig, nonce },
@@ -112,7 +113,7 @@ export class AuthProvider {
 
   public postLoginCancelledMessage(nonce: string) {
     if (!this.initialized) throw new Error("Iframe not initialized");
-    this.iframeElem.contentWindow?.postMessage(
+    authServiceIframe.contentWindow?.postMessage(
       {
         type: JRPC_METHODS.LOGIN_CANCELLED,
         data: { nonce },
@@ -139,14 +140,14 @@ export class AuthProvider {
         this.loginCallbackFailed?.(messageData?.error || "Login failed, reason: unknown");
         break;
       case JRPC_METHODS.DISPLAY_IFRAME:
-        this.iframeElem.style.display = "block";
+        authServiceIframe.style.display = "block";
         break;
       case JRPC_METHODS.HIDE_IFRAME:
-        this.iframeElem.style.display = "none";
+        authServiceIframe.style.display = "none";
         break;
       case JRPC_METHODS.LOGIN_SUCCESS:
         log.info("LOGIN_SUCCESS", messageData);
-        this.iframeElem.style.display = "none";
+        authServiceIframe.style.display = "none";
         if (messageData?.sessionId) this.loginCallbackSuccess?.(messageData);
         break;
       default:

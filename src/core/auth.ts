@@ -201,7 +201,7 @@ export class Auth {
     }
 
     if (this.options.sdkMode === SDK_MODE.IFRAME) {
-      // TODO: come back to this, we can optimize this.
+      // TODO: come back to this, we can optimize this maybe.
       await this.authProvider.postInitMessage({ network: this.options.network, clientId: this.options.clientId });
       if (params.nonce) {
         await this.postLoginInitiatedMessage(JSON.parse(params.loginParams), params.nonce);
