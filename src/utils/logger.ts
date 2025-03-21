@@ -1,5 +1,5 @@
-import log from "loglevel";
+import loglevel from "loglevel";
 
-export const loglevel = log.getLogger("auth");
+export const log = loglevel.getLogger("auth");
 
-loglevel.setLevel("error");
+log.setLevel("error");

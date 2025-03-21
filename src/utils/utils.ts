@@ -25,34 +25,17 @@ export interface IStorage {
   removeItem(key: string): void;
 }
 
-export function storageAvailable(type: string): boolean {
-  let storageExists = false;
-  let storageLength = 0;
-  let storage: Storage;
+export const htmlToElement = <T extends Element>(html: string): T => {
+  const template = window.document.createElement("template");
+  const trimmedHtml = html.trim(); // Never return a text node of whitespace as the result
+  template.innerHTML = trimmedHtml;
+  return template.content.firstChild as T;
+};
+
+export function cloneDeep<T>(object: T): T {
   try {
-    storage = window[type as "localStorage" | "sessionStorage"];
-    storageExists = true;
-    storageLength = storage.length;
-    const x = "__storage_test__";
-    storage.setItem(x, x);
-    storage.removeItem(x);
-    return true;
-  } catch (err: unknown) {
-    const error = err as { code: number; name: string };
-    return (
-      error &&
-      // everything except Firefox
-      (error.code === 22 ||
-        // Firefox
-        error.code === 1014 ||
-        // test name field too, because code might not be present
-        // everything except Firefox
-        error.name === "QuotaExceededError" ||
-        // Firefox
-        error.name === "NS_ERROR_DOM_QUOTA_REACHED") &&
-      // acknowledge QuotaExceededError only if there's something already stored
-      storageExists &&
-      storageLength !== 0
-    );
+    return structuredClone(object);
+  } catch {
+    return JSON.parse(JSON.stringify(object));
   }
 }

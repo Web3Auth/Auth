@@ -18,7 +18,7 @@
     "@toruslabs/vue-components": "^7.8.4",
     "@toruslabs/vue-icons": "^7.6.2",
     "@web3auth/auth": "../../",
-    "@web3auth/base": "^9.0.2",
+    "@web3auth/base": "^9.7.0",
     "@web3auth/ethereum-mpc-provider": "^9.0.2",
     "@web3auth/ethereum-provider": "^9.0.2",
     "bn.js": "^5.2.1",

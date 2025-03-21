@@ -1,30 +1,37 @@
 import { SESSION_SERVER_API_URL, SESSION_SERVER_SOCKET_URL } from "@toruslabs/constants";
+import { AUTH_CONNECTION, constructURL, UX_MODE } from "@toruslabs/customauth";
 import { SessionManager } from "@toruslabs/session-manager";
 
 import {
   AUTH_ACTIONS,
   AUTH_ACTIONS_TYPE,
+  AUTH_DASHBOARD_DEVELOPMENT_URL,
+  AUTH_DASHBOARD_PRODUCTION_URL,
+  AUTH_DASHBOARD_STAGING_URL,
+  AUTH_DASHBOARD_TESTING_URL,
+  AUTH_SERVICE_DEVELOPMENT_URL,
+  AUTH_SERVICE_PRODUCTION_URL,
+  AUTH_SERVICE_STAGING_URL,
+  AUTH_SERVICE_TESTING_URL,
   AuthOptions,
   AuthSessionConfig,
   AuthSessionData,
   AuthUserInfo,
   BaseLoginParams,
-  BaseRedirectParams,
   BrowserStorage,
   BUILD_ENV,
   jsonToBase64,
-  LOGIN_PROVIDER,
   LoginParams,
+  POPUP_TIMEOUT,
+  SDK_MODE,
   SocialMfaModParams,
-  UX_MODE,
-  WEB3AUTH_LEGACY_NETWORK,
-  type WEB3AUTH_LEGACY_NETWORK_TYPE,
   WEB3AUTH_NETWORK,
 } from "../utils";
-import { loglevel as log } from "../utils/logger";
+import { log } from "../utils/logger";
+import { AuthProvider } from "./AuthProvider";
 import { InitializationError, LoginError } from "./errors";
 import PopupHandler, { PopupResponse } from "./PopupHandler";
-import { constructURL, getHashQueryParams, getTimeout, version } from "./utils";
+import { getHashQueryParams, version } from "./utils";
 
 export class Auth {
   state: AuthSessionData = {};
@@ -41,38 +48,28 @@ export class Auth {
 
   private addVersionInUrls = true;
 
+  private authProvider: AuthProvider;
+
   constructor(options: AuthOptions) {
     if (!options.clientId) throw InitializationError.invalidParams("clientId is required");
     if (!options.network) options.network = WEB3AUTH_NETWORK.SAPPHIRE_MAINNET;
     if (!options.buildEnv) options.buildEnv = BUILD_ENV.PRODUCTION;
+    if (!options.sdkMode) options.sdkMode = SDK_MODE.DEFAULT;
+
     if (options.buildEnv === BUILD_ENV.DEVELOPMENT || options.buildEnv === BUILD_ENV.TESTING || options.sdkUrl) this.addVersionInUrls = false;
     if (!options.sdkUrl && !options.useMpc) {
       if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
-        options.sdkUrl = "http://localhost:3000";
-        options.dashboardUrl = "http://localhost:5173";
+        options.sdkUrl = AUTH_SERVICE_DEVELOPMENT_URL;
+        options.dashboardUrl = AUTH_DASHBOARD_DEVELOPMENT_URL;
       } else if (options.buildEnv === BUILD_ENV.STAGING) {
-        options.sdkUrl = "https://staging-auth.web3auth.io";
-        options.dashboardUrl = "https://staging-account.web3auth.io";
+        options.sdkUrl = AUTH_SERVICE_STAGING_URL;
+        options.dashboardUrl = AUTH_DASHBOARD_STAGING_URL;
       } else if (options.buildEnv === BUILD_ENV.TESTING) {
-        options.sdkUrl = "https://develop-auth.web3auth.io";
-        options.dashboardUrl = "https://develop-account.web3auth.io";
+        options.sdkUrl = AUTH_SERVICE_TESTING_URL;
+        options.dashboardUrl = AUTH_DASHBOARD_TESTING_URL;
       } else {
-        options.sdkUrl = "https://auth.web3auth.io";
-        options.dashboardUrl = "https://account.web3auth.io";
-      }
-    }
-
-    if (options.useMpc && !options.sdkUrl) {
-      if (Object.values(WEB3AUTH_LEGACY_NETWORK).includes(options.network as WEB3AUTH_LEGACY_NETWORK_TYPE))
-        throw InitializationError.invalidParams("MPC is not supported on legacy networks, please use sapphire_devnet or sapphire_mainnet.");
-      if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
-        options.sdkUrl = "http://localhost:3000";
-      } else if (options.buildEnv === BUILD_ENV.STAGING) {
-        options.sdkUrl = "https://staging-mpc-auth.web3auth.io";
-      } else if (options.buildEnv === BUILD_ENV.TESTING) {
-        options.sdkUrl = "https://develop-mpc-auth.web3auth.io";
-      } else {
-        options.sdkUrl = "https://mpc-auth.web3auth.io";
+        options.sdkUrl = AUTH_SERVICE_PRODUCTION_URL;
+        options.dashboardUrl = AUTH_DASHBOARD_PRODUCTION_URL;
       }
     }
 
@@ -83,12 +80,11 @@ export class Auth {
     if (typeof options.replaceUrlOnRedirect !== "boolean") options.replaceUrlOnRedirect = true;
     if (!options.originData) options.originData = {};
     if (!options.whiteLabel) options.whiteLabel = {};
-    if (!options.loginConfig) options.loginConfig = {};
+    if (!options.authConnectionConfig) options.authConnectionConfig = [];
     if (!options.mfaSettings) options.mfaSettings = {};
     if (!options.storageServerUrl) options.storageServerUrl = SESSION_SERVER_API_URL;
     if (!options.sessionSocketUrl) options.sessionSocketUrl = SESSION_SERVER_SOCKET_URL;
-    if (!options.storageKey) options.storageKey = "local";
-    if (!options.webauthnTransports) options.webauthnTransports = ["internal"];
+    if (!options.storage) options.storage = "local";
     if (!options.sessionTime) options.sessionTime = 86400;
 
     this.options = options;
@@ -123,7 +119,7 @@ export class Auth {
     return this.state.userInfo.appState || this.dappState || "";
   }
 
-  private get baseUrl(): string {
+  get baseUrl(): string {
     // testing and develop don't have versioning
     if (!this.addVersionInUrls) return `${this.options.sdkUrl}`;
     return `${this.options.sdkUrl}/v${version.split(".")[0]}`;
@@ -140,8 +136,9 @@ export class Auth {
     const params = getHashQueryParams(this.options.replaceUrlOnRedirect);
     if (params.sessionNamespace) this.options.sessionNamespace = params.sessionNamespace;
 
-    const storageKey = this.options.sessionNamespace ? `${this._storageBaseKey}_${this.options.sessionNamespace}` : this._storageBaseKey;
-    this.currentStorage = BrowserStorage.getInstance(storageKey, this.options.storageKey);
+    const storageKey =
+      this.options.sessionKey || (this.options.sessionNamespace ? `${this._storageBaseKey}_${this.options.sessionNamespace}` : this._storageBaseKey);
+    this.currentStorage = BrowserStorage.getInstance(storageKey, this.options.storage);
 
     const sessionId = this.currentStorage.get<string>("sessionId");
 
@@ -190,22 +187,23 @@ export class Auth {
         this.updateState({ sessionId: this.sessionManager.sessionId });
       }
     }
+
+    if (this.options.sdkMode === SDK_MODE.IFRAME) {
+      this.authProvider = new AuthProvider({ sdkUrl: this.options.sdkUrl, whiteLabel: this.options.whiteLabel });
+      if (!this.state.sessionId) {
+        await this.authProvider.init({ network: this.options.network, clientId: this.options.clientId });
+        if (params.nonce) {
+          await this.postLoginInitiatedMessage(JSON.parse(params.loginParams), params.nonce);
+        }
+      }
+    }
   }
 
-  async login(params: LoginParams & Partial<BaseRedirectParams>): Promise<{ privKey: string } | null> {
-    if (!params.loginProvider) throw LoginError.invalidLoginParams(`loginProvider is required`);
+  async login(params: LoginParams): Promise<{ privKey: string } | null> {
+    if (!params.authConnection && (!params.authConnectionId || !params.groupedAuthConnectionId))
+      throw LoginError.invalidLoginParams(`AuthConnection is required`);
 
-    // in case of redirect mode, redirect url will be dapp specified
-    // in case of popup mode, redirect url will be sdk specified
-    const defaultParams: BaseRedirectParams = {
-      redirectUrl: this.options.redirectUrl,
-    };
-
-    const loginParams: LoginParams = {
-      loginProvider: params.loginProvider,
-      ...defaultParams,
-      ...params,
-    };
+    const loginParams: LoginParams = { ...params };
 
     const dataObject: AuthSessionConfig = {
       actionType: AUTH_ACTIONS.LOGIN,
@@ -213,7 +211,7 @@ export class Auth {
       params: loginParams,
     };
 
-    const result = await this.authHandler(`${this.baseUrl}/start`, dataObject, getTimeout(params.loginProvider));
+    const result = await this.authHandler(`${this.baseUrl}/start`, dataObject, POPUP_TIMEOUT);
     if (this.options.uxMode === UX_MODE.REDIRECT) return null;
     if (result.error) {
       this.dappState = result.state;
@@ -224,6 +222,28 @@ export class Auth {
     this.currentStorage.set("sessionId", result.sessionId);
     await this.rehydrateSession();
     return { privKey: this.privKey };
+  }
+
+  async postLoginInitiatedMessage(params: LoginParams, nonce?: string): Promise<void> {
+    if (this.options.sdkMode !== SDK_MODE.IFRAME) throw LoginError.invalidLoginParams("Cannot perform this action in default mode.");
+
+    if (!this.authProvider || !this.authProvider.initialized) {
+      await this.authProvider.init({ network: this.options.network, clientId: this.options.clientId });
+    }
+
+    const result = await this.authProvider.postLoginInitiatedMessage({ actionType: AUTH_ACTIONS.LOGIN, params, options: this.options }, nonce);
+    if (result.error) throw LoginError.loginFailed(result.error);
+    this.sessionManager.sessionId = result.sessionId;
+    this.options.sessionNamespace = result.sessionNamespace;
+    this.currentStorage.set("sessionId", result.sessionId);
+    await this.rehydrateSession();
+  }
+
+  async postLoginCancelledMessage(nonce: string): Promise<void> {
+    if (this.options.sdkMode !== SDK_MODE.IFRAME) throw LoginError.invalidLoginParams("Cannot perform this action in default mode.");
+    if (!this.authProvider || !this.authProvider.initialized) throw InitializationError.notInitialized();
+
+    this.authProvider.postLoginCancelledMessage(nonce);
   }
 
   async logout(): Promise<void> {
@@ -270,19 +290,15 @@ export class Auth {
   async enableMFA(params: Partial<LoginParams>): Promise<boolean> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
     if (this.state.userInfo.isMfaEnabled) throw LoginError.mfaAlreadyEnabled();
-    // in case of redirect mode, redirect url will be dapp specified
-    // in case of popup mode, redirect url will be sdk specified
-    const defaultParams: BaseRedirectParams = {
-      redirectUrl: this.options.redirectUrl,
-    };
 
     const dataObject: AuthSessionConfig = {
       actionType: AUTH_ACTIONS.ENABLE_MFA,
       options: this.options,
       params: {
-        ...defaultParams,
         ...params,
-        loginProvider: this.state.userInfo.authConnection,
+        authConnection: this.state.userInfo.authConnection,
+        authConnectionId: this.state.userInfo.authConnectionId,
+        groupedAuthConnectionId: this.state.userInfo.groupedAuthConnectionId,
         extraLoginOptions: {
           login_hint: this.state.userInfo.userId,
         },
@@ -291,7 +307,7 @@ export class Auth {
       sessionId: this.sessionId,
     };
 
-    const result = await this.authHandler(`${this.baseUrl}/start`, dataObject, getTimeout(dataObject.params.loginProvider));
+    const result = await this.authHandler(`${this.baseUrl}/start`, dataObject, POPUP_TIMEOUT);
     if (this.options.uxMode === UX_MODE.REDIRECT) return null;
     if (result.error) {
       this.dappState = result.state;
@@ -324,7 +340,9 @@ export class Auth {
       params: {
         ...defaultParams,
         ...params,
-        loginProvider: this.state.userInfo.authConnection,
+        authConnection: this.state.userInfo.authConnection,
+        authConnectionId: this.state.userInfo.authConnectionId,
+        groupedAuthConnectionId: this.state.userInfo.groupedAuthConnectionId,
         extraLoginOptions: {
           login_hint: this.state.userInfo.userId,
         },
@@ -348,20 +366,13 @@ export class Auth {
     window.open(loginUrl, "_blank");
   }
 
-  async manageSocialFactor(actionType: AUTH_ACTIONS_TYPE, params: SocialMfaModParams & Partial<BaseRedirectParams>): Promise<boolean> {
+  async manageSocialFactor(actionType: AUTH_ACTIONS_TYPE, params: SocialMfaModParams & Pick<LoginParams, "appState">): Promise<boolean> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
-
-    // in case of redirect mode, redirect url will be dapp specified
-    // in case of popup mode, redirect url will be sdk specified
-    const defaultParams: BaseRedirectParams = {
-      redirectUrl: this.options.redirectUrl,
-    };
 
     const dataObject: AuthSessionConfig = {
       actionType,
       options: this.options,
       params: {
-        ...defaultParams,
         ...params,
       },
       sessionId: this.sessionId,
@@ -373,22 +384,15 @@ export class Auth {
     return true;
   }
 
-  async addAuthenticatorFactor(params: Partial<BaseRedirectParams>): Promise<boolean> {
+  async addAuthenticatorFactor(params: Pick<LoginParams, "appState">): Promise<boolean> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
-
-    // in case of redirect mode, redirect url will be dapp specified
-    // in case of popup mode, redirect url will be sdk specified
-    const defaultParams: BaseRedirectParams = {
-      redirectUrl: this.options.redirectUrl,
-    };
 
     const dataObject: AuthSessionConfig = {
       actionType: AUTH_ACTIONS.ADD_AUTHENTICATOR_FACTOR,
       options: this.options,
       params: {
-        ...defaultParams,
         ...params,
-        loginProvider: LOGIN_PROVIDER.AUTHENTICATOR,
+        authConnection: AUTH_CONNECTION.AUTHENTICATOR,
       },
       sessionId: this.sessionId,
     };
@@ -399,22 +403,15 @@ export class Auth {
     return true;
   }
 
-  async addPasskeyFactor(params: Partial<BaseRedirectParams>): Promise<boolean> {
+  async addPasskeyFactor(params: Pick<LoginParams, "appState">): Promise<boolean> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
-
-    // in case of redirect mode, redirect url will be dapp specified
-    // in case of popup mode, redirect url will be sdk specified
-    const defaultParams: BaseRedirectParams = {
-      redirectUrl: this.options.redirectUrl,
-    };
 
     const dataObject: AuthSessionConfig = {
       actionType: AUTH_ACTIONS.ADD_PASSKEY_FACTOR,
       options: this.options,
       params: {
-        ...defaultParams,
         ...params,
-        loginProvider: LOGIN_PROVIDER.PASSKEYS,
+        authConnection: AUTH_CONNECTION.PASSKEYS,
       },
       sessionId: this.sessionId,
     };
