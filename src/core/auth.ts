@@ -56,7 +56,6 @@ export class Auth {
     if (!options.buildEnv) options.buildEnv = BUILD_ENV.PRODUCTION;
     if (!options.sdkMode) options.sdkMode = SDK_MODE.DEFAULT;
 
-    // TODO: move all urls to constants
     if (options.buildEnv === BUILD_ENV.DEVELOPMENT || options.buildEnv === BUILD_ENV.TESTING || options.sdkUrl) this.addVersionInUrls = false;
     if (!options.sdkUrl && !options.useMpc) {
       if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
@@ -138,7 +137,7 @@ export class Auth {
     if (params.sessionNamespace) this.options.sessionNamespace = params.sessionNamespace;
 
     const storageKey =
-      this.options.sessionKey || this.options.sessionNamespace ? `${this._storageBaseKey}_${this.options.sessionNamespace}` : this._storageBaseKey;
+      this.options.sessionKey || (this.options.sessionNamespace ? `${this._storageBaseKey}_${this.options.sessionNamespace}` : this._storageBaseKey);
     this.currentStorage = BrowserStorage.getInstance(storageKey, this.options.storage);
 
     const sessionId = this.currentStorage.get<string>("sessionId");
