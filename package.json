@@ -117,7 +117,7 @@
   "dependencies": {
     "@ethereumjs/util": "^9.1.0",
     "@toruslabs/constants": "^15.0.0",
-    "@toruslabs/customauth": "^21.2.0",
+    "@toruslabs/customauth": "^21.2.1",
     "@toruslabs/ffjavascript": "^5.0.0",
     "@toruslabs/metadata-helpers": "^7.0.2",
     "@toruslabs/secure-pub-sub": "^3.0.1",
