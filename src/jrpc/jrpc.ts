@@ -1,8 +1,8 @@
 import { Duplex } from "readable-stream";
 
 import { AsyncJRPCMiddleware, ConsoleLike, IdMap, JRPCMiddleware, JRPCRequest, JRPCResponse, Json, ReturnHandlerCallback } from "./interfaces";
-import SafeEventEmitter from "./safeEventEmitter";
-import SerializableError from "./serializableError";
+import { SafeEventEmitter } from "./safeEventEmitter";
+import { SerializableError } from "./serializableError";
 
 export const getRpcPromiseCallback =
   (resolve: (value?: unknown) => void, reject: (error?: Error) => void, unwrapResult = true) =>
@@ -41,14 +41,18 @@ export function createErrorMiddleware(log: ConsoleLike): JRPCMiddleware<unknown,
   };
 }
 
-export function createStreamMiddleware(): { events: SafeEventEmitter; middleware: JRPCMiddleware<unknown, unknown>; stream: Duplex } {
+export type StreamEvents = {
+  notification: (arg1: JRPCRequest<unknown>) => boolean;
+};
+
+export function createStreamMiddleware(): { events: SafeEventEmitter<StreamEvents>; middleware: JRPCMiddleware<unknown, unknown>; stream: Duplex } {
   const idMap: IdMap = {};
 
   function readNoop() {
     return false;
   }
 
-  const events = new SafeEventEmitter();
+  const events = new SafeEventEmitter<StreamEvents>();
 
   function processResponse(res: JRPCResponse<unknown>) {
     const context = idMap[res.id as unknown as string];

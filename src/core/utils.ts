@@ -1,19 +1,10 @@
-import { getPublic, sign } from "@toruslabs/eccrypto";
-import { keccak256 } from "@toruslabs/metadata-helpers";
 import bowser from "bowser";
 
-import { base64url, LOGIN_PROVIDER, safeatob } from "../utils";
-import { loglevel as log } from "./logger";
+import { LOGIN_PROVIDER, safeatob } from "../utils";
+import { loglevel as log } from "../utils/logger";
 
 // don't use destructuring for process.env cause it messes up webpack env plugin
 export const version = process.env.AUTH_VERSION;
-
-export async function whitelistUrl(clientId: string, appKey: string, origin: string): Promise<string> {
-  const appKeyBuf = Buffer.from(appKey.padStart(64, "0"), "hex");
-  if (base64url.encode(getPublic(appKeyBuf)) !== clientId) throw new Error("appKey mismatch");
-  const sig = await sign(appKeyBuf, keccak256(Buffer.from(origin, "utf8")));
-  return base64url.encode(sig);
-}
 
 export type HashQueryParamResult = {
   sessionId?: string;
@@ -65,14 +56,15 @@ export function getHashQueryParams(replaceUrl = false): HashQueryParamResult {
   if (replaceUrl) {
     const cleanUrl = new URL(window.location.origin + window.location.pathname);
     // https://dapp.com/#b64Params=asacsdnvdfv&state=sldjvndfkjvn&dappValue=sdjvndf
-    if (queryUrlParams.size > 0) {
+    // NB: `params.size !== 0` evaluates to true even if `.size` isn't implemented and returns `undefined`, like in Safari <17 and Chrome <113.
+    if (queryUrlParams.size !== 0) {
       queryUrlParams.delete("error");
       queryUrlParams.delete("state");
       queryUrlParams.delete("b64Params");
       queryUrlParams.delete("sessionNamespace");
       cleanUrl.search = queryUrlParams.toString();
     }
-    if (hashUrlParams.size > 0) {
+    if (hashUrlParams.size !== 0) {
       hashUrlParams.delete("error");
       hashUrlParams.delete("state");
       hashUrlParams.delete("b64Params");

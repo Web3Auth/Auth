@@ -17,6 +17,7 @@ export const WEB3AUTH_NETWORK = {
 export const SUPPORTED_KEY_CURVES = {
   SECP256K1: "secp256k1",
   ED25519: "ed25519",
+  OTHER: "other",
 } as const;
 
 export const LOGIN_PROVIDER = {
@@ -38,6 +39,8 @@ export const LOGIN_PROVIDER = {
   SMS_PASSWORDLESS: "sms_passwordless",
   WEBAUTHN: "webauthn",
   JWT: "jwt",
+  PASSKEYS: "passkeys",
+  AUTHENTICATOR: "authenticator",
 } as const;
 
 export const MFA_LEVELS = {
@@ -51,7 +54,10 @@ export const AUTH_ACTIONS = {
   LOGIN: "login",
   ENABLE_MFA: "enable_mfa",
   MANAGE_MFA: "manage_mfa",
+  ADD_SOCIAL_FACTOR: "add_social_factor",
   MODIFY_SOCIAL_FACTOR: "modify_social_factor",
+  ADD_AUTHENTICATOR_FACTOR: "add_authenticator_factor",
+  ADD_PASSKEY_FACTOR: "add_passkey_factor",
 } as const;
 
 export const BUILD_ENV = {

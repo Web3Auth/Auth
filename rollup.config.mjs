@@ -12,5 +12,3 @@ export const baseConfig = {
     }),
   ],
 };
-
-console.log("Rollup config loaded", process.env.AUTH_VERSION);

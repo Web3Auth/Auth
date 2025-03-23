@@ -234,6 +234,7 @@ export type SocialMfaModParams = {
    */
   extraLoginOptions?: ExtraLoginOptions;
 };
+
 export const LANGUAGES = {
   en: "en",
   ja: "ja",
@@ -367,7 +368,9 @@ export type TypeOfLogin =
   | "email_password"
   | "passwordless"
   | "jwt"
-  | "webauthn";
+  | "passkeys"
+  | "email_passwordless"
+  | "sms_passwordless";
 
 export interface JwtParameters extends BaseLoginOptions {
   /**
@@ -534,6 +537,7 @@ export interface AuthSessionData {
   tssPubKey?: string;
   tssShare?: string;
   tssNonce?: number;
+  tssTag?: string;
   nodeIndexes?: number[];
   useCoreKitKey?: boolean;
 }
@@ -661,10 +665,17 @@ export type AuthOptions = {
 
   /**
    * Specify a custom storage server url
-   * @defaultValue https://session.web3auth.io
+   * @defaultValue https://api.web3auth.io/session-service
    * @internal
    */
   storageServerUrl?: string;
+
+  /**
+   * Specify a custom session socket server url
+   * @defaultValue https://session.web3auth.io
+   * @internal
+   */
+  sessionSocketUrl?: string;
 
   /**
    * setting to "local" will persist social login session across browser tabs.
@@ -676,8 +687,8 @@ export type AuthOptions = {
   /**
    * How long should a login session last at a minimum in seconds
    *
-   * @defaultValue 86400 seconds
-   * @remarks Max value of sessionTime can be 7 * 86400 (7 days)
+   * @defaultValue 30 * 86400 seconds
+   * @remarks Max value of sessionTime can be 30 * 86400 (30 days)
    */
   sessionTime?: number;
 

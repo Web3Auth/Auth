@@ -3,7 +3,7 @@ import { Duplex } from "readable-stream";
 
 import { BufferEncoding } from "./interfaces";
 
-export default class Substream extends Duplex {
+export class Substream extends Duplex {
   private readonly _parent: any;
 
   private readonly _name: string;

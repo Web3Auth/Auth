@@ -1,8 +1,9 @@
-import { SESSION_SERVER } from "@toruslabs/constants";
-import { OpenloginSessionManager } from "@toruslabs/session-manager";
+import { SESSION_SERVER_API_URL, SESSION_SERVER_SOCKET_URL } from "@toruslabs/constants";
+import { SessionManager } from "@toruslabs/session-manager";
 
 import {
   AUTH_ACTIONS,
+  AUTH_ACTIONS_TYPE,
   AuthOptions,
   AuthSessionConfig,
   AuthSessionData,
@@ -12,6 +13,7 @@ import {
   BrowserStorage,
   BUILD_ENV,
   jsonToBase64,
+  LOGIN_PROVIDER,
   LoginParams,
   SocialMfaModParams,
   UX_MODE,
@@ -19,8 +21,8 @@ import {
   type WEB3AUTH_LEGACY_NETWORK_TYPE,
   WEB3AUTH_NETWORK,
 } from "../utils";
+import { loglevel as log } from "../utils/logger";
 import { InitializationError, LoginError } from "./errors";
-import { loglevel as log } from "./logger";
 import PopupHandler, { PopupResponse } from "./PopupHandler";
 import { constructURL, getHashQueryParams, getTimeout, version } from "./utils";
 
@@ -29,7 +31,7 @@ export class Auth {
 
   options: AuthOptions;
 
-  private sessionManager: OpenloginSessionManager<AuthSessionData>;
+  private sessionManager: SessionManager<AuthSessionData>;
 
   private currentStorage: BrowserStorage;
 
@@ -47,16 +49,16 @@ export class Auth {
     if (!options.sdkUrl && !options.useMpc) {
       if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
         options.sdkUrl = "http://localhost:3000";
-        options.dashboardUrl = "http://localhost:5173/wallet/account";
+        options.dashboardUrl = "http://localhost:5173";
       } else if (options.buildEnv === BUILD_ENV.STAGING) {
         options.sdkUrl = "https://staging-auth.web3auth.io";
-        options.dashboardUrl = "https://staging-account.web3auth.io/wallet/account";
+        options.dashboardUrl = "https://staging-account.web3auth.io";
       } else if (options.buildEnv === BUILD_ENV.TESTING) {
         options.sdkUrl = "https://develop-auth.web3auth.io";
-        options.dashboardUrl = "https://develop-account.web3auth.io/wallet/account";
+        options.dashboardUrl = "https://develop-account.web3auth.io";
       } else {
         options.sdkUrl = "https://auth.web3auth.io";
-        options.dashboardUrl = "https://account.web3auth.io/wallet/account";
+        options.dashboardUrl = "https://account.web3auth.io";
       }
     }
 
@@ -83,7 +85,8 @@ export class Auth {
     if (!options.whiteLabel) options.whiteLabel = {};
     if (!options.loginConfig) options.loginConfig = {};
     if (!options.mfaSettings) options.mfaSettings = {};
-    if (!options.storageServerUrl) options.storageServerUrl = SESSION_SERVER;
+    if (!options.storageServerUrl) options.storageServerUrl = SESSION_SERVER_API_URL;
+    if (!options.sessionSocketUrl) options.sessionSocketUrl = SESSION_SERVER_SOCKET_URL;
     if (!options.storageKey) options.storageKey = "local";
     if (!options.webauthnTransports) options.webauthnTransports = ["internal"];
     if (!options.sessionTime) options.sessionTime = 86400;
@@ -126,6 +129,12 @@ export class Auth {
     return `${this.options.sdkUrl}/v${version.split(".")[0]}`;
   }
 
+  private get dashboardUrl(): string {
+    // testing and develop don't have versioning
+    if (!this.addVersionInUrls) return `${this.options.dashboardUrl}`;
+    return `${this.options.dashboardUrl}/v${version.split(".")[0]}`;
+  }
+
   async init(): Promise<void> {
     // get sessionNamespace from the redirect result.
     const params = getHashQueryParams(this.options.replaceUrlOnRedirect);
@@ -136,11 +145,12 @@ export class Auth {
 
     const sessionId = this.currentStorage.get<string>("sessionId");
 
-    this.sessionManager = new OpenloginSessionManager({
+    this.sessionManager = new SessionManager({
       sessionServerBaseUrl: this.options.storageServerUrl,
       sessionNamespace: this.options.sessionNamespace,
       sessionTime: this.options.sessionTime,
       sessionId,
+      allowedOrigin: this.options.sdkUrl,
     });
 
     if (this.options.network === WEB3AUTH_NETWORK.TESTNET || this.options.network === WEB3AUTH_NETWORK.SAPPHIRE_DEVNET) {
@@ -176,6 +186,8 @@ export class Auth {
       if (Object.keys(data).length === 0) {
         // If session is invalid, unset the sessionId from localStorage.
         this.currentStorage.set("sessionId", "");
+      } else {
+        this.updateState({ sessionId: this.sessionManager.sessionId });
       }
     }
   }
@@ -299,15 +311,16 @@ export class Auth {
     // in case of redirect mode, redirect url will be dapp specified
     // in case of popup mode, redirect url will be sdk specified
     const defaultParams = {
-      redirectUrl: this.options.dashboardUrl,
+      redirectUrl: `${this.dashboardUrl}/wallet/account`,
       dappUrl: `${window.location.origin}${window.location.pathname}`,
     };
 
-    const loginId = OpenloginSessionManager.generateRandomSessionKey();
+    const loginId = SessionManager.generateRandomSessionKey();
 
     const dataObject: AuthSessionConfig = {
       actionType: AUTH_ACTIONS.MANAGE_MFA,
-      options: this.options,
+      // manage mfa always opens in a new tab, so need to fix the uxMode to redirect.
+      options: { ...this.options, uxMode: "redirect" },
       params: {
         ...defaultParams,
         ...params,
@@ -335,7 +348,7 @@ export class Auth {
     window.open(loginUrl, "_blank");
   }
 
-  async changeSocialFactor(params: SocialMfaModParams & Partial<BaseRedirectParams>): Promise<boolean> {
+  async manageSocialFactor(actionType: AUTH_ACTIONS_TYPE, params: SocialMfaModParams & Partial<BaseRedirectParams>): Promise<boolean> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
 
     // in case of redirect mode, redirect url will be dapp specified
@@ -345,11 +358,63 @@ export class Auth {
     };
 
     const dataObject: AuthSessionConfig = {
-      actionType: AUTH_ACTIONS.MODIFY_SOCIAL_FACTOR,
+      actionType,
       options: this.options,
       params: {
         ...defaultParams,
         ...params,
+      },
+      sessionId: this.sessionId,
+    };
+
+    const result = await this.authHandler(`${this.baseUrl}/start`, dataObject);
+    if (this.options.uxMode === UX_MODE.REDIRECT) return undefined;
+    if (result.error) return false;
+    return true;
+  }
+
+  async addAuthenticatorFactor(params: Partial<BaseRedirectParams>): Promise<boolean> {
+    if (!this.sessionId) throw LoginError.userNotLoggedIn();
+
+    // in case of redirect mode, redirect url will be dapp specified
+    // in case of popup mode, redirect url will be sdk specified
+    const defaultParams: BaseRedirectParams = {
+      redirectUrl: this.options.redirectUrl,
+    };
+
+    const dataObject: AuthSessionConfig = {
+      actionType: AUTH_ACTIONS.ADD_AUTHENTICATOR_FACTOR,
+      options: this.options,
+      params: {
+        ...defaultParams,
+        ...params,
+        loginProvider: LOGIN_PROVIDER.AUTHENTICATOR,
+      },
+      sessionId: this.sessionId,
+    };
+
+    const result = await this.authHandler(`${this.baseUrl}/start`, dataObject);
+    if (this.options.uxMode === UX_MODE.REDIRECT) return undefined;
+    if (result.error) return false;
+    return true;
+  }
+
+  async addPasskeyFactor(params: Partial<BaseRedirectParams>): Promise<boolean> {
+    if (!this.sessionId) throw LoginError.userNotLoggedIn();
+
+    // in case of redirect mode, redirect url will be dapp specified
+    // in case of popup mode, redirect url will be sdk specified
+    const defaultParams: BaseRedirectParams = {
+      redirectUrl: this.options.redirectUrl,
+    };
+
+    const dataObject: AuthSessionConfig = {
+      actionType: AUTH_ACTIONS.ADD_PASSKEY_FACTOR,
+      options: this.options,
+      params: {
+        ...defaultParams,
+        ...params,
+        loginProvider: LOGIN_PROVIDER.PASSKEYS,
       },
       sessionId: this.sessionId,
     };
@@ -370,11 +435,12 @@ export class Auth {
   private async createLoginSession(loginId: string, data: AuthSessionConfig, timeout = 600, skipAwait = false): Promise<void> {
     if (!this.sessionManager) throw InitializationError.notInitialized();
 
-    const loginSessionMgr = new OpenloginSessionManager<AuthSessionConfig>({
+    const loginSessionMgr = new SessionManager<AuthSessionConfig>({
       sessionServerBaseUrl: data.options.storageServerUrl,
       sessionNamespace: data.options.sessionNamespace,
       sessionTime: timeout, // each login key must be used with 10 mins (might be used at the end of popup redirect)
       sessionId: loginId,
+      allowedOrigin: this.options.sdkUrl,
     });
 
     const promise = loginSessionMgr.createSession(JSON.parse(JSON.stringify(data)));
@@ -405,7 +471,7 @@ export class Auth {
   }
 
   private async authHandler(url: string, dataObject: AuthSessionConfig, popupTimeout = 1000 * 10): Promise<PopupResponse | undefined> {
-    const loginId = OpenloginSessionManager.generateRandomSessionKey();
+    const loginId = SessionManager.generateRandomSessionKey();
     await this.createLoginSession(loginId, dataObject);
     const configParams: BaseLoginParams = {
       loginId,
@@ -426,7 +492,12 @@ export class Auth {
       baseURL: url,
       hash: { b64Params: jsonToBase64(configParams) },
     });
-    const currentWindow = new PopupHandler({ url: loginUrl, timeout: popupTimeout });
+    const currentWindow = new PopupHandler({
+      url: loginUrl,
+      timeout: popupTimeout,
+      sessionServerUrl: this.options.storageServerUrl,
+      sessionSocketUrl: this.options.sessionSocketUrl,
+    });
 
     return new Promise((resolve, reject) => {
       currentWindow.on("close", () => {
