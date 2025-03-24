@@ -104,7 +104,12 @@ class PopupHandler extends (EventEmitter as new () => TypedEmitter<PopupHandlerE
   }
 
   async listenOnChannel(loginId: string): Promise<PopupResponse> {
-    const securePubSub = new SecurePubSub({ serverUrl: this.sessionServerUrl, socketUrl: this.sessionSocketUrl });
+    const securePubSub = new SecurePubSub({
+      serverUrl: this.sessionServerUrl,
+      socketUrl: this.sessionSocketUrl,
+      sameIpCheck: true,
+      allowedOrigin: true,
+    });
     const data = await securePubSub.subscribe(loginId);
     this.close();
     securePubSub.cleanup();
