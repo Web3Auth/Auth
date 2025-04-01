@@ -223,6 +223,7 @@
                 :label-disabled="'Whitelabel'"
                 :label-enabled="'Whitelabel'"
               />
+              <Toggle id="includeUserDataInToken" v-model="includeUserDataInToken" :show-label="true" :size="'small'" :label-disabled="'Include User Data in Token'" :label-enabled="'Include User Data in Token'" data-testid="includeUserDataInToken" />
             </div>
             <div>
               <div>
@@ -613,6 +614,7 @@ const isWhiteLabelEnabled = ref(false);
 const selectedUxMode = ref<UX_MODE_TYPE>(UX_MODE.REDIRECT);
 const selectedOpenloginNetwork = ref<WEB3AUTH_NETWORK_TYPE>(WEB3AUTH_NETWORK.SAPPHIRE_DEVNET);
 const useMpc = ref(false);
+const includeUserDataInToken = ref(true);
 const useWalletKey = ref(false);
 const selectedBuildEnv = ref<BUILD_ENV_TYPE>(BUILD_ENV.PRODUCTION);
 const emailFlowType = ref<EMAIL_FLOW_TYPE>(EMAIL_FLOW.code);
@@ -660,6 +662,7 @@ const openloginInstance = computed(() => {
     sdkUrl: customSdkUrl.value,
     mfaSettings: mfaSettings.value,
     sessionTime: 3600,
+    includeUserDataInToken: includeUserDataInToken.value,
   });
   op.init();
   return op;
@@ -771,6 +774,7 @@ const init = async () => {
       selectedUxMode.value = state.selectedUxMode;
       selectedOpenloginNetwork.value = state.selectedOpenloginNetwork;
       useMpc.value = state.useMpc;
+      includeUserDataInToken.value = state.includeUserDataInToken;
       useWalletKey.value = state.useWalletKey;
       selectedBuildEnv.value = state.selectedBuildEnv;
       emailFlowType.value = state.emailFlowType;
@@ -784,6 +788,7 @@ const init = async () => {
   openloginInstance.value.options.uxMode = selectedUxMode.value;
   openloginInstance.value.options.whiteLabel = isWhiteLabelEnabled.value ? whitelabelConfig.value : undefined;
   openloginInstance.value.options.mfaSettings = mfaSettings.value;
+  openloginInstance.value.options.includeUserDataInToken = includeUserDataInToken.value;
   await openloginInstance.value.init();
   if (openloginInstance.value.state.factorKey) {
     useMpc.value = true;
@@ -852,6 +857,7 @@ const login = async () => {
     openloginInstance.value.options.uxMode = selectedUxMode.value;
     openloginInstance.value.options.whiteLabel = isWhiteLabelEnabled.value ? whitelabelConfig.value : undefined;
     openloginInstance.value.options.mfaSettings = mfaSettings.value;
+    openloginInstance.value.options.includeUserDataInToken = includeUserDataInToken.value;
     // in popup mode (with third party cookies available) or if user is already logged in this function will
     // return priv key , in redirect mode or if third party cookies are blocked then priv key be injected to
     // sdk instance after calling init on redirect url page.
@@ -1042,6 +1048,7 @@ watchEffect(() => {
     selectedUxMode: selectedUxMode.value,
     selectedOpenloginNetwork: selectedOpenloginNetwork.value,
     useMpc: useMpc.value,
+    includeUserDataInToken: includeUserDataInToken.value,
     useWalletKey: useWalletKey.value,
     selectedBuildEnv: selectedBuildEnv.value,
     emailFlowType: emailFlowType.value,
