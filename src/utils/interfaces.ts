@@ -518,6 +518,12 @@ export type AuthOptions = {
    * @defaultValue false
    */
   sdkMode?: SDK_MODE_TYPE;
+
+  /**
+   * This parameter will be used to include user data in id token.
+   * @defaultValue true
+   */
+  includeUserDataInToken?: boolean;
 };
 
 export interface BaseLoginParams {

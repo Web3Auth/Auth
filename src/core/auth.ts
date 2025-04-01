@@ -78,6 +78,7 @@ export class Auth {
     }
     if (!options.uxMode) options.uxMode = UX_MODE.REDIRECT;
     if (typeof options.replaceUrlOnRedirect !== "boolean") options.replaceUrlOnRedirect = true;
+    if (typeof options.includeUserDataInToken !== "boolean") options.includeUserDataInToken = true;
     if (!options.originData) options.originData = {};
     if (!options.whiteLabel) options.whiteLabel = {};
     if (!options.authConnectionConfig) options.authConnectionConfig = [];
