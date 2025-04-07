@@ -91,9 +91,11 @@ export class AuthProvider {
         const handleMessage = (event: MessageEvent) => {
           if (event.origin !== this.targetOrigin) return;
           const { data } = event as {
-            data: { type: string; data: { sessionId?: string; sessionNamespace?: string; error?: string } };
+            data: { type: string; nonce: string; data: { sessionId?: string; sessionNamespace?: string; error?: string } };
           };
-          const { type } = data;
+          const { type, nonce } = data;
+          // dont do anything if the nonce is not the same.
+          if (nonce !== this.embedNonce) return;
           const messageData = data.data;
           switch (type) {
             case JRPC_METHODS.SETUP_COMPLETE:

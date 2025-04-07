@@ -294,7 +294,7 @@ export class Auth {
 
     const dataObject: AuthSessionConfig = {
       actionType: AUTH_ACTIONS.ENABLE_MFA,
-      options: this.options,
+      options: { ...this.options, sdkMode: SDK_MODE.DEFAULT },
       params: {
         ...params,
         authConnection: this.state.userInfo.authConnection,
@@ -337,7 +337,7 @@ export class Auth {
     const dataObject: AuthSessionConfig = {
       actionType: AUTH_ACTIONS.MANAGE_MFA,
       // manage mfa always opens in a new tab, so need to fix the uxMode to redirect.
-      options: { ...this.options, uxMode: "redirect" },
+      options: { ...this.options, uxMode: "redirect", sdkMode: SDK_MODE.DEFAULT },
       params: {
         ...defaultParams,
         ...params,
@@ -372,7 +372,7 @@ export class Auth {
 
     const dataObject: AuthSessionConfig = {
       actionType,
-      options: this.options,
+      options: { ...this.options, sdkMode: SDK_MODE.DEFAULT },
       params: {
         ...params,
       },
@@ -390,7 +390,7 @@ export class Auth {
 
     const dataObject: AuthSessionConfig = {
       actionType: AUTH_ACTIONS.ADD_AUTHENTICATOR_FACTOR,
-      options: this.options,
+      options: { ...this.options, sdkMode: SDK_MODE.DEFAULT },
       params: {
         ...params,
         authConnection: AUTH_CONNECTION.AUTHENTICATOR,
@@ -409,7 +409,7 @@ export class Auth {
 
     const dataObject: AuthSessionConfig = {
       actionType: AUTH_ACTIONS.ADD_PASSKEY_FACTOR,
-      options: this.options,
+      options: { ...this.options, sdkMode: SDK_MODE.DEFAULT },
       params: {
         ...params,
         authConnection: AUTH_CONNECTION.PASSKEYS,
