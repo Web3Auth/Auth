@@ -1,5 +1,5 @@
 import { SESSION_SERVER_API_URL, SESSION_SERVER_SOCKET_URL } from "@toruslabs/constants";
-import { AUTH_CONNECTION, constructURL, UX_MODE } from "@toruslabs/customauth";
+import { AUTH_CONNECTION, AUTH_CONNECTION_TYPE, constructURL, getTimeout, UX_MODE } from "@toruslabs/customauth";
 import { SessionManager } from "@toruslabs/session-manager";
 
 import {
@@ -212,7 +212,7 @@ export class Auth {
       params: loginParams,
     };
 
-    const result = await this.authHandler(`${this.baseUrl}/start`, dataObject, POPUP_TIMEOUT);
+    const result = await this.authHandler(`${this.baseUrl}/start`, dataObject, getTimeout(params.authConnection as AUTH_CONNECTION_TYPE));
     if (this.options.uxMode === UX_MODE.REDIRECT) return null;
     if (result.error) {
       this.dappState = result.state;
