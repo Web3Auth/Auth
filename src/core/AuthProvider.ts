@@ -26,7 +26,7 @@ export async function preloadIframe() {
 const authServiceIframeMap: WeakMap<object, HTMLIFrameElement> = new WeakMap();
 
 const iframeCleanupRegistry = new FinalizationRegistry((heldValue: HTMLIFrameElement) => {
-  log.info("Cleaning up iframe");
+  log.info("Cleaning up iframe", heldValue);
 
   // Remove iframe from DOM
   if (heldValue && heldValue.parentNode) {
@@ -62,12 +62,12 @@ export class AuthProvider {
   }
 
   getAuthServiceIframe(): HTMLIFrameElement {
-    return authServiceIframeMap.get(this.embedNonce) as HTMLIFrameElement;
+    return authServiceIframeMap.get(this) as HTMLIFrameElement;
   }
 
   registerAuthServiceIframe(iframe: HTMLIFrameElement) {
-    authServiceIframeMap.set(this.embedNonce, iframe);
-    iframeCleanupRegistry.register(this.embedNonce, iframe);
+    authServiceIframeMap.set(this, iframe);
+    iframeCleanupRegistry.register(this, iframe);
   }
 
   async init({ network, clientId }: { network: WEB3AUTH_NETWORK_TYPE; clientId: string }): Promise<void> {
