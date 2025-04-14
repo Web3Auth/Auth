@@ -83,7 +83,7 @@
     "cross-env": "^7.0.3",
     "eslint": "^9.24.0",
     "husky": "^9.1.7",
-    "lint-staged": "^15.5.0",
+    "lint-staged": "^15.5.1",
     "prettier": "^3.5.3",
     "rimraf": "^6.0.1",
     "tsconfig-paths": "^4.2.0",
@@ -97,7 +97,7 @@
   },
   "optionalDependencies": {
     "@nx/nx-linux-x64-gnu": "^20.7.2",
-    "@rollup/rollup-linux-x64-gnu": "^4.39.0"
+    "@rollup/rollup-linux-x64-gnu": "^4.40.0"
   },
   "author": "Torus Labs",
   "license": "MIT",
