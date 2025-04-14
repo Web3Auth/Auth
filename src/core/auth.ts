@@ -50,6 +50,8 @@ export class Auth {
 
   private authProvider: AuthProvider;
 
+  private authProviderPromise: Promise<void>;
+
   constructor(options: AuthOptions) {
     if (!options.clientId) throw InitializationError.invalidParams("clientId is required");
     if (!options.network) options.network = WEB3AUTH_NETWORK.SAPPHIRE_MAINNET;
@@ -192,8 +194,9 @@ export class Auth {
     if (this.options.sdkMode === SDK_MODE.IFRAME) {
       this.authProvider = new AuthProvider({ sdkUrl: this.options.sdkUrl, whiteLabel: this.options.whiteLabel });
       if (!this.state.sessionId) {
-        await this.authProvider.init({ network: this.options.network, clientId: this.options.clientId });
+        this.authProviderPromise = this.authProvider.init({ network: this.options.network, clientId: this.options.clientId });
         if (params.nonce) {
+          await this.authProviderPromise;
           await this.postLoginInitiatedMessage(JSON.parse(params.loginParams), params.nonce);
         }
       }
@@ -227,8 +230,13 @@ export class Auth {
 
   async postLoginInitiatedMessage(params: LoginParams, nonce?: string): Promise<void> {
     if (this.options.sdkMode !== SDK_MODE.IFRAME) throw LoginError.invalidLoginParams("Cannot perform this action in default mode.");
+    // This is to ensure that the auth provider is initialized before calling postLoginInitiatedMessage
+    // This is setup in the init method, if there is no active session.
+    if (this.authProviderPromise) await this.authProviderPromise;
 
-    if (!this.authProvider || !this.authProvider.initialized) {
+    // if there is an active session, we dont load the auth provider in the init method.
+    // so we need to initialize it here, if user logged out and then login in again.
+    if (!this.authProvider?.initialized) {
       await this.authProvider.init({ network: this.options.network, clientId: this.options.clientId });
     }
 
@@ -242,7 +250,9 @@ export class Auth {
 
   async postLoginCancelledMessage(nonce: string): Promise<void> {
     if (this.options.sdkMode !== SDK_MODE.IFRAME) throw LoginError.invalidLoginParams("Cannot perform this action in default mode.");
-    if (!this.authProvider || !this.authProvider.initialized) throw InitializationError.notInitialized();
+    if (this.authProviderPromise) await this.authProviderPromise;
+
+    if (!this.authProvider?.initialized) throw InitializationError.notInitialized();
 
     this.authProvider.postLoginCancelledMessage(nonce);
   }
@@ -421,6 +431,10 @@ export class Auth {
     if (this.options.uxMode === UX_MODE.REDIRECT) return undefined;
     if (result.error) return false;
     return true;
+  }
+
+  async cleanup() {
+    if (this.authProvider) this.authProvider.cleanup();
   }
 
   getUserInfo(): AuthUserInfo {

@@ -56,6 +56,18 @@ export class AuthProvider {
     return authServiceIframeMap.get(this.embedNonce) as HTMLIFrameElement;
   }
 
+  registerAuthServiceIframe(iframe: HTMLIFrameElement) {
+    authServiceIframeMap.set(this.embedNonce, iframe);
+  }
+
+  public cleanup() {
+    const iframe = authServiceIframeMap.get(this.embedNonce);
+    if (iframe && iframe.parentNode) {
+      iframe.parentNode.removeChild(iframe);
+      authServiceIframeMap.delete(this.embedNonce);
+    }
+  }
+
   async init({ network, clientId }: { network: WEB3AUTH_NETWORK_TYPE; clientId: string }): Promise<void> {
     if (typeof window === "undefined" || typeof document === "undefined") throw new Error("window or document is not available");
     if (this.initialized) throw new Error("AuthProvider already initialized");
@@ -82,7 +94,8 @@ export class AuthProvider {
         allow="clipboard-write"
       ></iframe>`
     );
-    authServiceIframeMap.set(this.embedNonce, authServiceIframe);
+
+    this.registerAuthServiceIframe(authServiceIframe);
 
     return new Promise<void>((resolve, reject) => {
       try {
