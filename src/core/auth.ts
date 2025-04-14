@@ -433,6 +433,10 @@ export class Auth {
     return true;
   }
 
+  async cleanup() {
+    if (this.authProvider) this.authProvider.cleanup();
+  }
+
   getUserInfo(): AuthUserInfo {
     if (!this.sessionManager.sessionId) {
       throw LoginError.userNotLoggedIn();

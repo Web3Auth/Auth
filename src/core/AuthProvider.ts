@@ -23,16 +23,7 @@ export async function preloadIframe() {
   }
 }
 
-const authServiceIframeMap: WeakMap<object, HTMLIFrameElement> = new WeakMap();
-
-const iframeCleanupRegistry = new FinalizationRegistry((heldValue: HTMLIFrameElement) => {
-  log.info("Cleaning up iframe", heldValue);
-
-  // Remove iframe from DOM
-  if (heldValue && heldValue.parentNode) {
-    heldValue.parentNode.removeChild(heldValue);
-  }
-});
+const authServiceIframeMap: Map<string, HTMLIFrameElement> = new Map();
 
 function getTheme(theme: THEME_MODE_TYPE): string {
   if (theme === THEME_MODES.light) return "light";
@@ -50,7 +41,7 @@ export class AuthProvider {
 
   private loginCallbackFailed: ((reason?: string) => void) | null = null;
 
-  private readonly embedNonce = { id: randomId() };
+  private readonly embedNonce = randomId();
 
   constructor({ sdkUrl, whiteLabel }: { sdkUrl: string; whiteLabel: WhiteLabelData }) {
     this.sdkUrl = sdkUrl;
@@ -62,12 +53,19 @@ export class AuthProvider {
   }
 
   getAuthServiceIframe(): HTMLIFrameElement {
-    return authServiceIframeMap.get(this) as HTMLIFrameElement;
+    return authServiceIframeMap.get(this.embedNonce) as HTMLIFrameElement;
   }
 
   registerAuthServiceIframe(iframe: HTMLIFrameElement) {
-    authServiceIframeMap.set(this, iframe);
-    iframeCleanupRegistry.register(this, iframe);
+    authServiceIframeMap.set(this.embedNonce, iframe);
+  }
+
+  public cleanup() {
+    const iframe = authServiceIframeMap.get(this.embedNonce);
+    if (iframe && iframe.parentNode) {
+      iframe.parentNode.removeChild(iframe);
+      authServiceIframeMap.delete(this.embedNonce);
+    }
   }
 
   async init({ network, clientId }: { network: WEB3AUTH_NETWORK_TYPE; clientId: string }): Promise<void> {
@@ -80,15 +78,15 @@ export class AuthProvider {
 
     const hashParams = new URLSearchParams();
     hashParams.append("origin", window.location.origin);
-    hashParams.append("nonce", this.embedNonce.id);
+    hashParams.append("nonce", this.embedNonce);
     authIframeUrl.hash = hashParams.toString();
 
     const colorScheme = getTheme(this.whiteLabel.mode || THEME_MODES.light);
 
     const authServiceIframe = htmlToElement<HTMLIFrameElement>(
       `<iframe
-        id="${IFRAME_MODAL_ID}-${this.embedNonce.id}"
-        class="${IFRAME_MODAL_ID}-${this.embedNonce.id}"
+        id="${IFRAME_MODAL_ID}-${this.embedNonce}"
+        class="${IFRAME_MODAL_ID}-${this.embedNonce}"
         sandbox="allow-popups allow-scripts allow-same-origin allow-forms allow-modals allow-downloads"
         src="${authIframeUrl.href}"
         style="display: none; position: fixed; top: 0; right: 0; width: 100%; z-index: 10000000;
@@ -110,7 +108,7 @@ export class AuthProvider {
           };
           const { type, nonce } = data;
           // dont do anything if the nonce is not the same.
-          if (nonce !== this.embedNonce.id) return;
+          if (nonce !== this.embedNonce) return;
           const messageData = data.data;
           switch (type) {
             case JRPC_METHODS.SETUP_COMPLETE:
