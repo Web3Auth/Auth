@@ -338,7 +338,6 @@ export class Auth {
     // in case of redirect mode, redirect url will be dapp specified
     // in case of popup mode, redirect url will be sdk specified
     const defaultParams = {
-      redirectUrl: `${this.dashboardUrl}/wallet/account`,
       dappUrl: `${window.location.origin}${window.location.pathname}`,
     };
 
@@ -347,7 +346,12 @@ export class Auth {
     const dataObject: AuthSessionConfig = {
       actionType: AUTH_ACTIONS.MANAGE_MFA,
       // manage mfa always opens in a new tab, so need to fix the uxMode to redirect.
-      options: { ...this.options, uxMode: "redirect", sdkMode: SDK_MODE.DEFAULT },
+      options: {
+        ...this.options,
+        uxMode: UX_MODE.REDIRECT,
+        sdkMode: SDK_MODE.DEFAULT,
+        redirectUrl: `${this.dashboardUrl}/wallet/account`,
+      },
       params: {
         ...defaultParams,
         ...params,
