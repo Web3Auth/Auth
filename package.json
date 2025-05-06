@@ -1,6 +1,6 @@
 {
   "name": "@web3auth/auth",
-  "version": "10.4.0",
+  "version": "10.4.1",
   "description": "Auth sdk for web3auth",
   "repository": "git@github.com:web3auth/Auth.git",
   "sideEffects": false,
