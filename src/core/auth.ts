@@ -192,7 +192,7 @@ export class Auth {
     }
 
     if (this.options.sdkMode === SDK_MODE.IFRAME) {
-      this.authProvider = new AuthProvider({ sdkUrl: this.options.sdkUrl, whiteLabel: this.options.whiteLabel });
+      this.authProvider = new AuthProvider({ sdkUrl: this.baseUrl, whiteLabel: this.options.whiteLabel });
       if (!this.state.sessionId) {
         this.authProviderPromise = this.authProvider.init({ network: this.options.network, clientId: this.options.clientId });
         if (params.nonce) {
