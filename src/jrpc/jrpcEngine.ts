@@ -1,6 +1,7 @@
 import { Duplex } from "readable-stream";
 
 import { log } from "../utils/logger";
+import { errorCodes, JsonRpcError } from "./errors";
 import { getMessageFromCode, serializeJrpcError } from "./errors/utils";
 import {
   JRPCEngineEndCallback,
@@ -16,7 +17,6 @@ import {
 } from "./interfaces";
 import { SafeEventEmitter } from "./safeEventEmitter";
 import { SerializableError } from "./serializableError";
-import { errorCodes, JsonRpcError } from "./errors";
 
 export type JrpcEngineEvents = {
   notification: (...args: unknown[]) => void;
