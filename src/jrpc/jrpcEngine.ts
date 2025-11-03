@@ -1,7 +1,6 @@
 import { Duplex } from "readable-stream";
 
 import { log } from "../utils/logger";
-import { JsonRpcErrorsArg, rpcErrors } from "./errors/errors";
 import { getMessageFromCode, serializeJrpcError } from "./errors/utils";
 import {
   JRPCEngineEndCallback,
@@ -12,12 +11,12 @@ import {
   JRPCRequest,
   JRPCResponse,
   Maybe,
-  OptionalDataWithOptionalCause,
   RequestArguments,
   SendCallBack,
 } from "./interfaces";
 import { SafeEventEmitter } from "./safeEventEmitter";
 import { SerializableError } from "./serializableError";
+import { errorCodes, JsonRpcError } from "./errors";
 
 export type JrpcEngineEvents = {
   notification: (...args: unknown[]) => void;
@@ -443,7 +442,9 @@ export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider
         shouldIncludeStack: true,
       });
 
-      throw rpcErrors.internal(err as JsonRpcErrorsArg<OptionalDataWithOptionalCause>);
+      const errorCode = err?.code ?? errorCodes.rpc.internal;
+      const error = new JsonRpcError(errorCode, err?.message ?? getMessageFromCode(errorCode), err?.data);
+      throw error;
     }
     return res.result as U;
   };
