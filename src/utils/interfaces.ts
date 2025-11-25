@@ -145,6 +145,7 @@ export const LANGUAGES = {
   pt: "pt",
   nl: "nl",
   tr: "tr",
+  am: "am",
 } as const;
 
 export type LANGUAGE_TYPE = (typeof LANGUAGES)[keyof typeof LANGUAGES];
@@ -160,6 +161,7 @@ export const LANGUAGE_MAP: Record<LANGUAGE_TYPE, string> = {
   pt: "portuguese",
   nl: "dutch",
   tr: "turkish",
+  am: "amharic",
 };
 
 export const THEME_MODES = {
@@ -212,6 +214,7 @@ export type WhiteLabelData = {
    * pt: portuguese
    * nl: dutch
    * tr: turkish
+   * am: Amharic
    *
    * @defaultValue en
    */
