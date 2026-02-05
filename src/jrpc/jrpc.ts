@@ -1,5 +1,6 @@
 import { Duplex } from "readable-stream";
 
+import { errorCodes } from "./errors";
 import { AsyncJRPCMiddleware, ConsoleLike, IdMap, JRPCMiddleware, JRPCRequest, JRPCResponse, Json, ReturnHandlerCallback } from "./interfaces";
 import { SafeEventEmitter } from "./safeEventEmitter";
 import { SerializableError } from "./serializableError";
@@ -21,7 +22,7 @@ export function createErrorMiddleware(log: ConsoleLike): JRPCMiddleware<unknown,
     try {
       // json-rpc-engine will terminate the request when it notices this error
       if (typeof req.method !== "string" || !req.method) {
-        res.error = new SerializableError({ code: -32603, message: "invalid method" });
+        res.error = new SerializableError({ code: errorCodes.rpc.invalidRequest, message: "invalid method" });
         end();
         return;
       }
@@ -35,7 +36,7 @@ export function createErrorMiddleware(log: ConsoleLike): JRPCMiddleware<unknown,
       });
     } catch (error: unknown) {
       log.error(`Auth - RPC Error thrown: ${(error as Error).message}`, error);
-      res.error = new SerializableError({ code: -32603, message: (error as Error).message });
+      res.error = new SerializableError({ code: errorCodes.rpc.internal, message: (error as Error).message });
       end();
     }
   };

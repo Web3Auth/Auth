@@ -25,11 +25,11 @@ export type JrpcEngineEvents = {
 function constructFallbackError(error: Error): JRPCError {
   const {
     message = "",
-    code = -32603,
+    code = errorCodes.rpc.internal,
     stack = "Stack trace is not available.",
     data = "",
   } = error as { message?: string; code?: number; stack?: string; data?: string };
-  const codeNumber = parseInt(code?.toString() || "-32603");
+  const codeNumber = parseInt(code?.toString() || errorCodes.rpc.internal.toString());
   return {
     message: message || error?.toString() || getMessageFromCode(codeNumber),
     code: codeNumber,
@@ -116,7 +116,7 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
         } else {
           if (returnHandler) {
             if (typeof returnHandler !== "function") {
-              end(new SerializableError({ code: -32603, message: "JRPCEngine: 'next' return handlers must be functions" }));
+              end(new SerializableError({ code: errorCodes.rpc.internal, message: "JRPCEngine: 'next' return handlers must be functions" }));
             }
             returnHandlers.push(returnHandler);
           }
@@ -152,10 +152,10 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
    */
   private static _checkForCompletion(_req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, isComplete: boolean): void {
     if (!("result" in res) && !("error" in res)) {
-      throw new SerializableError({ code: -32603, message: "Response has no error or result for request" });
+      throw new SerializableError({ code: errorCodes.rpc.internal, message: "Response has no error or result for request" });
     }
     if (!isComplete) {
-      throw new SerializableError({ code: -32603, message: "Nothing ended request" });
+      throw new SerializableError({ code: errorCodes.rpc.internal, message: "Nothing ended request" });
     }
   }
 
@@ -312,12 +312,12 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
    */
   private async _handle(callerReq: JRPCRequest<unknown>, cb: (error: unknown, response: JRPCResponse<unknown>) => void): Promise<void> {
     if (!callerReq || Array.isArray(callerReq) || typeof callerReq !== "object") {
-      const error = new SerializableError({ code: -32603, message: "request must be plain object" });
+      const error = new SerializableError({ code: errorCodes.rpc.invalidRequest, message: "request must be plain object" });
       return cb(error, { id: undefined, jsonrpc: "2.0", error });
     }
 
     if (typeof callerReq.method !== "string") {
-      const error = new SerializableError({ code: -32603, message: "method must be string" });
+      const error = new SerializableError({ code: errorCodes.rpc.invalidRequest, message: "method must be string" });
       return cb(error, { id: callerReq.id, jsonrpc: "2.0", error });
     }
 
