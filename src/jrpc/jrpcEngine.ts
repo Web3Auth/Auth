@@ -2,7 +2,7 @@ import { Duplex } from "readable-stream";
 
 import { log } from "../utils/logger";
 import { errorCodes, JsonRpcError } from "./errors";
-import { getMessageFromCode, serializeJrpcError } from "./errors/utils";
+import { getMessageFromCode, isValidNumber, serializeJrpcError } from "./errors/utils";
 import {
   JRPCEngineEndCallback,
   JRPCEngineNextCallback,
@@ -29,7 +29,7 @@ function constructFallbackError(error: Error): JRPCError {
     stack = "Stack trace is not available.",
     data = "",
   } = error as { message?: string; code?: number; stack?: string; data?: string };
-  const codeNumber = parseInt(code?.toString() || errorCodes.rpc.internal.toString());
+  const codeNumber = isValidNumber(code) ? parseInt(code.toString()) : errorCodes.rpc.internal;
   return {
     message: message || error?.toString() || getMessageFromCode(codeNumber),
     code: codeNumber,
@@ -268,6 +268,17 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
   ): Promise<JRPCResponse<unknown>[] | void> {
     // The order here is important
     try {
+      if (reqs.length === 0) {
+        const error = new SerializableError({
+          code: errorCodes.rpc.invalidRequest,
+          message: "Request batch must contain plain objects. Received an empty array",
+        });
+        const response: JRPCResponse<unknown>[] = [{ id: undefined, jsonrpc: "2.0" as const, error }];
+        if (cb) {
+          return cb(error, response);
+        }
+        return response;
+      }
       // 2. Wait for all requests to finish, or throw on some kind of fatal
       // error
       const responses = await Promise.all(
@@ -312,12 +323,18 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
    */
   private async _handle(callerReq: JRPCRequest<unknown>, cb: (error: unknown, response: JRPCResponse<unknown>) => void): Promise<void> {
     if (!callerReq || Array.isArray(callerReq) || typeof callerReq !== "object") {
-      const error = new SerializableError({ code: errorCodes.rpc.invalidRequest, message: "request must be plain object" });
+      const error = new SerializableError({
+        code: errorCodes.rpc.invalidRequest,
+        message: `Requests must be plain objects. Received: ${typeof callerReq}`,
+      });
       return cb(error, { id: undefined, jsonrpc: "2.0", error });
     }
 
-    if (typeof callerReq.method !== "string") {
-      const error = new SerializableError({ code: errorCodes.rpc.invalidRequest, message: "method must be string" });
+    if (typeof callerReq.method !== "string" || !callerReq.method) {
+      const error = new SerializableError({
+        code: errorCodes.rpc.invalidRequest,
+        message: `Must specify a string method. Received: ${typeof callerReq.method}`,
+      });
       return cb(error, { id: callerReq.id, jsonrpc: "2.0", error });
     }
 

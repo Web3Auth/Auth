@@ -9,6 +9,19 @@ declare type PropertyKey = string | number | symbol;
 
 type ErrorValueKey = keyof typeof errorValues;
 
+export function isValidNumber(value: unknown): value is number {
+  try {
+    if (typeof value === "number" && Number.isInteger(value)) {
+      return true;
+    }
+
+    const parsedValue = Number(value.toString());
+    return Number.isInteger(parsedValue);
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Returns whether the given code is valid.
  * A code is valid if it is an integer.
