@@ -429,9 +429,17 @@ export function createEngineStream(opts: EngineStreamOptions): Duplex {
 
   // forward notifications
   if (engine.on) {
-    engine.on("notification", (message) => {
+    const onNotification = (message: unknown) => {
       stream.push(message);
-    });
+    };
+
+    // cleanup listener on stream close
+    const cleanup = () => {
+      engine.removeListener("notification", onNotification);
+    };
+
+    engine.on("notification", onNotification);
+    stream.once("close", cleanup);
   }
   return stream;
 }
