@@ -281,10 +281,12 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
       }
       // 2. Wait for all requests to finish, or throw on some kind of fatal
       // error
-      const responses = await Promise.all(
-        // 1. Begin executing each request in the order received
-        reqs.map(this._promiseHandle.bind(this))
-      );
+      const responses = (
+        await Promise.all(
+          // 1. Begin executing each request in the order received
+          reqs.map(this._promiseHandle.bind(this))
+        )
+      ).filter((response): response is JRPCResponse<unknown> => response !== undefined);
 
       // 3. Return batch response
       if (cb) {
@@ -357,7 +359,6 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
       // Ensure no result is present on an errored response
       delete res.result;
       if (!res.error) {
-        if (typeof error === "object" && Object.keys(error).includes("stack") === false) error.stack = "Stack trace is not available.";
         log.error(error);
         res.error = serializeJrpcError(error, {
           shouldIncludeStack: true,
