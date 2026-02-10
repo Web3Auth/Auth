@@ -24,6 +24,7 @@ export interface JRPCNotification<Params extends JRPCParams = JRPCParams> {
 }
 
 export interface JRPCRequest<Params extends JRPCParams = JRPCParams> extends JRPCBase {
+  id: JRPCId;
   method: string;
   params?: Params;
 }

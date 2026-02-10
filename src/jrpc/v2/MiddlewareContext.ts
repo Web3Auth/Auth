@@ -1,4 +1,4 @@
-import { entriesFromKeyValues, isInstance, isIterable } from "./v2utils";
+import { entriesFromKeyValues, isInstance, isIterable } from "../../utils/jrpc";
 
 const MiddlewareContextSymbol = Symbol.for("json-rpc-engine#MiddlewareContext");
 
@@ -30,6 +30,7 @@ export class MiddlewareContext<KeyValues extends Record<PropertyKey, unknown> = 
   keyof KeyValues,
   KeyValues[keyof KeyValues]
 > {
+  // @ts-expect-error - TS6133: read via Symbol key in isInstance()
   private readonly [MiddlewareContextSymbol] = true;
 
   constructor(entries?: Iterable<readonly [keyof KeyValues, KeyValues[keyof KeyValues]]> | KeyValues) {

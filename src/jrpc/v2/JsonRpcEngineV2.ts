@@ -1,5 +1,8 @@
 import deepFreeze from "deep-freeze-strict";
 
+import { hasProperty } from "../../utils";
+import { isNotification, isRequest, stringify } from "../../utils/jrpc";
+import { JRPCNotification, JRPCRequest } from "../interfaces";
 import { MiddlewareContext } from "./MiddlewareContext";
 import type {
   ConstructorOptions,
@@ -9,8 +12,6 @@ import type {
   InvalidEngine,
   JsonRpcCall,
   JsonRpcMiddlewareV2,
-  JRPCNotification,
-  JRPCRequest,
   MergedContextOf,
   MixedParam,
   Next,
@@ -19,7 +20,7 @@ import type {
   ResultConstraint,
   WithoutId,
 } from "./v2interfaces";
-import { hasProperty, isNotification, isRequest, JsonRpcEngineError, stringify } from "./v2utils";
+import { JsonRpcEngineError } from "./v2utils";
 
 /**
  * A JSON-RPC request and response processor.
@@ -325,7 +326,7 @@ export class JsonRpcEngineV2<Request extends JsonRpcCall = JsonRpcCall, Context 
       hasProperty(nextRequest, "id") !== hasProperty(currentRequest, "id") ||
       // "id" does not exist on notifications, but we can still
       // check the value of the property at runtime.
-      nextRequest.id !== currentRequest.id
+      (nextRequest as JRPCRequest).id !== (currentRequest as JRPCRequest).id
     ) {
       throw new JsonRpcEngineError(`Middleware attempted to modify readonly property "id" for request: ${stringify(currentRequest)}`);
     }

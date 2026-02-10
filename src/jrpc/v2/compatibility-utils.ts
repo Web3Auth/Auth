@@ -1,10 +1,11 @@
 import { klona } from "klona";
 
+import { isValidJson, stringify } from "../../utils/jrpc";
+import { hasProperty, isObject } from "../../utils/utils";
 import { getMessageFromCode, JsonRpcError } from "../errors";
-import { Json, OptionalDataWithOptionalCause } from "../interfaces";
+import { JRPCRequest, Json, OptionalDataWithOptionalCause } from "../interfaces";
 import { MiddlewareContext } from "./MiddlewareContext";
-import type { DeepCloned, JRPCRequest } from "./v2interfaces";
-import { hasProperty, isObject, isValidJson, stringify } from "./v2utils";
+import type { DeepCloned } from "./v2interfaces";
 // Legacy engine compatibility utils
 
 /**

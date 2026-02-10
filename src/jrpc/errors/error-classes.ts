@@ -82,13 +82,14 @@ export class JsonRpcError<Data extends OptionalDataWithOptionalCause> extends Er
     };
 
     if (this.data !== undefined) {
-      // `this.data` is not guaranteed to be a plain object, but this simplifies
-      // the type guard below. We can safely cast it because we know it's a
-      // JSON-serializable value.
-      serialized.data = this.data as { [key: string]: Json };
-
       if (isPlainObject(this.data)) {
-        serialized.data.cause = serializeCause((this.data as { cause?: unknown }).cause);
+        // Spread to avoid mutating `this.data` when setting `cause`.
+        serialized.data = {
+          ...(this.data as { [key: string]: Json }),
+          cause: serializeCause((this.data as { cause?: unknown }).cause),
+        };
+      } else {
+        serialized.data = this.data as { [key: string]: Json };
       }
     }
 

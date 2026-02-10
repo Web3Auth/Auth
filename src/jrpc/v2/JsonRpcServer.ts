@@ -1,4 +1,5 @@
 import { hasProperty, isObject } from "../../utils";
+import { getUniqueId } from "../../utils/jrpc";
 import { rpcErrors, serializeJrpcError } from "../errors";
 import { JRPCId, JRPCNotification, JRPCParams, JRPCRequest, JRPCResponse } from "../interfaces";
 import { JsonRpcEngineV2 } from "./JsonRpcEngineV2";
@@ -13,7 +14,6 @@ import type {
   Options,
   RequestOf,
 } from "./v2interfaces";
-import { getUniqueId } from "./v2utils";
 
 const jsonrpc = "2.0" as const;
 

@@ -1,8 +1,9 @@
 import { createAsyncMiddleware } from "..";
 import type { JRPCMiddleware as LegacyMiddleware } from "../interfaces";
+import { JRPCParams, JRPCRequest } from "../interfaces";
 import { deepClone, fromLegacyRequest, makeContext, propagateToRequest } from "./compatibility-utils";
 import { JsonRpcEngineV2 } from "./JsonRpcEngineV2";
-import { JsonRpcMiddlewareV2, JsonRpcParams, JRPCRequest, ResultConstraint } from "./v2interfaces";
+import { JsonRpcMiddlewareV2, ResultConstraint } from "./v2interfaces";
 
 /**
  * Convert a {@link JsonRpcEngineV2} into a legacy middleware.
@@ -10,7 +11,7 @@ import { JsonRpcMiddlewareV2, JsonRpcParams, JRPCRequest, ResultConstraint } fro
  * @param engine - The engine to convert.
  * @returns The legacy middleware.
  */
-export function asLegacyMiddleware<Params extends JsonRpcParams, Request extends JRPCRequest<Params>>(
+export function asLegacyMiddleware<Params extends JRPCParams, Request extends JRPCRequest<Params>>(
   engine: JsonRpcEngineV2<Request>
 ): LegacyMiddleware<Params, ResultConstraint<Request>>;
 
@@ -20,7 +21,7 @@ export function asLegacyMiddleware<Params extends JsonRpcParams, Request extends
  * @param middleware - The V2 middleware(s) to convert.
  * @returns The legacy middleware.
  */
-export function asLegacyMiddleware<Params extends JsonRpcParams, Request extends JRPCRequest<Params>>(
+export function asLegacyMiddleware<Params extends JRPCParams, Request extends JRPCRequest<Params>>(
   ...middleware: JsonRpcMiddlewareV2<Request, ResultConstraint<Request>>[]
 ): LegacyMiddleware<Params, ResultConstraint<Request>>;
 
@@ -31,7 +32,7 @@ export function asLegacyMiddleware<Params extends JsonRpcParams, Request extends
  * @param rest - Any additional V2 middleware when the first argument is a middleware.
  * @returns The legacy middleware.
  */
-export function asLegacyMiddleware<Params extends JsonRpcParams, Request extends JRPCRequest<Params>>(
+export function asLegacyMiddleware<Params extends JRPCParams, Request extends JRPCRequest<Params>>(
   engineOrMiddleware: JsonRpcEngineV2<Request> | JsonRpcMiddlewareV2<Request, ResultConstraint<Request>>,
   ...rest: JsonRpcMiddlewareV2<Request, ResultConstraint<Request>>[]
 ): LegacyMiddleware<Params, ResultConstraint<Request>> {
