@@ -1,5 +1,6 @@
 import { Duplex } from "readable-stream";
 
+import { isJRPCFailure, isJRPCSuccess, isValidJRPCRequest, isValidMethod } from "../utils/jrpc";
 import { log } from "../utils/logger";
 import { errorCodes, JsonRpcError } from "./errors";
 import { getMessageFromCode, isValidNumber, serializeJrpcError } from "./errors/utils";
@@ -9,6 +10,7 @@ import {
   JRPCEngineReturnHandler,
   JRPCError,
   JRPCMiddleware,
+  JRPCParams,
   JRPCRequest,
   JRPCResponse,
   Maybe,
@@ -43,7 +45,7 @@ function constructFallbackError(error: Error): JRPCError {
  * Give it a stack of middleware, pass it requests, and get back responses.
  */
 export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
-  private _middleware: JRPCMiddleware<unknown, unknown>[];
+  private _middleware: JRPCMiddleware<JRPCParams, unknown>[];
 
   constructor() {
     super();
@@ -58,9 +60,9 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
    * middleware-defined return handlers.
    */
   private static async _runAllMiddleware(
-    req: JRPCRequest<unknown>,
+    req: JRPCRequest,
     res: JRPCResponse<unknown>,
-    middlewareStack: JRPCMiddleware<unknown, unknown>[]
+    middlewareStack: JRPCMiddleware<JRPCParams, unknown>[]
   ): Promise<
     [
       unknown, // error
@@ -89,9 +91,9 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
    * and a boolean indicating whether the request should end.
    */
   private static _runMiddleware(
-    req: JRPCRequest<unknown>,
+    req: JRPCRequest,
     res: JRPCResponse<unknown>,
-    middleware: JRPCMiddleware<unknown, unknown>,
+    middleware: JRPCMiddleware<JRPCParams, unknown>,
     returnHandlers: JRPCEngineReturnHandler[]
   ): Promise<[unknown, boolean]> {
     return new Promise((resolve) => {
@@ -150,8 +152,8 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
    * Throws an error if the response has neither a result nor an error, or if
    * the "isComplete" flag is falsy.
    */
-  private static _checkForCompletion(_req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, isComplete: boolean): void {
-    if (!("result" in res) && !("error" in res)) {
+  private static _checkForCompletion(_req: JRPCRequest, res: JRPCResponse<unknown>, isComplete: boolean): void {
+    if (!isJRPCSuccess(res) && !isJRPCFailure(res)) {
       throw new SerializableError({ code: errorCodes.rpc.internal, message: "Response has no error or result for request" });
     }
     if (!isComplete) {
@@ -164,8 +166,8 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
    *
    * @param middleware - The middleware function to add.
    */
-  push<T, U>(middleware: JRPCMiddleware<T, U>): void {
-    this._middleware.push(middleware as JRPCMiddleware<unknown, unknown>);
+  push<T extends JRPCParams, U>(middleware: JRPCMiddleware<T, U>): void {
+    this._middleware.push(middleware as JRPCMiddleware<JRPCParams, unknown>);
   }
 
   /**
@@ -174,7 +176,7 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
    * @param request - The request to handle.
    * @param callback - An error-first callback that will receive the response.
    */
-  handle<T, U>(request: JRPCRequest<T>, callback: (error: unknown, response: JRPCResponse<U>) => void): void;
+  handle<T extends JRPCParams, U>(request: JRPCRequest<T>, callback: (error: unknown, response: JRPCResponse<U>) => void): void;
 
   /**
    * Handle an array of JSON-RPC requests, and return an array of responses.
@@ -183,7 +185,7 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
    * @param callback - An error-first callback that will receive the array of
    * responses.
    */
-  handle<T, U>(requests: JRPCRequest<T>[], callback: (error: unknown, responses: JRPCResponse<U>[]) => void): void;
+  handle<T extends JRPCParams, U>(requests: JRPCRequest<T>[], callback: (error: unknown, responses: JRPCResponse<U>[]) => void): void;
 
   /**
    * Handle a JSON-RPC request, and return a response.
@@ -192,7 +194,7 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
    * @returns A promise that resolves with the response, or rejects with an
    * error.
    */
-  handle<T, U>(request: JRPCRequest<T>): Promise<JRPCResponse<U>>;
+  handle<T extends JRPCParams, U>(request: JRPCRequest<T>): Promise<JRPCResponse<U>>;
 
   /**
    * Handle an array of JSON-RPC requests, and return an array of responses.
@@ -201,10 +203,10 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
    * @returns A promise that resolves with the array of responses, or rejects
    * with an error.
    */
-  handle<T, U>(requests: JRPCRequest<T>[]): Promise<JRPCResponse<U>[]>;
+  handle<T extends JRPCParams, U>(requests: JRPCRequest<T>[]): Promise<JRPCResponse<U>[]>;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handle(req: unknown, cb?: any) {
+  handle(req: JRPCRequest | JRPCRequest[], cb?: any) {
     if (cb && typeof cb !== "function") {
       throw new Error('"callback" must be a function if provided.');
     }
@@ -217,9 +219,9 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
     }
 
     if (cb) {
-      return this._handle(req as JRPCRequest<unknown>, cb);
+      return this._handle(req, cb);
     }
-    return this._promiseHandle(req as JRPCRequest<unknown>);
+    return this._promiseHandle(req);
   }
 
   /**
@@ -228,7 +230,7 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
    *
    * @returns This engine as a middleware function.
    */
-  asMiddleware(): JRPCMiddleware<unknown, unknown> {
+  asMiddleware(): JRPCMiddleware<JRPCParams, unknown> {
     return async (req, res, next, end) => {
       try {
         const [middlewareError, isComplete, returnHandlers] = await JRPCEngine._runAllMiddleware(req, res, this._middleware);
@@ -255,15 +257,15 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
   /**
    * Like _handle, but for batch requests.
    */
-  private _handleBatch(reqs: JRPCRequest<unknown>[]): Promise<JRPCResponse<unknown>[]>;
+  private _handleBatch(reqs: JRPCRequest[]): Promise<JRPCResponse<unknown>[]>;
 
   /**
    * Like _handle, but for batch requests.
    */
-  private _handleBatch(reqs: JRPCRequest<unknown>[], cb: (error: unknown, responses?: JRPCResponse<unknown>[]) => void): Promise<void>;
+  private _handleBatch(reqs: JRPCRequest[], cb: (error: unknown, responses?: JRPCResponse<unknown>[]) => void): Promise<void>;
 
   private async _handleBatch(
-    reqs: JRPCRequest<unknown>[],
+    reqs: JRPCRequest[],
     cb?: (error: unknown, responses?: JRPCResponse<unknown>[]) => void
   ): Promise<JRPCResponse<unknown>[] | void> {
     // The order here is important
@@ -305,7 +307,7 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
   /**
    * A promise-wrapped _handle.
    */
-  private _promiseHandle(req: JRPCRequest<unknown>): Promise<JRPCResponse<unknown>> {
+  private _promiseHandle(req: JRPCRequest): Promise<JRPCResponse<unknown>> {
     return new Promise((resolve, reject) => {
       this._handle(req, (_err, res) => {
         // There will always be a response, and it will always have any error
@@ -323,8 +325,8 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
    *
    * Does not reject.
    */
-  private async _handle(callerReq: JRPCRequest<unknown>, cb: (error: unknown, response: JRPCResponse<unknown>) => void): Promise<void> {
-    if (!callerReq || Array.isArray(callerReq) || typeof callerReq !== "object") {
+  private async _handle(callerReq: JRPCRequest, cb: (error: unknown, response: JRPCResponse<unknown>) => void): Promise<void> {
+    if (!isValidJRPCRequest(callerReq)) {
       const error = new SerializableError({
         code: errorCodes.rpc.invalidRequest,
         message: `Requests must be plain objects. Received: ${typeof callerReq}`,
@@ -332,7 +334,7 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
       return cb(error, { id: undefined, jsonrpc: "2.0", error });
     }
 
-    if (typeof callerReq.method !== "string" || !callerReq.method) {
+    if (!isValidMethod(callerReq)) {
       const error = new SerializableError({
         code: errorCodes.rpc.invalidRequest,
         message: `Must specify a string method. Received: ${typeof callerReq.method}`,
@@ -340,7 +342,7 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
       return cb(error, { id: callerReq.id, jsonrpc: "2.0", error });
     }
 
-    const req: JRPCRequest<unknown> = { ...callerReq };
+    const req: JRPCRequest = { ...callerReq };
     const res: JRPCResponse<unknown> = {
       id: req.id,
       jsonrpc: req.jsonrpc,
@@ -375,7 +377,7 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
    * handlers, if any, and ensures that internal request processing semantics
    * are satisfied.
    */
-  private async _processRequest(req: JRPCRequest<unknown>, res: JRPCResponse<unknown>): Promise<void> {
+  private async _processRequest(req: JRPCRequest, res: JRPCResponse<unknown>): Promise<void> {
     const [error, isComplete, returnHandlers] = await JRPCEngine._runAllMiddleware(req, res, this._middleware);
 
     // Throw if "end" was not called, or if the response has neither a result
@@ -394,7 +396,7 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
   }
 }
 
-export function mergeMiddleware(middlewareStack: JRPCMiddleware<unknown, unknown>[]): JRPCMiddleware<unknown, unknown> {
+export function mergeMiddleware(middlewareStack: JRPCMiddleware<JRPCParams, unknown>[]): JRPCMiddleware<JRPCParams, unknown> {
   const engine = new JRPCEngine();
   middlewareStack.forEach((middleware) => {
     engine.push(middleware);
@@ -419,7 +421,7 @@ export function createEngineStream(opts: EngineStreamOptions): Duplex {
     return undefined;
   }
 
-  function write(req: JRPCRequest<unknown>, _encoding: unknown, cb: (error?: Error | null) => void) {
+  function write(req: JRPCRequest, _encoding: unknown, cb: (error?: Error | null) => void) {
     engine.handle(req, (_err, res) => {
       stream.push(res);
     });
@@ -450,15 +452,15 @@ export type ProviderEvents = {
 };
 
 export interface SafeEventEmitterProvider<E extends ProviderEvents = ProviderEvents> extends SafeEventEmitter<E> {
-  sendAsync: <T, U>(req: JRPCRequest<T>) => Promise<U>;
-  send: <T, U>(req: JRPCRequest<T>, callback: SendCallBack<JRPCResponse<U>>) => void;
-  request: <T, U>(args: RequestArguments<T>) => Promise<Maybe<U>>;
+  sendAsync: <T extends JRPCParams, U>(req: JRPCRequest<T>) => Promise<U>;
+  send: <T extends JRPCParams, U>(req: JRPCRequest<T>, callback: SendCallBack<JRPCResponse<U>>) => void;
+  request: <T extends JRPCParams, U>(args: RequestArguments<T>) => Promise<Maybe<U>>;
 }
 
 export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider {
   const provider: SafeEventEmitterProvider = new SafeEventEmitter<ProviderEvents>() as SafeEventEmitterProvider;
   // handle both rpc send methods
-  provider.sendAsync = async <T, U>(req: JRPCRequest<T>) => {
+  provider.sendAsync = async <T extends JRPCParams, U>(req: JRPCRequest<T>) => {
     const res = await engine.handle(req);
     if (res.error) {
       if (typeof res.error === "object" && Object.keys(res.error).includes("stack") === false) res.error.stack = "Stack trace is not available.";
@@ -475,11 +477,11 @@ export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider
     return res.result as U;
   };
 
-  provider.send = <T, U>(req: JRPCRequest<T>, callback: (error: unknown, providerRes: JRPCResponse<U>) => void) => {
+  provider.send = <T extends JRPCParams, U>(req: JRPCRequest<T>, callback: (error: unknown, providerRes: JRPCResponse<U>) => void) => {
     if (typeof callback !== "function") {
       throw new Error('Must provide callback to "send" method.');
     }
-    engine.handle(req, callback);
+    engine.handle(req as JRPCRequest<JRPCParams>, callback);
   };
   // forward notifications
   if (engine.on) {
@@ -488,8 +490,8 @@ export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider
     });
   }
 
-  provider.request = async <T, U>(args: RequestArguments<T>) => {
-    const req: JRPCRequest<T> = {
+  provider.request = async <T extends JRPCParams, U>(args: RequestArguments<T>) => {
+    const req: JRPCRequest<JRPCParams> = {
       ...args,
       id: Math.random().toString(36).slice(2),
       jsonrpc: "2.0",
@@ -507,11 +509,11 @@ export function providerFromMiddleware(middleware: JRPCMiddleware<string[], unkn
   return provider;
 }
 
-export function providerAsMiddleware(provider: SafeEventEmitterProvider): JRPCMiddleware<unknown, unknown> {
+export function providerAsMiddleware(provider: SafeEventEmitterProvider): JRPCMiddleware<JRPCParams, unknown> {
   return async (req, res, _next, end) => {
     // send request to provider
     try {
-      const providerRes: unknown = await provider.sendAsync<unknown, unknown>(req);
+      const providerRes: unknown = await provider.sendAsync<JRPCParams, unknown>(req);
       res.result = providerRes;
       return end();
     } catch (error: unknown) {
