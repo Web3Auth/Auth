@@ -1,17 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { JRPCId, Json } from "../../src";
-import type {
-  EmptyContext,
-  JsonRpcCall,
-  JsonRpcMiddlewareV2,
-  JRPCNotification,
-  JRPCRequest,
-  ResultConstraint,
-} from "../../src/jrpc/v2/v2interfaces";
+import { JRPCId, JRPCNotification, JRPCRequest, Json } from "../../src";
 import { JsonRpcEngineV2 } from "../../src/jrpc/v2/JsonRpcEngineV2";
 import { MiddlewareContext } from "../../src/jrpc/v2/MiddlewareContext";
-import { isRequest, JsonRpcEngineError, stringify } from "../../src/jrpc/v2/v2utils";
+import type { EmptyContext, JsonRpcCall, JsonRpcMiddlewareV2, ResultConstraint } from "../../src/jrpc/v2/v2interfaces";
+import { JsonRpcEngineError } from "../../src/jrpc/v2/v2utils";
+import { isRequest, stringify } from "../../src/utils/jrpc";
 import {
   createDeferredPromise,
   makeNotification,
@@ -30,7 +24,10 @@ describe("JsonRpcEngineV2", () => {
     });
 
     it("type errors if passed middleware with incompatible context types", async () => {
-      const middleware1: JsonRpcMiddlewareV2<JsonRpcCall, ResultConstraint<JsonRpcCall>, MiddlewareContext<{ foo: string }>> = ({ next, context }) => {
+      const middleware1: JsonRpcMiddlewareV2<JsonRpcCall, ResultConstraint<JsonRpcCall>, MiddlewareContext<{ foo: string }>> = ({
+        next,
+        context,
+      }) => {
         context.set("foo", "bar");
         return next();
       };
@@ -373,7 +370,7 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("handles mixed synchronous and asynchronous middleware", async () => {
-        type Middleware = JsonRpcMiddlewareV2<JRPCRequest<number[]>, Json, MiddlewareContext<Record<string, number[]>>>;
+        type Middleware = JsonRpcMiddlewareV2<JRPCRequest, Json, MiddlewareContext<Record<string, number[]>>>;
 
         const engine = JsonRpcEngineV2.create<Middleware>({
           middleware: [
@@ -720,9 +717,9 @@ describe("JsonRpcEngineV2", () => {
           middleware: [middleware],
         });
 
-        const p0 = engine.handle(makeRequest<NumericIdRequest>({ id: 0 }));
-        const p1 = engine.handle(makeRequest<NumericIdRequest>({ id: 1 }));
-        const p2 = engine.handle(makeRequest<NumericIdRequest>({ id: 2 }));
+        const p0 = engine.handle(makeRequest<NumericIdRequest>({ id: 0 }) as NumericIdRequest);
+        const p1 = engine.handle(makeRequest<NumericIdRequest>({ id: 1 }) as NumericIdRequest);
+        const p2 = engine.handle(makeRequest<NumericIdRequest>({ id: 2 }) as NumericIdRequest);
 
         await queue.filled();
 
@@ -1074,14 +1071,12 @@ describe("JsonRpcEngineV2", () => {
         });
 
         expect(await engine.handle(makeNotification())).toBeUndefined();
-        await expect(
-          // @ts-expect-error - Invalid at runtime and should cause a type error
-          engine.handle({ id: "1", jsonrpc, method: "test_request" })
-        ).rejects.toThrow(new JsonRpcEngineError(`Nothing ended request: ${stringify({ id: "1", jsonrpc, method: "test_request" })}`));
-        await expect(
-          // @ts-expect-error - Invalid at runtime and should cause a type error
-          engine.handle(makeRequest<JRPCRequest>())
-        ).rejects.toThrow(new JsonRpcEngineError(`Nothing ended request: ${stringify(makeRequest())}`));
+        await expect(engine.handle({ id: "1", jsonrpc, method: "test_request" })).rejects.toThrow(
+          new JsonRpcEngineError(`Nothing ended request: ${stringify({ id: "1", jsonrpc, method: "test_request" })}`)
+        );
+        await expect(engine.handle(makeRequest<JRPCRequest>())).rejects.toThrow(
+          new JsonRpcEngineError(`Nothing ended request: ${stringify(makeRequest())}`)
+        );
       });
 
       it("constructs a mixed engine", async () => {

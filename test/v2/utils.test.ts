@@ -1,19 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import type { JsonRpcParams } from "../../src/jrpc/v2/v2interfaces";
-import {
-  entriesFromKeyValues,
-  getUniqueId,
-  hasProperty,
-  isInstance,
-  isIterable,
-  isNotification,
-  isObject,
-  isRequest,
-  isValidJson,
-  JsonRpcEngineError,
-  stringify,
-} from "../../src/jrpc/v2/v2utils";
+import { hasProperty, isObject, JRPCParams } from "../../src";
+import { JsonRpcEngineError } from "../../src/jrpc/v2/v2utils";
+import { entriesFromKeyValues, getUniqueId, isInstance, isIterable, isNotification, isRequest, isValidJson, stringify } from "../../src/utils/jrpc";
 
 describe("v2/utils", () => {
   describe("isObject", () => {
@@ -70,7 +59,7 @@ describe("v2/utils", () => {
 
   describe("isRequest/isNotification", () => {
     it("detects requests by id", () => {
-      const params: JsonRpcParams = [];
+      const params: JRPCParams = [];
       const request = { jsonrpc: "2.0" as const, method: "test", params, id: 1 };
 
       expect(isRequest(request)).toBe(true);
@@ -78,7 +67,7 @@ describe("v2/utils", () => {
     });
 
     it("detects notifications without id", () => {
-      const params: JsonRpcParams = [];
+      const params: JRPCParams = [];
       const notification = { jsonrpc: "2.0" as const, method: "test", params };
 
       expect(isRequest(notification)).toBe(false);

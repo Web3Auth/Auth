@@ -1,54 +1,51 @@
-import { JsonRpcMiddleware, JsonRpcNotification, JsonRpcRequest } from "../src/jrpc/v2";
+import { JRPCNotification, JRPCRequest } from "../src";
+import { JsonRpcMiddlewareV2 } from "../src/jrpc/v2";
 import { requestProps } from "../src/jrpc/v2/compatibility-utils";
-import { DeferredPromise } from "../src/jrpc/v2/v2utils";
+import { DeferredPromise } from "../src/utils/jrpc";
 
 const jsonrpc = "2.0" as const;
 
-export const makeRequest = <Request extends JsonRpcRequest = JsonRpcRequest>(request: Partial<Request> = {}): Request =>
-  ({
-    jsonrpc,
-    id: request.id ?? "1",
-    method: request.method ?? "test_request",
+export const makeRequest = <Request extends JRPCRequest = JRPCRequest>(request: Partial<Request> = {}): JRPCRequest => ({
+  jsonrpc,
+  id: request.id ?? "1",
+  method: request.method ?? "test_request",
+  params: request.params ?? [],
+});
 
-    params: request.params ?? [],
-    ...request,
-  }) as Request;
-
-export const makeNotification = <Request extends Partial<JsonRpcRequest>>(params: Request = {} as Request): JsonRpcNotification =>
-  ({
-    jsonrpc,
-    method: "test_request",
-    params: [],
-    ...params,
-  }) as unknown as JsonRpcNotification;
+export const makeNotification = <Request extends JRPCNotification = JRPCNotification>(params: Request = {} as Request): JRPCNotification => ({
+  jsonrpc,
+  method: "test_request",
+  params: [],
+  ...params,
+});
 
 /**
  * Creates a {@link JsonRpcCall} middleware that returns `null`.
  *
  * @returns The middleware.
  */
-export const makeNullMiddleware = (): JsonRpcMiddleware => {
-  const nullMiddleware: JsonRpcMiddleware = (): null => null;
+export const makeNullMiddleware = (): JsonRpcMiddlewareV2 => {
+  const nullMiddleware: JsonRpcMiddlewareV2 = (): null => null;
   return nullMiddleware;
 };
 
 /**
- * Creates a {@link JsonRpcRequest} middleware that returns `null`.
+ * Creates a {@link JRPCRequest} middleware that returns `null`.
  *
  * @returns The middleware.
  */
-export const makeRequestMiddleware = (): JsonRpcMiddleware<JsonRpcRequest> => {
-  const requestMiddleware: JsonRpcMiddleware<JsonRpcRequest> = (): null => null;
+export const makeRequestMiddleware = (): JsonRpcMiddlewareV2<JRPCRequest> => {
+  const requestMiddleware: JsonRpcMiddlewareV2<JRPCRequest> = (): null => null;
   return requestMiddleware;
 };
 
 /**
- * Creates a {@link JsonRpcNotification} middleware that returns `undefined`.
+ * Creates a middleware that returns `undefined` (appropriate for notifications).
  *
  * @returns The middleware.
  */
-export const makeNotificationMiddleware = (): JsonRpcMiddleware<JsonRpcNotification> => {
-  const notificationMiddleware: JsonRpcMiddleware<JsonRpcNotification> = (): undefined => undefined;
+export const makeNotificationMiddleware = (): JsonRpcMiddlewareV2 => {
+  const notificationMiddleware: JsonRpcMiddlewareV2 = (): undefined => undefined;
   return notificationMiddleware;
 };
 

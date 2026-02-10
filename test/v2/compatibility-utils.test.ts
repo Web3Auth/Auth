@@ -1,5 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { Json, JRPCParams, JRPCRequest } from "../../src";
+import { stringify } from "../../src/utils/jrpc";
 import { JsonRpcError } from "../../src/jrpc/errors";
 import {
   deepClone,
@@ -9,9 +11,7 @@ import {
   propagateToContext,
   propagateToRequest,
 } from "../../src/jrpc/v2/compatibility-utils";
-import { Json, JsonRpcParams, JRPCRequest } from "../../src/jrpc/v2/v2interfaces";
 import { MiddlewareContext } from "../../src/jrpc/v2/MiddlewareContext";
-import { stringify } from "../../src/jrpc/v2/v2utils";
 
 const jsonrpc = "2.0" as const;
 
@@ -121,7 +121,7 @@ describe("compatibility-utils", () => {
         jsonrpc,
         method: "test_method",
         id: 42,
-        params: undefined as unknown as JsonRpcParams,
+        params: undefined as unknown as JRPCParams,
       };
 
       const request = fromLegacyRequest(legacyRequest);
@@ -140,7 +140,6 @@ describe("compatibility-utils", () => {
         id: 42,
       };
 
-      // @ts-expect-error - Destructive testing
       const request = fromLegacyRequest(legacyRequest);
 
       expect(request).toStrictEqual({
@@ -159,8 +158,7 @@ describe("compatibility-utils", () => {
         id: 42,
       };
 
-      // @ts-expect-error - Destructive testing
-      const request = fromLegacyRequest(legacyRequest);
+      const request = fromLegacyRequest(legacyRequest as unknown as JRPCRequest);
 
       expect(request).toStrictEqual({
         jsonrpc,

@@ -1,11 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { Json, rpcErrors } from "../../src";
-import type { JsonRpcMiddlewareV2, JRPCNotification, JRPCRequest } from "../../src/jrpc/v2/v2interfaces";
+import { JRPCNotification, JRPCRequest, Json, rpcErrors } from "../../src";
 import { JsonRpcEngineV2 } from "../../src/jrpc/v2/JsonRpcEngineV2";
 import { JsonRpcServer } from "../../src/jrpc/v2/JsonRpcServer";
 import type { MiddlewareContext } from "../../src/jrpc/v2/MiddlewareContext";
-import { isRequest, JsonRpcEngineError, stringify } from "../../src/jrpc/v2/v2utils";
+import type { JsonRpcMiddlewareV2 } from "../../src/jrpc/v2/v2interfaces";
+import { JsonRpcEngineError } from "../../src/jrpc/v2/v2utils";
+import { isRequest, stringify } from "../../src/utils/jrpc";
 
 const jsonrpc = "2.0" as const;
 
