@@ -17,19 +17,16 @@ export interface JRPCResponse<T> extends JRPCBase {
   error?: any;
 }
 
-export type JRPCNotification<Params extends JRPCParams = JRPCParams> = {
-  jsonrpc: "2.0";
-  method: string;
-  params: Params;
-  id?: never;
-};
-
-export type JRPCRequest<Params extends JRPCParams = JRPCParams> = {
-  jsonrpc: "2.0";
+export interface JRPCNotification<Params extends JRPCParams = JRPCParams> {
+  jsonrpc?: JRPCVersion;
   method: string;
   params?: Params;
-  id: string | number | null;
-};
+}
+
+export interface JRPCRequest<Params extends JRPCParams = JRPCParams> extends JRPCBase {
+  method: string;
+  params?: Params;
+}
 
 export type JRPCEngineNextCallback = (cb?: (done: (error?: Error) => void) => void) => void;
 export type JRPCEngineEndCallback = (error?: Error) => void;

@@ -1,11 +1,11 @@
 import { JRPCBase, JRPCFailure, JRPCNotification, JRPCParams, JRPCRequest, JRPCSuccess } from "../jrpc/interfaces";
-import { hasProperty, isObject } from "./utils";
+import { hasProperty } from "./utils";
 
 /**
  * Type guard to check if a JRPC message is a notification (no `id` property).
  */
 export function isJRPCNotification<T extends JRPCParams>(request: JRPCNotification<T> | JRPCRequest<T>): request is JRPCNotification<T> {
-  return !hasProperty(request, "id");
+  return !hasProperty(request, "id") || request.id === undefined;
 }
 
 /**
@@ -20,14 +20,6 @@ export function isJRPCRequest<T extends JRPCParams>(request: JRPCNotification<T>
  */
 export function isValidMethod(request: Partial<JRPCRequest>): boolean {
   return typeof request.method === "string" && request.method.length > 0;
-}
-
-/**
- * Checks whether the given value is a valid JRPC request object
- * (a plain, non-array object).
- */
-export function isValidJRPCRequest(value: unknown): value is JRPCRequest {
-  return isObject(value) && !Array.isArray(value);
 }
 
 /**

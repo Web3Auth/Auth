@@ -1,6 +1,6 @@
 import { Duplex } from "readable-stream";
 
-import { isJRPCFailure, isJRPCSuccess, isValidJRPCRequest, isValidMethod } from "../utils/jrpc";
+import { isJRPCFailure, isJRPCSuccess, isValidMethod } from "../utils/jrpc";
 import { log } from "../utils/logger";
 import { errorCodes, JsonRpcError } from "./errors";
 import { getMessageFromCode, isValidNumber, serializeJrpcError } from "./errors/utils";
@@ -326,7 +326,7 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
    * Does not reject.
    */
   private async _handle(callerReq: JRPCRequest, cb: (error: unknown, response: JRPCResponse<unknown>) => void): Promise<void> {
-    if (!isValidJRPCRequest(callerReq)) {
+    if (!callerReq || Array.isArray(callerReq) || typeof callerReq !== "object") {
       const error = new SerializableError({
         code: errorCodes.rpc.invalidRequest,
         message: `Requests must be plain objects. Received: ${typeof callerReq}`,
