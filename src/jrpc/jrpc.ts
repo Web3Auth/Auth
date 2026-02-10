@@ -1,6 +1,6 @@
 import { Duplex } from "readable-stream";
 
-import { isJRPCNotification } from "../utils/jrpc";
+import { isJRPCNotification, isValidMethod } from "../utils/jrpc";
 import { errorCodes } from "./errors";
 import {
   AsyncJRPCMiddleware,
@@ -33,7 +33,7 @@ export function createErrorMiddleware(log: ConsoleLike): JRPCMiddleware<JRPCPara
   return (req, res, next, end) => {
     try {
       // json-rpc-engine will terminate the request when it notices this error
-      if (typeof req.method !== "string" || !req.method) {
+      if (!isValidMethod(req)) {
         res.error = new SerializableError({ code: errorCodes.rpc.invalidRequest, message: "invalid method" });
         end();
         return;

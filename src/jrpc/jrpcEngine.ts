@@ -1,5 +1,6 @@
 import { Duplex } from "readable-stream";
 
+import { isJRPCFailure, isJRPCSuccess, isValidMethod } from "../utils/jrpc";
 import { log } from "../utils/logger";
 import { errorCodes, JsonRpcError } from "./errors";
 import { getMessageFromCode, isValidNumber, serializeJrpcError } from "./errors/utils";
@@ -152,7 +153,7 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
    * the "isComplete" flag is falsy.
    */
   private static _checkForCompletion(_req: JRPCRequest, res: JRPCResponse<unknown>, isComplete: boolean): void {
-    if (!("result" in res) && !("error" in res)) {
+    if (!isJRPCSuccess(res) && !isJRPCFailure(res)) {
       throw new SerializableError({ code: errorCodes.rpc.internal, message: "Response has no error or result for request" });
     }
     if (!isComplete) {
@@ -333,7 +334,7 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
       return cb(error, { id: undefined, jsonrpc: "2.0", error });
     }
 
-    if (typeof callerReq.method !== "string" || !callerReq.method) {
+    if (!isValidMethod(callerReq)) {
       const error = new SerializableError({
         code: errorCodes.rpc.invalidRequest,
         message: `Must specify a string method. Received: ${typeof callerReq.method}`,
@@ -453,7 +454,7 @@ export type ProviderEvents = {
 export interface SafeEventEmitterProvider<E extends ProviderEvents = ProviderEvents> extends SafeEventEmitter<E> {
   sendAsync: <T extends JRPCParams, U>(req: JRPCRequest<T>) => Promise<U>;
   send: <T extends JRPCParams, U>(req: JRPCRequest<T>, callback: SendCallBack<JRPCResponse<U>>) => void;
-  request: <T, U>(args: RequestArguments<T>) => Promise<Maybe<U>>;
+  request: <T extends JRPCParams, U>(args: RequestArguments<T>) => Promise<Maybe<U>>;
 }
 
 export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider {
@@ -489,7 +490,7 @@ export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider
     });
   }
 
-  provider.request = async <T, U>(args: RequestArguments<T>) => {
+  provider.request = async <T extends JRPCParams, U>(args: RequestArguments<T>) => {
     const req: JRPCRequest<JRPCParams> = {
       ...args,
       id: Math.random().toString(36).slice(2),
