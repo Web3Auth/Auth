@@ -2,10 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 
 import { SerializableError } from "../src";
 import { errorCodes } from "../src/jrpc/errors";
-import { JRPCEngineNextCallback, JRPCMiddleware, JRPCRequest, JRPCResponse } from "../src/jrpc/interfaces";
+import { JRPCEngineNextCallback, JRPCMiddleware, JRPCParams, JRPCRequest, JRPCResponse } from "../src/jrpc/interfaces";
 import { createEngineStream, JRPCEngine, mergeMiddleware, providerAsMiddleware, providerFromEngine } from "../src/jrpc/jrpcEngine";
 
-const MOCK_REQUEST: JRPCRequest<unknown> = {
+const MOCK_REQUEST: JRPCRequest<JRPCParams> = {
   method: "mock",
   params: {},
   id: "1",
@@ -17,7 +17,7 @@ describe("JRPCEngine", () => {
     const engine = new JRPCEngine();
     const mockFn = vi.fn();
 
-    const middleware = (_req: JRPCRequest<unknown>, _res: JRPCResponse<unknown>, _next: () => void, end: () => void) => {
+    const middleware = (_req: JRPCRequest<JRPCParams>, _res: JRPCResponse<unknown>, _next: () => void, end: () => void) => {
       mockFn();
       end();
     };
@@ -53,7 +53,7 @@ describe("JRPCEngine", () => {
     const mockFn = vi.fn();
     const requests = [MOCK_REQUEST, MOCK_REQUEST];
 
-    const middleware = (_req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _next: () => void, end: () => void) => {
+    const middleware = (_req: JRPCRequest<JRPCParams>, res: JRPCResponse<unknown>, _next: () => void, end: () => void) => {
       res.result = "test";
       mockFn();
       end();
@@ -66,7 +66,7 @@ describe("JRPCEngine", () => {
 
   it("should handle error thrown from batch requests", async () => {
     const engine = new JRPCEngine();
-    const middleware = (_req: JRPCRequest<unknown>, _res: JRPCResponse<unknown>, _next: () => void, _end: () => void) => {
+    const middleware = (_req: JRPCRequest<JRPCParams>, _res: JRPCResponse<unknown>, _next: () => void, _end: () => void) => {
       throw new Error("test error");
     };
     engine.push(middleware);
@@ -81,7 +81,7 @@ describe("JRPCEngine", () => {
     const engine = new JRPCEngine();
     const mockReturnHandler = vi.fn();
 
-    const middleware = (_req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, next: JRPCEngineNextCallback, _end: () => void) => {
+    const middleware = (_req: JRPCRequest<JRPCParams>, res: JRPCResponse<unknown>, next: JRPCEngineNextCallback, _end: () => void) => {
       res.result = "test";
       next((done) => {
         mockReturnHandler();
@@ -90,7 +90,7 @@ describe("JRPCEngine", () => {
     };
     engine.push(middleware);
 
-    const middleware2 = (_req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _next: JRPCEngineNextCallback, end: () => void) => {
+    const middleware2 = (_req: JRPCRequest<JRPCParams>, res: JRPCResponse<unknown>, _next: JRPCEngineNextCallback, end: () => void) => {
       res.result = "test2";
       end();
     };
@@ -106,15 +106,15 @@ describe("JRPCEngine Middlewares", () => {
   it("should merge middleware stacks", async () => {
     const engine = new JRPCEngine();
 
-    const middleware = (_req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, next: JRPCEngineNextCallback, _end: () => void) => {
+    const middleware = (_req: JRPCRequest<JRPCParams>, res: JRPCResponse<unknown>, next: JRPCEngineNextCallback, _end: () => void) => {
       res.result = ["merged-md-1"];
       next();
     };
 
-    const middleware2 = ((_req: JRPCRequest<unknown>, res: JRPCResponse<string[]>, _next: JRPCEngineNextCallback, end: () => void) => {
+    const middleware2 = ((_req: JRPCRequest<JRPCParams>, res: JRPCResponse<string[]>, _next: JRPCEngineNextCallback, end: () => void) => {
       res.result = [...res.result, "merged-md-2"];
       end();
-    }) as JRPCMiddleware<unknown, unknown>;
+    }) as JRPCMiddleware<JRPCParams, unknown>;
 
     const mergedMiddleware = mergeMiddleware([middleware, middleware2]);
     engine.push(mergedMiddleware);
@@ -126,19 +126,19 @@ describe("JRPCEngine Middlewares", () => {
     const engine = new JRPCEngine();
 
     const mergedMiddleware = mergeMiddleware([
-      (_req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, next: JRPCEngineNextCallback, _end: () => void) => {
+      (_req: JRPCRequest<JRPCParams>, res: JRPCResponse<unknown>, next: JRPCEngineNextCallback, _end: () => void) => {
         const prevResult = Array.isArray(res.result) ? res.result : [];
         res.result = [...prevResult, "merged-md-1"];
         next();
       },
-      (_req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, next: JRPCEngineNextCallback, _end: () => void) => {
+      (_req: JRPCRequest<JRPCParams>, res: JRPCResponse<unknown>, next: JRPCEngineNextCallback, _end: () => void) => {
         res.result = [...(res.result as string[]), "merged-md-2"];
         next();
       },
     ]);
     engine.push(mergedMiddleware);
 
-    const middleware = (_req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _next: JRPCEngineNextCallback, end: () => void) => {
+    const middleware = (_req: JRPCRequest<JRPCParams>, res: JRPCResponse<unknown>, _next: JRPCEngineNextCallback, end: () => void) => {
       res.result = [...(res.result as string[]), "middleware"];
       end();
     };
@@ -162,7 +162,7 @@ describe("JRPCEngine request validation", () => {
   it("returns invalidRequest for non-string method", async () => {
     const engine = new JRPCEngine();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = await engine.handle({ id: 1, jsonrpc: "2.0", method: 123 as any });
+    const response = await engine.handle({ id: 1, jsonrpc: "2.0", method: 123 as any, params: null });
     expect(response.error?.code).toBe(errorCodes.rpc.invalidRequest);
     expect(response.id).toBe(1);
     expect(response.jsonrpc).toBe("2.0");
@@ -181,7 +181,7 @@ describe("JRPCEngine request validation", () => {
 describe("Provider", () => {
   const createEngine = () => {
     const engine = new JRPCEngine();
-    engine.push((_req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _next: JRPCEngineNextCallback, end: () => void) => {
+    engine.push((_req: JRPCRequest<JRPCParams>, res: JRPCResponse<unknown>, _next: JRPCEngineNextCallback, end: () => void) => {
       res.result = "engine-middleware-1";
       end();
     });
@@ -218,7 +218,7 @@ describe("createEngineStream", () => {
 
   it("should push responses for handled requests", async () => {
     const engine = new JRPCEngine();
-    engine.push((_req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _next: JRPCEngineNextCallback, end: () => void) => {
+    engine.push((_req: JRPCRequest<JRPCParams>, res: JRPCResponse<unknown>, _next: JRPCEngineNextCallback, end: () => void) => {
       res.result = "stream-result";
       end();
     });

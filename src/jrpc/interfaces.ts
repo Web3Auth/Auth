@@ -10,22 +10,33 @@ export interface JRPCBase {
   id?: JRPCId;
 }
 
+export type JRPCParams = Json[] | Record<string, Json>;
+
 export interface JRPCResponse<T> extends JRPCBase {
   result?: T;
   error?: any;
 }
 
-export interface JRPCRequest<T> extends JRPCBase {
+export type JRPCNotification<Params extends JRPCParams = JRPCParams> = {
+  jsonrpc: "2.0";
   method: string;
-  params?: T;
-}
+  params: Params;
+  id?: never;
+};
+
+export type JRPCRequest<Params extends JRPCParams = JRPCParams> = {
+  jsonrpc: "2.0";
+  method: string;
+  params?: Params;
+  id: string | number | null;
+};
 
 export type JRPCEngineNextCallback = (cb?: (done: (error?: Error) => void) => void) => void;
 export type JRPCEngineEndCallback = (error?: Error) => void;
 export type JRPCEngineReturnHandler = (done: (error?: Error) => void) => void;
 
 interface IdMapValue {
-  req: JRPCRequest<unknown>;
+  req: JRPCRequest<JRPCParams>;
   res: JRPCResponse<unknown>;
   next: JRPCEngineNextCallback;
   end: JRPCEngineEndCallback;
@@ -35,7 +46,12 @@ export interface IdMap {
   [requestId: string]: IdMapValue;
 }
 
-export type JRPCMiddleware<T, U> = (req: JRPCRequest<T>, res: JRPCResponse<U>, next: JRPCEngineNextCallback, end: JRPCEngineEndCallback) => void;
+export type JRPCMiddleware<T extends JRPCParams = JRPCParams, U = unknown> = (
+  req: JRPCRequest<T>,
+  res: JRPCResponse<U>,
+  next: JRPCEngineNextCallback,
+  end: JRPCEngineEndCallback
+) => void;
 
 export type AsyncJRPCEngineNextCallback = () => Promise<void>;
 
@@ -86,7 +102,11 @@ export interface JRPCFailure extends JRPCBase {
   error: JRPCError;
 }
 
-export type AsyncJRPCMiddleware<T, U> = (req: JRPCRequest<T>, res: PendingJRPCResponse<U>, next: AsyncJRPCEngineNextCallback) => Promise<void>;
+export type AsyncJRPCMiddleware<T extends JRPCParams, U> = (
+  req: JRPCRequest<T>,
+  res: PendingJRPCResponse<U>,
+  next: AsyncJRPCEngineNextCallback
+) => Promise<void>;
 
 export type ReturnHandlerCallback = (error: null | Error) => void;
 
@@ -107,6 +127,6 @@ export interface RequestArguments<T> {
   params?: T;
 }
 
-export interface ExtendedJsonRpcRequest<T> extends JRPCRequest<T> {
+export interface ExtendedJsonRpcRequest<T extends JRPCParams> extends JRPCRequest<T> {
   skipCache?: boolean;
 }

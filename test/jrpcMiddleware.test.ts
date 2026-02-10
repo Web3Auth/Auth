@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { ConsoleLike, errorCodes, JRPCEngine, JRPCRequest, SerializableError } from "../src";
+import { ConsoleLike, errorCodes, JRPCEngine, JRPCNotification, JRPCParams, JRPCRequest, SerializableError } from "../src";
 import {
   createAsyncMiddleware,
   createErrorMiddleware,
@@ -10,7 +10,7 @@ import {
   createStreamMiddleware,
 } from "../src/jrpc/jrpc";
 
-const MOCK_REQUEST: JRPCRequest<unknown> = {
+const MOCK_REQUEST: JRPCRequest = {
   method: "mock",
   params: {},
   id: "1",
@@ -63,8 +63,8 @@ describe("Middlewares", () => {
       params: { hello: "world" },
     };
 
-    const dataPromise = new Promise<JRPCRequest<unknown>>((resolve) => {
-      stream.once("data", (data) => resolve(data as JRPCRequest<unknown>));
+    const dataPromise = new Promise<JRPCRequest<JRPCParams>>((resolve) => {
+      stream.once("data", (data) => resolve(data as JRPCRequest<JRPCParams>));
     });
 
     const responsePromise = engine.handle(request);
@@ -85,14 +85,14 @@ describe("Middlewares", () => {
   it("should emit notifications for messages without id", async () => {
     const { events, stream } = createStreamMiddleware();
 
-    const notificationPromise = new Promise<JRPCRequest<unknown>>((resolve) => {
+    const notificationPromise = new Promise<JRPCNotification>((resolve) => {
       events.once("notification", (payload) => {
         resolve(payload);
         return true;
       });
     });
 
-    const notification: JRPCRequest<{ value: number }> = {
+    const notification: JRPCNotification<{ value: number }> = {
       jsonrpc: "2.0",
       method: "notify",
       params: { value: 42 },
@@ -214,7 +214,7 @@ describe("Middlewares", () => {
 
   it("should remap request ids for downstream middleware and restore them", async () => {
     const engine = new JRPCEngine();
-    const seenIds: Array<JRPCRequest<unknown>["id"]> = [];
+    const seenIds: Array<JRPCRequest<JRPCParams>["id"]> = [];
     const originalId = "original-id";
 
     engine.push(createIdRemapMiddleware());

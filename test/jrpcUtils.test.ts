@@ -99,7 +99,7 @@ describe("serializeError", function () {
     const result = serializeJrpcError(invalidError7);
     expect(result).toStrictEqual({
       code: rpcCodes.internal,
-      message: getMessageFromCode(rpcCodes.internal),
+      message: invalidError7.message,
       data: {
         cause: {
           code: invalidError7.code,
@@ -159,7 +159,7 @@ describe("serializeError", function () {
     expect(result).toStrictEqual({
       code: rpcCodes.parse,
       message: validError4.message,
-      data: { ...validError4.data },
+      data: { ...validError4.data, cause: null },
     });
   });
 
@@ -205,7 +205,7 @@ describe("serializeError", function () {
     const result = serializeJrpcError(error);
     expect(result).toStrictEqual({
       code: errorCodes.rpc.internal,
-      message: getMessageFromCode(errorCodes.rpc.internal),
+      message: error.message,
       data: {
         cause: {
           message: error.message,
@@ -216,7 +216,7 @@ describe("serializeError", function () {
 
     expect(JSON.parse(JSON.stringify(result))).toStrictEqual({
       code: errorCodes.rpc.internal,
-      message: getMessageFromCode(errorCodes.rpc.internal),
+      message: error.message,
       data: {
         cause: {
           message: error.message,

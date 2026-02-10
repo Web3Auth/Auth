@@ -1,7 +1,19 @@
 import { Duplex } from "readable-stream";
 
+import { isJRPCNotification } from "../utils/jrpc";
 import { errorCodes } from "./errors";
-import { AsyncJRPCMiddleware, ConsoleLike, IdMap, JRPCMiddleware, JRPCRequest, JRPCResponse, Json, ReturnHandlerCallback } from "./interfaces";
+import {
+  AsyncJRPCMiddleware,
+  ConsoleLike,
+  IdMap,
+  JRPCMiddleware,
+  JRPCNotification,
+  JRPCParams,
+  JRPCRequest,
+  JRPCResponse,
+  Json,
+  ReturnHandlerCallback,
+} from "./interfaces";
 import { SafeEventEmitter } from "./safeEventEmitter";
 import { SerializableError } from "./serializableError";
 
@@ -17,7 +29,7 @@ export const getRpcPromiseCallback =
     }
   };
 
-export function createErrorMiddleware(log: ConsoleLike): JRPCMiddleware<unknown, unknown> {
+export function createErrorMiddleware(log: ConsoleLike): JRPCMiddleware<JRPCParams, unknown> {
   return (req, res, next, end) => {
     try {
       // json-rpc-engine will terminate the request when it notices this error
@@ -43,10 +55,14 @@ export function createErrorMiddleware(log: ConsoleLike): JRPCMiddleware<unknown,
 }
 
 export type StreamEvents = {
-  notification: (arg1: JRPCRequest<unknown>) => boolean;
+  notification: (arg1: JRPCNotification) => boolean;
 };
 
-export function createStreamMiddleware(): { events: SafeEventEmitter<StreamEvents>; middleware: JRPCMiddleware<unknown, unknown>; stream: Duplex } {
+export function createStreamMiddleware(): {
+  events: SafeEventEmitter<StreamEvents>;
+  middleware: JRPCMiddleware<JRPCParams, unknown>;
+  stream: Duplex;
+} {
   const idMap: IdMap = {};
 
   function readNoop() {
@@ -69,16 +85,16 @@ export function createStreamMiddleware(): { events: SafeEventEmitter<StreamEvent
     setTimeout(context.end);
   }
 
-  function processNotification(res: JRPCRequest<unknown>) {
+  function processNotification(res: JRPCNotification<JRPCParams>) {
     events.emit("notification", res);
   }
 
   function processMessage(res: JRPCResponse<unknown>, _encoding: unknown, cb: (error?: Error | null) => void) {
     let err: Error;
     try {
-      const isNotification = !res.id;
+      const isNotification = isJRPCNotification(res as JRPCNotification<JRPCParams> | JRPCRequest<JRPCParams>);
       if (isNotification) {
-        processNotification(res as unknown as JRPCRequest<unknown>);
+        processNotification(res as JRPCNotification<JRPCParams>);
       } else {
         processResponse(res);
       }
@@ -95,7 +111,7 @@ export function createStreamMiddleware(): { events: SafeEventEmitter<StreamEvent
     write: processMessage,
   });
 
-  const middleware: JRPCMiddleware<unknown, unknown> = (req, res, next, end) => {
+  const middleware: JRPCMiddleware<JRPCParams, unknown> = (req, res, next, end) => {
     // write req to stream
     stream.push(req);
     // register request on id map
@@ -105,11 +121,11 @@ export function createStreamMiddleware(): { events: SafeEventEmitter<StreamEvent
   return { events, middleware, stream };
 }
 
-export type ScaffoldMiddlewareHandler<T, U> = JRPCMiddleware<T, U> | Json;
+export type ScaffoldMiddlewareHandler<T extends JRPCParams, U> = JRPCMiddleware<T, U> | Json;
 
 export function createScaffoldMiddleware(handlers: {
-  [methodName: string]: ScaffoldMiddlewareHandler<unknown, unknown>;
-}): JRPCMiddleware<unknown, unknown> {
+  [methodName: string]: ScaffoldMiddlewareHandler<JRPCParams, unknown>;
+}): JRPCMiddleware<JRPCParams, unknown> {
   return (req, res, next, end) => {
     const handler = handlers[req.method];
     // if no handler, return
@@ -126,7 +142,7 @@ export function createScaffoldMiddleware(handlers: {
   };
 }
 
-export function createIdRemapMiddleware(): JRPCMiddleware<unknown, unknown> {
+export function createIdRemapMiddleware(): JRPCMiddleware<JRPCParams, unknown> {
   return (req, res, next, _end) => {
     const originalId = req.id;
     const newId = Math.random().toString(36).slice(2);
@@ -140,14 +156,14 @@ export function createIdRemapMiddleware(): JRPCMiddleware<unknown, unknown> {
   };
 }
 
-export function createLoggerMiddleware(logger: ConsoleLike): JRPCMiddleware<unknown, unknown> {
+export function createLoggerMiddleware(logger: ConsoleLike): JRPCMiddleware<JRPCParams, unknown> {
   return (req, res, next, _) => {
     logger.debug("REQ", req, "RES", res);
     next();
   };
 }
 
-export function createAsyncMiddleware<T, U>(asyncMiddleware: AsyncJRPCMiddleware<T, U>): JRPCMiddleware<T, U> {
+export function createAsyncMiddleware<T extends JRPCParams, U>(asyncMiddleware: AsyncJRPCMiddleware<T, U>): JRPCMiddleware<T, U> {
   return async (req, res, next, end) => {
     // nextPromise is the key to the implementation
     // it is resolved by the return handler passed to the
