@@ -8,3 +8,8 @@ export { PostMessageStream } from "./postMessageStream";
 export { SafeEventEmitter } from "./safeEventEmitter";
 export { SerializableError } from "./serializableError";
 export { Substream } from "./substream";
+
+/**
+ * Export the v2 module.
+ */
+export * from "./v2";
