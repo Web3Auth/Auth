@@ -10,7 +10,9 @@ export interface JRPCBase {
   id?: JRPCId;
 }
 
-export type JRPCParams = Json[] | Record<string, Json>;
+// `unknown` is added for the backward compatibility.
+// TODO: remove `unknown` after the backward compatibility is no longer needed.
+export type JRPCParams = Json[] | Record<string, Json> | unknown;
 
 export interface JRPCResponse<T> extends JRPCBase {
   result?: T;
