@@ -76,7 +76,7 @@ export class JsonRpcEngineV2<Request extends JsonRpcCall = JsonRpcCall, Context 
    *
    * @throws If the middleware array is empty.
    * @param options - The options for the engine.
-   * @param options.middleware - The middleware to use.
+   * @param middleware - The middleware to use.
    * @returns The JSON-RPC engine.
    */
   static create<

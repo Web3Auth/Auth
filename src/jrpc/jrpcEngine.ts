@@ -495,7 +495,6 @@ export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider
       ...args,
       id: Math.random().toString(36).slice(2),
       jsonrpc: "2.0",
-      params: (args.params as JRPCParams) ?? null,
     };
     const res = await provider.sendAsync(req);
     return res as U;
