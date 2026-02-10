@@ -12,7 +12,7 @@ export function isJRPCNotification<T extends JRPCParams>(request: JRPCNotificati
  * Type guard to check if a JRPC message is a request (has `id` property).
  */
 export function isJRPCRequest<T extends JRPCParams>(request: JRPCNotification<T> | JRPCRequest<T>): request is JRPCRequest<T> {
-  return hasProperty(request, "id");
+  return hasProperty(request, "id") && request.id !== undefined;
 }
 
 /**
