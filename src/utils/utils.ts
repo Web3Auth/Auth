@@ -39,3 +39,11 @@ export function cloneDeep<T>(object: T): T {
     return JSON.parse(JSON.stringify(object));
   }
 }
+
+export function isObject(value: unknown): value is Record<PropertyKey, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+export function hasProperty<Key extends PropertyKey>(value: unknown, key: Key): value is Record<Key, unknown> {
+  return isObject(value) && key in value;
+}

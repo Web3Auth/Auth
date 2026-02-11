@@ -10,14 +10,24 @@ export interface JRPCBase {
   id?: JRPCId;
 }
 
+// `unknown` is added for the backward compatibility.
+// TODO: remove `unknown` after the backward compatibility is no longer needed.
+export type JRPCParams = Json[] | Record<string, Json> | unknown;
+
 export interface JRPCResponse<T> extends JRPCBase {
   result?: T;
   error?: any;
 }
 
-export interface JRPCRequest<T> extends JRPCBase {
+export interface JRPCNotification<Params extends JRPCParams = JRPCParams> {
+  jsonrpc?: JRPCVersion;
   method: string;
-  params?: T;
+  params?: Params;
+}
+
+export interface JRPCRequest<Params extends JRPCParams = JRPCParams> extends JRPCBase {
+  method: string;
+  params?: Params;
 }
 
 export type JRPCEngineNextCallback = (cb?: (done: (error?: Error) => void) => void) => void;
@@ -25,7 +35,7 @@ export type JRPCEngineEndCallback = (error?: Error) => void;
 export type JRPCEngineReturnHandler = (done: (error?: Error) => void) => void;
 
 interface IdMapValue {
-  req: JRPCRequest<unknown>;
+  req: JRPCRequest<JRPCParams>;
   res: JRPCResponse<unknown>;
   next: JRPCEngineNextCallback;
   end: JRPCEngineEndCallback;
@@ -35,7 +45,12 @@ export interface IdMap {
   [requestId: string]: IdMapValue;
 }
 
-export type JRPCMiddleware<T, U> = (req: JRPCRequest<T>, res: JRPCResponse<U>, next: JRPCEngineNextCallback, end: JRPCEngineEndCallback) => void;
+export type JRPCMiddleware<T extends JRPCParams = JRPCParams, U = unknown> = (
+  req: JRPCRequest<T>,
+  res: JRPCResponse<U>,
+  next: JRPCEngineNextCallback,
+  end: JRPCEngineEndCallback
+) => void;
 
 export type AsyncJRPCEngineNextCallback = () => Promise<void>;
 
@@ -86,7 +101,11 @@ export interface JRPCFailure extends JRPCBase {
   error: JRPCError;
 }
 
-export type AsyncJRPCMiddleware<T, U> = (req: JRPCRequest<T>, res: PendingJRPCResponse<U>, next: AsyncJRPCEngineNextCallback) => Promise<void>;
+export type AsyncJRPCMiddleware<T extends JRPCParams, U> = (
+  req: JRPCRequest<T>,
+  res: PendingJRPCResponse<U>,
+  next: AsyncJRPCEngineNextCallback
+) => Promise<void>;
 
 export type ReturnHandlerCallback = (error: null | Error) => void;
 
@@ -107,6 +126,6 @@ export interface RequestArguments<T> {
   params?: T;
 }
 
-export interface ExtendedJsonRpcRequest<T> extends JRPCRequest<T> {
+export interface ExtendedJsonRpcRequest<T extends JRPCParams> extends JRPCRequest<T> {
   skipCache?: boolean;
 }

@@ -1,3 +1,4 @@
+import { hasProperty, isObject } from "../../utils";
 import { JRPCError, Json } from "../interfaces";
 import { errorCodes, errorValues } from "./error-constants";
 
@@ -8,6 +9,19 @@ export const JSON_RPC_SERVER_ERROR_MESSAGE = "Unspecified server error.";
 declare type PropertyKey = string | number | symbol;
 
 type ErrorValueKey = keyof typeof errorValues;
+
+export function isValidNumber(value: unknown): value is number {
+  try {
+    if (typeof value === "number" && Number.isInteger(value)) {
+      return true;
+    }
+
+    const parsedValue = Number(value.toString());
+    return Number.isInteger(parsedValue);
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Returns whether the given code is valid.
@@ -22,17 +36,6 @@ export function isValidCode(code: unknown): code is number {
 
 export function isValidString(value: unknown): value is string {
   return typeof value === "string" && value.length > 0;
-}
-
-/**
- * A type guard for {@link RuntimeObject}.
- *
- * @param value - The value to check.
- * @returns Whether the specified value has a runtime type of `object` and is
- * neither `null` nor an `Array`.
- */
-export function isObject(value: unknown): value is Record<PropertyKey, unknown> {
-  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
 /**
@@ -177,13 +180,26 @@ export function serializeCause(error: unknown): Json {
 }
 
 /**
+ * Attempts to extract the original `message` property from an error value of uncertain shape.
+ *
+ * @param error - The error in question.
+ * @returns The original message, if it exists and is a non-empty string.
+ */
+function getOriginalMessage(error: unknown): string | undefined {
+  if (isObject(error) && hasProperty(error, "message") && typeof error.message === "string" && error.message.length > 0) {
+    return error.message;
+  }
+  return undefined;
+}
+
+/**
  * Construct a JSON-serializable object given an error and a JSON serializable `fallbackError`
  *
  * @param error - The error in question.
  * @param fallbackError - A JSON serializable fallback error.
  * @returns A JSON serializable error object.
  */
-function buildError(error: unknown, fallbackError: JRPCError): JRPCError {
+function buildError(error: unknown, fallbackError: JRPCError, shouldPreserveMessage: boolean): JRPCError {
   // If an error specifies a `serialize` function, we call it and return the result.
   if (error && typeof error === "object" && "serialize" in error && typeof error.serialize === "function") {
     return error.serialize();
@@ -193,10 +209,13 @@ function buildError(error: unknown, fallbackError: JRPCError): JRPCError {
     return error as JRPCError;
   }
 
+  const originalMessage = getOriginalMessage(error);
+
   // If the error does not match the JsonRpcError type, use the fallback error, but try to include the original error as `cause`.
   const cause = serializeCause(error);
   const fallbackWithCause = {
     ...fallbackError,
+    ...(shouldPreserveMessage && originalMessage && { message: originalMessage }),
     data: { cause },
   };
 
@@ -216,12 +235,15 @@ function buildError(error: unknown, fallbackError: JRPCError): JRPCError {
  * on the returned object.
  * @returns The serialized error.
  */
-export function serializeJrpcError(error: unknown, { fallbackError = FALLBACK_ERROR, shouldIncludeStack = true } = {}): JRPCError {
+export function serializeJrpcError(
+  error: unknown,
+  { fallbackError = FALLBACK_ERROR, shouldIncludeStack = true, shouldPreserveMessage = true } = {}
+): JRPCError {
   if (!isJsonRpcError(fallbackError)) {
     throw new Error("Must provide fallback error with integer number code and string message.");
   }
 
-  const serialized = buildError(error, fallbackError);
+  const serialized = buildError(error, fallbackError, shouldPreserveMessage);
 
   if (!shouldIncludeStack) {
     delete serialized.stack;
