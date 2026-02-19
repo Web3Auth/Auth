@@ -1,3 +1,5 @@
+import jsonStableStringify from "json-stable-stringify";
+
 import { JRPCBase, JRPCFailure, JRPCNotification, JRPCParams, JRPCRequest, JRPCSuccess, Json } from "../jrpc/interfaces";
 import { hasProperty, isObject } from "./utils";
 
@@ -40,7 +42,7 @@ export function isValidJson(value: unknown): value is Json {
  * @returns The stringified value.
  */
 export function stringify(value: unknown): string {
-  return JSON.stringify(value, null, 2);
+  return jsonStableStringify(value, { space: 2 });
 }
 
 // ─── JRPC Type Guards ───────────────────────────────────────────────────────────

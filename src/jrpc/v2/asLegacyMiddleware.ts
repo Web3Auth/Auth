@@ -1,6 +1,6 @@
-import { createAsyncMiddleware } from "..";
 import type { JRPCMiddleware as LegacyMiddleware } from "../interfaces";
 import { JRPCParams, JRPCRequest } from "../interfaces";
+import { createAsyncMiddleware } from "../jrpc";
 import { deepClone, fromLegacyRequest, makeContext, propagateToRequest } from "./compatibility-utils";
 import { JsonRpcEngineV2 } from "./JsonRpcEngineV2";
 import { JsonRpcMiddlewareV2, ResultConstraint } from "./v2interfaces";

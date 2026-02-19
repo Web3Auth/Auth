@@ -35,7 +35,7 @@ describe("MiddlewareContext", () => {
     expect(context.get("foo")).toBeUndefined();
   });
 
-  it("type errors and throws when assertGet:ing unknown keys", () => {
+  it("type errors and throws when asserting unknown keys", () => {
     const context = new MiddlewareContext<{ test: string }>();
     // @ts-expect-error - foo is not a valid key
     expect(() => context.assertGet("foo")).toThrow(`Context key "foo" not found`);
