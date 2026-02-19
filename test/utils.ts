@@ -1,5 +1,5 @@
 import { JRPCNotification, JRPCRequest } from "../src";
-import { JsonRpcMiddlewareV2 } from "../src/jrpc/v2";
+import { JRPCMiddlewareV2 } from "../src/jrpc/v2";
 import { requestProps } from "../src/jrpc/v2/compatibility-utils";
 import { DeferredPromise } from "../src/utils/jrpc";
 
@@ -24,8 +24,8 @@ export const makeNotification = <Request extends JRPCNotification = JRPCNotifica
  *
  * @returns The middleware.
  */
-export const makeNullMiddleware = (): JsonRpcMiddlewareV2 => {
-  const nullMiddleware: JsonRpcMiddlewareV2 = (): null => null;
+export const makeNullMiddleware = (): JRPCMiddlewareV2 => {
+  const nullMiddleware: JRPCMiddlewareV2 = (): null => null;
   return nullMiddleware;
 };
 
@@ -34,8 +34,8 @@ export const makeNullMiddleware = (): JsonRpcMiddlewareV2 => {
  *
  * @returns The middleware.
  */
-export const makeRequestMiddleware = (): JsonRpcMiddlewareV2<JRPCRequest> => {
-  const requestMiddleware: JsonRpcMiddlewareV2<JRPCRequest> = (): null => null;
+export const makeRequestMiddleware = (): JRPCMiddlewareV2<JRPCRequest> => {
+  const requestMiddleware: JRPCMiddlewareV2<JRPCRequest> = (): null => null;
   return requestMiddleware;
 };
 
@@ -44,8 +44,8 @@ export const makeRequestMiddleware = (): JsonRpcMiddlewareV2<JRPCRequest> => {
  *
  * @returns The middleware.
  */
-export const makeNotificationMiddleware = (): JsonRpcMiddlewareV2 => {
-  const notificationMiddleware: JsonRpcMiddlewareV2 = (): undefined => undefined;
+export const makeNotificationMiddleware = (): JRPCMiddlewareV2 => {
+  const notificationMiddleware: JRPCMiddlewareV2 = (): undefined => undefined;
   return notificationMiddleware;
 };
 

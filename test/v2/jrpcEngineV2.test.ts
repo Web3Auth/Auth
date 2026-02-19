@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { JRPCId, JRPCNotification, JRPCRequest, Json } from "../../src";
-import { JsonRpcEngineV2 } from "../../src/jrpc/v2/JsonRpcEngineV2";
+import { JRPCEngineV2 } from "../../src/jrpc/v2/jrpcEngineV2";
 import { MiddlewareContext } from "../../src/jrpc/v2/MiddlewareContext";
-import type { EmptyContext, JsonRpcCall, JsonRpcMiddlewareV2, ResultConstraint } from "../../src/jrpc/v2/v2interfaces";
+import type { EmptyContext, JRPCMiddlewareV2, JsonRpcCall, ResultConstraint } from "../../src/jrpc/v2/v2interfaces";
 import { JsonRpcEngineError } from "../../src/jrpc/v2/v2utils";
 import { isRequest, stringify } from "../../src/utils/jrpc";
 import {
@@ -17,24 +17,21 @@ import {
 
 const jsonrpc = "2.0" as const;
 
-describe("JsonRpcEngineV2", () => {
+describe("JRPCEngineV2", () => {
   describe("create", () => {
     it("throws if the middleware array is empty", () => {
-      expect(() => JsonRpcEngineV2.create({ middleware: [] })).toThrow(new JsonRpcEngineError("Middleware array cannot be empty"));
+      expect(() => JRPCEngineV2.create({ middleware: [] })).toThrow(new JsonRpcEngineError("Middleware array cannot be empty"));
     });
 
     it("type errors if passed middleware with incompatible context types", async () => {
-      const middleware1: JsonRpcMiddlewareV2<JsonRpcCall, ResultConstraint<JsonRpcCall>, MiddlewareContext<{ foo: string }>> = ({
-        next,
-        context,
-      }) => {
+      const middleware1: JRPCMiddlewareV2<JsonRpcCall, ResultConstraint<JsonRpcCall>, MiddlewareContext<{ foo: string }>> = ({ next, context }) => {
         context.set("foo", "bar");
         return next();
       };
 
-      const middleware2: JsonRpcMiddlewareV2<JsonRpcCall, ResultConstraint<JsonRpcCall>, MiddlewareContext<{ foo: number }>> = ({ context }) =>
+      const middleware2: JRPCMiddlewareV2<JsonRpcCall, ResultConstraint<JsonRpcCall>, MiddlewareContext<{ foo: number }>> = ({ context }) =>
         context.assertGet("foo");
-      const engine = JsonRpcEngineV2.create({
+      const engine = JRPCEngineV2.create({
         middleware: [middleware1, middleware2],
       });
 
@@ -46,8 +43,8 @@ describe("JsonRpcEngineV2", () => {
   describe("handle", () => {
     describe("notifications", () => {
       it("passes the notification through a middleware", async () => {
-        const middleware: JsonRpcMiddlewareV2<JRPCNotification> = vi.fn();
-        const engine = JsonRpcEngineV2.create({
+        const middleware: JRPCMiddlewareV2<JRPCNotification> = vi.fn();
+        const engine = JRPCEngineV2.create({
           middleware: [middleware],
         });
         const notification: JRPCNotification = { jsonrpc, method: "test_request", params: undefined };
@@ -63,7 +60,7 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("returns no result", async () => {
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [vi.fn()],
         });
         const notification = makeNotification();
@@ -76,7 +73,7 @@ describe("JsonRpcEngineV2", () => {
       it("returns no result, with multiple middleware", async () => {
         const middleware1 = vi.fn(({ next }) => next());
         const middleware2 = vi.fn();
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [middleware1, middleware2],
         });
         const notification = makeNotification();
@@ -89,7 +86,7 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("throws if a middleware throws", async () => {
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [
             vi.fn(() => {
               throw new Error("test");
@@ -102,7 +99,7 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("throws if a middleware throws, with multiple middleware", async () => {
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [
             vi.fn(({ next }) => next()),
             vi.fn(() => {
@@ -116,7 +113,7 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("throws if a result is returned, from the first middleware", async () => {
-        const engine = JsonRpcEngineV2.create<JsonRpcMiddlewareV2>({
+        const engine = JRPCEngineV2.create<JRPCMiddlewareV2>({
           middleware: [(): string => "foo"],
         });
         const notification = makeNotification();
@@ -127,7 +124,7 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("throws if a result is returned, from a later middleware", async () => {
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [
             async ({ next }): Promise<undefined> => {
               await next();
@@ -144,7 +141,7 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("throws if a middleware calls next() multiple times", async () => {
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [
             vi.fn(async ({ next }) => {
               await next();
@@ -164,7 +161,7 @@ describe("JsonRpcEngineV2", () => {
     describe("requests", () => {
       it("returns a result from the middleware", async () => {
         const middleware = vi.fn(() => null);
-        const engine = JsonRpcEngineV2.create<JsonRpcMiddlewareV2>({
+        const engine = JRPCEngineV2.create<JRPCMiddlewareV2>({
           middleware: [middleware],
         });
         const request = makeRequest();
@@ -181,9 +178,9 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("returns a result from the middleware, with multiple middleware", async () => {
-        const middleware1: JsonRpcMiddlewareV2 = vi.fn(({ next }) => next());
-        const middleware2: JsonRpcMiddlewareV2 = vi.fn(() => null);
-        const engine = JsonRpcEngineV2.create({
+        const middleware1: JRPCMiddlewareV2 = vi.fn(({ next }) => next());
+        const middleware2: JRPCMiddlewareV2 = vi.fn(() => null);
+        const engine = JRPCEngineV2.create({
           middleware: [middleware1, middleware2],
         });
         const request = makeRequest();
@@ -206,7 +203,7 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("throws if a middleware throws", async () => {
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [
             vi.fn(() => {
               throw new Error("test");
@@ -218,7 +215,7 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("throws if a middleware throws, with multiple middleware", async () => {
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [
             vi.fn(({ next }) => next()),
             vi.fn(() => {
@@ -231,7 +228,7 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("throws if no middleware returns a result", async () => {
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [vi.fn(({ next }) => next()), vi.fn()],
         });
         const request = makeRequest();
@@ -240,7 +237,7 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("throws if a middleware calls next() multiple times", async () => {
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [
             vi.fn(async ({ next }) => {
               await next();
@@ -259,7 +256,7 @@ describe("JsonRpcEngineV2", () => {
 
     describe("context", () => {
       it("passes the context to the middleware", async () => {
-        const engine = JsonRpcEngineV2.create<JsonRpcMiddlewareV2<JRPCRequest>>({
+        const engine = JRPCEngineV2.create<JRPCMiddlewareV2<JRPCRequest>>({
           middleware: [
             ({ context }): null => {
               expect(context).toBeInstanceOf(Map);
@@ -273,14 +270,14 @@ describe("JsonRpcEngineV2", () => {
 
       it("propagates context changes to subsequent middleware", async () => {
         type Context = MiddlewareContext<{ foo: string }>;
-        const middleware1: JsonRpcMiddlewareV2<JsonRpcCall, Json | void, Context> = async ({ context, next }) => {
+        const middleware1: JRPCMiddlewareV2<JsonRpcCall, Json | void, Context> = async ({ context, next }) => {
           context.set("foo", "bar");
           return next();
         };
-        const middleware2: JsonRpcMiddlewareV2<JsonRpcCall, string | undefined, Context> = ({ context }) => {
+        const middleware2: JRPCMiddlewareV2<JsonRpcCall, string | undefined, Context> = ({ context }) => {
           return context.get("foo");
         };
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [middleware1, middleware2],
         });
 
@@ -292,9 +289,9 @@ describe("JsonRpcEngineV2", () => {
       it("accepts an initial context", async () => {
         const initialContext = new MiddlewareContext<Record<string, string>>();
         initialContext.set("foo", "bar");
-        const middleware: JsonRpcMiddlewareV2<JRPCRequest, string, MiddlewareContext<Record<string, string>>> = ({ context }) =>
+        const middleware: JRPCMiddlewareV2<JRPCRequest, string, MiddlewareContext<Record<string, string>>> = ({ context }) =>
           context.assertGet("foo");
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [middleware],
         });
 
@@ -307,9 +304,9 @@ describe("JsonRpcEngineV2", () => {
 
       it("accepts an initial context as a KeyValues object", async () => {
         const initialContext = { foo: "bar" } as const;
-        const middleware: JsonRpcMiddlewareV2<JRPCRequest, string, MiddlewareContext<Record<string, string>>> = ({ context }) =>
+        const middleware: JRPCMiddlewareV2<JRPCRequest, string, MiddlewareContext<Record<string, string>>> = ({ context }) =>
           context.assertGet("foo");
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [middleware],
         });
 
@@ -321,22 +318,19 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("accepts middleware with different context types", async () => {
-        const middleware1: JsonRpcMiddlewareV2<JsonRpcCall, ResultConstraint<JsonRpcCall>, MiddlewareContext<{ foo: string }>> = ({
-          context,
-          next,
-        }) => {
+        const middleware1: JRPCMiddlewareV2<JsonRpcCall, ResultConstraint<JsonRpcCall>, MiddlewareContext<{ foo: string }>> = ({ context, next }) => {
           context.set("foo", "bar");
           return next();
         };
 
-        const middleware2: JsonRpcMiddlewareV2<JsonRpcCall, ResultConstraint<JsonRpcCall>> = ({ next }) => next();
+        const middleware2: JRPCMiddlewareV2<JsonRpcCall, ResultConstraint<JsonRpcCall>> = ({ next }) => next();
 
-        const middleware3: JsonRpcMiddlewareV2<JsonRpcCall, ResultConstraint<JsonRpcCall>, EmptyContext> = ({ next }) => next();
+        const middleware3: JRPCMiddlewareV2<JsonRpcCall, ResultConstraint<JsonRpcCall>, EmptyContext> = ({ next }) => next();
 
-        const middleware4: JsonRpcMiddlewareV2<JsonRpcCall, string, MiddlewareContext<{ foo: string; bar: number }>> = ({ context }) =>
+        const middleware4: JRPCMiddlewareV2<JsonRpcCall, string, MiddlewareContext<{ foo: string; bar: number }>> = ({ context }) =>
           context.assertGet("foo");
 
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [middleware1, middleware2, middleware3, middleware4],
         });
 
@@ -346,7 +340,7 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("throws if a middleware attempts to modify properties of the context", async () => {
-        const engine = JsonRpcEngineV2.create<JsonRpcMiddlewareV2>({
+        const engine = JRPCEngineV2.create<JRPCMiddlewareV2>({
           middleware: [
             ({ context }): void => {
               context.set = (): MiddlewareContext => undefined;
@@ -360,7 +354,7 @@ describe("JsonRpcEngineV2", () => {
 
     describe("asynchrony", () => {
       it("handles asynchronous middleware", async () => {
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [async (): Promise<null> => null],
         });
 
@@ -370,9 +364,9 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("handles mixed synchronous and asynchronous middleware", async () => {
-        type Middleware = JsonRpcMiddlewareV2<JRPCRequest, Json, MiddlewareContext<Record<string, number[]>>>;
+        type Middleware = JRPCMiddlewareV2<JRPCRequest, Json, MiddlewareContext<Record<string, number[]>>>;
 
-        const engine = JsonRpcEngineV2.create<Middleware>({
+        const engine = JRPCEngineV2.create<Middleware>({
           middleware: [
             async ({ context, next }): Promise<Readonly<Json> | undefined> => {
               context.set("foo", [1]);
@@ -420,7 +414,7 @@ describe("JsonRpcEngineV2", () => {
           observedMethod = request.method;
           return null;
         });
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [middleware1, middleware2, middleware3],
         });
         const request = makeRequest({ params: [1] });
@@ -435,11 +429,11 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("throws if directly modifying the request", async () => {
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [
             vi.fn(({ request }) => {
               request.params = [2];
-            }) as JsonRpcMiddlewareV2,
+            }) as JRPCMiddlewareV2,
           ],
         });
 
@@ -449,7 +443,7 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it('throws if a middleware attempts to modify the request "id" property', async () => {
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [
             vi.fn(async ({ request, next }) => {
               return await next({
@@ -468,7 +462,7 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it('throws if a middleware attempts to modify the request "jsonrpc" property', async () => {
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [
             async ({ request, next }): Promise<Readonly<Json | void> | undefined> => {
               return await next({
@@ -490,7 +484,7 @@ describe("JsonRpcEngineV2", () => {
 
     describe("result handling", () => {
       it("updates the result after next() is called", async () => {
-        const engine = JsonRpcEngineV2.create<JsonRpcMiddlewareV2<JRPCRequest, number>>({
+        const engine = JRPCEngineV2.create<JRPCMiddlewareV2<JRPCRequest, number>>({
           middleware: [
             async ({ next }): Promise<number> => {
               const result = (await next()) as number;
@@ -506,7 +500,7 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("updates an undefined result with a new value", async () => {
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [
             async ({ next }): Promise<null> => {
               await next();
@@ -522,7 +516,7 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("returning undefined propagates previously defined result", async () => {
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [
             vi.fn(async ({ next }) => {
               await next();
@@ -538,7 +532,7 @@ describe("JsonRpcEngineV2", () => {
 
       it("catches errors thrown by later middleware", async () => {
         let observedError: Error | undefined;
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [
             vi.fn(async ({ next }) => {
               try {
@@ -562,7 +556,7 @@ describe("JsonRpcEngineV2", () => {
 
       it("handles returned results in reverse middleware order", async () => {
         const returnHandlerResults: number[] = [];
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [
             async ({ next }): Promise<void> => {
               await next();
@@ -586,7 +580,7 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("throws if directly modifying the result", async () => {
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [
             async ({ next }): Promise<{ foo: string }> => {
               const result = (await next()) as { foo: string };
@@ -669,7 +663,7 @@ describe("JsonRpcEngineV2", () => {
         let maxInFlight = 0;
 
         type Context = MiddlewareContext<{ id: JRPCId }>;
-        const inflightMiddleware: JsonRpcMiddlewareV2<JRPCRequest, Json, Context> = async ({ context, next, request }) => {
+        const inflightMiddleware: JRPCMiddlewareV2<JRPCRequest, Json, Context> = async ({ context, next, request }) => {
           context.set("id", context.get("id") ?? request.id);
 
           inFlight += 1;
@@ -681,10 +675,10 @@ describe("JsonRpcEngineV2", () => {
           inFlight -= 1;
           return next();
         };
-        const resultMiddleware: JsonRpcMiddlewareV2<JRPCRequest, string, Context> = ({ context, request }) => {
+        const resultMiddleware: JRPCMiddlewareV2<JRPCRequest, string, Context> = ({ context, request }) => {
           return `result:${request.id}:${context.assertGet("id")}`;
         };
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [inflightMiddleware, resultMiddleware],
         });
 
@@ -709,11 +703,11 @@ describe("JsonRpcEngineV2", () => {
       it("eagerly processes requests in parallel, i.e. without queueing them", async () => {
         const queue = makeArbitraryQueue(3);
         type NumericIdRequest = JRPCRequest & { id: number };
-        const middleware: JsonRpcMiddlewareV2<NumericIdRequest> = async ({ request }) => {
+        const middleware: JRPCMiddlewareV2<NumericIdRequest> = async ({ request }) => {
           await queue.enqueue(request.id);
           return null;
         };
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [middleware],
         });
 
@@ -736,10 +730,10 @@ describe("JsonRpcEngineV2", () => {
   describe("composition", () => {
     describe("asMiddleware", () => {
       it("ends a request if it returns a value", async () => {
-        const engine1 = JsonRpcEngineV2.create({
+        const engine1 = JRPCEngineV2.create({
           middleware: [makeNullMiddleware()],
         });
-        const engine2 = JsonRpcEngineV2.create({
+        const engine2 = JRPCEngineV2.create({
           middleware: [engine1.asMiddleware(), vi.fn(() => "foo")],
         });
 
@@ -749,10 +743,10 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("permits returning undefined if a later middleware ends the request", async () => {
-        const engine1 = JsonRpcEngineV2.create({
+        const engine1 = JRPCEngineV2.create({
           middleware: [makeNotificationMiddleware()],
         });
-        const engine2 = JsonRpcEngineV2.create({
+        const engine2 = JRPCEngineV2.create({
           middleware: [engine1.asMiddleware(), makeNullMiddleware()],
         });
 
@@ -764,13 +758,13 @@ describe("JsonRpcEngineV2", () => {
       it("composes nested engines", async () => {
         const middleware1 = vi.fn(async ({ next }) => next());
         const middleware2 = vi.fn(async ({ next }) => next());
-        const engine1 = JsonRpcEngineV2.create({
+        const engine1 = JRPCEngineV2.create({
           middleware: [middleware1],
         });
-        const engine2 = JsonRpcEngineV2.create({
+        const engine2 = JRPCEngineV2.create({
           middleware: [engine1.asMiddleware(), middleware2],
         });
-        const engine3 = JsonRpcEngineV2.create({
+        const engine3 = JRPCEngineV2.create({
           middleware: [engine2.asMiddleware(), (): null => null],
         });
 
@@ -782,7 +776,7 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("propagates request mutation", async () => {
-        const engine1 = JsonRpcEngineV2.create({
+        const engine1 = JRPCEngineV2.create({
           middleware: [
             ({ request, next }): Promise<Readonly<Json | void> | undefined> => {
               return next({
@@ -801,7 +795,7 @@ describe("JsonRpcEngineV2", () => {
         });
 
         let observedMethod: string | undefined;
-        const engine2 = JsonRpcEngineV2.create({
+        const engine2 = JRPCEngineV2.create({
           middleware: [
             engine1.asMiddleware(),
             ({ request }): number => {
@@ -818,7 +812,7 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("propagates context changes", async () => {
-        const engine1 = JsonRpcEngineV2.create({
+        const engine1 = JRPCEngineV2.create({
           middleware: [
             async ({ context, next }): Promise<Readonly<Json | void> | undefined> => {
               const nums = context.assertGet("foo") as [number];
@@ -828,7 +822,7 @@ describe("JsonRpcEngineV2", () => {
           ],
         });
 
-        const engine2 = JsonRpcEngineV2.create({
+        const engine2 = JRPCEngineV2.create({
           middleware: [
             async ({ context, next }): Promise<Readonly<Json | void> | undefined> => {
               context.set("foo", [2]);
@@ -849,7 +843,7 @@ describe("JsonRpcEngineV2", () => {
 
       it("observes results in expected order", async () => {
         const returnHandlerResults: string[] = [];
-        const engine1 = JsonRpcEngineV2.create({
+        const engine1 = JRPCEngineV2.create({
           middleware: [
             async ({ next }): Promise<void> => {
               await next();
@@ -862,7 +856,7 @@ describe("JsonRpcEngineV2", () => {
           ],
         });
 
-        const engine2 = JsonRpcEngineV2.create({
+        const engine2 = JRPCEngineV2.create({
           middleware: [
             engine1.asMiddleware(),
             async ({ next }): Promise<void> => {
@@ -889,16 +883,16 @@ describe("JsonRpcEngineV2", () => {
       it("composes nested engines", async () => {
         const earlierMiddleware = vi.fn(async ({ next }) => next());
 
-        const engine1Middleware: JsonRpcMiddlewareV2<JRPCRequest> = () => null;
-        const engine1 = JsonRpcEngineV2.create({
+        const engine1Middleware: JRPCMiddlewareV2<JRPCRequest> = () => null;
+        const engine1 = JRPCEngineV2.create({
           middleware: [engine1Middleware],
         });
 
-        const engine1ProxyMiddleware: JsonRpcMiddlewareV2<JRPCRequest> = async ({ request }) => {
+        const engine1ProxyMiddleware: JRPCMiddlewareV2<JRPCRequest> = async ({ request }) => {
           return engine1.handle(request);
         };
-        const laterMiddleware: JsonRpcMiddlewareV2<JRPCRequest> = vi.fn(() => "foo");
-        const engine2 = JsonRpcEngineV2.create({
+        const laterMiddleware: JRPCMiddlewareV2<JRPCRequest> = vi.fn(() => "foo");
+        const engine2 = JRPCEngineV2.create({
           middleware: [earlierMiddleware, engine1ProxyMiddleware, laterMiddleware],
         });
 
@@ -912,7 +906,7 @@ describe("JsonRpcEngineV2", () => {
       it("does not propagate request mutation", async () => {
         // Unlike asMiddleware(), although the inner engine mutates request,
         // those mutations do not propagate when using engine.handle().
-        const engine1 = JsonRpcEngineV2.create({
+        const engine1 = JRPCEngineV2.create({
           middleware: [
             ({ request, next }): Promise<Readonly<Json | void> | undefined> => {
               return next({
@@ -932,11 +926,11 @@ describe("JsonRpcEngineV2", () => {
         });
 
         let observedMethod: string | undefined;
-        const observedMethodMiddleware: JsonRpcMiddlewareV2<JRPCRequest<number[]>, number> = ({ request }) => {
+        const observedMethodMiddleware: JRPCMiddlewareV2<JRPCRequest<number[]>, number> = ({ request }) => {
           observedMethod = request.method;
           return (request.params as [number])[0] * 2;
         };
-        const engine2 = JsonRpcEngineV2.create({
+        const engine2 = JRPCEngineV2.create({
           middleware: [
             async ({ request, next, context }): Promise<Readonly<Json | void> | undefined> => {
               await engine1.handle(request, { context });
@@ -955,7 +949,7 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("propagates context changes", async () => {
-        const engine1 = JsonRpcEngineV2.create({
+        const engine1 = JRPCEngineV2.create({
           middleware: [
             async ({ context }): Promise<null> => {
               const nums = context.assertGet("foo") as [number];
@@ -965,7 +959,7 @@ describe("JsonRpcEngineV2", () => {
           ],
         });
 
-        const engine2 = JsonRpcEngineV2.create({
+        const engine2 = JRPCEngineV2.create({
           middleware: [
             async ({ context, next }): Promise<Readonly<Json | void> | undefined> => {
               context.set("foo", [2]);
@@ -989,7 +983,7 @@ describe("JsonRpcEngineV2", () => {
 
       it("observes results in expected order", async () => {
         const returnHandlerResults: string[] = [];
-        const engine1 = JsonRpcEngineV2.create({
+        const engine1 = JRPCEngineV2.create({
           middleware: [
             async ({ next }): Promise<void> => {
               await next();
@@ -1003,7 +997,7 @@ describe("JsonRpcEngineV2", () => {
           ],
         });
 
-        const engine2 = JsonRpcEngineV2.create({
+        const engine2 = JRPCEngineV2.create({
           middleware: [
             async ({ request, next, context }): Promise<Readonly<Json | void> | undefined> => {
               await engine1.handle(request as JRPCRequest, { context });
@@ -1029,7 +1023,7 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("throws if the inner engine throws", async () => {
-        const engine1 = JsonRpcEngineV2.create({
+        const engine1 = JRPCEngineV2.create({
           middleware: [
             (): never => {
               throw new Error("test");
@@ -1037,7 +1031,7 @@ describe("JsonRpcEngineV2", () => {
           ],
         });
 
-        const engine2 = JsonRpcEngineV2.create({
+        const engine2 = JRPCEngineV2.create({
           middleware: [
             async ({ request }): Promise<null> => {
               await engine1.handle(request as JRPCRequest);
@@ -1052,7 +1046,7 @@ describe("JsonRpcEngineV2", () => {
 
     describe("request- and notification-only engines", () => {
       it("constructs a request-only engine", async () => {
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [makeRequestMiddleware()],
         });
 
@@ -1066,7 +1060,7 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("constructs a notification-only engine", async () => {
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [makeNotificationMiddleware()],
         });
 
@@ -1080,10 +1074,10 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("constructs a mixed engine", async () => {
-        const mixedMiddleware: JsonRpcMiddlewareV2 = ({ request }) => {
+        const mixedMiddleware: JRPCMiddlewareV2 = ({ request }) => {
           return isRequest(request) ? null : undefined;
         };
-        const engine = JsonRpcEngineV2.create({
+        const engine = JRPCEngineV2.create({
           middleware: [mixedMiddleware],
         });
 
@@ -1093,15 +1087,15 @@ describe("JsonRpcEngineV2", () => {
       });
 
       it("composes a pipeline of request- and notification-only engines", async () => {
-        const requestEngine = JsonRpcEngineV2.create({
+        const requestEngine = JRPCEngineV2.create({
           middleware: [makeRequestMiddleware()],
         });
 
-        const notificationEngine = JsonRpcEngineV2.create({
+        const notificationEngine = JRPCEngineV2.create({
           middleware: [makeNotificationMiddleware()],
         });
 
-        const orchestratorEngine = JsonRpcEngineV2.create({
+        const orchestratorEngine = JRPCEngineV2.create({
           middleware: [
             ({ request, context }): Promise<void | Json> =>
               isRequest(request)
@@ -1126,8 +1120,8 @@ describe("JsonRpcEngineV2", () => {
       const middleware = {
         destroy: vi.fn(),
       };
-      const engine = JsonRpcEngineV2.create({
-        middleware: [middleware as unknown as JsonRpcMiddlewareV2],
+      const engine = JRPCEngineV2.create({
+        middleware: [middleware as unknown as JRPCMiddlewareV2],
       });
 
       await engine.destroy();
@@ -1140,8 +1134,8 @@ describe("JsonRpcEngineV2", () => {
         destroy: vi.fn(),
       };
 
-      const engine = JsonRpcEngineV2.create({
-        middleware: [middleware as unknown as JsonRpcMiddlewareV2],
+      const engine = JRPCEngineV2.create({
+        middleware: [middleware as unknown as JRPCMiddlewareV2],
       });
 
       await engine.destroy();
@@ -1151,7 +1145,7 @@ describe("JsonRpcEngineV2", () => {
     });
 
     it("causes handle() to throw after destroying the engine", async () => {
-      const engine = JsonRpcEngineV2.create({
+      const engine = JRPCEngineV2.create({
         middleware: [makeNullMiddleware()],
       });
 
@@ -1161,7 +1155,7 @@ describe("JsonRpcEngineV2", () => {
     });
 
     it("causes asMiddleware() to throw after destroying the engine", async () => {
-      const engine = JsonRpcEngineV2.create({
+      const engine = JRPCEngineV2.create({
         middleware: [makeNullMiddleware()],
       });
       await engine.destroy();
@@ -1175,8 +1169,8 @@ describe("JsonRpcEngineV2", () => {
           throw new Error("test");
         }),
       };
-      const engine = JsonRpcEngineV2.create({
-        middleware: [middleware as unknown as JsonRpcMiddlewareV2],
+      const engine = JRPCEngineV2.create({
+        middleware: [middleware as unknown as JRPCMiddlewareV2],
       });
 
       await expect(engine.destroy()).rejects.toThrow(new Error("test"));
@@ -1191,8 +1185,8 @@ describe("JsonRpcEngineV2", () => {
       const middleware2 = {
         destroy: vi.fn(),
       };
-      const engine = JsonRpcEngineV2.create({
-        middleware: [middleware1, middleware2] as unknown as JsonRpcMiddlewareV2[],
+      const engine = JRPCEngineV2.create({
+        middleware: [middleware1, middleware2] as unknown as JRPCMiddlewareV2[],
       });
 
       await expect(engine.destroy()).rejects.toThrow(new Error("test"));

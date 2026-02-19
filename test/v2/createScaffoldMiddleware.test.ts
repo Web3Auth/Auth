@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { rpcErrors } from "../../src";
 import { createScaffoldMiddleware } from "../../src/jrpc/v2/createScaffoldMiddleware";
+import { JRPCEngineV2 } from "../../src/jrpc/v2/jrpcEngineV2";
 import type { MiddlewareScaffold } from "../../src/jrpc/v2/v2interfaces";
-import { JsonRpcEngineV2 } from "../../src/jrpc/v2/JsonRpcEngineV2";
 import { makeRequest } from "../utils";
 
 describe("createScaffoldMiddleware", () => {
@@ -16,7 +16,7 @@ describe("createScaffoldMiddleware", () => {
       },
     };
 
-    const engine = JsonRpcEngineV2.create({
+    const engine = JRPCEngineV2.create({
       middleware: [createScaffoldMiddleware(scaffold), (): string => "passthrough"],
     });
 

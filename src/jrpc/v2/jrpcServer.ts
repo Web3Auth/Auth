@@ -2,11 +2,11 @@ import { hasProperty, isObject } from "../../utils";
 import { getUniqueId } from "../../utils/jrpc";
 import { rpcErrors, serializeJrpcError } from "../errors";
 import { JRPCId, JRPCNotification, JRPCParams, JRPCRequest, JRPCResponse } from "../interfaces";
-import { JsonRpcEngineV2 } from "./JsonRpcEngineV2";
+import { JRPCEngineV2 } from "./jrpcEngineV2";
 import type {
   HandleOptions,
+  JRPCMiddlewareV2,
   JsonRpcCall,
-  JsonRpcMiddlewareV2,
   MergedContextOf,
   MiddlewareConstraint,
   MinimalRequest,
@@ -20,7 +20,7 @@ const jsonrpc = "2.0" as const;
 /**
  * A JSON-RPC server that handles requests and notifications.
  *
- * Essentially wraps a {@link JsonRpcEngineV2} in order to create a conformant
+ * Essentially wraps a {@link JRPCEngineV2} in order to create a conformant
  * yet permissive JSON-RPC 2.0 server.
  *
  * Note that the server will accept both requests and notifications via {@link handle},
@@ -28,7 +28,7 @@ const jsonrpc = "2.0" as const;
  *
  * @example
  * ```ts
- * const server = new JsonRpcServer({
+ * const server = new JRPCServer({
  *   engine,
  *   onError,
  * });
@@ -41,8 +41,8 @@ const jsonrpc = "2.0" as const;
  * }
  * ```
  */
-export class JsonRpcServer<Middleware extends MiddlewareConstraint = JsonRpcMiddlewareV2> {
-  readonly #engine: JsonRpcEngineV2<RequestOf<Middleware>, MergedContextOf<Middleware>>;
+export class JRPCServer<Middleware extends MiddlewareConstraint = JRPCMiddlewareV2> {
+  readonly #engine: JRPCEngineV2<RequestOf<Middleware>, MergedContextOf<Middleware>>;
 
   readonly #onError?: OnError | undefined;
 
@@ -67,7 +67,7 @@ export class JsonRpcServer<Middleware extends MiddlewareConstraint = JsonRpcMidd
       this.#engine = options.engine;
     } else {
       // @ts-expect-error - TypeScript complains that engine is of the wrong type, but clearly it's not.
-      this.#engine = JsonRpcEngineV2.create({ middleware: options.middleware });
+      this.#engine = JRPCEngineV2.create({ middleware: options.middleware });
     }
   }
 
@@ -156,7 +156,7 @@ export class JsonRpcServer<Middleware extends MiddlewareConstraint = JsonRpcMidd
     const [originalId, isRequest] = getOriginalId(rawRequest);
 
     try {
-      const request = JsonRpcServer._coerceRequest(rawRequest, isRequest);
+      const request = JRPCServer._coerceRequest(rawRequest, isRequest);
       // @ts-expect-error - The request may not be of the type expected by the engine,
       // and we intentionally allow this to happen.
       const result = await this.#engine.handle(request, options);

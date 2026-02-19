@@ -1,5 +1,5 @@
 import { JRPCRequest, Json } from "../interfaces";
-import type { ContextConstraint, JsonRpcMiddlewareV2, MiddlewareScaffold } from "./v2interfaces";
+import type { ContextConstraint, JRPCMiddlewareV2, MiddlewareScaffold } from "./v2interfaces";
 
 /**
  * Creates a middleware function from an object of RPC method handler functions,
@@ -12,7 +12,7 @@ import type { ContextConstraint, JsonRpcMiddlewareV2, MiddlewareScaffold } from 
  */
 export function createScaffoldMiddleware<Context extends ContextConstraint>(
   handlers: MiddlewareScaffold<Context>
-): JsonRpcMiddlewareV2<JRPCRequest, Json, Context> {
+): JRPCMiddlewareV2<JRPCRequest, Json, Context> {
   return ({ request, context, next }) => {
     const handlerOrResult = handlers[request.method];
     if (handlerOrResult === undefined) {

@@ -2,17 +2,17 @@ import type { JRPCMiddleware as LegacyMiddleware } from "../interfaces";
 import { JRPCParams, JRPCRequest } from "../interfaces";
 import { createAsyncMiddleware } from "../jrpc";
 import { deepClone, fromLegacyRequest, makeContext, propagateToRequest } from "./compatibility-utils";
-import { JsonRpcEngineV2 } from "./JsonRpcEngineV2";
-import { JsonRpcMiddlewareV2, ResultConstraint } from "./v2interfaces";
+import { JRPCEngineV2 } from "./jrpcEngineV2";
+import { JRPCMiddlewareV2, ResultConstraint } from "./v2interfaces";
 
 /**
- * Convert a {@link JsonRpcEngineV2} into a legacy middleware.
+ * Convert a {@link JRPCEngineV2} into a legacy middleware.
  *
  * @param engine - The engine to convert.
  * @returns The legacy middleware.
  */
 export function asLegacyMiddleware<Params extends JRPCParams, Request extends JRPCRequest<Params>>(
-  engine: JsonRpcEngineV2<Request>
+  engine: JRPCEngineV2<Request>
 ): LegacyMiddleware<Params, ResultConstraint<Request>>;
 
 /**
@@ -22,7 +22,7 @@ export function asLegacyMiddleware<Params extends JRPCParams, Request extends JR
  * @returns The legacy middleware.
  */
 export function asLegacyMiddleware<Params extends JRPCParams, Request extends JRPCRequest<Params>>(
-  ...middleware: JsonRpcMiddlewareV2<Request, ResultConstraint<Request>>[]
+  ...middleware: JRPCMiddlewareV2<Request, ResultConstraint<Request>>[]
 ): LegacyMiddleware<Params, ResultConstraint<Request>>;
 
 /**
@@ -33,12 +33,12 @@ export function asLegacyMiddleware<Params extends JRPCParams, Request extends JR
  * @returns The legacy middleware.
  */
 export function asLegacyMiddleware<Params extends JRPCParams, Request extends JRPCRequest<Params>>(
-  engineOrMiddleware: JsonRpcEngineV2<Request> | JsonRpcMiddlewareV2<Request, ResultConstraint<Request>>,
-  ...rest: JsonRpcMiddlewareV2<Request, ResultConstraint<Request>>[]
+  engineOrMiddleware: JRPCEngineV2<Request> | JRPCMiddlewareV2<Request, ResultConstraint<Request>>,
+  ...rest: JRPCMiddlewareV2<Request, ResultConstraint<Request>>[]
 ): LegacyMiddleware<Params, ResultConstraint<Request>> {
   const v2Middleware =
     typeof engineOrMiddleware === "function"
-      ? JsonRpcEngineV2.create({
+      ? JRPCEngineV2.create({
           middleware: [engineOrMiddleware, ...rest],
         }).asMiddleware()
       : engineOrMiddleware.asMiddleware();

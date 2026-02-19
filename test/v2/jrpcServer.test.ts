@@ -1,17 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { JRPCNotification, JRPCRequest, Json, rpcErrors } from "../../src";
-import { JsonRpcEngineV2 } from "../../src/jrpc/v2/JsonRpcEngineV2";
-import { JsonRpcServer } from "../../src/jrpc/v2/JsonRpcServer";
+import { JRPCEngineV2 } from "../../src/jrpc/v2/jrpcEngineV2";
+import { JRPCServer } from "../../src/jrpc/v2/jrpcServer";
 import type { MiddlewareContext } from "../../src/jrpc/v2/MiddlewareContext";
-import type { JsonRpcMiddlewareV2 } from "../../src/jrpc/v2/v2interfaces";
+import type { JRPCMiddlewareV2 } from "../../src/jrpc/v2/v2interfaces";
 import { JsonRpcEngineError } from "../../src/jrpc/v2/v2utils";
 import { isRequest, stringify } from "../../src/utils/jrpc";
 
 const jsonrpc = "2.0" as const;
 
-const makeEngine = (): JsonRpcEngineV2 => {
-  return JsonRpcEngineV2.create<JsonRpcMiddlewareV2>({
+const makeEngine = (): JRPCEngineV2 => {
+  return JRPCEngineV2.create<JRPCMiddlewareV2>({
     middleware: [
       ({ request }): Json | undefined => {
         if (request.method !== "hello") {
@@ -25,7 +25,7 @@ const makeEngine = (): JsonRpcEngineV2 => {
 
 describe("JsonRpcServer", () => {
   it("can be constructed with an engine", () => {
-    const server = new JsonRpcServer({
+    const server = new JRPCServer({
       engine: makeEngine(),
       onError: (): undefined => undefined,
     });
@@ -34,7 +34,7 @@ describe("JsonRpcServer", () => {
   });
 
   it("can be constructed with middleware", () => {
-    const server = new JsonRpcServer({
+    const server = new JRPCServer({
       middleware: [(): null => null],
       onError: (): undefined => undefined,
     });
@@ -43,7 +43,7 @@ describe("JsonRpcServer", () => {
   });
 
   it("handles a request", async () => {
-    const server = new JsonRpcServer({
+    const server = new JRPCServer({
       engine: makeEngine(),
       onError: (): undefined => undefined,
     });
@@ -62,7 +62,7 @@ describe("JsonRpcServer", () => {
   });
 
   it("handles a request with params", async () => {
-    const server = new JsonRpcServer({
+    const server = new JRPCServer({
       engine: makeEngine(),
       onError: (): undefined => undefined,
     });
@@ -82,7 +82,7 @@ describe("JsonRpcServer", () => {
   });
 
   it("handles a notification", async () => {
-    const server = new JsonRpcServer({
+    const server = new JRPCServer({
       engine: makeEngine(),
       onError: (): undefined => undefined,
     });
@@ -96,7 +96,7 @@ describe("JsonRpcServer", () => {
   });
 
   it("handles a notification with params", async () => {
-    const server = new JsonRpcServer({
+    const server = new JRPCServer({
       engine: makeEngine(),
       onError: (): undefined => undefined,
     });
@@ -111,10 +111,10 @@ describe("JsonRpcServer", () => {
   });
 
   it("forwards the context to the engine", async () => {
-    const middleware: JsonRpcMiddlewareV2<JRPCRequest, string, MiddlewareContext<{ foo: string }>> = ({ context }) => {
+    const middleware: JRPCMiddlewareV2<JRPCRequest, string, MiddlewareContext<{ foo: string }>> = ({ context }) => {
       return context.assertGet("foo");
     };
-    const server = new JsonRpcServer({
+    const server = new JRPCServer({
       middleware: [middleware],
       onError: (): undefined => undefined,
     });
@@ -140,7 +140,7 @@ describe("JsonRpcServer", () => {
   });
 
   it("returns an error response for a failed request", async () => {
-    const server = new JsonRpcServer({
+    const server = new JRPCServer({
       engine: makeEngine(),
       onError: (): undefined => undefined,
     });
@@ -163,7 +163,7 @@ describe("JsonRpcServer", () => {
   });
 
   it("returns undefined for a failed notification", async () => {
-    const server = new JsonRpcServer({
+    const server = new JRPCServer({
       engine: makeEngine(),
       onError: (): undefined => undefined,
     });
@@ -178,7 +178,7 @@ describe("JsonRpcServer", () => {
 
   it("calls onError for a failed request", async () => {
     const onError = vi.fn();
-    const server = new JsonRpcServer({
+    const server = new JRPCServer({
       engine: makeEngine(),
       onError,
     });
@@ -194,7 +194,7 @@ describe("JsonRpcServer", () => {
   });
 
   it("returns a failed request when onError is not provided", async () => {
-    const server = new JsonRpcServer({
+    const server = new JRPCServer({
       engine: makeEngine(),
     });
 
@@ -217,7 +217,7 @@ describe("JsonRpcServer", () => {
 
   it("calls onError for a failed notification", async () => {
     const onError = vi.fn();
-    const server = new JsonRpcServer({
+    const server = new JRPCServer({
       engine: makeEngine(),
       onError,
     });
@@ -232,7 +232,7 @@ describe("JsonRpcServer", () => {
   });
 
   it("accepts requests with malformed jsonrpc", async () => {
-    const server = new JsonRpcServer({
+    const server = new JRPCServer({
       engine: makeEngine(),
       onError: (): undefined => undefined,
     });
@@ -252,7 +252,7 @@ describe("JsonRpcServer", () => {
 
   it("errors if passed a notification when only requests are supported", async () => {
     const onError = vi.fn();
-    const server = new JsonRpcServer<JsonRpcMiddlewareV2<JRPCRequest>>({
+    const server = new JRPCServer<JRPCMiddlewareV2<JRPCRequest>>({
       middleware: [(): null => null],
       onError,
     });
@@ -267,7 +267,7 @@ describe("JsonRpcServer", () => {
 
   it("errors if passed a request when only notifications are supported", async () => {
     const onError = vi.fn();
-    const server = new JsonRpcServer<JsonRpcMiddlewareV2<JRPCNotification>>({
+    const server = new JRPCServer<JRPCMiddlewareV2<JRPCNotification>>({
       middleware: [(): undefined => undefined],
       onError,
     });
@@ -294,7 +294,7 @@ describe("JsonRpcServer", () => {
   });
 
   it.each([undefined, Symbol("test"), null, true, false, {}, []])("accepts requests with malformed ids", async (id) => {
-    const server = new JsonRpcServer({
+    const server = new JRPCServer({
       engine: makeEngine(),
       onError: (): undefined => undefined,
     });
@@ -326,7 +326,7 @@ describe("JsonRpcServer", () => {
     { id: 1 },
   ])("errors if the request is not minimally conformant", async (malformedRequest) => {
     const onError = vi.fn();
-    const server = new JsonRpcServer({
+    const server = new JRPCServer({
       engine: makeEngine(),
       onError,
     });

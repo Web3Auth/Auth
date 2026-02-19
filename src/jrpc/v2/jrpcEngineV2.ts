@@ -10,8 +10,8 @@ import type {
   HandleOptions,
   InferKeyValues,
   InvalidEngine,
+  JRPCMiddlewareV2,
   JsonRpcCall,
-  JsonRpcMiddlewareV2,
   MergedContextOf,
   MixedParam,
   Next,
@@ -45,7 +45,7 @@ import { JsonRpcEngineError } from "./v2utils";
  *
  * @example
  * ```ts
- * const engine = JsonRpcEngineV2.create({
+ * const engine = JRPCEngineV2.create({
  *   middleware,
  * });
  *
@@ -57,8 +57,8 @@ import { JsonRpcEngineError } from "./v2utils";
  * }
  * ```
  */
-export class JsonRpcEngineV2<Request extends JsonRpcCall = JsonRpcCall, Context extends ContextConstraint = MiddlewareContext> {
-  #middleware: ReadonlyArray<JsonRpcMiddlewareV2<Request, ResultConstraint<Request>, Context>>;
+export class JRPCEngineV2<Request extends JsonRpcCall = JsonRpcCall, Context extends ContextConstraint = MiddlewareContext> {
+  #middleware: ReadonlyArray<JRPCMiddlewareV2<Request, ResultConstraint<Request>, Context>>;
 
   #isDestroyed = false;
 
@@ -80,21 +80,21 @@ export class JsonRpcEngineV2<Request extends JsonRpcCall = JsonRpcCall, Context 
    * @returns The JSON-RPC engine.
    */
   static create<
-    Middleware extends JsonRpcMiddlewareV2<
+    Middleware extends JRPCMiddlewareV2<
       // Non-polluting `any` constraint.
       /* eslint-disable @typescript-eslint/no-explicit-any */
       any,
       ResultConstraint<any>,
       any
       /* eslint-enable @typescript-eslint/no-explicit-any */
-    > = JsonRpcMiddlewareV2,
+    > = JRPCMiddlewareV2,
   >({
     middleware,
   }: {
     middleware: Middleware[];
   }): MergedContextOf<Middleware> extends never
     ? InvalidEngine<"Some middleware have incompatible context types">
-    : JsonRpcEngineV2<RequestOf<Middleware>, MergedContextOf<Middleware>> {
+    : JRPCEngineV2<RequestOf<Middleware>, MergedContextOf<Middleware>> {
     // We can't use NonEmptyArray for the params because it ruins type inference.
     if (middleware.length === 0) {
       throw new JsonRpcEngineError("Middleware array cannot be empty");
@@ -102,13 +102,11 @@ export class JsonRpcEngineV2<Request extends JsonRpcCall = JsonRpcCall, Context 
 
     type MergedContext = MergedContextOf<Middleware>;
     type InputRequest = RequestOf<Middleware>;
-    const mw = middleware as unknown as JsonRpcMiddlewareV2<InputRequest, ResultConstraint<InputRequest>, MergedContext>[];
+    const mw = middleware as unknown as JRPCMiddlewareV2<InputRequest, ResultConstraint<InputRequest>, MergedContext>[];
 
-    return new JsonRpcEngineV2<InputRequest, MergedContext>({
+    return new JRPCEngineV2<InputRequest, MergedContext>({
       middleware: mw,
-    }) as MergedContext extends never
-      ? InvalidEngine<"Some middleware have incompatible context types">
-      : JsonRpcEngineV2<InputRequest, MergedContext>;
+    }) as MergedContext extends never ? InvalidEngine<"Some middleware have incompatible context types"> : JRPCEngineV2<InputRequest, MergedContext>;
   }
 
   /**
@@ -162,7 +160,7 @@ export class JsonRpcEngineV2<Request extends JsonRpcCall = JsonRpcCall, Context 
    *
    * @returns The JSON-RPC middleware.
    */
-  asMiddleware(): JsonRpcMiddlewareV2<Request, ResultConstraint<Request>, Context> {
+  asMiddleware(): JRPCMiddlewareV2<Request, ResultConstraint<Request>, Context> {
     this._assertIsNotDestroyed();
 
     return async ({ request, context, next }) => {
@@ -248,7 +246,7 @@ export class JsonRpcEngineV2<Request extends JsonRpcCall = JsonRpcCall, Context 
    * @returns The `next()` function factory.
    */
   _makeNextFactory(
-    middlewareIterator: Iterator<JsonRpcMiddlewareV2<Request, ResultConstraint<Request>, Context>>,
+    middlewareIterator: Iterator<JRPCMiddlewareV2<Request, ResultConstraint<Request>, Context>>,
     state: RequestState<Request>,
     context: Context
   ): () => Next<Request> {
@@ -288,7 +286,7 @@ export class JsonRpcEngineV2<Request extends JsonRpcCall = JsonRpcCall, Context 
     return makeNext;
   }
 
-  _makeMiddlewareIterator(): Iterator<JsonRpcMiddlewareV2<Request, ResultConstraint<Request>, Context>> {
+  _makeMiddlewareIterator(): Iterator<JRPCMiddlewareV2<Request, ResultConstraint<Request>, Context>> {
     return this.#middleware[Symbol.iterator]();
   }
 

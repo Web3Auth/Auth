@@ -1,5 +1,5 @@
 import { JRPCNotification, JRPCParams, JRPCRequest, Json } from "../interfaces";
-import type { JsonRpcEngineV2 } from "./JsonRpcEngineV2";
+import type { JRPCEngineV2 } from "./jrpcEngineV2";
 import type { MiddlewareContext } from "./MiddlewareContext";
 
 export type NonEmptyArray<Type> = [Type, ...Type[]];
@@ -99,7 +99,7 @@ export type MiddlewareParams<Request extends JsonRpcCall = JsonRpcCall, Context 
   next: Next<Request>;
 };
 
-export type JsonRpcMiddlewareV2<
+export type JRPCMiddlewareV2<
   Request extends JsonRpcCall = JsonRpcCall,
   Result extends ResultConstraint<Request> = ResultConstraint<Request>,
   Context extends ContextConstraint = MiddlewareContext,
@@ -118,7 +118,7 @@ export type HandleOptions<Context extends ContextConstraint> = {
 };
 
 export type ConstructorOptions<Request extends JsonRpcCall, Context extends MiddlewareContext> = {
-  middleware: JsonRpcMiddlewareV2<Request, ResultConstraint<Request>, Context>[];
+  middleware: JRPCMiddlewareV2<Request, ResultConstraint<Request>, Context>[];
 };
 
 /**
@@ -126,18 +126,18 @@ export type ConstructorOptions<Request extends JsonRpcCall, Context extends Midd
  */
 // Non-polluting `any` constraint.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type RequestOf<Middleware> = Middleware extends JsonRpcMiddlewareV2<infer Request, ResultConstraint<infer Request>, any> ? Request : never;
+export type RequestOf<Middleware> = Middleware extends JRPCMiddlewareV2<infer Request, ResultConstraint<infer Request>, any> ? Request : never;
 
 // Non-polluting `any` constraint.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ContextOf<Middleware> = Middleware extends JsonRpcMiddlewareV2<any, ResultConstraint<any>, infer C> ? C : never;
+export type ContextOf<Middleware> = Middleware extends JRPCMiddlewareV2<any, ResultConstraint<any>, infer C> ? C : never;
 
 /**
- * A constraint for {@link JsonRpcMiddlewareV2} generic parameters.
+ * A constraint for {@link JRPCMiddlewareV2} generic parameters.
  */
 // Non-polluting `any` constraint.
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export type MiddlewareConstraint = JsonRpcMiddlewareV2<any, ResultConstraint<any>, MiddlewareContext<any>>;
+export type MiddlewareConstraint = JRPCMiddlewareV2<any, ResultConstraint<any>, MiddlewareContext<any>>;
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 /**
@@ -169,7 +169,7 @@ export type ScaffoldMiddlewareHandler<
   Params extends JRPCParams,
   Result extends ResultConstraint<JRPCRequest<Params>>,
   Context extends ContextConstraint,
-> = JsonRpcMiddlewareV2<JRPCRequest<Params>, Result, Context> | JsonPrimitive;
+> = JRPCMiddlewareV2<JRPCRequest<Params>, Result, Context> | JsonPrimitive;
 
 /**
  * A record of RPC method handler functions or hard-coded results, keyed to particular method names.
@@ -195,7 +195,7 @@ export type Options<Middleware extends MiddlewareConstraint> = {
   onError?: OnError;
 } & (
   | {
-      engine: ReturnType<typeof JsonRpcEngineV2.create<Middleware>>;
+      engine: ReturnType<typeof JRPCEngineV2.create<Middleware>>;
     }
   | {
       middleware: NonEmptyArray<Middleware>;
