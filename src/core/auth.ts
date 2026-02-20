@@ -1,6 +1,6 @@
 import { SESSION_SERVER_API_URL, SESSION_SERVER_SOCKET_URL } from "@toruslabs/constants";
 import { AUTH_CONNECTION, AUTH_CONNECTION_TYPE, constructURL, getTimeout, UX_MODE } from "@toruslabs/customauth";
-import { SessionManager } from "@toruslabs/session-manager";
+import { AuthSessionManager, SessionManager } from "@toruslabs/session-manager";
 
 import {
   AUTH_ACTIONS,
@@ -18,7 +18,6 @@ import {
   AuthSessionData,
   AuthUserInfo,
   BaseLoginParams,
-  BrowserStorage,
   BUILD_ENV,
   jsonToBase64,
   LoginParams,
@@ -38,9 +37,7 @@ export class Auth {
 
   options: AuthOptions;
 
-  private sessionManager: SessionManager<AuthSessionData>;
-
-  private currentStorage: BrowserStorage;
+  private sessionManager: AuthSessionManager<AuthSessionData>;
 
   private _storageBaseKey = "auth_store";
 
@@ -141,16 +138,10 @@ export class Auth {
 
     const storageKey =
       this.options.sessionKey || (this.options.sessionNamespace ? `${this._storageBaseKey}_${this.options.sessionNamespace}` : this._storageBaseKey);
-    this.currentStorage = BrowserStorage.getInstance(storageKey, this.options.storage);
 
-    const sessionId = this.currentStorage.get<string>("sessionId");
-
-    this.sessionManager = new SessionManager({
-      sessionServerBaseUrl: this.options.storageServerUrl,
-      sessionNamespace: this.options.sessionNamespace,
-      sessionTime: this.options.sessionTime,
-      sessionId,
-      allowedOrigin: this.options.sdkUrl,
+    this.sessionManager = new AuthSessionManager({
+      storageKeyPrefix: storageKey,
+      apiClientConfig: { baseURL: "http://localhost:3020" },
     });
 
     if (this.options.network === WEB3AUTH_NETWORK.TESTNET || this.options.network === WEB3AUTH_NETWORK.SAPPHIRE_DEVNET) {
@@ -174,20 +165,21 @@ export class Auth {
     }
 
     if (params.sessionId) {
-      this.currentStorage.set("sessionId", params.sessionId);
-      this.sessionManager.sessionId = params.sessionId;
+      this.sessionManager.setTokens({
+        session_id: params.sessionId,
+        access_token: params.accessToken,
+        refresh_token: params.refreshToken,
+        id_token: params.idToken,
+      });
     }
 
-    if (this.sessionManager.sessionId) {
+    if (this.sessionManager.getSessionId()) {
       const data = await this._authorizeSession();
       // Fill state with correct info from session
       // If session is invalid all the data is unset here.
       this.updateState(data);
-      if (Object.keys(data).length === 0) {
-        // If session is invalid, unset the sessionId from localStorage.
-        this.currentStorage.set("sessionId", "");
-      } else {
-        this.updateState({ sessionId: this.sessionManager.sessionId });
+      if (data && Object.keys(data).length > 0) {
+        this.updateState({ sessionId: this.sessionManager.getSessionId() });
       }
     }
 
@@ -221,9 +213,12 @@ export class Auth {
       this.dappState = result.state;
       throw LoginError.loginFailed(result.error);
     }
-    this.sessionManager.sessionId = result.sessionId;
-    this.options.sessionNamespace = result.sessionNamespace;
-    this.currentStorage.set("sessionId", result.sessionId);
+    this.sessionManager.setTokens({
+      session_id: result.sessionId,
+      access_token: result.accessToken,
+      refresh_token: result.refreshToken,
+      id_token: result.idToken,
+    });
     await this.rehydrateSession();
     return { privKey: this.privKey };
   }
@@ -242,9 +237,13 @@ export class Auth {
 
     const result = await this.authProvider.postLoginInitiatedMessage({ actionType: AUTH_ACTIONS.LOGIN, params, options: this.options }, nonce);
     if (result.error) throw LoginError.loginFailed(result.error);
-    this.sessionManager.sessionId = result.sessionId;
+    this.sessionManager.setTokens({
+      session_id: result.sessionId,
+      access_token: result.accessToken,
+      refresh_token: result.refreshToken,
+      id_token: result.idToken,
+    });
     this.options.sessionNamespace = result.sessionNamespace;
-    this.currentStorage.set("sessionId", result.sessionId);
     await this.rehydrateSession();
   }
 
@@ -258,8 +257,8 @@ export class Auth {
   }
 
   async logout(): Promise<void> {
-    if (!this.sessionManager.sessionId) throw LoginError.userNotLoggedIn();
-    await this.sessionManager.invalidateSession();
+    if (!this.sessionId) throw LoginError.userNotLoggedIn();
+    await this.sessionManager.logout();
     this.updateState({
       privKey: "",
       coreKitKey: "",
@@ -294,8 +293,6 @@ export class Auth {
       tssShare: "",
       tssNonce: -1,
     });
-
-    this.currentStorage.set("sessionId", "");
   }
 
   async enableMFA(params: Partial<LoginParams>): Promise<boolean> {
@@ -324,9 +321,12 @@ export class Auth {
       this.dappState = result.state;
       throw LoginError.loginFailed(result.error);
     }
-    this.sessionManager.sessionId = result.sessionId;
-    this.options.sessionNamespace = result.sessionNamespace;
-    this.currentStorage.set("sessionId", result.sessionId);
+    this.sessionManager.setTokens({
+      session_id: result.sessionId,
+      access_token: result.accessToken,
+      refresh_token: result.refreshToken,
+      id_token: result.idToken,
+    });
     await this.rehydrateSession();
     return Boolean(this.state.userInfo?.isMfaEnabled);
   }
@@ -442,7 +442,7 @@ export class Auth {
   }
 
   getUserInfo(): AuthUserInfo {
-    if (!this.sessionManager.sessionId) {
+    if (!this.sessionId) {
       throw LoginError.userNotLoggedIn();
     }
     return this.state.userInfo;
@@ -468,12 +468,11 @@ export class Auth {
 
   private async _authorizeSession(): Promise<AuthSessionData> {
     try {
-      if (!this.sessionManager.sessionId) return {};
-      const result = await this.sessionManager.authorizeSession();
+      const result = await this.sessionManager.authorize();
       return result;
     } catch (err) {
       log.error("authorization failed", err);
-      return {};
+      return null;
     }
   }
 
@@ -483,6 +482,7 @@ export class Auth {
 
   private async rehydrateSession(): Promise<void> {
     const result = await this._authorizeSession();
+    if (!result) return;
     this.updateState(result);
   }
 

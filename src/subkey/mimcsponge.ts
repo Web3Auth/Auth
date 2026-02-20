@@ -14,7 +14,7 @@ function keccak256Padded(str: string): string {
   if (typeof str === "string" && str.slice(0, 2) === "0x" && str.length === 66) {
     finalInput = Buffer.from(str.slice(2), "hex");
   }
-  return `0x${keccak256(finalInput).toString("hex").padStart(64, "0")}`;
+  return `0x${Buffer.from(keccak256(finalInput)).toString("hex").padStart(64, "0")}`;
 }
 
 export function mimgGetIV(seed: string): bigint {

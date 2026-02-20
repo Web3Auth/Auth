@@ -1,7 +1,7 @@
 import { randomId } from "@toruslabs/customauth";
 
 import { AUTH_SERVICE_PRODUCTION_URL, IFRAME_MODAL_ID, JRPC_METHODS } from "../utils/constants";
-import { AuthSessionConfig, THEME_MODE_TYPE, THEME_MODES, WEB3AUTH_NETWORK_TYPE, WhiteLabelData } from "../utils/interfaces";
+import { AuthSessionConfig, LoginCallbackSuccess, THEME_MODE_TYPE, THEME_MODES, WEB3AUTH_NETWORK_TYPE, WhiteLabelData } from "../utils/interfaces";
 import { log } from "../utils/logger";
 import { htmlToElement } from "../utils/utils";
 
@@ -37,7 +37,7 @@ export class AuthProvider {
 
   public initialized: boolean = false;
 
-  private loginCallbackSuccess: ((value: { sessionId?: string; sessionNamespace?: string }) => void) | null = null;
+  private loginCallbackSuccess: ((value: LoginCallbackSuccess) => void) | null = null;
 
   private loginCallbackFailed: ((reason?: string) => void) | null = null;
 
@@ -161,7 +161,7 @@ export class AuthProvider {
       },
       this.targetOrigin
     );
-    return new Promise<{ sessionId?: string; sessionNamespace?: string; error?: string }>((resolve, reject) => {
+    return new Promise<LoginCallbackSuccess & { error?: string }>((resolve, reject) => {
       this.loginCallbackSuccess = resolve;
       this.loginCallbackFailed = reject;
     });

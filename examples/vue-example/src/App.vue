@@ -223,7 +223,15 @@
                 :label-disabled="'Whitelabel'"
                 :label-enabled="'Whitelabel'"
               />
-              <Toggle id="includeUserDataInToken" v-model="includeUserDataInToken" :show-label="true" :size="'small'" :label-disabled="'Include User Data in Token'" :label-enabled="'Include User Data in Token'" data-testid="includeUserDataInToken" />
+              <Toggle
+                id="includeUserDataInToken"
+                v-model="includeUserDataInToken"
+                :show-label="true"
+                :size="'small'"
+                :label-disabled="'Include User Data in Token'"
+                :label-enabled="'Include User Data in Token'"
+                data-testid="includeUserDataInToken"
+              />
             </div>
             <div>
               <div>
@@ -566,7 +574,7 @@ import { EthereumSigningProvider } from "@web3auth/ethereum-mpc-provider";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import BN from "bn.js";
 import bs58 from "bs58";
-import { keccak256 } from "ethereum-cryptography/keccak";
+import { keccak_256 } from "@noble/hashes/sha3";
 import { computed, InputHTMLAttributes, ref, watch, watchEffect } from "vue";
 
 import { CURVE, DELIMITERS } from "./constants";
@@ -574,6 +582,7 @@ import * as ethWeb3 from "./lib/ethWeb3";
 import whitelabel from "./lib/whitelabel";
 import { generateTSSEndpoints, getTSSEndpoints } from "./utils";
 import { getEvmChainConfig } from "@web3auth/base";
+import { bytesToHex, utf8ToBytes } from "@ethereumjs/util";
 
 const OPENLOGIN_PROJECT_IDS: Record<WEB3AUTH_NETWORK_TYPE, string> = {
   [WEB3AUTH_NETWORK.MAINNET]: "BJRZ6qdDTbj6Vd5YXvV994TYCqY42-PxldCetmvGTUdoq6pkCqdpuC1DIehz76zuYdaq1RJkXGHuDraHRhCQHvA",
@@ -662,7 +671,7 @@ const openloginInstance = computed(() => {
     buildEnv: selectedBuildEnv.value,
     sdkUrl: customSdkUrl.value,
     mfaSettings: mfaSettings.value,
-    sessionTime: 3600,
+    sessionTime: 86400,
     includeUserDataInToken: includeUserDataInToken.value,
   });
   op.init();
@@ -703,7 +712,7 @@ const setProvider = async (_privKey: string) => {
       // generate endpoints for servers
       const tssNodeEndpoints = getTSSEndpoints(selectedOpenloginNetwork.value as WEB3AUTH_SAPPHIRE_NETWORK_TYPE);
       const { endpoints, tssWSEndpoints, partyIndexes } = generateTSSEndpoints(tssNodeEndpoints, parties, clientIndex);
-      const randomSessionNonce = Buffer.from(keccak256(Buffer.from(generatePrivate().toString("hex") + Date.now(), "utf8"))).toString("hex");
+      const randomSessionNonce = Buffer.from(keccak_256(utf8ToBytes(bytesToHex(generatePrivate()) + Date.now()))).toString("hex");
       const tssImportUrl = `${tssNodeEndpoints[0]}/v1/clientWasm`;
       // session is needed for authentication to the web3auth infrastructure holding the factor 1
       const currentSession = `${sessionId}${randomSessionNonce}`;
@@ -824,7 +833,9 @@ const printToConsole = (...args: unknown[]) => {
   }
 };
 
-const computedLoginProviders = computed(() => Object.values(AUTH_CONNECTION).filter((x) => x !== "custom" && x !== "passkeys" && x !== "authenticator"));
+const computedLoginProviders = computed(() =>
+  Object.values(AUTH_CONNECTION).filter((x) => x !== "custom" && x !== "passkeys" && x !== "authenticator"),
+);
 
 const showEmailFlow = computed(() => selectedLoginProvider.value === AUTH_CONNECTION.EMAIL_PASSWORDLESS);
 const isLoginHintAvailable = computed(() => {
@@ -939,7 +950,7 @@ const getEd25519Key = () => {
     throw new Error("Openlogin is not available.");
   }
   const { sk } = getED25519Key(privKey.value);
-  const base58Key = bs58.encode(sk);
+  const base58Key = bs58.encode(new Uint8Array(sk));
   printToConsole("ED25519 Key", base58Key);
 };
 

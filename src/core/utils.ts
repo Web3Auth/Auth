@@ -7,6 +7,9 @@ export const version = process.env.AUTH_VERSION;
 export type HashQueryParamResult = {
   sessionId?: string;
   sessionNamespace?: string;
+  accessToken?: string;
+  refreshToken?: string;
+  idToken?: string;
   error?: string;
   state?: string;
   nonce?: string;

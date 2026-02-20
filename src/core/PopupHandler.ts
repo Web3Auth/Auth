@@ -4,14 +4,13 @@ import { SecurePubSub } from "@toruslabs/secure-pub-sub";
 import { EventEmitter } from "events";
 import type { default as TypedEmitter } from "typed-emitter";
 
+import { LoginCallbackSuccess } from "../utils";
 import { LoginError } from "./errors";
 
-export interface PopupResponse {
-  sessionId?: string;
-  sessionNamespace?: string;
+export type PopupResponse = LoginCallbackSuccess & {
   state?: string;
   error?: string;
-}
+};
 
 export type PopupHandlerEvents = {
   close: () => void;
@@ -113,7 +112,11 @@ class PopupHandler extends (EventEmitter as new () => TypedEmitter<PopupHandlerE
     const data = await securePubSub.subscribe(loginId);
     this.close();
     securePubSub.cleanup();
-    const parsedData = JSON.parse(data) as { error?: string; state?: string; data?: { sessionId?: string; sessionNamespace?: string } };
+    const parsedData = JSON.parse(data) as {
+      error?: string;
+      state?: string;
+      data?: Omit<PopupResponse, "state" | "error"> | null;
+    };
     if (parsedData.error) {
       return { error: parsedData.error, state: parsedData.state };
     }

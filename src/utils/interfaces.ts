@@ -541,3 +541,11 @@ export interface AuthSessionConfig {
   params: Partial<LoginParams>;
   sessionId?: string;
 }
+
+export interface LoginCallbackSuccess {
+  sessionId?: string;
+  sessionNamespace?: string;
+  accessToken?: string;
+  refreshToken?: string;
+  idToken?: string;
+}
