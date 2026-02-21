@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Scalar, ZqField } from "@toruslabs/ffjavascript";
-import { bytesToHex, hexToBytes, keccak256 } from "@toruslabs/metadata-helpers";
+import { bytesToHex, hexToBytes, keccak256, utf8ToBytes } from "@toruslabs/metadata-helpers";
 
 const F = new ZqField(Scalar.fromString("21888242871839275222246405745257275088548364400416034343698204186575808495617"));
 
@@ -13,7 +13,7 @@ function keccak256Padded(str: string): string {
   if (str.slice(0, 2) === "0x" && str.length === 66) {
     finalInput = hexToBytes(str.slice(2));
   } else {
-    finalInput = new TextEncoder().encode(str);
+    finalInput = utf8ToBytes(str);
   }
   return `0x${bytesToHex(keccak256(finalInput)).padStart(64, "0")}`;
 }

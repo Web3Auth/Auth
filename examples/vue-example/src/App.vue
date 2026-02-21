@@ -99,7 +99,7 @@
                 block
                 size="md"
                 pill
-                :disabled="!ethersWallet"
+                :disabled="!walletClient"
                 @click="signMessage"
                 data-testid="btnSignMessage"
               >
@@ -113,7 +113,7 @@
                 block
                 size="md"
                 pill
-                :disabled="!ethersWallet"
+                :disabled="!walletClient"
                 @click="signV1Message"
                 data-testid="btnSignV1Message"
               >
@@ -511,7 +511,8 @@ import {
 } from "@web3auth/auth";
 import { Button, Card, Select, TextField, Toggle } from "@toruslabs/vue-components";
 import bs58 from "bs58";
-import { JsonRpcProvider, Wallet } from "ethers";
+import { createWalletClient, http, type WalletClient } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
 import { computed, InputHTMLAttributes, ref, watch, watchEffect } from "vue";
 
 import * as ethWeb3 from "./lib/ethWeb3";
@@ -551,7 +552,7 @@ type EMAIL_FLOW_TYPE = (typeof EMAIL_FLOW)[keyof typeof EMAIL_FLOW];
 
 const loading = ref(false);
 const privKey = ref("");
-const ethersWallet = ref<Wallet | null>(null);
+const walletClient = ref<WalletClient | null>(null);
 const selectedLoginProvider = ref<AUTH_CONNECTION_TYPE>(AUTH_CONNECTION.GOOGLE);
 const login_hint = ref("");
 const isWhiteLabelEnabled = ref(false);
@@ -613,8 +614,11 @@ const openloginInstance = computed(() => {
 const setProvider = async (privKey: string) => {
   const currentClientId = OPENLOGIN_PROJECT_IDS[selectedOpenloginNetwork.value];
   const rpcTarget = getEvmChainConfig(1, currentClientId)?.rpcTarget || "";
-  const provider = new JsonRpcProvider(rpcTarget);
-  ethersWallet.value = new Wallet(privKey, provider);
+  const account = privateKeyToAccount(`0x${privKey}`);
+  walletClient.value = createWalletClient({
+    account,
+    transport: http(rpcTarget),
+  });
 };
 
 const init = async () => {
@@ -799,14 +803,14 @@ const getEd25519Key = () => {
 };
 
 const signMessage = async () => {
-  if (!ethersWallet.value) throw new Error("wallet not set");
-  const signedMessage = await ethWeb3.personalSign(ethersWallet.value);
+  if (!walletClient.value) throw new Error("wallet not set");
+  const signedMessage = await ethWeb3.personalSign(walletClient.value);
   printToConsole("Signed Message", signedMessage);
 };
 
 const signV1Message = async () => {
-  if (!ethersWallet.value) throw new Error("wallet not set");
-  const signedMessage = await ethWeb3.signTypedData_v1(ethersWallet.value);
+  if (!walletClient.value) throw new Error("wallet not set");
+  const signedMessage = await ethWeb3.signTypedData_v1(walletClient.value);
   printToConsole("Signed Message", signedMessage);
 };
 
@@ -816,7 +820,7 @@ const logout = async () => {
   }
   await openloginInstance.value.logout();
   privKey.value = openloginInstance.value.privKey;
-  ethersWallet.value = null;
+  walletClient.value = null;
   if (storageAvailable("sessionStorage")) sessionStorage.removeItem("state");
 };
 
