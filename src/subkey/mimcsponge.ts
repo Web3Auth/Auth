@@ -23,7 +23,7 @@ export function mimgGetIV(seed: string): bigint {
   if (typeof _seed === "undefined") _seed = SEED;
   const c = keccak256Padded(`${_seed}_iv`);
   const cn = Scalar.fromString(BigInt(c).toString());
-  const iv = cn.mod(F.p);
+  const iv = Scalar.mod(cn, F.p);
   return iv;
 }
 
@@ -37,7 +37,7 @@ export function mimcGetConstants(seed?: string, nRounds?: number): bigint[] {
   for (let i = 1; i < _nRounds; i += 1) {
     c = keccak256Padded(c);
 
-    const n1 = BigInt(c) % BigInt(F.p.toString());
+    const n1 = BigInt(c) % F.p;
     const c2 = n1.toString(16).padStart(64, "0");
     cts[i] = F.e(BigInt(`0x${c2}`).toString());
   }
@@ -103,7 +103,7 @@ export function mimcMultiHash(arr: any[], key: any, numOutputs: number): bigint[
     outputs.push(R);
   }
   if (_numOutputs === 1) {
-    return F.normalize(outputs[0]);
+    return [F.normalize(outputs[0])];
   }
   return outputs.map((x) => F.normalize(x));
 }

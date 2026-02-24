@@ -67,7 +67,7 @@ npm test
 ## Requirements
 
 - This package requires a peer dependency of `@babel/runtime`
-- Node 20+
+- Node 22+
 - You will need to whitelist your domain on [developer dashboard](https://dashboard.web3auth.io)
 
 ## 💬 Troubleshooting and Discussions
