@@ -1,15 +1,10 @@
-import eos from "end-of-stream";
 import once from "once";
-import pump from "pump";
-import { Duplex } from "readable-stream";
-import type { Readable, Writable } from "stream";
+import type { DuplexOptions } from "readable-stream";
+import { Duplex, finished, pipeline } from "readable-stream";
 
-import { BufferEncoding } from "./interfaces";
 import { Substream } from "./substream";
 
 export const IGNORE_SUBSTREAM = Symbol("IGNORE_SUBSTREAM");
-
-export type Stream = Readable | Writable;
 
 interface Chunk {
   name: string;
@@ -17,20 +12,25 @@ interface Chunk {
 }
 
 export class ObjectMultiplex extends Duplex {
-  public _substreams: Record<string, Substream | typeof IGNORE_SUBSTREAM>;
+  private _substreams: Record<string, Substream | typeof IGNORE_SUBSTREAM>;
 
-  getStream: (name: string) => Substream | symbol;
-
-  constructor(opts: Record<string, unknown> = {}) {
+  constructor(opts: DuplexOptions = {}) {
     super({
-      ...opts,
       objectMode: true,
+      ...opts,
     });
     this._substreams = {};
   }
 
-  createStream(name: string): Substream {
-    // validate name
+  createStream(name: string, opts: DuplexOptions = {}): Substream {
+    if (this.destroyed) {
+      throw new Error(`ObjectMultiplex - parent stream for name "${name}" already destroyed`);
+    }
+
+    if (this._readableState.ended || this._writableState.ended) {
+      throw new Error(`ObjectMultiplex - parent stream for name "${name}" already ended`);
+    }
+
     if (!name) {
       throw new Error("ObjectMultiplex - name must not be empty");
     }
@@ -39,27 +39,21 @@ export class ObjectMultiplex extends Duplex {
       throw new Error(`ObjectMultiplex - Substream for name "${name}" already exists`);
     }
 
-    // create substream
-    const substream = new Substream({ parent: this, name });
+    const substream = new Substream({ parent: this, name, ...opts });
     this._substreams[name] = substream;
-
-    // listen for parent stream to end
 
     anyStreamEnd(this, (_error?: Error | null) => substream.destroy(_error || undefined));
 
     return substream;
   }
 
-  // ignore streams (dont display orphaned data warning)
   ignoreStream(name: string): void {
-    // validate name
     if (!name) {
       throw new Error("ObjectMultiplex - name must not be empty");
     }
     if (this._substreams[name]) {
       throw new Error(`ObjectMultiplex - Substream for name "${name}" already exists`);
     }
-    // set
     this._substreams[name] = IGNORE_SUBSTREAM;
   }
 
@@ -71,18 +65,18 @@ export class ObjectMultiplex extends Duplex {
     const { name, data } = chunk;
 
     if (!name) {
-      window.console.warn(`ObjectMultiplex - malformed chunk without name "${chunk}"`);
+      // eslint-disable-next-line no-console
+      console.warn(`ObjectMultiplex - malformed chunk without name "${chunk}"`);
       return callback();
     }
 
-    // get corresponding substream
     const substream = this._substreams[name];
     if (!substream) {
-      window.console.warn(`ObjectMultiplex - orphaned data for stream "${name}"`);
+      // eslint-disable-next-line no-console
+      console.warn(`ObjectMultiplex - orphaned data for stream "${name}"`);
       return callback();
     }
 
-    // push data into substream
     if (substream !== IGNORE_SUBSTREAM) {
       substream.push(data);
     }
@@ -91,24 +85,20 @@ export class ObjectMultiplex extends Duplex {
   }
 }
 
-// util
 function anyStreamEnd(stream: ObjectMultiplex, _cb: (error?: Error | null) => void) {
   const cb = once(_cb);
-  eos(stream as unknown as Stream, { readable: false }, cb);
-  eos(stream as unknown as Stream, { writable: false }, cb);
+  finished(stream, { readable: false }, cb);
+  finished(stream, { writable: false }, cb);
 }
 
 export function setupMultiplex(stream: Duplex): ObjectMultiplex {
   const mux = new ObjectMultiplex();
-  mux.getStream = function streamHelper(name: string) {
-    if (this._substreams[name]) {
-      return this._substreams[name];
+  pipeline(stream, mux, stream, (err) => {
+    // For context and todos related to the error message match, see https://github.com/MetaMask/metamask-extension/issues/26337
+    if (err && !err.message?.match("Premature close")) {
+      // eslint-disable-next-line no-console
+      console.error(err);
     }
-    return this.createStream(name);
-  };
-
-  pump(stream as unknown as Stream, mux as unknown as Stream, stream as unknown as Stream, (err) => {
-    if (err) window.console.error(err);
   });
   return mux;
 }

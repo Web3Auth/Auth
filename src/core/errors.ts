@@ -1,6 +1,4 @@
-import { CustomError } from "ts-custom-error";
-
-export interface IAuthError extends CustomError {
+export interface IAuthError extends Error {
   code: number;
   message: string;
   toString(): string;
@@ -10,7 +8,7 @@ export type ErrorCodes = {
   [key: number]: string;
 };
 
-export abstract class AuthError extends CustomError implements IAuthError {
+export abstract class AuthError extends Error implements IAuthError {
   code: number;
 
   message: string;
