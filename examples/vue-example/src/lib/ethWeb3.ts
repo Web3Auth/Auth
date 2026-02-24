@@ -5,7 +5,7 @@ export const personalSign = async (client: WalletClient): Promise<string> => {
   return client.signMessage({ account: client.account, message: "Hello, world!" });
 };
 
-export const signTypedData_v1 = async (client: WalletClient): Promise<string> => {
+export const signTypedData_v4 = async (client: WalletClient): Promise<string> => {
   if (!client.account) throw new Error("account not set on client");
   return client.signTypedData({
     account: client.account,

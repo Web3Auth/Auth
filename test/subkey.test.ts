@@ -1,3 +1,4 @@
+import { base64ToBytes } from "@toruslabs/metadata-helpers";
 import { describe, expect, it } from "vitest";
 
 import { subkey } from "../src/subkey";
@@ -8,7 +9,7 @@ const clientId = "BCtbnOamqh0cJFEUYA0NB5YkvBECZ3HLZsKfvSRBvew2EiiKW3UxpyQASSR0ar
 describe("Sub Key Derivation", () => {
   it("should derive subkey correctly", async () => {
     const privKey = PRIVATE_KEY;
-    const subKeyDerived = subkey(privKey, Buffer.from(clientId, "base64"));
+    const subKeyDerived = subkey(privKey, base64ToBytes(clientId));
     expect(subKeyDerived).toBe("2a152b927d3b01ffa912c68050d795ac59e1e4672506cdc73a29d50aa1933405");
   });
 });

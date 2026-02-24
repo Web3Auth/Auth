@@ -1,14 +1,10 @@
 import once from "once";
-import pump from "pump";
 import type { DuplexOptions } from "readable-stream";
-import { Duplex, finished } from "readable-stream";
-import type { Readable, Writable } from "stream";
+import { Duplex, finished, pipeline } from "readable-stream";
 
 import { Substream } from "./substream";
 
 export const IGNORE_SUBSTREAM = Symbol("IGNORE_SUBSTREAM");
-
-export type Stream = Readable | Writable;
 
 interface Chunk {
   name: string;
@@ -16,9 +12,7 @@ interface Chunk {
 }
 
 export class ObjectMultiplex extends Duplex {
-  public _substreams: Record<string, Substream | typeof IGNORE_SUBSTREAM>;
-
-  getStream: (name: string) => Substream | symbol;
+  private _substreams: Record<string, Substream | typeof IGNORE_SUBSTREAM>;
 
   constructor(opts: DuplexOptions = {}) {
     super({
@@ -99,15 +93,9 @@ function anyStreamEnd(stream: ObjectMultiplex, _cb: (error?: Error | null) => vo
 
 export function setupMultiplex(stream: Duplex): ObjectMultiplex {
   const mux = new ObjectMultiplex();
-  mux.getStream = function streamHelper(name: string) {
-    if (this._substreams[name]) {
-      return this._substreams[name];
-    }
-    return this.createStream(name);
-  };
-
-  pump(stream as unknown as Stream, mux as unknown as Stream, stream as unknown as Stream, (err) => {
-    if (err) {
+  pipeline(stream, mux, stream, (err) => {
+    // For context and todos related to the error message match, see https://github.com/MetaMask/metamask-extension/issues/26337
+    if (err && !err.message?.match("Premature close")) {
       // eslint-disable-next-line no-console
       console.error(err);
     }

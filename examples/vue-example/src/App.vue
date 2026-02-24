@@ -114,10 +114,10 @@
                 size="md"
                 pill
                 :disabled="!walletClient"
-                @click="signV1Message"
-                data-testid="btnSignV1Message"
+                @click="signV4Message"
+                data-testid="btnSignV4Message"
               >
-                Sign Typed data v1 test msg
+                Sign Typed data v4 test msg
               </Button>
             </div>
           </Card>
@@ -808,9 +808,9 @@ const signMessage = async () => {
   printToConsole("Signed Message", signedMessage);
 };
 
-const signV1Message = async () => {
+const signV4Message = async () => {
   if (!walletClient.value) throw new Error("wallet not set");
-  const signedMessage = await ethWeb3.signTypedData_v1(walletClient.value);
+  const signedMessage = await ethWeb3.signTypedData_v4(walletClient.value);
   printToConsole("Signed Message", signedMessage);
 };
 
