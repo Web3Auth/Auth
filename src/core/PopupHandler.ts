@@ -31,24 +31,26 @@ class PopupHandler extends (EventEmitter as new () => TypedEmitter<PopupHandlerE
 
   timeout: number;
 
-  sessionSocketUrl: string;
+  socketUrl: string;
 
-  sessionServerUrl: string;
+  serverUrl: string;
+
+  securePubSub: SecurePubSub | null = null;
 
   constructor({
     url,
     target,
     features,
     timeout = 30000,
-    sessionSocketUrl,
-    sessionServerUrl,
+    socketUrl,
+    serverUrl,
   }: {
     url: string;
     target?: string;
     features?: string;
     timeout?: number;
-    sessionSocketUrl?: string;
-    sessionServerUrl?: string;
+    socketUrl?: string;
+    serverUrl?: string;
   }) {
     // Disabling the rule here, as it is a false positive.
 
@@ -60,8 +62,8 @@ class PopupHandler extends (EventEmitter as new () => TypedEmitter<PopupHandlerE
     this.windowTimer = undefined;
     this.iClosedWindow = false;
     this.timeout = timeout;
-    this.sessionServerUrl = sessionServerUrl || SESSION_SERVER_API_URL;
-    this.sessionSocketUrl = sessionSocketUrl || SESSION_SERVER_SOCKET_URL;
+    this.serverUrl = serverUrl || SESSION_SERVER_API_URL;
+    this.socketUrl = socketUrl || SESSION_SERVER_SOCKET_URL;
     this._setupTimer();
   }
 
@@ -92,6 +94,10 @@ class PopupHandler extends (EventEmitter as new () => TypedEmitter<PopupHandlerE
   close(): void {
     this.iClosedWindow = true;
     if (this.window) this.window.close();
+    if (this.securePubSub) {
+      this.securePubSub.cleanup();
+      this.securePubSub = null;
+    }
   }
 
   redirect(locationReplaceOnRedirect: boolean): void {
@@ -103,15 +109,14 @@ class PopupHandler extends (EventEmitter as new () => TypedEmitter<PopupHandlerE
   }
 
   async listenOnChannel(loginId: string): Promise<PopupResponse> {
-    const securePubSub = new SecurePubSub({
-      serverUrl: this.sessionServerUrl,
-      socketUrl: this.sessionSocketUrl,
+    this.securePubSub = new SecurePubSub({
+      serverUrl: this.serverUrl,
+      socketUrl: this.socketUrl,
       sameIpCheck: true,
       allowedOrigin: true,
     });
-    const data = await securePubSub.subscribe(loginId);
+    const data = await this.securePubSub.subscribe(loginId);
     this.close();
-    securePubSub.cleanup();
     const parsedData = JSON.parse(data) as {
       error?: string;
       state?: string;

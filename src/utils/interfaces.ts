@@ -454,6 +454,13 @@ export type AuthOptions = {
   whiteLabel?: WhiteLabelData;
 
   /**
+   * Specify a custom authorization server url
+   * @defaultValue https://api.web3auth.io/universal-server
+   * @internal
+   */
+  authorizationServerUrl?: string;
+
+  /**
    * Specify a custom storage server url
    * @defaultValue https://api.web3auth.io/session-service
    * @internal

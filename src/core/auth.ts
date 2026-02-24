@@ -1,6 +1,6 @@
 import { SESSION_SERVER_API_URL, SESSION_SERVER_SOCKET_URL } from "@toruslabs/constants";
 import { AUTH_CONNECTION, AUTH_CONNECTION_TYPE, constructURL, getTimeout, UX_MODE } from "@toruslabs/customauth";
-import { AuthSessionManager, SessionManager } from "@toruslabs/session-manager";
+import { AuthSessionManager, SessionManager as StorageManager } from "@toruslabs/session-manager";
 
 import {
   AUTH_ACTIONS,
@@ -19,11 +19,17 @@ import {
   AuthUserInfo,
   BaseLoginParams,
   BUILD_ENV,
+  BUILD_ENV_TYPE,
+  cloneDeep,
   jsonToBase64,
   LoginParams,
   POPUP_TIMEOUT,
   SDK_MODE,
   SocialMfaModParams,
+  UNIVERSAL_SERVER_API_URL_DEVELOPMENT,
+  UNIVERSAL_SERVER_API_URL_PRODUCTION,
+  UNIVERSAL_SERVER_API_URL_STAGING,
+  UNIVERSAL_SERVER_API_URL_TESTING,
   WEB3AUTH_NETWORK,
 } from "../utils";
 import { log } from "../utils/logger";
@@ -82,6 +88,7 @@ export class Auth {
     if (!options.whiteLabel) options.whiteLabel = {};
     if (!options.authConnectionConfig) options.authConnectionConfig = [];
     if (!options.mfaSettings) options.mfaSettings = {};
+    if (!options.authorizationServerUrl) options.authorizationServerUrl = this.getDefaultAuthorizationServerUrl(options.buildEnv);
     if (!options.storageServerUrl) options.storageServerUrl = SESSION_SERVER_API_URL;
     if (!options.sessionSocketUrl) options.sessionSocketUrl = SESSION_SERVER_SOCKET_URL;
     if (!options.storage) options.storage = "local";
@@ -121,7 +128,7 @@ export class Auth {
 
   get baseUrl(): string {
     // testing and develop don't have versioning
-    if (!this.addVersionInUrls) return `${this.options.sdkUrl}`;
+    if (!this.addVersionInUrls) return this.options.sdkUrl;
     return `${this.options.sdkUrl}/v${version.split(".")[0]}`;
   }
 
@@ -141,7 +148,7 @@ export class Auth {
 
     this.sessionManager = new AuthSessionManager({
       storageKeyPrefix: storageKey,
-      apiClientConfig: { baseURL: "http://localhost:3020" },
+      apiClientConfig: { baseURL: this.options.authorizationServerUrl },
     });
 
     if (this.options.network === WEB3AUTH_NETWORK.TESTNET || this.options.network === WEB3AUTH_NETWORK.SAPPHIRE_DEVNET) {
@@ -165,7 +172,7 @@ export class Auth {
     }
 
     if (params.sessionId) {
-      this.sessionManager.setTokens({
+      await this.sessionManager.setTokens({
         session_id: params.sessionId,
         access_token: params.accessToken,
         refresh_token: params.refreshToken,
@@ -173,13 +180,15 @@ export class Auth {
       });
     }
 
-    if (this.sessionManager.getSessionId()) {
+    // Get session id from the auth session manager
+    const sessionId = await this.sessionManager.getSessionId();
+    if (sessionId) {
       const data = await this._authorizeSession();
       // Fill state with correct info from session
       // If session is invalid all the data is unset here.
       this.updateState(data);
       if (data && Object.keys(data).length > 0) {
-        this.updateState({ sessionId: this.sessionManager.getSessionId() });
+        this.updateState({ sessionId: sessionId });
       }
     }
 
@@ -213,7 +222,7 @@ export class Auth {
       this.dappState = result.state;
       throw LoginError.loginFailed(result.error);
     }
-    this.sessionManager.setTokens({
+    await this.sessionManager.setTokens({
       session_id: result.sessionId,
       access_token: result.accessToken,
       refresh_token: result.refreshToken,
@@ -237,7 +246,7 @@ export class Auth {
 
     const result = await this.authProvider.postLoginInitiatedMessage({ actionType: AUTH_ACTIONS.LOGIN, params, options: this.options }, nonce);
     if (result.error) throw LoginError.loginFailed(result.error);
-    this.sessionManager.setTokens({
+    await this.sessionManager.setTokens({
       session_id: result.sessionId,
       access_token: result.accessToken,
       refresh_token: result.refreshToken,
@@ -321,7 +330,7 @@ export class Auth {
       this.dappState = result.state;
       throw LoginError.loginFailed(result.error);
     }
-    this.sessionManager.setTokens({
+    await this.sessionManager.setTokens({
       session_id: result.sessionId,
       access_token: result.accessToken,
       refresh_token: result.refreshToken,
@@ -341,7 +350,7 @@ export class Auth {
       dappUrl: `${window.location.origin}${window.location.pathname}`,
     };
 
-    const loginId = SessionManager.generateRandomSessionKey();
+    const loginId = StorageManager.generateRandomSessionKey();
 
     const dataObject: AuthSessionConfig = {
       actionType: AUTH_ACTIONS.MANAGE_MFA,
@@ -448,10 +457,18 @@ export class Auth {
     return this.state.userInfo;
   }
 
+  private getDefaultAuthorizationServerUrl(buildEnv: BUILD_ENV_TYPE): string {
+    if (buildEnv === BUILD_ENV.PRODUCTION) return UNIVERSAL_SERVER_API_URL_PRODUCTION;
+    if (buildEnv === BUILD_ENV.STAGING) return UNIVERSAL_SERVER_API_URL_STAGING;
+    if (buildEnv === BUILD_ENV.TESTING) return UNIVERSAL_SERVER_API_URL_TESTING;
+    if (buildEnv === BUILD_ENV.DEVELOPMENT) return UNIVERSAL_SERVER_API_URL_DEVELOPMENT;
+    return UNIVERSAL_SERVER_API_URL_PRODUCTION;
+  }
+
   private async createLoginSession(loginId: string, data: AuthSessionConfig, timeout = 600, skipAwait = false): Promise<void> {
     if (!this.sessionManager) throw InitializationError.notInitialized();
 
-    const loginSessionMgr = new SessionManager<AuthSessionConfig>({
+    const loginSessionMgr = new StorageManager<AuthSessionConfig>({
       sessionServerBaseUrl: data.options.storageServerUrl,
       sessionNamespace: data.options.sessionNamespace,
       sessionTime: timeout, // each login key must be used with 10 mins (might be used at the end of popup redirect)
@@ -459,7 +476,7 @@ export class Auth {
       allowedOrigin: this.options.sdkUrl,
     });
 
-    const promise = loginSessionMgr.createSession(JSON.parse(JSON.stringify(data)));
+    const promise = loginSessionMgr.createSession(cloneDeep(data));
 
     if (data.options.uxMode === UX_MODE.REDIRECT && !skipAwait) {
       await promise;
@@ -487,7 +504,7 @@ export class Auth {
   }
 
   private async authHandler(url: string, dataObject: AuthSessionConfig, popupTimeout = 1000 * 10): Promise<PopupResponse | undefined> {
-    const loginId = SessionManager.generateRandomSessionKey();
+    const loginId = StorageManager.generateRandomSessionKey();
     await this.createLoginSession(loginId, dataObject);
     const configParams: BaseLoginParams = {
       loginId,
@@ -511,12 +528,13 @@ export class Auth {
     const currentWindow = new PopupHandler({
       url: loginUrl,
       timeout: popupTimeout,
-      sessionServerUrl: this.options.storageServerUrl,
-      sessionSocketUrl: this.options.sessionSocketUrl,
+      serverUrl: this.options.storageServerUrl,
+      socketUrl: this.options.sessionSocketUrl,
     });
 
     return new Promise((resolve, reject) => {
       currentWindow.on("close", () => {
+        currentWindow.close();
         reject(LoginError.popupClosed());
       });
 
