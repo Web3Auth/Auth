@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Scalar, ZqField } from "@toruslabs/ffjavascript";
-import { keccak256 } from "@toruslabs/metadata-helpers";
-import BN from "bn.js";
+import { bytesToHex, hexToBytes, keccak256, utf8ToBytes } from "@toruslabs/metadata-helpers";
 
 const F = new ZqField(Scalar.fromString("21888242871839275222246405745257275088548364400416034343698204186575808495617"));
 
@@ -10,19 +9,21 @@ const SEED = "mimcsponge";
 const NROUNDS = 220;
 
 function keccak256Padded(str: string): string {
-  let finalInput: Buffer = Buffer.from(str, "utf8");
-  if (typeof str === "string" && str.slice(0, 2) === "0x" && str.length === 66) {
-    finalInput = Buffer.from(str.slice(2), "hex");
+  let finalInput: Uint8Array;
+  if (str.slice(0, 2) === "0x" && str.length === 66) {
+    finalInput = hexToBytes(str.slice(2));
+  } else {
+    finalInput = utf8ToBytes(str);
   }
-  return `0x${Buffer.from(keccak256(finalInput)).toString("hex").padStart(64, "0")}`;
+  return `0x${bytesToHex(keccak256(finalInput)).padStart(64, "0")}`;
 }
 
 export function mimgGetIV(seed: string): bigint {
   let _seed = seed;
   if (typeof _seed === "undefined") _seed = SEED;
   const c = keccak256Padded(`${_seed}_iv`);
-  const cn = Scalar.fromString(new BN(c, 16).toString());
-  const iv = cn.mod(F.p);
+  const cn = Scalar.fromString(BigInt(c).toString());
+  const iv = Scalar.mod(cn, F.p);
   return iv;
 }
 
@@ -36,9 +37,9 @@ export function mimcGetConstants(seed?: string, nRounds?: number): bigint[] {
   for (let i = 1; i < _nRounds; i += 1) {
     c = keccak256Padded(c);
 
-    const n1 = new BN(c.slice(2), 16).mod(new BN(F.p.toString()));
-    const c2 = n1.toString(16, 64);
-    cts[i] = F.e(new BN(c2, 16).toString());
+    const n1 = BigInt(c) % F.p;
+    const c2 = n1.toString(16).padStart(64, "0");
+    cts[i] = F.e(BigInt(`0x${c2}`).toString());
   }
   cts[0] = F.e(0);
   cts[cts.length - 1] = F.e(0);
@@ -102,7 +103,7 @@ export function mimcMultiHash(arr: any[], key: any, numOutputs: number): bigint[
     outputs.push(R);
   }
   if (_numOutputs === 1) {
-    return F.normalize(outputs[0]);
+    return [F.normalize(outputs[0])];
   }
   return outputs.map((x) => F.normalize(x));
 }

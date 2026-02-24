@@ -99,11 +99,11 @@
                 block
                 size="md"
                 pill
-                :disabled="!ethereumPrivateKeyProvider?.provider"
+                :disabled="!walletClient"
                 @click="signMessage"
                 data-testid="btnSignMessage"
               >
-                Sign test Eth Message
+                Sign Personal Message
               </Button>
             </div>
             <div class="mb-4">
@@ -113,67 +113,11 @@
                 block
                 size="md"
                 pill
-                :disabled="!ethereumPrivateKeyProvider?.provider"
-                @click="signMpcMessage"
-                data-testid="btnSignMpcMessage"
+                :disabled="!walletClient"
+                @click="signV4Message"
+                data-testid="btnSignV4Message"
               >
-                Sign test Eth Message (MPC)
-              </Button>
-            </div>
-            <div class="mb-4">
-              <Button
-                :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']"
-                type="button"
-                block
-                size="md"
-                pill
-                :disabled="!ethereumPrivateKeyProvider?.provider"
-                @click="latestBlock"
-                data-testid="btnLatestBlock"
-              >
-                Fetch latest block
-              </Button>
-            </div>
-            <div class="mb-4">
-              <Button
-                :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']"
-                type="button"
-                block
-                size="md"
-                pill
-                :disabled="!ethereumPrivateKeyProvider?.provider"
-                @click="addChain"
-                data-testid="btnAddChain"
-              >
-                Add Sepolia
-              </Button>
-            </div>
-            <div class="mb-4">
-              <Button
-                :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']"
-                type="button"
-                block
-                size="md"
-                pill
-                :disabled="!ethereumPrivateKeyProvider?.provider"
-                @click="switchChain"
-                data-testid="btnSwitchChain"
-              >
-                Switch to Sepolia
-              </Button>
-            </div>
-            <div class="mb-4">
-              <Button
-                :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']"
-                type="button"
-                block
-                size="md"
-                pill
-                :disabled="!ethereumPrivateKeyProvider?.provider"
-                @click="signV1Message"
-                data-testid="btnSignV1Message"
-              >
-                Sign Typed data v1 test msg
+                Sign Typed data v4 test msg
               </Button>
             </div>
           </Card>
@@ -204,7 +148,6 @@
           <div class="text-app-gray-500 mt-2">This demo show how to use Auth SDK to login and sign messages using Auth SDK.</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-5">
             <div class="flex items-start w-full gap-2 grid grid-cols-1">
-              <Toggle id="mpc" v-model="useMpc" :show-label="true" :size="'small'" :label-disabled="'MPC'" :label-enabled="'MPC'" data-testid="mpc" />
               <Toggle
                 id="walletKey"
                 data-testid="walletKey"
@@ -542,7 +485,6 @@
 </template>
 
 <script setup lang="ts">
-import { generatePrivate } from "@toruslabs/eccrypto";
 import {
   BUILD_ENV,
   BUILD_ENV_TYPE,
@@ -558,7 +500,6 @@ import {
   MfaLevelType,
   WEB3AUTH_NETWORK,
   WEB3AUTH_NETWORK_TYPE,
-  WEB3AUTH_SAPPHIRE_NETWORK_TYPE,
   storageAvailable,
   SUPPORTED_KEY_CURVES,
   SUPPORTED_KEY_CURVES_TYPE,
@@ -568,21 +509,15 @@ import {
   Auth,
   getED25519Key,
 } from "@web3auth/auth";
-import { Client, getDKLSCoeff, setupSockets } from "@toruslabs/tss-client";
 import { Button, Card, Select, TextField, Toggle } from "@toruslabs/vue-components";
-import { EthereumSigningProvider } from "@web3auth/ethereum-mpc-provider";
-import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
-import BN from "bn.js";
 import bs58 from "bs58";
-import { keccak_256 } from "@noble/hashes/sha3";
+import { createWalletClient, http, type WalletClient } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
 import { computed, InputHTMLAttributes, ref, watch, watchEffect } from "vue";
 
-import { CURVE, DELIMITERS } from "./constants";
 import * as ethWeb3 from "./lib/ethWeb3";
 import whitelabel from "./lib/whitelabel";
-import { generateTSSEndpoints, getTSSEndpoints } from "./utils";
-import { getEvmChainConfig } from "@web3auth/base";
-import { bytesToHex, utf8ToBytes } from "@ethereumjs/util";
+import { getEvmChainConfig } from "./chainConfig";
 
 const OPENLOGIN_PROJECT_IDS: Record<WEB3AUTH_NETWORK_TYPE, string> = {
   [WEB3AUTH_NETWORK.MAINNET]: "BJRZ6qdDTbj6Vd5YXvV994TYCqY42-PxldCetmvGTUdoq6pkCqdpuC1DIehz76zuYdaq1RJkXGHuDraHRhCQHvA",
@@ -617,13 +552,12 @@ type EMAIL_FLOW_TYPE = (typeof EMAIL_FLOW)[keyof typeof EMAIL_FLOW];
 
 const loading = ref(false);
 const privKey = ref("");
-const ethereumPrivateKeyProvider = ref<EthereumSigningProvider | EthereumPrivateKeyProvider | null>(null);
+const walletClient = ref<WalletClient | null>(null);
 const selectedLoginProvider = ref<AUTH_CONNECTION_TYPE>(AUTH_CONNECTION.GOOGLE);
 const login_hint = ref("");
 const isWhiteLabelEnabled = ref(false);
 const selectedUxMode = ref<UX_MODE_TYPE>(UX_MODE.REDIRECT);
 const selectedOpenloginNetwork = ref<WEB3AUTH_NETWORK_TYPE>(WEB3AUTH_NETWORK.SAPPHIRE_DEVNET);
-const useMpc = ref(false);
 const includeUserDataInToken = ref(true);
 const useWalletKey = ref(false);
 const selectedBuildEnv = ref<BUILD_ENV_TYPE>(BUILD_ENV.PRODUCTION);
@@ -667,7 +601,6 @@ const openloginInstance = computed(() => {
     network: selectedOpenloginNetwork.value,
     uxMode: selectedUxMode.value,
     whiteLabel: isWhiteLabelEnabled.value ? (whitelabelConfig as WhiteLabelData) : undefined,
-    useMpc: useMpc.value,
     buildEnv: selectedBuildEnv.value,
     sdkUrl: customSdkUrl.value,
     mfaSettings: mfaSettings.value,
@@ -678,96 +611,14 @@ const openloginInstance = computed(() => {
   return op;
 });
 
-const setProvider = async (_privKey: string) => {
+const setProvider = async (privKey: string) => {
   const currentClientId = OPENLOGIN_PROJECT_IDS[selectedOpenloginNetwork.value];
   const rpcTarget = getEvmChainConfig(1, currentClientId)?.rpcTarget || "";
-  if (useMpc.value) {
-    const { factorKey, tssPubKey, tssShareIndex, userInfo, tssShare, tssNonce, signatures } = openloginInstance.value.state;
-    ethereumPrivateKeyProvider.value = new EthereumSigningProvider({
-      config: {
-        chainConfig: {
-          chainId: "0x1",
-          rpcTarget: rpcTarget,
-          displayName: "Mainnet",
-          blockExplorerUrl: "https://etherscan.io/",
-          ticker: "ETH",
-          tickerName: "Ethereum",
-          chainNamespace: "eip155",
-        },
-      },
-    });
-    if (!factorKey) throw new Error("factorKey not present");
-    if (!tssPubKey) {
-      throw new Error("tssPubKey not available");
-    }
-
-    const vid = `${userInfo?.groupedAuthConnectionId || userInfo?.authConnectionId}${DELIMITERS.Delimiter1}${userInfo?.userId}`;
-    const sessionId = `${vid}${DELIMITERS.Delimiter2}default${DELIMITERS.Delimiter3}${tssNonce}${DELIMITERS.Delimiter4}`;
-
-    const sign = async (msgHash: Buffer) => {
-      const parties = 4;
-      const clientIndex = parties - 1;
-      const tss = await import("@toruslabs/tss-lib");
-      // 1. setup
-      // generate endpoints for servers
-      const tssNodeEndpoints = getTSSEndpoints(selectedOpenloginNetwork.value as WEB3AUTH_SAPPHIRE_NETWORK_TYPE);
-      const { endpoints, tssWSEndpoints, partyIndexes } = generateTSSEndpoints(tssNodeEndpoints, parties, clientIndex);
-      const randomSessionNonce = Buffer.from(keccak_256(utf8ToBytes(bytesToHex(generatePrivate()) + Date.now()))).toString("hex");
-      const tssImportUrl = `${tssNodeEndpoints[0]}/v1/clientWasm`;
-      // session is needed for authentication to the web3auth infrastructure holding the factor 1
-      const currentSession = `${sessionId}${randomSessionNonce}`;
-
-      // setup mock shares, sockets and tss wasm files.
-      const [sockets] = await Promise.all([setupSockets(tssWSEndpoints, randomSessionNonce), tss.default(tssImportUrl)]);
-
-      const participatingServerDKGIndexes = [1, 2, 3];
-      const dklsCoeff = getDKLSCoeff(true, participatingServerDKGIndexes, tssShareIndex as number);
-      const denormalisedShare = dklsCoeff.mul(new BN(tssShare as string, "hex")).umod(CURVE.curve.n);
-      const share = Buffer.from(denormalisedShare.toString(16, 64), "hex").toString("base64");
-
-      if (!currentSession) {
-        throw new Error(`sessionAuth does not exist ${currentSession}`);
-      }
-
-      if (!signatures) {
-        throw new Error(`Signature does not exist ${signatures}`);
-      }
-
-      const client = new Client(currentSession, clientIndex, partyIndexes, endpoints, sockets, share, tssPubKey, true, tss);
-      const serverCoeffs: Record<number, string> = {};
-      for (let i = 0; i < participatingServerDKGIndexes.length; i += 1) {
-        const serverIndex = participatingServerDKGIndexes[i];
-        serverCoeffs[serverIndex] = getDKLSCoeff(false, participatingServerDKGIndexes, tssShareIndex as number, serverIndex).toString("hex");
-      }
-      client.precompute({ signatures, server_coeffs: serverCoeffs });
-      await client.ready();
-      const { r, s, recoveryParam } = await client.sign(Buffer.from(msgHash).toString("base64"), true, "", "keccak256", {
-        signatures,
-      });
-      await client.cleanup({ signatures, server_coeffs: serverCoeffs });
-      return { v: recoveryParam, r: r.toArrayLike(Buffer, "be", 64), s: s.toArrayLike(Buffer, "be", 64) };
-    };
-
-    const getPublic: () => Promise<Buffer> = async () => {
-      return Buffer.from(tssPubKey, "base64");
-    };
-    await ethereumPrivateKeyProvider.value.setupProvider({ sign, getPublic });
-  } else {
-    ethereumPrivateKeyProvider.value = new EthereumPrivateKeyProvider({
-      config: {
-        chainConfig: {
-          chainId: "0x1",
-          rpcTarget: rpcTarget,
-          displayName: "Mainnet",
-          blockExplorerUrl: "https://etherscan.io/",
-          ticker: "ETH",
-          tickerName: "Ethereum",
-          chainNamespace: "eip155",
-        },
-      },
-    });
-    ethereumPrivateKeyProvider.value.setupProvider(_privKey);
-  }
+  const account = privateKeyToAccount(`0x${privKey}`);
+  walletClient.value = createWalletClient({
+    account,
+    transport: http(rpcTarget),
+  });
 };
 
 const init = async () => {
@@ -783,7 +634,6 @@ const init = async () => {
       isWhiteLabelEnabled.value = state.isWhiteLabelEnabled;
       selectedUxMode.value = state.selectedUxMode;
       selectedOpenloginNetwork.value = state.selectedOpenloginNetwork;
-      useMpc.value = state.useMpc;
       includeUserDataInToken.value = state.includeUserDataInToken;
       useWalletKey.value = state.useWalletKey;
       selectedBuildEnv.value = state.selectedBuildEnv;
@@ -801,8 +651,6 @@ const init = async () => {
   openloginInstance.value.options.includeUserDataInToken = includeUserDataInToken.value;
   await openloginInstance.value.init();
   if (openloginInstance.value.state.factorKey) {
-    useMpc.value = true;
-    openloginInstance.value.options.useMpc = true;
     await openloginInstance.value.init();
   }
   if (openloginInstance.value.privKey || openloginInstance.value.state.factorKey || openloginInstance.value.state.walletKey) {
@@ -955,67 +803,15 @@ const getEd25519Key = () => {
 };
 
 const signMessage = async () => {
-  if (!ethereumPrivateKeyProvider.value?.provider) throw new Error("provider not set");
-  const signedMessage = await ethWeb3.signEthMessage(ethereumPrivateKeyProvider.value.provider);
+  if (!walletClient.value) throw new Error("wallet not set");
+  const signedMessage = await ethWeb3.personalSign(walletClient.value);
   printToConsole("Signed Message", signedMessage);
 };
 
-const signMpcMessage = async () => {
-  if (!ethereumPrivateKeyProvider.value?.provider) throw new Error("provider not set");
-  const signedMessage = await ethWeb3.ethSignMpcMessage(ethereumPrivateKeyProvider.value.provider);
+const signV4Message = async () => {
+  if (!walletClient.value) throw new Error("wallet not set");
+  const signedMessage = await ethWeb3.signTypedData_v4(walletClient.value);
   printToConsole("Signed Message", signedMessage);
-};
-
-const signV1Message = async () => {
-  if (!ethereumPrivateKeyProvider.value?.provider) throw new Error("provider not set");
-  const signedMessage = await ethWeb3.signTypedData_v1(ethereumPrivateKeyProvider.value.provider);
-  printToConsole("Signed Message", signedMessage);
-};
-
-const latestBlock = async () => {
-  if (!ethereumPrivateKeyProvider.value?.provider) throw new Error("provider not set");
-  const block = await ethWeb3.fetchLatestBlock(ethereumPrivateKeyProvider.value.provider);
-  printToConsole("Latest block", block);
-};
-
-const switchChain = async () => {
-  if (!ethereumPrivateKeyProvider.value?.provider) throw new Error("provider not set");
-  try {
-    await ethereumPrivateKeyProvider.value.provider.sendAsync({
-      method: "wallet_switchEthereumChain",
-      params: [{ chainId: "0xaa36a7" }],
-    });
-    printToConsole("Switched Chain", { ...ethereumPrivateKeyProvider.value.state, ...ethereumPrivateKeyProvider.value.config });
-  } catch (error) {
-    console.log("error while switching chain", error);
-    printToConsole("Switched Chain Error", error);
-  }
-};
-
-const addChain = async () => {
-  if (!ethereumPrivateKeyProvider.value?.provider) throw new Error("provider not set");
-  try {
-    await ethereumPrivateKeyProvider.value.provider.sendAsync({
-      method: "wallet_addEthereumChain",
-      params: [
-        {
-          chainId: "0xaa36a7",
-          chainName: "sepolia",
-          nativeCurrency: {
-            name: "ether",
-            symbol: "ETH",
-            decimals: 18,
-          },
-          rpcUrls: ["https://rpc.ankr.com/eth_sepolia"],
-          blockExplorerUrls: [`https://sepolia.etherscan.io/`],
-        },
-      ],
-    });
-    printToConsole("Added chain", { ...ethereumPrivateKeyProvider.value.state, ...ethereumPrivateKeyProvider.value.config });
-  } catch (error) {
-    console.log("error while adding chain", error);
-    printToConsole("Add chain error", error);
-  }
 };
 
 const logout = async () => {
@@ -1024,7 +820,7 @@ const logout = async () => {
   }
   await openloginInstance.value.logout();
   privKey.value = openloginInstance.value.privKey;
-  ethereumPrivateKeyProvider.value = null;
+  walletClient.value = null;
   if (storageAvailable("sessionStorage")) sessionStorage.removeItem("state");
 };
 
@@ -1059,7 +855,6 @@ watchEffect(() => {
     isWhiteLabelEnabled: isWhiteLabelEnabled.value,
     selectedUxMode: selectedUxMode.value,
     selectedOpenloginNetwork: selectedOpenloginNetwork.value,
-    useMpc: useMpc.value,
     includeUserDataInToken: includeUserDataInToken.value,
     useWalletKey: useWalletKey.value,
     selectedBuildEnv: selectedBuildEnv.value,

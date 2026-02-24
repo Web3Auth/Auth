@@ -26,6 +26,7 @@ export interface JRPCNotification<Params extends JRPCParams = JRPCParams> {
 }
 
 export interface JRPCRequest<Params extends JRPCParams = JRPCParams> extends JRPCBase {
+  id: JRPCId;
   method: string;
   params?: Params;
 }
@@ -108,8 +109,6 @@ export type AsyncJRPCMiddleware<T extends JRPCParams, U> = (
 ) => Promise<void>;
 
 export type ReturnHandlerCallback = (error: null | Error) => void;
-
-export type BufferEncoding = "ascii" | "utf8" | "utf-8" | "utf16le" | "ucs2" | "ucs-2" | "base64" | "latin1" | "binary" | "hex";
 
 export type BlockData = string | string[];
 

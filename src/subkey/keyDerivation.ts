@@ -1,15 +1,14 @@
-import BN from "bn.js";
+import { mod } from "@noble/curves/abstract/modular.js";
+import { bytesToNumberBE } from "@noble/curves/utils.js";
+import { secp256k1 } from "@toruslabs/metadata-helpers";
 
 import { mimcHash } from "./mimcsponge";
 
-export const SECP256K1_CURVE_N = "fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141";
-
-// creates sub-keys via MiMC hash, output keys are not padded
-export function subkey(keyHex: string, input: Buffer): string {
-  const privKeyBuf = new BN(keyHex, "hex").toString(10);
-  // TODO: check against existing usage of mimc
-  // TODO: check that MPC is possible with mimc, with tests
-  const inputPath = new BN(input).umod(new BN(SECP256K1_CURVE_N, "hex")).toString(10);
+export function subkey(keyHex: string, input: Uint8Array): string {
+  const hexPrefixedKey = keyHex.startsWith("0x") ? keyHex : `0x${keyHex}`;
+  const privKeyBuf = BigInt(hexPrefixedKey).toString(10);
+  const curveN = secp256k1.Point.CURVE().n;
+  const inputPath = mod(bytesToNumberBE(input), curveN).toString(10);
 
   const output = mimcHash(1, privKeyBuf, inputPath);
   return output.xL.toString(16);

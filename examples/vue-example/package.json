@@ -10,39 +10,29 @@
     "analyze": "source-map-explorer dist/assets/*.js dist/assets/*.map --no-border-checks"
   },
   "dependencies": {
-    "@noble/curves": "^2.0.1",
     "@toruslabs/constants": "^16.0.0",
     "@toruslabs/eccrypto": "^7.0.0",
     "@toruslabs/fnd-base": "^16.0.0",
-    "@toruslabs/tss-client": "^3.1.0",
-    "@toruslabs/tss-lib": "^2.3.0",
-    "@toruslabs/vue-components": "^7.8.4",
-    "@toruslabs/vue-icons": "^7.6.2",
+    "@toruslabs/vue-components": "^8.1.2",
+    "@toruslabs/vue-icons": "^8.0.4",
     "@web3auth/auth": "../../",
-    "@web3auth/base": "^9.7.0",
-    "@web3auth/ethereum-mpc-provider": "^9.0.2",
-    "@web3auth/ethereum-provider": "^9.0.2",
-    "bn.js": "^5.2.1",
     "bs58": "^6.0.0",
-    "core-js": "^3.38.1",
-    "elliptic": "^6.5.7",
-    "ethers": "^6.13.3",
-    "vue": "^3.5.10"
+    "core-js": "^3.48.0",
+    "viem": "^2.46.2",
+    "vue": "^3.5.28"
   },
   "devDependencies": {
-    "@toruslabs/eslint-config-vue": "^3.3.3",
-    "@types/bs58": "^4.0.4",
-    "@types/elliptic": "^6.4.18",
-    "@vitejs/plugin-vue": "^5.1.4",
-    "autoprefixer": "^10.4.20",
-    "buffer": "^6.0.3",
+    "@toruslabs/eslint-config-vue": "^5.0.0",
+    "@types/bs58": "^5.0.0",
+    "@vitejs/plugin-vue": "^6.0.4",
+    "autoprefixer": "^10.4.24",
     "empty-module": "^0.0.2",
-    "eslint": "^8.54.0",
-    "postcss": "^8.4.47",
-    "prettier": "^3.3.3",
+    "eslint": "^9.39.2",
+    "postcss": "^8.5.6",
+    "prettier": "^3.8.1",
     "source-map-explorer": "^2.5.3",
     "tailwindcss": "^3.4.13",
-    "typescript": "~5.6.2",
-    "vite": "^5.4.8"
+    "typescript": "~5.9.3",
+    "vite": "^7.3.1"
   }
 }

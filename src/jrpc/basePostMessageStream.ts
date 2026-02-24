@@ -1,3 +1,4 @@
+import type { DuplexOptions } from "readable-stream";
 import { Duplex } from "readable-stream";
 
 function noop(): void {
@@ -6,132 +7,91 @@ function noop(): void {
 
 const SYN = "SYN";
 const ACK = "ACK";
-const BRK = "BRK";
 
-export class BasePostMessageStream extends Duplex {
-  _init: boolean;
+type Log = (data: unknown, out: boolean) => void;
 
-  _haveSyn: boolean;
+export type StreamData = number | string | Record<string, unknown> | unknown[];
 
-  _name: string;
+export interface StreamMessage {
+  [key: string]: unknown;
+  data: StreamData;
+}
 
-  _target: string;
+export interface PostMessageEvent {
+  data?: StreamData;
+  origin: string;
+  source: typeof window;
+}
 
-  _targetWindow: Window;
+export function isValidStreamMessage(message: unknown): message is StreamMessage {
+  return (
+    typeof message === "object" &&
+    message !== null &&
+    Boolean((message as StreamMessage).data) &&
+    (typeof (message as StreamMessage).data === "number" ||
+      typeof (message as StreamMessage).data === "object" ||
+      typeof (message as StreamMessage).data === "string")
+  );
+}
 
-  _targetOrigin: string;
+export abstract class BasePostMessageStream extends Duplex {
+  private _init: boolean;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _onMessage: any;
+  private _haveSyn: boolean;
 
-  _synIntervalId: number;
+  private _log: Log;
 
-  constructor({
-    name,
-    target,
-    targetWindow = window,
-    targetOrigin = "*",
-  }: {
-    name: string;
-    target: string;
-    targetWindow?: Window;
-    targetOrigin?: string;
-  }) {
+  constructor(streamOptions?: DuplexOptions) {
     super({
       objectMode: true,
+      ...streamOptions,
     });
-    if (!name || !target) {
-      throw new Error("Invalid input.");
-    }
+
     this._init = false;
     this._haveSyn = false;
-    this._name = name;
-    this._target = target; // target origin
-    this._targetWindow = targetWindow;
-    this._targetOrigin = targetOrigin;
-    this._onMessage = this.onMessage.bind(this);
-    this._synIntervalId = null;
-
-    window.addEventListener("message", this._onMessage, false);
-    this._handShake();
-  }
-
-  _break(): void {
-    this.cork();
-    this._write(BRK, null, noop);
-    this._haveSyn = false;
-    this._init = false;
-  }
-
-  _handShake(): void {
-    this._write(SYN, null, noop);
-    this.cork();
-  }
-
-  _onData(data: unknown): void {
-    if (!this._init) {
-      // listen for handshake
-      if (data === SYN) {
-        this._haveSyn = true;
-        this._write(ACK, null, noop);
-      } else if (data === ACK) {
-        this._init = true;
-        if (!this._haveSyn) {
-          this._write(ACK, null, noop);
-        }
-        this.uncork();
-      }
-    } else if (data === BRK) {
-      this._break();
-    } else {
-      // forward message
-      try {
-        this.push(data);
-      } catch (err) {
-        this.emit("error", err);
-      }
-    }
-  }
-
-  _postMessage(data: unknown): void {
-    const originConstraint = this._targetOrigin;
-    this._targetWindow.postMessage(
-      {
-        target: this._target,
-        data,
-      },
-      originConstraint
-    );
-  }
-
-  onMessage(event: MessageEvent): void {
-    const message = event.data;
-
-    // validate message
-    if (
-      (this._targetOrigin !== "*" && event.origin !== this._targetOrigin) ||
-      event.source !== this._targetWindow ||
-      typeof message !== "object" ||
-      message.target !== this._name ||
-      !message.data
-    ) {
-      return;
-    }
-
-    this._onData(message.data);
+    this._log = () => null;
   }
 
   _read(): void {
     return undefined;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _write(data: unknown, _: any, cb: () => void): void {
+  _write(data: StreamData, _encoding: string | null, cb: () => void): void {
+    if (data !== ACK && data !== SYN) {
+      this._log(data, true);
+    }
     this._postMessage(data);
     cb();
   }
 
-  _destroy(): void {
-    window.removeEventListener("message", this._onMessage, false);
+  _setLogger(log: Log): void {
+    this._log = log;
   }
+
+  protected _handshake(): void {
+    this._write(SYN, null, noop);
+    this.cork();
+  }
+
+  protected _onData(data: StreamData): void {
+    if (this._init) {
+      try {
+        this.push(data);
+        this._log(data, false);
+      } catch (err) {
+        this.emit("error", err);
+      }
+    } else if (data === SYN) {
+      this._haveSyn = true;
+      this._write(ACK, null, noop);
+    } else if (data === ACK) {
+      this._init = true;
+      if (!this._haveSyn) {
+        this._write(ACK, null, noop);
+      }
+      this.uncork();
+    }
+  }
+
+  protected abstract _postMessage(_data?: unknown): void;
 }

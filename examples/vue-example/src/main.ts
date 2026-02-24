@@ -1,12 +1,12 @@
 import "./tailwind.css";
 
-import { createApp } from "vue";
+import { Component, createApp } from "vue";
 
 import App from "./App.vue";
 import createIcons from "./plugins/iconPlugin";
 
-const app = createApp(App as any);
+const app = createApp(App as unknown as Component);
 
-app.use(createIcons)
+app.use(createIcons);
 
 app.mount("#app");
