@@ -37,7 +37,7 @@ export function mimcGetConstants(seed?: string, nRounds?: number): bigint[] {
   for (let i = 1; i < _nRounds; i += 1) {
     c = keccak256Padded(c);
 
-    const n1 = BigInt(`0x${c.slice(2)}`) % BigInt(F.p.toString());
+    const n1 = BigInt(c) % BigInt(F.p.toString());
     const c2 = n1.toString(16).padStart(64, "0");
     cts[i] = F.e(BigInt(`0x${c2}`).toString());
   }
