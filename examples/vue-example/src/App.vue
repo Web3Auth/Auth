@@ -604,7 +604,7 @@ const openloginInstance = computed(() => {
     buildEnv: selectedBuildEnv.value,
     sdkUrl: customSdkUrl.value,
     mfaSettings: mfaSettings.value,
-    sessionTime: 86400,
+    sessionTime: 3600,
     includeUserDataInToken: includeUserDataInToken.value,
   });
   op.init();
@@ -650,17 +650,14 @@ const init = async () => {
   openloginInstance.value.options.mfaSettings = mfaSettings.value;
   openloginInstance.value.options.includeUserDataInToken = includeUserDataInToken.value;
   await openloginInstance.value.init();
-  if (openloginInstance.value.state.factorKey) {
-    await openloginInstance.value.init();
-  }
-  if (openloginInstance.value.privKey || openloginInstance.value.state.factorKey || openloginInstance.value.state.walletKey) {
+
+  if (openloginInstance.value.privKey || openloginInstance.value.state.walletKey) {
     const startTime = sessionStorage.getItem("startTime");
     if (startTime) {
       const loginTime = (Date.now() - parseInt(startTime, 10)) / 1000;
       console.log("Login time", `${loginTime}s`);
     }
-    privKey.value =
-      openloginInstance.value.privKey || (openloginInstance.value.state.factorKey as string) || (openloginInstance.value.state.walletKey as string);
+    privKey.value = openloginInstance.value.privKey || (openloginInstance.value.state.walletKey as string);
     await setProvider(privKey.value);
   }
   loading.value = false;

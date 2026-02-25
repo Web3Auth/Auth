@@ -20,7 +20,7 @@ export abstract class AuthError extends Error implements IAuthError {
     this.code = code;
     this.message = message || "";
     // Set name explicitly as minification can mangle class names
-    Object.defineProperty(this, "name", { value: "AuthError" });
+    Object.defineProperty(this, "name", { value: "AuthError", configurable: true });
   }
 
   toJSON(): IAuthError {
@@ -48,7 +48,7 @@ export class InitializationError extends AuthError {
     super(code, message);
 
     // Set name explicitly as minification can mangle class names
-    Object.defineProperty(this, "name", { value: "InitializationError" });
+    Object.defineProperty(this, "name", { value: "InitializationError", configurable: true });
   }
 
   public static fromCode(code: number, extraMessage = ""): AuthError {
@@ -85,7 +85,7 @@ export class LoginError extends AuthError {
     super(code, message);
 
     // Set name explicitly as minification can mangle class names
-    Object.defineProperty(this, "name", { value: "LoginError" });
+    Object.defineProperty(this, "name", { value: "LoginError", configurable: true });
   }
 
   public static fromCode(code: number, extraMessage = ""): AuthError {
