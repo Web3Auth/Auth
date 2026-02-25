@@ -17,12 +17,6 @@ export function jsonToBase64<T = Record<string, unknown>>(json: T): string {
   return encodeBase64Url(JSON.stringify(json));
 }
 
-export interface IStorage {
-  getItem(key: string): string;
-  setItem(key: string, value: string): void;
-  removeItem(key: string): void;
-}
-
 export const htmlToElement = <T extends Element>(html: string): T => {
   const template = window.document.createElement("template");
   const trimmedHtml = html.trim(); // Never return a text node of whitespace as the result

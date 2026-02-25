@@ -4,13 +4,8 @@ import { SecurePubSub } from "@toruslabs/secure-pub-sub";
 import { EventEmitter } from "events";
 import type { default as TypedEmitter } from "typed-emitter";
 
-import { LoginCallbackSuccess } from "../utils";
+import { type AuthFlowResult, type AuthTokenResponse } from "../utils";
 import { LoginError } from "./errors";
-
-export type PopupResponse = LoginCallbackSuccess & {
-  state?: string;
-  error?: string;
-};
 
 export type PopupHandlerEvents = {
   close: () => void;
@@ -78,6 +73,10 @@ class PopupHandler extends (EventEmitter as new () => TypedEmitter<PopupHandlerE
             }
             this.iClosedWindow = false;
             this.window = undefined;
+            if (this.securePubSub) {
+              this.securePubSub.cleanup();
+              this.securePubSub = null;
+            }
           }, this.timeout);
         }
         if (this.window === undefined) clearInterval(this.windowTimer);
@@ -108,7 +107,7 @@ class PopupHandler extends (EventEmitter as new () => TypedEmitter<PopupHandlerE
     }
   }
 
-  async listenOnChannel(loginId: string): Promise<PopupResponse> {
+  async listenOnChannel(loginId: string): Promise<AuthFlowResult | null> {
     this.securePubSub = new SecurePubSub({
       serverUrl: this.serverUrl,
       socketUrl: this.socketUrl,
@@ -120,7 +119,7 @@ class PopupHandler extends (EventEmitter as new () => TypedEmitter<PopupHandlerE
     const parsedData = JSON.parse(data) as {
       error?: string;
       state?: string;
-      data?: Omit<PopupResponse, "state" | "error"> | null;
+      data?: AuthTokenResponse | null;
     };
     if (parsedData.error) {
       return { error: parsedData.error, state: parsedData.state };

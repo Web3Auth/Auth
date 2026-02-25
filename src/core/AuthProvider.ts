@@ -1,9 +1,18 @@
 import { randomId } from "@toruslabs/customauth";
 
 import { AUTH_SERVICE_PRODUCTION_URL, IFRAME_MODAL_ID, JRPC_METHODS } from "../utils/constants";
-import { AuthSessionConfig, LoginCallbackSuccess, THEME_MODE_TYPE, THEME_MODES, WEB3AUTH_NETWORK_TYPE, WhiteLabelData } from "../utils/interfaces";
+import {
+  type AuthFlowResult,
+  AuthRequestPayload,
+  AuthTokenResponse,
+  THEME_MODE_TYPE,
+  THEME_MODES,
+  WEB3AUTH_NETWORK_TYPE,
+  WhiteLabelData,
+} from "../utils/interfaces";
 import { log } from "../utils/logger";
 import { htmlToElement } from "../utils/utils";
+import { isAuthFlowError } from "./utils";
 
 export async function preloadIframe() {
   try {
@@ -37,7 +46,7 @@ export class AuthProvider {
 
   public initialized: boolean = false;
 
-  private loginCallbackSuccess: ((value: LoginCallbackSuccess) => void) | null = null;
+  private loginCallbackSuccess: ((value: AuthTokenResponse) => void) | null = null;
 
   private loginCallbackFailed: ((reason?: string) => void) | null = null;
 
@@ -104,7 +113,7 @@ export class AuthProvider {
         const handleMessage = (event: MessageEvent) => {
           if (event.origin !== this.targetOrigin) return;
           const { data } = event as {
-            data: { type: string; nonce: string; data: { sessionId?: string; sessionNamespace?: string; error?: string } };
+            data: { type: string; nonce: string; data: AuthFlowResult };
           };
           const { type, nonce } = data;
           // dont do anything if the nonce is not the same.
@@ -126,7 +135,7 @@ export class AuthProvider {
               resolve();
               break;
             case JRPC_METHODS.LOGIN_FAILED:
-              this.loginCallbackFailed?.(messageData?.error || "Login failed, reason: unknown");
+              this.loginCallbackFailed?.(isAuthFlowError(messageData) ? messageData.error : "Login failed, reason: unknown");
               break;
             case JRPC_METHODS.DISPLAY_IFRAME:
               this.getAuthServiceIframe().style.display = "block";
@@ -137,7 +146,7 @@ export class AuthProvider {
             case JRPC_METHODS.LOGIN_SUCCESS:
               log.info("LOGIN_SUCCESS", messageData);
               this.getAuthServiceIframe().style.display = "none";
-              if (messageData?.sessionId) this.loginCallbackSuccess?.(messageData);
+              if (messageData && !isAuthFlowError(messageData)) this.loginCallbackSuccess?.(messageData);
               break;
             default:
               log.warn(`Unknown message type: ${type}`);
@@ -152,7 +161,7 @@ export class AuthProvider {
     });
   }
 
-  public postLoginInitiatedMessage(loginConfig: AuthSessionConfig, nonce?: string) {
+  public postLoginInitiatedMessage(loginConfig: AuthRequestPayload, nonce?: string) {
     if (!this.initialized) throw new Error("Iframe not initialized");
     this.getAuthServiceIframe().contentWindow?.postMessage(
       {
@@ -161,7 +170,7 @@ export class AuthProvider {
       },
       this.targetOrigin
     );
-    return new Promise<LoginCallbackSuccess & { error?: string }>((resolve, reject) => {
+    return new Promise<AuthTokenResponse>((resolve, reject) => {
       this.loginCallbackSuccess = resolve;
       this.loginCallbackFailed = reject;
     });

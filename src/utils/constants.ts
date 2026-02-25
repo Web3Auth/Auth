@@ -57,10 +57,12 @@ export const JRPC_METHODS = {
 
 export const IFRAME_MODAL_ID = "auth-iframe";
 
-export const UNIVERSAL_SERVER_API_URL_PRODUCTION = "https://api.web3auth.io/universal-server";
-export const UNIVERSAL_SERVER_API_URL_STAGING = "https://api.web3auth.io/universal-server";
-export const UNIVERSAL_SERVER_API_URL_DEVELOPMENT = "http://localhost:3020";
-export const UNIVERSAL_SERVER_API_URL_TESTING = "https://api-develop.web3auth.io/universal-server";
+export const DEFAULT_SESSION_TIME = 30 * 24 * 60 * 60; // 30 days
+
+export const CITADEL_SERVER_URL_PRODUCTION = "https://api.web3auth.io/citadel-server";
+export const CITADEL_SERVER_URL_STAGING = "https://api.web3auth.io/citadel-server";
+export const CITADEL_SERVER_URL_DEVELOPMENT = "http://localhost:3020";
+export const CITADEL_SERVER_URL_TESTING = "https://api-develop.web3auth.io/citadel-server";
 
 // Auth service urls
 export const AUTH_SERVICE_DEVELOPMENT_URL = "http://localhost:3000";
