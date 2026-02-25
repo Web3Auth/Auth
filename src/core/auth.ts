@@ -25,6 +25,8 @@ import {
   POPUP_TIMEOUT,
   SDK_MODE,
   SocialMfaModParams,
+  WEB3AUTH_LEGACY_NETWORK,
+  WEB3AUTH_LEGACY_NETWORK_TYPE,
   WEB3AUTH_NETWORK,
 } from "../utils";
 import { log } from "../utils/logger";
