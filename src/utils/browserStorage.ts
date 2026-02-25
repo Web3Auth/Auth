@@ -1,4 +1,6 @@
-import { IStorage, storageAvailable } from "./utils";
+import { storageAvailable } from "@toruslabs/customauth";
+
+import { IStorage } from "./utils";
 
 export class MemoryStore implements IStorage {
   store: Map<string, string> = new Map();
@@ -30,7 +32,7 @@ export class BrowserStorage {
       if (!storage.getItem(storeKey)) {
         this.resetStore();
       }
-    } catch (error) {
+    } catch {
       // Storage is not available
     }
   }

@@ -1,16 +1,17 @@
 import { Duplex } from "readable-stream";
 
-import { JsonRpcErrorsArg, rpcErrors } from "./errors/errors";
-import { serializeError } from "./errors/utils";
+import { log } from "../utils/logger";
+import { errorCodes, JsonRpcError } from "./errors";
+import { getMessageFromCode, serializeJrpcError } from "./errors/utils";
 import {
   JRPCEngineEndCallback,
   JRPCEngineNextCallback,
   JRPCEngineReturnHandler,
+  JRPCError,
   JRPCMiddleware,
   JRPCRequest,
   JRPCResponse,
   Maybe,
-  OptionalDataWithOptionalCause,
   RequestArguments,
   SendCallBack,
 } from "./interfaces";
@@ -20,6 +21,22 @@ import { SerializableError } from "./serializableError";
 export type JrpcEngineEvents = {
   notification: (...args: unknown[]) => void;
 };
+
+function constructFallbackError(error: Error): JRPCError {
+  const {
+    message = "",
+    code = -32603,
+    stack = "Stack trace is not available.",
+    data = "",
+  } = error as { message?: string; code?: number; stack?: string; data?: string };
+  const codeNumber = parseInt(code?.toString() || "-32603");
+  return {
+    message: message || error?.toString() || getMessageFromCode(codeNumber),
+    code: codeNumber,
+    stack,
+    data: data || message || error?.toString(),
+  };
+}
 
 /**
  * A JSON-RPC request and response processor.
@@ -82,15 +99,11 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
         const error = err || res.error;
         if (error) {
           if (typeof error === "object" && Object.keys(error).includes("stack") === false) error.stack = "Stack trace is not available.";
+          log.error(error);
 
-          res.error = serializeError(error, {
+          res.error = serializeJrpcError(error, {
             shouldIncludeStack: true,
-            fallbackError: {
-              message: error?.message || error?.toString(),
-              code: error?.code || -32603,
-              stack: error?.stack || "Stack trace is not available.",
-              data: error?.data || error?.message || error?.toString(),
-            },
+            fallbackError: constructFallbackError(error),
           });
         }
         // True indicates that the request should end
@@ -328,15 +341,10 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
       delete res.result;
       if (!res.error) {
         if (typeof error === "object" && Object.keys(error).includes("stack") === false) error.stack = "Stack trace is not available.";
-
-        res.error = serializeError(error, {
+        log.error(error);
+        res.error = serializeJrpcError(error, {
           shouldIncludeStack: true,
-          fallbackError: {
-            message: error?.message || error?.toString(),
-            code: (error as { code?: number })?.code || -32603,
-            stack: error?.stack || "Stack trace is not available.",
-            data: (error as { data?: string })?.data || error?.message || error?.toString(),
-          },
+          fallbackError: constructFallbackError(error),
         });
       }
     }
@@ -428,18 +436,15 @@ export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider
     const res = await engine.handle(req);
     if (res.error) {
       if (typeof res.error === "object" && Object.keys(res.error).includes("stack") === false) res.error.stack = "Stack trace is not available.";
-
-      const err = serializeError(res.error, {
-        fallbackError: {
-          message: res.error?.message || res.error?.toString(),
-          code: res.error?.code || -32603,
-          stack: res.error?.stack || "Stack trace is not available.",
-          data: res.error?.data || res.error?.message || res.error?.toString(),
-        },
+      log.error(res.error);
+      const err = serializeJrpcError(res.error, {
+        fallbackError: constructFallbackError(res.error),
         shouldIncludeStack: true,
       });
 
-      throw rpcErrors.internal(err as JsonRpcErrorsArg<OptionalDataWithOptionalCause>);
+      const errorCode = err?.code ?? errorCodes.rpc.internal;
+      const error = new JsonRpcError(errorCode, err?.message ?? getMessageFromCode(errorCode), err?.data);
+      throw error;
     }
     return res.result as U;
   };

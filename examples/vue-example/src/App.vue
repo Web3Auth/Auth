@@ -223,6 +223,7 @@
                 :label-disabled="'Whitelabel'"
                 :label-enabled="'Whitelabel'"
               />
+              <Toggle id="includeUserDataInToken" v-model="includeUserDataInToken" :show-label="true" :size="'small'" :label-disabled="'Include User Data in Token'" :label-enabled="'Include User Data in Token'" data-testid="includeUserDataInToken" />
             </div>
             <div>
               <div>
@@ -484,7 +485,7 @@
             </div>
             <div>
               <TextField
-                v-if="selectedLoginProvider === LOGIN_PROVIDER.EMAIL_PASSWORDLESS"
+                v-if="selectedLoginProvider === AUTH_CONNECTION.EMAIL_PASSWORDLESS"
                 v-model="login_hint"
                 data-testid="loginHint"
                 class="mt-3"
@@ -498,7 +499,7 @@
             </div>
             <div>
               <TextField
-                v-if="selectedLoginProvider === LOGIN_PROVIDER.SMS_PASSWORDLESS"
+                v-if="selectedLoginProvider === AUTH_CONNECTION.SMS_PASSWORDLESS"
                 v-model="login_hint"
                 data-testid="loginHint"
                 class="mt-3"
@@ -539,8 +540,8 @@ import {
   BUILD_ENV_TYPE,
   LANGUAGE_TYPE,
   LANGUAGES,
-  LOGIN_PROVIDER,
-  LOGIN_PROVIDER_TYPE,
+  AUTH_CONNECTION,
+  AUTH_CONNECTION_TYPE,
   LoginParams,
   MFA_FACTOR,
   MFA_FACTOR_TYPE,
@@ -570,9 +571,9 @@ import { computed, InputHTMLAttributes, ref, watch, watchEffect } from "vue";
 
 import { CURVE, DELIMITERS } from "./constants";
 import * as ethWeb3 from "./lib/ethWeb3";
-import loginConfig from "./lib/loginConfig";
 import whitelabel from "./lib/whitelabel";
 import { generateTSSEndpoints, getTSSEndpoints } from "./utils";
+import { getEvmChainConfig } from "@web3auth/base";
 
 const OPENLOGIN_PROJECT_IDS: Record<WEB3AUTH_NETWORK_TYPE, string> = {
   [WEB3AUTH_NETWORK.MAINNET]: "BJRZ6qdDTbj6Vd5YXvV994TYCqY42-PxldCetmvGTUdoq6pkCqdpuC1DIehz76zuYdaq1RJkXGHuDraHRhCQHvA",
@@ -607,12 +608,13 @@ type EMAIL_FLOW_TYPE = (typeof EMAIL_FLOW)[keyof typeof EMAIL_FLOW];
 const loading = ref(false);
 const privKey = ref("");
 const ethereumPrivateKeyProvider = ref<EthereumSigningProvider | EthereumPrivateKeyProvider | null>(null);
-const selectedLoginProvider = ref<LOGIN_PROVIDER_TYPE>(LOGIN_PROVIDER.GOOGLE);
+const selectedLoginProvider = ref<AUTH_CONNECTION_TYPE>(AUTH_CONNECTION.GOOGLE);
 const login_hint = ref("");
 const isWhiteLabelEnabled = ref(false);
 const selectedUxMode = ref<UX_MODE_TYPE>(UX_MODE.REDIRECT);
 const selectedOpenloginNetwork = ref<WEB3AUTH_NETWORK_TYPE>(WEB3AUTH_NETWORK.SAPPHIRE_DEVNET);
 const useMpc = ref(false);
+const includeUserDataInToken = ref(true);
 const useWalletKey = ref(false);
 const selectedBuildEnv = ref<BUILD_ENV_TYPE>(BUILD_ENV.PRODUCTION);
 const emailFlowType = ref<EMAIL_FLOW_TYPE>(EMAIL_FLOW.code);
@@ -655,24 +657,27 @@ const openloginInstance = computed(() => {
     network: selectedOpenloginNetwork.value,
     uxMode: selectedUxMode.value,
     whiteLabel: isWhiteLabelEnabled.value ? (whitelabelConfig as WhiteLabelData) : undefined,
-    loginConfig,
     useMpc: useMpc.value,
     buildEnv: selectedBuildEnv.value,
     sdkUrl: customSdkUrl.value,
     mfaSettings: mfaSettings.value,
+    sessionTime: 3600,
+    includeUserDataInToken: includeUserDataInToken.value,
   });
   op.init();
   return op;
 });
 
 const setProvider = async (_privKey: string) => {
+  const currentClientId = OPENLOGIN_PROJECT_IDS[selectedOpenloginNetwork.value];
+  const rpcTarget = getEvmChainConfig(1, currentClientId)?.rpcTarget || "";
   if (useMpc.value) {
     const { factorKey, tssPubKey, tssShareIndex, userInfo, tssShare, tssNonce, signatures } = openloginInstance.value.state;
     ethereumPrivateKeyProvider.value = new EthereumSigningProvider({
       config: {
         chainConfig: {
           chainId: "0x1",
-          rpcTarget: `https://rpc.ankr.com/eth`,
+          rpcTarget: rpcTarget,
           displayName: "Mainnet",
           blockExplorerUrl: "https://etherscan.io/",
           ticker: "ETH",
@@ -686,7 +691,7 @@ const setProvider = async (_privKey: string) => {
       throw new Error("tssPubKey not available");
     }
 
-    const vid = `${userInfo?.aggregateVerifier || userInfo?.verifier}${DELIMITERS.Delimiter1}${userInfo?.verifierId}`;
+    const vid = `${userInfo?.groupedAuthConnectionId || userInfo?.authConnectionId}${DELIMITERS.Delimiter1}${userInfo?.userId}`;
     const sessionId = `${vid}${DELIMITERS.Delimiter2}default${DELIMITERS.Delimiter3}${tssNonce}${DELIMITERS.Delimiter4}`;
 
     const sign = async (msgHash: Buffer) => {
@@ -742,7 +747,7 @@ const setProvider = async (_privKey: string) => {
       config: {
         chainConfig: {
           chainId: "0x1",
-          rpcTarget: `https://rpc.ankr.com/eth`,
+          rpcTarget: rpcTarget,
           displayName: "Mainnet",
           blockExplorerUrl: "https://etherscan.io/",
           ticker: "ETH",
@@ -769,6 +774,7 @@ const init = async () => {
       selectedUxMode.value = state.selectedUxMode;
       selectedOpenloginNetwork.value = state.selectedOpenloginNetwork;
       useMpc.value = state.useMpc;
+      includeUserDataInToken.value = state.includeUserDataInToken;
       useWalletKey.value = state.useWalletKey;
       selectedBuildEnv.value = state.selectedBuildEnv;
       emailFlowType.value = state.emailFlowType;
@@ -782,6 +788,7 @@ const init = async () => {
   openloginInstance.value.options.uxMode = selectedUxMode.value;
   openloginInstance.value.options.whiteLabel = isWhiteLabelEnabled.value ? whitelabelConfig.value : undefined;
   openloginInstance.value.options.mfaSettings = mfaSettings.value;
+  openloginInstance.value.options.includeUserDataInToken = includeUserDataInToken.value;
   await openloginInstance.value.init();
   if (openloginInstance.value.state.factorKey) {
     useMpc.value = true;
@@ -816,17 +823,18 @@ const printToConsole = (...args: unknown[]) => {
   }
 };
 
-const computedLoginProviders = computed(() => Object.values(LOGIN_PROVIDER).filter((x) => x !== "jwt" && x !== "webauthn" && x !== "passkeys" && x !== "authenticator"));
-const showEmailFlow = computed(() => selectedLoginProvider.value === LOGIN_PROVIDER.EMAIL_PASSWORDLESS);
+const computedLoginProviders = computed(() => Object.values(AUTH_CONNECTION).filter((x) => x !== "custom" && x !== "passkeys" && x !== "authenticator"));
+
+const showEmailFlow = computed(() => selectedLoginProvider.value === AUTH_CONNECTION.EMAIL_PASSWORDLESS);
 const isLoginHintAvailable = computed(() => {
-  if (selectedLoginProvider.value === LOGIN_PROVIDER.EMAIL_PASSWORDLESS || selectedLoginProvider.value === LOGIN_PROVIDER.SMS_PASSWORDLESS) {
+  if (selectedLoginProvider.value === AUTH_CONNECTION.EMAIL_PASSWORDLESS || selectedLoginProvider.value === AUTH_CONNECTION.SMS_PASSWORDLESS) {
     if (!login_hint.value) {
       return false;
     }
-    if (selectedLoginProvider.value === LOGIN_PROVIDER.EMAIL_PASSWORDLESS && !login_hint.value.match(/^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i)) {
+    if (selectedLoginProvider.value === AUTH_CONNECTION.EMAIL_PASSWORDLESS && !login_hint.value.match(/^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i)) {
       return false;
     }
-    if (selectedLoginProvider.value === LOGIN_PROVIDER.SMS_PASSWORDLESS && !(login_hint.value.startsWith("+") && login_hint.value.includes("-"))) {
+    if (selectedLoginProvider.value === AUTH_CONNECTION.SMS_PASSWORDLESS && !(login_hint.value.startsWith("+") && login_hint.value.includes("-"))) {
       return false;
     }
   }
@@ -834,7 +842,7 @@ const isLoginHintAvailable = computed(() => {
 });
 
 const isLongLines = computed(() =>
-  ([LOGIN_PROVIDER.EMAIL_PASSWORDLESS, LOGIN_PROVIDER.SMS_PASSWORDLESS] as LOGIN_PROVIDER_TYPE[]).includes(selectedLoginProvider.value),
+  ([AUTH_CONNECTION.EMAIL_PASSWORDLESS, AUTH_CONNECTION.SMS_PASSWORDLESS] as AUTH_CONNECTION_TYPE[]).includes(selectedLoginProvider.value),
 );
 
 const login = async () => {
@@ -849,27 +857,15 @@ const login = async () => {
     openloginInstance.value.options.uxMode = selectedUxMode.value;
     openloginInstance.value.options.whiteLabel = isWhiteLabelEnabled.value ? whitelabelConfig.value : undefined;
     openloginInstance.value.options.mfaSettings = mfaSettings.value;
+    openloginInstance.value.options.includeUserDataInToken = includeUserDataInToken.value;
     // in popup mode (with third party cookies available) or if user is already logged in this function will
     // return priv key , in redirect mode or if third party cookies are blocked then priv key be injected to
     // sdk instance after calling init on redirect url page.
     const openLoginObj: LoginParams = {
       curve: selectedCurve.value,
-      loginProvider: selectedLoginProvider.value,
+      authConnection: selectedLoginProvider.value,
       mfaLevel: selectedMfaLevel.value,
       getWalletKey: useWalletKey.value,
-      // pass empty string '' as loginProvider to open default torus modal
-      // with all default supported login providers or you can pass specific
-      // login provider from available list to set as default.
-      // for ex: google, facebook, twitter etc
-      redirectUrl: `${window.origin}`,
-      // you can pass standard oauth parameter in extralogin options
-      // for ex: in case of passwordless login, you have to pass user's email as login_hint
-      // and your app domain.
-      // extraLoginOptions: {
-      //   domain: 'www.yourapp.com',
-      //   login_hint: 'hello@yourapp.com',
-      // },
-      // sessionTime: 30, //seconds
     };
 
     if (isLongLines.value) {
@@ -1052,6 +1048,7 @@ watchEffect(() => {
     selectedUxMode: selectedUxMode.value,
     selectedOpenloginNetwork: selectedOpenloginNetwork.value,
     useMpc: useMpc.value,
+    includeUserDataInToken: includeUserDataInToken.value,
     useWalletKey: useWalletKey.value,
     selectedBuildEnv: selectedBuildEnv.value,
     emailFlowType: emailFlowType.value,

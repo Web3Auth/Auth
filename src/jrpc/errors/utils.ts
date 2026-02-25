@@ -52,7 +52,7 @@ export function isPlainObject(value: unknown) {
       proto = Object.getPrototypeOf(proto);
     }
     return Object.getPrototypeOf(value) === proto;
-  } catch (_) {
+  } catch {
     return false;
   }
 }
@@ -126,7 +126,7 @@ function isValidJson(str: unknown): boolean {
       }
     );
     // this means, it's a valid json so far
-  } catch (e) {
+  } catch {
     return false;
   }
   return true;
@@ -216,7 +216,7 @@ function buildError(error: unknown, fallbackError: JRPCError): JRPCError {
  * on the returned object.
  * @returns The serialized error.
  */
-export function serializeError(error: unknown, { fallbackError = FALLBACK_ERROR, shouldIncludeStack = true } = {}): JRPCError {
+export function serializeJrpcError(error: unknown, { fallbackError = FALLBACK_ERROR, shouldIncludeStack = true } = {}): JRPCError {
   if (!isJsonRpcError(fallbackError)) {
     throw new Error("Must provide fallback error with integer number code and string message.");
   }
