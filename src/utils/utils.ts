@@ -1,4 +1,5 @@
 import { decodeBase64Url, encodeBase64Url } from "@toruslabs/metadata-helpers";
+import { klona } from "klona/json";
 
 export function safebtoa(str: string): string {
   return encodeBase64Url(str);
@@ -17,12 +18,6 @@ export function jsonToBase64<T = Record<string, unknown>>(json: T): string {
   return encodeBase64Url(JSON.stringify(json));
 }
 
-export interface IStorage {
-  getItem(key: string): string;
-  setItem(key: string, value: string): void;
-  removeItem(key: string): void;
-}
-
 export const htmlToElement = <T extends Element>(html: string): T => {
   const template = window.document.createElement("template");
   const trimmedHtml = html.trim(); // Never return a text node of whitespace as the result
@@ -32,7 +27,7 @@ export const htmlToElement = <T extends Element>(html: string): T => {
 
 export function cloneDeep<T>(object: T): T {
   try {
-    return structuredClone(object);
+    return klona(object);
   } catch {
     return JSON.parse(JSON.stringify(object));
   }

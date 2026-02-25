@@ -1,6 +1,7 @@
 import { SESSION_SERVER_API_URL, SESSION_SERVER_SOCKET_URL } from "@toruslabs/constants";
 import { AUTH_CONNECTION, AUTH_CONNECTION_TYPE, constructURL, getTimeout, UX_MODE } from "@toruslabs/customauth";
-import { SessionManager } from "@toruslabs/session-manager";
+import { AuthSessionManager, SessionManager as StorageManager } from "@toruslabs/session-manager";
+import { klona } from "klona/json";
 
 import {
   AUTH_ACTIONS,
@@ -13,13 +14,19 @@ import {
   AUTH_SERVICE_PRODUCTION_URL,
   AUTH_SERVICE_STAGING_URL,
   AUTH_SERVICE_TESTING_URL,
+  type AuthFlowResult,
   AuthOptions,
-  AuthSessionConfig,
+  AuthRequestPayload,
   AuthSessionData,
   AuthUserInfo,
   BaseLoginParams,
-  BrowserStorage,
   BUILD_ENV,
+  BUILD_ENV_TYPE,
+  CITADEL_SERVER_URL_DEVELOPMENT,
+  CITADEL_SERVER_URL_PRODUCTION,
+  CITADEL_SERVER_URL_STAGING,
+  CITADEL_SERVER_URL_TESTING,
+  DEFAULT_SESSION_TIME,
   jsonToBase64,
   LoginParams,
   POPUP_TIMEOUT,
@@ -30,17 +37,15 @@ import {
 import { log } from "../utils/logger";
 import { AuthProvider } from "./AuthProvider";
 import { InitializationError, LoginError } from "./errors";
-import PopupHandler, { PopupResponse } from "./PopupHandler";
-import { getHashQueryParams, version } from "./utils";
+import PopupHandler from "./PopupHandler";
+import { getHashQueryParams, isAuthFlowError, version } from "./utils";
 
 export class Auth {
   state: AuthSessionData = {};
 
   options: AuthOptions;
 
-  private sessionManager: SessionManager<AuthSessionData>;
-
-  private currentStorage: BrowserStorage;
+  private sessionManager: AuthSessionManager<AuthSessionData>;
 
   private _storageBaseKey = "auth_store";
 
@@ -59,7 +64,7 @@ export class Auth {
     if (!options.sdkMode) options.sdkMode = SDK_MODE.DEFAULT;
 
     if (options.buildEnv === BUILD_ENV.DEVELOPMENT || options.buildEnv === BUILD_ENV.TESTING || options.sdkUrl) this.addVersionInUrls = false;
-    if (!options.sdkUrl && !options.useMpc) {
+    if (!options.sdkUrl) {
       if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
         options.sdkUrl = AUTH_SERVICE_DEVELOPMENT_URL;
         options.dashboardUrl = AUTH_DASHBOARD_DEVELOPMENT_URL;
@@ -85,16 +90,15 @@ export class Auth {
     if (!options.whiteLabel) options.whiteLabel = {};
     if (!options.authConnectionConfig) options.authConnectionConfig = [];
     if (!options.mfaSettings) options.mfaSettings = {};
+    if (!options.citadelServerUrl) options.citadelServerUrl = this.getDefaultCitadelServerUrl(options.buildEnv);
     if (!options.storageServerUrl) options.storageServerUrl = SESSION_SERVER_API_URL;
     if (!options.sessionSocketUrl) options.sessionSocketUrl = SESSION_SERVER_SOCKET_URL;
-    if (!options.storage) options.storage = "local";
-    if (!options.sessionTime) options.sessionTime = 86400;
+    if (!options.sessionTime) options.sessionTime = DEFAULT_SESSION_TIME;
 
     this.options = options;
   }
 
   get privKey(): string {
-    if (this.options.useMpc) return this.state.factorKey || "";
     return this.state.privKey ? this.state.privKey.padStart(64, "0") : "";
   }
 
@@ -119,12 +123,12 @@ export class Auth {
   }
 
   get appState(): string {
-    return this.state.userInfo.appState || this.dappState || "";
+    return this.state?.userInfo?.appState || this.dappState || "";
   }
 
   get baseUrl(): string {
     // testing and develop don't have versioning
-    if (!this.addVersionInUrls) return `${this.options.sdkUrl}`;
+    if (!this.addVersionInUrls) return this.options.sdkUrl;
     return `${this.options.sdkUrl}/v${version.split(".")[0]}`;
   }
 
@@ -141,16 +145,14 @@ export class Auth {
 
     const storageKey =
       this.options.sessionKey || (this.options.sessionNamespace ? `${this._storageBaseKey}_${this.options.sessionNamespace}` : this._storageBaseKey);
-    this.currentStorage = BrowserStorage.getInstance(storageKey, this.options.storage);
 
-    const sessionId = this.currentStorage.get<string>("sessionId");
-
-    this.sessionManager = new SessionManager({
-      sessionServerBaseUrl: this.options.storageServerUrl,
-      sessionNamespace: this.options.sessionNamespace,
-      sessionTime: this.options.sessionTime,
-      sessionId,
-      allowedOrigin: this.options.sdkUrl,
+    // We dont need to set the sessionTime here, because the session would be created by auth service.
+    this.sessionManager = new AuthSessionManager({
+      storageKeyPrefix: storageKey,
+      apiClientConfig: { baseURL: this.options.citadelServerUrl },
+      storage: this.options.storage,
+      accessTokenProvider: this.options.accessTokenProvider,
+      cookieOptions: this.options.cookieOptions,
     });
 
     if (this.options.network === WEB3AUTH_NETWORK.TESTNET || this.options.network === WEB3AUTH_NETWORK.SAPPHIRE_DEVNET) {
@@ -174,20 +176,22 @@ export class Auth {
     }
 
     if (params.sessionId) {
-      this.currentStorage.set("sessionId", params.sessionId);
-      this.sessionManager.sessionId = params.sessionId;
+      await this.sessionManager.setTokens({
+        session_id: params.sessionId,
+        access_token: params.accessToken || "",
+        refresh_token: params.refreshToken || "",
+        id_token: params.idToken || "",
+      });
     }
 
-    if (this.sessionManager.sessionId) {
+    // Get session id from the auth session manager
+    const sessionId = await this.sessionManager.getSessionId();
+    if (sessionId) {
       const data = await this._authorizeSession();
       // Fill state with correct info from session
       // If session is invalid all the data is unset here.
-      this.updateState(data);
-      if (Object.keys(data).length === 0) {
-        // If session is invalid, unset the sessionId from localStorage.
-        this.currentStorage.set("sessionId", "");
-      } else {
-        this.updateState({ sessionId: this.sessionManager.sessionId });
+      if (data && Object.keys(data).length > 0) {
+        this.updateState(data);
       }
     }
 
@@ -209,21 +213,24 @@ export class Auth {
 
     const loginParams: LoginParams = { ...params };
 
-    const dataObject: AuthSessionConfig = {
+    const dataObject: AuthRequestPayload = {
       actionType: AUTH_ACTIONS.LOGIN,
       options: this.options,
       params: loginParams,
     };
 
     const result = await this.authHandler(`${this.baseUrl}/start`, dataObject, getTimeout(params.authConnection as AUTH_CONNECTION_TYPE));
-    if (this.options.uxMode === UX_MODE.REDIRECT) return null;
-    if (result.error) {
+    if (!result) return null;
+    if (isAuthFlowError(result)) {
       this.dappState = result.state;
       throw LoginError.loginFailed(result.error);
     }
-    this.sessionManager.sessionId = result.sessionId;
-    this.options.sessionNamespace = result.sessionNamespace;
-    this.currentStorage.set("sessionId", result.sessionId);
+    await this.sessionManager.setTokens({
+      session_id: result.sessionId,
+      access_token: result.accessToken,
+      refresh_token: result.refreshToken,
+      id_token: result.idToken,
+    });
     await this.rehydrateSession();
     return { privKey: this.privKey };
   }
@@ -241,10 +248,13 @@ export class Auth {
     }
 
     const result = await this.authProvider.postLoginInitiatedMessage({ actionType: AUTH_ACTIONS.LOGIN, params, options: this.options }, nonce);
-    if (result.error) throw LoginError.loginFailed(result.error);
-    this.sessionManager.sessionId = result.sessionId;
+    await this.sessionManager.setTokens({
+      session_id: result.sessionId,
+      access_token: result.accessToken,
+      refresh_token: result.refreshToken,
+      id_token: result.idToken,
+    });
     this.options.sessionNamespace = result.sessionNamespace;
-    this.currentStorage.set("sessionId", result.sessionId);
     await this.rehydrateSession();
   }
 
@@ -258,8 +268,8 @@ export class Auth {
   }
 
   async logout(): Promise<void> {
-    if (!this.sessionManager.sessionId) throw LoginError.userNotLoggedIn();
-    await this.sessionManager.invalidateSession();
+    if (!this.sessionId) throw LoginError.userNotLoggedIn();
+    await this.sessionManager.logout();
     this.updateState({
       privKey: "",
       coreKitKey: "",
@@ -287,22 +297,15 @@ export class Auth {
       },
       authToken: "",
       sessionId: "",
-      factorKey: "",
       signatures: [],
-      tssShareIndex: -1,
-      tssPubKey: "",
-      tssShare: "",
-      tssNonce: -1,
     });
-
-    this.currentStorage.set("sessionId", "");
   }
 
   async enableMFA(params: Partial<LoginParams>): Promise<boolean> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
     if (this.state.userInfo.isMfaEnabled) throw LoginError.mfaAlreadyEnabled();
 
-    const dataObject: AuthSessionConfig = {
+    const dataObject: AuthRequestPayload = {
       actionType: AUTH_ACTIONS.ENABLE_MFA,
       options: { ...this.options, sdkMode: SDK_MODE.DEFAULT },
       params: {
@@ -319,14 +322,17 @@ export class Auth {
     };
 
     const result = await this.authHandler(`${this.baseUrl}/start`, dataObject, POPUP_TIMEOUT);
-    if (this.options.uxMode === UX_MODE.REDIRECT) return null;
-    if (result.error) {
+    if (!result) return false;
+    if (isAuthFlowError(result)) {
       this.dappState = result.state;
       throw LoginError.loginFailed(result.error);
     }
-    this.sessionManager.sessionId = result.sessionId;
-    this.options.sessionNamespace = result.sessionNamespace;
-    this.currentStorage.set("sessionId", result.sessionId);
+    await this.sessionManager.setTokens({
+      session_id: result.sessionId,
+      access_token: result.accessToken,
+      refresh_token: result.refreshToken,
+      id_token: result.idToken,
+    });
     await this.rehydrateSession();
     return Boolean(this.state.userInfo?.isMfaEnabled);
   }
@@ -341,9 +347,9 @@ export class Auth {
       dappUrl: `${window.location.origin}${window.location.pathname}`,
     };
 
-    const loginId = SessionManager.generateRandomSessionKey();
+    const loginId = StorageManager.generateRandomSessionKey();
 
-    const dataObject: AuthSessionConfig = {
+    const dataObject: AuthRequestPayload = {
       actionType: AUTH_ACTIONS.MANAGE_MFA,
       // manage mfa always opens in a new tab, so need to fix the uxMode to redirect.
       options: {
@@ -366,7 +372,7 @@ export class Auth {
       sessionId: this.sessionId,
     };
 
-    this.createLoginSession(loginId, dataObject, dataObject.options.sessionTime, true);
+    this.storeAuthPayload(loginId, dataObject, dataObject.options.sessionTime, true);
     const configParams: BaseLoginParams = {
       loginId,
       sessionNamespace: this.options.sessionNamespace,
@@ -384,7 +390,7 @@ export class Auth {
   async manageSocialFactor(actionType: AUTH_ACTIONS_TYPE, params: SocialMfaModParams & Pick<LoginParams, "appState">): Promise<boolean> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
 
-    const dataObject: AuthSessionConfig = {
+    const dataObject: AuthRequestPayload = {
       actionType,
       options: { ...this.options, sdkMode: SDK_MODE.DEFAULT },
       params: {
@@ -394,15 +400,15 @@ export class Auth {
     };
 
     const result = await this.authHandler(`${this.baseUrl}/start`, dataObject);
-    if (this.options.uxMode === UX_MODE.REDIRECT) return undefined;
-    if (result.error) return false;
+    if (!result) return false;
+    if (isAuthFlowError(result)) return false;
     return true;
   }
 
   async addAuthenticatorFactor(params: Pick<LoginParams, "appState">): Promise<boolean> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
 
-    const dataObject: AuthSessionConfig = {
+    const dataObject: AuthRequestPayload = {
       actionType: AUTH_ACTIONS.ADD_AUTHENTICATOR_FACTOR,
       options: { ...this.options, sdkMode: SDK_MODE.DEFAULT },
       params: {
@@ -413,15 +419,15 @@ export class Auth {
     };
 
     const result = await this.authHandler(`${this.baseUrl}/start`, dataObject);
-    if (this.options.uxMode === UX_MODE.REDIRECT) return undefined;
-    if (result.error) return false;
+    if (!result) return false;
+    if (isAuthFlowError(result)) return false;
     return true;
   }
 
   async addPasskeyFactor(params: Pick<LoginParams, "appState">): Promise<boolean> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
 
-    const dataObject: AuthSessionConfig = {
+    const dataObject: AuthRequestPayload = {
       actionType: AUTH_ACTIONS.ADD_PASSKEY_FACTOR,
       options: { ...this.options, sdkMode: SDK_MODE.DEFAULT },
       params: {
@@ -432,8 +438,8 @@ export class Auth {
     };
 
     const result = await this.authHandler(`${this.baseUrl}/start`, dataObject);
-    if (this.options.uxMode === UX_MODE.REDIRECT) return undefined;
-    if (result.error) return false;
+    if (!result) return false;
+    if (isAuthFlowError(result)) return false;
     return true;
   }
 
@@ -442,38 +448,45 @@ export class Auth {
   }
 
   getUserInfo(): AuthUserInfo {
-    if (!this.sessionManager.sessionId) {
+    if (!this.sessionId) {
       throw LoginError.userNotLoggedIn();
     }
     return this.state.userInfo;
   }
 
-  private async createLoginSession(loginId: string, data: AuthSessionConfig, timeout = 600, skipAwait = false): Promise<void> {
+  private getDefaultCitadelServerUrl(buildEnv: BUILD_ENV_TYPE): string {
+    if (buildEnv === BUILD_ENV.PRODUCTION) return CITADEL_SERVER_URL_PRODUCTION;
+    if (buildEnv === BUILD_ENV.STAGING) return CITADEL_SERVER_URL_STAGING;
+    if (buildEnv === BUILD_ENV.TESTING) return CITADEL_SERVER_URL_TESTING;
+    if (buildEnv === BUILD_ENV.DEVELOPMENT) return CITADEL_SERVER_URL_DEVELOPMENT;
+    return CITADEL_SERVER_URL_PRODUCTION;
+  }
+
+  private async storeAuthPayload(loginId: string, payload: AuthRequestPayload, timeout = 600, skipAwait = false): Promise<void> {
     if (!this.sessionManager) throw InitializationError.notInitialized();
 
-    const loginSessionMgr = new SessionManager<AuthSessionConfig>({
-      sessionServerBaseUrl: data.options.storageServerUrl,
-      sessionNamespace: data.options.sessionNamespace,
+    const authRequestStorageManager = new StorageManager<AuthRequestPayload>({
+      sessionServerBaseUrl: payload.options.storageServerUrl,
+      sessionNamespace: payload.options.sessionNamespace,
       sessionTime: timeout, // each login key must be used with 10 mins (might be used at the end of popup redirect)
       sessionId: loginId,
       allowedOrigin: this.options.sdkUrl,
     });
 
-    const promise = loginSessionMgr.createSession(JSON.parse(JSON.stringify(data)));
+    const promise = authRequestStorageManager.createSession(klona(payload));
 
-    if (data.options.uxMode === UX_MODE.REDIRECT && !skipAwait) {
+    if (payload.options.uxMode === UX_MODE.REDIRECT && !skipAwait) {
       await promise;
     }
   }
 
-  private async _authorizeSession(): Promise<AuthSessionData> {
+  private async _authorizeSession(): Promise<AuthSessionData | null> {
     try {
-      if (!this.sessionManager.sessionId) return {};
-      const result = await this.sessionManager.authorizeSession();
+      const result = await this.sessionManager.authorize();
       return result;
     } catch (err) {
       log.error("authorization failed", err);
-      return {};
+      return null;
     }
   }
 
@@ -483,12 +496,13 @@ export class Auth {
 
   private async rehydrateSession(): Promise<void> {
     const result = await this._authorizeSession();
+    if (!result) return;
     this.updateState(result);
   }
 
-  private async authHandler(url: string, dataObject: AuthSessionConfig, popupTimeout = 1000 * 10): Promise<PopupResponse | undefined> {
-    const loginId = SessionManager.generateRandomSessionKey();
-    await this.createLoginSession(loginId, dataObject);
+  private async authHandler(url: string, dataObject: AuthRequestPayload, popupTimeout = 1000 * 10): Promise<AuthFlowResult | null> {
+    const loginId = StorageManager.generateRandomSessionKey();
+    await this.storeAuthPayload(loginId, dataObject);
     const configParams: BaseLoginParams = {
       loginId,
       sessionNamespace: this.options.sessionNamespace,
@@ -501,7 +515,7 @@ export class Auth {
         hash: { b64Params: jsonToBase64(configParams) },
       });
       window.location.href = loginUrl;
-      return undefined;
+      return null;
     }
 
     const loginUrl = constructURL({
@@ -511,8 +525,8 @@ export class Auth {
     const currentWindow = new PopupHandler({
       url: loginUrl,
       timeout: popupTimeout,
-      sessionServerUrl: this.options.storageServerUrl,
-      sessionSocketUrl: this.options.sessionSocketUrl,
+      serverUrl: this.options.storageServerUrl,
+      socketUrl: this.options.sessionSocketUrl,
     });
 
     return new Promise((resolve, reject) => {

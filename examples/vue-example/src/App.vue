@@ -604,7 +604,7 @@ const openloginInstance = computed(() => {
     buildEnv: selectedBuildEnv.value,
     sdkUrl: customSdkUrl.value,
     mfaSettings: mfaSettings.value,
-    sessionTime: 3600,
+    sessionTime: 86400,
     includeUserDataInToken: includeUserDataInToken.value,
   });
   op.init();
@@ -798,7 +798,7 @@ const getEd25519Key = () => {
     throw new Error("Openlogin is not available.");
   }
   const { sk } = getED25519Key(privKey.value);
-  const base58Key = bs58.encode(sk);
+  const base58Key = bs58.encode(new Uint8Array(sk));
   printToConsole("ED25519 Key", base58Key);
 };
 

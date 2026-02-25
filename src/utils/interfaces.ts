@@ -1,5 +1,6 @@
 import { type TORUS_LEGACY_NETWORK_TYPE, type TORUS_SAPPHIRE_NETWORK_TYPE } from "@toruslabs/constants";
 import type { AUTH_CONNECTION_TYPE, Auth0ClientOptions, UX_MODE_TYPE } from "@toruslabs/customauth";
+import type { AccessTokenProvider, CookieOptions, StorageConfig } from "@toruslabs/session-manager";
 
 import { AUTH_ACTIONS, BUILD_ENV, MFA_LEVELS, SDK_MODE, SUPPORTED_KEY_CURVES, WEB3AUTH_NETWORK } from "./constants";
 
@@ -332,14 +333,7 @@ export interface AuthSessionData {
   keyMode?: KeyMode;
   metadataNonce?: string;
   authToken?: string;
-  factorKey?: string;
   signatures?: string[];
-  tssShareIndex?: number;
-  tssPubKey?: string;
-  tssShare?: string;
-  tssNonce?: number;
-  tssTag?: string;
-  nodeIndexes?: number[];
   useCoreKitKey?: boolean;
 }
 
@@ -454,6 +448,13 @@ export type AuthOptions = {
   whiteLabel?: WhiteLabelData;
 
   /**
+   * Specify a custom citadel server url
+   * @defaultValue https://api.web3auth.io/citadel-server
+   * @internal
+   */
+  citadelServerUrl?: string;
+
+  /**
    * Specify a custom storage server url
    * @defaultValue https://api.web3auth.io/session-service
    * @internal
@@ -468,11 +469,22 @@ export type AuthOptions = {
   sessionSocketUrl?: string;
 
   /**
-   * setting to "local" will persist social login session across browser tabs.
-   *
-   * @defaultValue "local"
+   * Custom storage adapters for tokens (sessionId, accessToken, refreshToken, idToken).
+   * Each adapter must implement `IStorageAdapter` from `@toruslabs/session-manager`.
+   * @defaultValue localStorage-based adapters
    */
-  storage?: "session" | "local";
+  storage?: StorageConfig;
+
+  /**
+   * Custom provider for access tokens. When set, the session manager
+   * uses this instead of its internal token refresh flow.
+   */
+  accessTokenProvider?: AccessTokenProvider;
+
+  /**
+   * Cookie configuration for token storage when using CookieStorage adapters.
+   */
+  cookieOptions?: CookieOptions;
 
   /**
    * sessionKey is the key to be used to override the default key used to store session data.
@@ -485,7 +497,7 @@ export type AuthOptions = {
    * How long should a login session last at a minimum in seconds
    *
    * @defaultValue 30 * 86400 seconds
-   * @remarks Max value of sessionTime can be 30 * 86400 (30 days)
+   * @remarks Max value of sessionTime can be 365 * 86400 (365 days)
    */
   sessionTime?: number;
 
@@ -505,20 +517,14 @@ export type AuthOptions = {
   mfaSettings?: MfaSettings;
 
   /**
-   * This parameter will be used to use auth mpc
-   * @defaultValue false
-   */
-  useMpc?: boolean;
-
-  /**
    * This parameter will be used to select core kit key.
    * @defaultValue false
    */
   useCoreKitKey?: boolean;
 
   /**
-   * This parameter will be used to select core kit key.
-   * @defaultValue false
+   * This parameter will be used to select sdk mode.
+   * @defaultValue default
    */
   sdkMode?: SDK_MODE_TYPE;
 
@@ -535,9 +541,24 @@ export interface BaseLoginParams {
   storageServerUrl?: string;
 }
 
-export interface AuthSessionConfig {
+export interface AuthRequestPayload {
   actionType: AUTH_ACTIONS_TYPE;
   options: AuthOptions;
   params: Partial<LoginParams>;
   sessionId?: string;
 }
+
+export interface AuthTokenResponse {
+  sessionId: string;
+  accessToken: string;
+  refreshToken: string;
+  idToken: string;
+  sessionNamespace?: string;
+}
+
+export interface AuthFlowError {
+  error: string;
+  state?: string;
+}
+
+export type AuthFlowResult = AuthTokenResponse | AuthFlowError;

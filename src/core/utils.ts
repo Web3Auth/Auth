@@ -1,4 +1,4 @@
-import { safeatob } from "../utils";
+import { AuthFlowError, AuthFlowResult, safeatob } from "../utils";
 import { log } from "../utils/logger";
 
 // don't use destructuring for process.env cause it messes up webpack env plugin
@@ -7,6 +7,9 @@ export const version = process.env.AUTH_VERSION;
 export type HashQueryParamResult = {
   sessionId?: string;
   sessionNamespace?: string;
+  accessToken?: string;
+  refreshToken?: string;
+  idToken?: string;
   error?: string;
   state?: string;
   nonce?: string;
@@ -75,4 +78,8 @@ export function getHashQueryParams(replaceUrl = false): HashQueryParamResult {
   }
 
   return result;
+}
+
+export function isAuthFlowError(result: AuthFlowResult): result is AuthFlowError {
+  return "error" in result;
 }
