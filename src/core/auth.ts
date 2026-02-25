@@ -123,7 +123,7 @@ export class Auth {
   }
 
   get appState(): string {
-    return this.state.userInfo.appState || this.dappState || "";
+    return this.state?.userInfo?.appState || this.dappState || "";
   }
 
   get baseUrl(): string {
@@ -321,7 +321,7 @@ export class Auth {
     };
 
     const result = await this.authHandler(`${this.baseUrl}/start`, dataObject, POPUP_TIMEOUT);
-    if (!result) return null;
+    if (!result) return false;
     if (isAuthFlowError(result)) {
       this.dappState = result.state;
       throw LoginError.loginFailed(result.error);
@@ -399,7 +399,7 @@ export class Auth {
     };
 
     const result = await this.authHandler(`${this.baseUrl}/start`, dataObject);
-    if (!result) return undefined;
+    if (!result) return false;
     if (isAuthFlowError(result)) return false;
     return true;
   }
@@ -418,7 +418,7 @@ export class Auth {
     };
 
     const result = await this.authHandler(`${this.baseUrl}/start`, dataObject);
-    if (!result) return undefined;
+    if (!result) return false;
     if (isAuthFlowError(result)) return false;
     return true;
   }
@@ -437,7 +437,7 @@ export class Auth {
     };
 
     const result = await this.authHandler(`${this.baseUrl}/start`, dataObject);
-    if (!result) return undefined;
+    if (!result) return false;
     if (isAuthFlowError(result)) return false;
     return true;
   }
@@ -479,7 +479,7 @@ export class Auth {
     }
   }
 
-  private async _authorizeSession(): Promise<AuthSessionData> {
+  private async _authorizeSession(): Promise<AuthSessionData | null> {
     try {
       const result = await this.sessionManager.authorize();
       return result;
@@ -499,7 +499,7 @@ export class Auth {
     this.updateState(result);
   }
 
-  private async authHandler(url: string, dataObject: AuthRequestPayload, popupTimeout = 1000 * 10): Promise<AuthFlowResult | undefined> {
+  private async authHandler(url: string, dataObject: AuthRequestPayload, popupTimeout = 1000 * 10): Promise<AuthFlowResult | null> {
     const loginId = StorageManager.generateRandomSessionKey();
     await this.storeAuthPayload(loginId, dataObject);
     const configParams: BaseLoginParams = {
@@ -514,7 +514,7 @@ export class Auth {
         hash: { b64Params: jsonToBase64(configParams) },
       });
       window.location.href = loginUrl;
-      return undefined;
+      return null;
     }
 
     const loginUrl = constructURL({

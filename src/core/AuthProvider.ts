@@ -50,6 +50,8 @@ export class AuthProvider {
 
   private loginCallbackFailed: ((reason?: string) => void) | null = null;
 
+  private messageHandler: ((event: MessageEvent) => void) | null = null;
+
   private readonly embedNonce = randomId();
 
   constructor({ sdkUrl, whiteLabel }: { sdkUrl: string; whiteLabel: WhiteLabelData }) {
@@ -70,11 +72,16 @@ export class AuthProvider {
   }
 
   public cleanup() {
+    if (this.messageHandler) {
+      window.removeEventListener("message", this.messageHandler);
+      this.messageHandler = null;
+    }
     const iframe = authServiceIframeMap.get(this.embedNonce);
     if (iframe && iframe.parentNode) {
       iframe.parentNode.removeChild(iframe);
       authServiceIframeMap.delete(this.embedNonce);
     }
+    this.initialized = false;
   }
 
   async init({ network, clientId }: { network: WEB3AUTH_NETWORK_TYPE; clientId: string }): Promise<void> {
@@ -110,7 +117,7 @@ export class AuthProvider {
       try {
         window.document.body.appendChild(authServiceIframe);
 
-        const handleMessage = (event: MessageEvent) => {
+        this.messageHandler = (event: MessageEvent) => {
           if (event.origin !== this.targetOrigin) return;
           const { data } = event as {
             data: { type: string; nonce: string; data: AuthFlowResult };
@@ -154,7 +161,7 @@ export class AuthProvider {
           }
         };
 
-        window.addEventListener("message", handleMessage);
+        window.addEventListener("message", this.messageHandler);
       } catch (error) {
         reject(error);
       }

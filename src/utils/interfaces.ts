@@ -523,8 +523,8 @@ export type AuthOptions = {
   useCoreKitKey?: boolean;
 
   /**
-   * This parameter will be used to select core kit key.
-   * @defaultValue false
+   * This parameter will be used to select sdk mode.
+   * @defaultValue default
    */
   sdkMode?: SDK_MODE_TYPE;
 

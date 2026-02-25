@@ -1,4 +1,5 @@
 import { decodeBase64Url, encodeBase64Url } from "@toruslabs/metadata-helpers";
+import { klona } from "klona/json";
 
 export function safebtoa(str: string): string {
   return encodeBase64Url(str);
@@ -26,7 +27,7 @@ export const htmlToElement = <T extends Element>(html: string): T => {
 
 export function cloneDeep<T>(object: T): T {
   try {
-    return structuredClone(object);
+    return klona(object);
   } catch {
     return JSON.parse(JSON.stringify(object));
   }
