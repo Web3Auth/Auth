@@ -9,7 +9,7 @@
       </div>
       <div id="navbar-sticky" class="items-center justify-between w-full md:flex md:w-auto md:order-1">
         <div class="max-sm:w-full">
-          <h1 class="leading-tight text-3xl font-extrabold">demo-auth.web3auth.io</h1>
+          <h1 class="leading-tight text-3xl font-extrabold">demo-auth-v10.web3auth.io</h1>
           <p v-if="privKey" class="leading-tight text-1xl">Web3Auth Private key : {{ privKey }}</p>
         </div>
       </div>
@@ -223,7 +223,15 @@
                 :label-disabled="'Whitelabel'"
                 :label-enabled="'Whitelabel'"
               />
-              <Toggle id="includeUserDataInToken" v-model="includeUserDataInToken" :show-label="true" :size="'small'" :label-disabled="'Include User Data in Token'" :label-enabled="'Include User Data in Token'" data-testid="includeUserDataInToken" />
+              <Toggle
+                id="includeUserDataInToken"
+                v-model="includeUserDataInToken"
+                :show-label="true"
+                :size="'small'"
+                :label-disabled="'Include User Data in Token'"
+                :label-enabled="'Include User Data in Token'"
+                data-testid="includeUserDataInToken"
+              />
             </div>
             <div>
               <div>
@@ -823,7 +831,9 @@ const printToConsole = (...args: unknown[]) => {
   }
 };
 
-const computedLoginProviders = computed(() => Object.values(AUTH_CONNECTION).filter((x) => x !== "custom" && x !== "passkeys" && x !== "authenticator"));
+const computedLoginProviders = computed(() =>
+  Object.values(AUTH_CONNECTION).filter((x) => x !== "custom" && x !== "passkeys" && x !== "authenticator"),
+);
 
 const showEmailFlow = computed(() => selectedLoginProvider.value === AUTH_CONNECTION.EMAIL_PASSWORDLESS);
 const isLoginHintAvailable = computed(() => {
