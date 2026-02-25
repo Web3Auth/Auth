@@ -146,6 +146,7 @@ export class Auth {
     const storageKey =
       this.options.sessionKey || (this.options.sessionNamespace ? `${this._storageBaseKey}_${this.options.sessionNamespace}` : this._storageBaseKey);
 
+    // We dont need to set the sessionTime here, because the session would be created by auth service.
     this.sessionManager = new AuthSessionManager({
       storageKeyPrefix: storageKey,
       apiClientConfig: { baseURL: this.options.citadelServerUrl },
