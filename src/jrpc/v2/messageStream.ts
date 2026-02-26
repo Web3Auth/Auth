@@ -1,3 +1,4 @@
+import log from "loglevel";
 import { Duplex } from "readable-stream";
 
 import { isRequest } from "../../utils/jrpc";
@@ -20,7 +21,7 @@ export function createEngineStreamV2({ engine, notificationEmitter }: { engine: 
     // noop
   }
 
-  function write(req: JRPCRequest<unknown>, _encoding: BufferEncoding, cb: () => void) {
+  function write(req: JRPCRequest<unknown>, _encoding: BufferEncoding) {
     engine
       .handle(req)
       .then((res: Json | void): void => {
@@ -42,9 +43,8 @@ export function createEngineStreamV2({ engine, notificationEmitter }: { engine: 
             error: rpcErrors.internal({ message }),
           });
         }
+        log.error(err);
       });
-
-    cb();
   }
 
   stream = new Duplex({ objectMode: true, read: noop, write });

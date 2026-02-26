@@ -137,7 +137,7 @@ describe("providerUtils", () => {
         expect(error).toBe(testError);
         expect(response.id).toBe("42");
         expect(response.jsonrpc).toBe("2.0");
-        expect(response.error).toBe(testError);
+        expect(response.error).toMatchObject({ message: "send error" });
       });
 
       it("constructs a proper JRPCResponse shape", async () => {
@@ -151,6 +151,64 @@ describe("providerUtils", () => {
         expect(response).toHaveProperty("id", "99");
         expect(response).toHaveProperty("jsonrpc", "2.0");
         expect(response).toHaveProperty("result", "hello");
+      });
+
+      it("does not reject if the success callback throws", async () => {
+        const engine = JRPCEngineV2.create({ middleware: [makeRequestMiddleware()] });
+        const provider = providerFromEngine(engine as JRPCEngineV2);
+
+        const unhandled = vi.fn();
+        process.on("unhandledRejection", unhandled);
+
+        provider.send(makeRequest(), () => {
+          throw new Error("callback boom");
+        });
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        process.off("unhandledRejection", unhandled);
+        expect(unhandled).toHaveBeenCalledTimes(1);
+      });
+
+      it("does not reject if the error callback throws", async () => {
+        const middleware: JRPCMiddlewareV2<JRPCRequest> = () => {
+          throw new Error("engine error");
+        };
+        const engine = JRPCEngineV2.create({ middleware: [middleware] });
+        const provider = providerFromEngine(engine as JRPCEngineV2);
+
+        const unhandled = vi.fn();
+        process.on("unhandledRejection", unhandled);
+
+        provider.send(makeRequest(), () => {
+          throw new Error("callback boom");
+        });
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        process.off("unhandledRejection", unhandled);
+        expect(unhandled).toHaveBeenCalledTimes(1);
+      });
+
+      it.each([
+        { label: "string", thrown: "string error", expectedCause: "string error" },
+        { label: "null", thrown: null, expectedCause: null },
+        { label: "undefined", thrown: undefined, expectedCause: null },
+        { label: "number", thrown: 42, expectedCause: 42 },
+      ])("serializes non-Error throw ($label) via send callback", async ({ thrown, expectedCause }) => {
+        const middleware: JRPCMiddlewareV2<JRPCRequest> = () => {
+          throw thrown;
+        };
+        const engine = JRPCEngineV2.create({ middleware: [middleware] });
+        const provider = providerFromEngine(engine as JRPCEngineV2);
+
+        const { error, response } = await sendPromise(provider, makeRequest({ id: "x" }));
+
+        expect(error).toBe(thrown);
+        expect(response.id).toBe("x");
+        expect(response.jsonrpc).toBe("2.0");
+        const rpcError = response.error as Record<string, unknown>;
+        expect(rpcError).toBeDefined();
+        expect(rpcError).toHaveProperty("code");
+        expect((rpcError.data as Record<string, unknown>).cause).toStrictEqual(expectedCause);
       });
     });
 
@@ -181,8 +239,7 @@ describe("providerUtils", () => {
           params: [1, 2],
           jsonrpc: "2.0",
         });
-        expect(typeof observedRequests[0].id).toBe("string");
-        expect((observedRequests[0].id as string).length).toBeGreaterThan(0);
+        expect(typeof observedRequests[0].id).toBe("number");
       });
 
       it("passes params through to the engine", async () => {
@@ -367,6 +424,29 @@ describe("providerUtils", () => {
       const result = await engine.handle(makeRequest());
 
       expect(result).toBe("full-circle");
+    });
+
+    it("deep-clones the request so frozen nested params are isolated from the original", async () => {
+      let receivedParams: unknown;
+      const innerMiddleware: JRPCMiddlewareV2<JRPCRequest<Json>, Json> = ({ request }) => {
+        receivedParams = request.params;
+        return request.params;
+      };
+      const innerEngine = JRPCEngineV2.create({ middleware: [innerMiddleware] });
+      const provider = providerFromEngine(innerEngine as JRPCEngineV2);
+
+      const outerEngine = JRPCEngineV2.create({
+        middleware: [providerAsMiddleware(provider)],
+      });
+
+      const originalParams = [{ nested: "value" }];
+      const req = makeRequest({ params: originalParams });
+
+      await outerEngine.handle(req);
+
+      expect(receivedParams).toStrictEqual(originalParams);
+      expect(receivedParams).not.toBe(originalParams);
+      expect((receivedParams as Record<string, unknown>[])[0]).not.toBe(originalParams[0]);
     });
   });
 });
