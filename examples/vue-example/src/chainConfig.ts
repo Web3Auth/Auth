@@ -1,0 +1,197 @@
+const INFURA_PROXY_URL = "https://api.web3auth.io/infura-service/v1";
+
+export const getEvmChainConfig = (chainId: number, web3AuthClientId: string) => {
+  const chainNamespace = "eip155";
+  const infuraRpcTarget = `${INFURA_PROXY_URL}/${chainId}/${web3AuthClientId}`;
+  if (chainId === 1) {
+    return {
+      logo: "https://images.toruswallet.io/eth.svg",
+      chainNamespace,
+      chainId: "0x1",
+      rpcTarget: infuraRpcTarget,
+      displayName: "Ethereum Mainnet",
+      blockExplorerUrl: "https://etherscan.io/",
+      ticker: "ETH",
+      tickerName: "Ethereum",
+      decimals: 18,
+    };
+  }
+  if (chainId === 10) {
+    return {
+      chainNamespace: "eip155",
+      decimals: 18,
+      blockExplorerUrl: "https://optimistic.etherscan.io",
+      chainId: "0xa",
+      displayName: "Optimism",
+      logo: "optimism.svg",
+      rpcTarget: infuraRpcTarget,
+      ticker: "ETH",
+      tickerName: "Ethereum",
+    };
+  }
+  if (chainId === 8453) {
+    return {
+      chainNamespace: "eip155",
+      decimals: 18,
+      blockExplorerUrl: "https://basescan.org",
+      chainId: "0x2105",
+      displayName: "Base",
+      logo: "base.svg",
+      rpcTarget: infuraRpcTarget,
+      ticker: "ETH",
+      tickerName: "Ethereum",
+    };
+  }
+  if (chainId === 42161) {
+    return {
+      chainNamespace: "eip155",
+      decimals: 18,
+      blockExplorerUrl: "https://arbiscan.io",
+      chainId: "0xa4b1",
+      displayName: "Arbitrum One",
+      logo: "arbitrum.svg",
+      rpcTarget: infuraRpcTarget,
+      ticker: "ETH",
+      tickerName: "Ethereum",
+    };
+  }
+  if (chainId === 59144) {
+    return {
+      chainNamespace: "eip155",
+      decimals: 18,
+      blockExplorerUrl: "https://lineascan.build",
+      chainId: "0xe708",
+      logo: "https://images.toruswallet.io/eth.svg",
+      rpcTarget: infuraRpcTarget,
+      ticker: "ETH",
+      tickerName: "Ethereum",
+    };
+  }
+  if (chainId === 11155111) {
+    return {
+      logo: "https://images.toruswallet.io/eth.svg",
+      chainNamespace,
+      chainId: "0xaa36a7",
+      rpcTarget: infuraRpcTarget,
+      displayName: "Sepolia Testnet",
+      blockExplorerUrl: "https://sepolia.etherscan.io/",
+      ticker: "ETH",
+      tickerName: "Ethereum",
+      decimals: 18,
+    };
+  }
+  if (chainId === 137) {
+    return {
+      logo: "https://images.toruswallet.io/polygon.svg",
+      chainNamespace,
+      chainId: "0x89",
+      rpcTarget: infuraRpcTarget,
+      displayName: "Polygon Mainnet",
+      blockExplorerUrl: "https://polygonscan.com",
+      ticker: "POL",
+      tickerName: "Polygon Ecosystem Token",
+    };
+  }
+  if (chainId === 80002) {
+    return {
+      logo: "https://images.toruswallet.io/polygon.svg",
+      chainNamespace,
+      chainId: "0x13882",
+      rpcTarget: infuraRpcTarget,
+      displayName: "Polygon Amoy Testnet",
+      blockExplorerUrl: "https://www.oklink.com/amoy",
+      ticker: "POL",
+      tickerName: "Polygon Ecosystem Token",
+      decimals: 18,
+    };
+  }
+  if (chainId === 56) {
+    return {
+      logo: "https://images.toruswallet.io/bnb.png",
+      chainNamespace,
+      chainId: "0x38",
+      rpcTarget: infuraRpcTarget,
+      displayName: "Binance SmartChain Mainnet",
+      blockExplorerUrl: "https://bscscan.com",
+      ticker: "BNB",
+      tickerName: "Binance SmartChain",
+      decimals: 18,
+    };
+  }
+  if (chainId === 97) {
+    return {
+      logo: "https://images.toruswallet.io/bnb.png",
+      chainNamespace,
+      chainId: "0x61",
+      rpcTarget: infuraRpcTarget,
+      displayName: "Binance SmartChain Testnet",
+      blockExplorerUrl: "https://testnet.bscscan.com",
+      ticker: "BNB",
+      tickerName: "Binance SmartChain",
+      decimals: 18,
+    };
+  }
+  if (chainId === 25) {
+    return {
+      logo: "https://images.toruswallet.io/cro.svg",
+      chainNamespace,
+      chainId: "0x19",
+      rpcTarget: "https://rpc.cronos.org",
+      displayName: "Cronos Mainnet",
+      blockExplorerUrl: "https://cronoscan.com/",
+      ticker: "CRO",
+      tickerName: "Cronos",
+    };
+  }
+  if (chainId === 338) {
+    return {
+      logo: "https://images.toruswallet.io/cro.svg",
+      chainNamespace,
+      chainId: "0x152",
+      rpcTarget: "https://rpc-t3.cronos.org/",
+      displayName: "Cronos Testnet",
+      blockExplorerUrl: "https://cronoscan.com/",
+      ticker: "CRO",
+      tickerName: "Cronos",
+      decimals: 18,
+    };
+  }
+  if (chainId === 8217) {
+    return {
+      logo: "https://images.toruswallet.io/klay.svg",
+      chainNamespace,
+      chainId: "0x2019",
+      rpcTarget: "https://public-node-api.klaytnapi.com/v1/cypress",
+      displayName: "Klaytn Mainnet",
+      blockExplorerUrl: "https://scope.klaytn.com",
+      ticker: "KLAY",
+      tickerName: "Klaytn",
+      decimals: 18,
+    };
+  }
+  if (chainId === 1946) {
+    return {
+      chainNamespace: "eip155",
+      chainId: "0x79a",
+      rpcTarget: "https://rpc.minato.soneium.org",
+      displayName: "Soneium Minato Testnet",
+      blockExplorerUrl: "https://explorer-testnet.soneium.org",
+      ticker: "ETH",
+      tickerName: "ETH",
+      logo: "https://iili.io/2i5xce2.png",
+    };
+  }
+  if (chainId === 1868) {
+    return {
+      chainNamespace: "eip155",
+      chainId: "0x74c",
+      rpcTarget: "https://rpc.soneium.org",
+      displayName: "Soneium Mainnet",
+      blockExplorerUrl: "https://soneium.blockscout.com",
+      ticker: "ETH",
+      tickerName: "ETH",
+      logo: "https://iili.io/2i5xce2.png",
+    };
+  }
+  return null;
+};

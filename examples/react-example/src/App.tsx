@@ -1,20 +1,21 @@
 import "./App.css";
-import OpenLogin from "openlogin";
+
+import { Auth, AUTH_CONNECTION, getED25519Key, log } from "@web3auth/auth";
+import bs58 from "bs58";
 import { useEffect, useState } from "react";
-import * as bs58 from "bs58";
-import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 
 const YOUR_PROJECT_ID = "BOUSb58ft1liq2tSVGafkYohnNPgnl__vAlYSk3JnpfW281kApYsw30BG1-nGpmy8wK-gT3dHw2D_xRXpTEdDBE";
-const openlogin = new OpenLogin({
-  // your clientId aka projectId , get it from https://developer.tor.us
-  // clientId is not required for localhost, you can set it to any string
-  // for development
+const auth = new Auth({
   clientId: YOUR_PROJECT_ID,
-  network: "mainnet",
+  network: "sapphire_devnet",
   uxMode: "popup",
+  redirectUrl: `${window.location.origin}`,
+  buildEnv: "development",
 });
+
 function App() {
   const [loading, setLoading] = useState(false);
+
   const printToConsole = (...args: unknown[]): void => {
     const el = document.querySelector("#console>p");
     if (el) {
@@ -23,68 +24,53 @@ function App() {
   };
 
   const printUserInfo = async () => {
-    const userInfo = await openlogin.getUserInfo();
+    const userInfo = auth.getUserInfo();
     printToConsole(userInfo);
   };
 
   async function login() {
     setLoading(true);
     try {
-      const privKey = await openlogin.login({
-        // pass empty string '' as loginProvider to open default torus modal
-        // with all default supported login providers or you can pass specific
-        // login provider from available list to set as default.
-        // for ex: google, facebook, twitter etc
-        loginProvider: "google",
-        redirectUrl: `${window.location.origin}`,
-
-        // you can pass standard oauth parameter in extralogin options
-        // for ex: in case of passwordless login, you have to pass user's email as login_hint
-        // and your app domain.
-        // extraLoginOptions: {
-        //   domain: 'www.yourapp.com',
-        //   login_hint: 'hello@yourapp.com',
-        // },
+      await auth.login({
+        authConnection: AUTH_CONNECTION.GITHUB,
       });
-      if (privKey && typeof privKey === "string") {
+      if (auth.privKey) {
         await printUserInfo();
       }
-
       setLoading(false);
     } catch (error) {
-      console.log("error", error);
+      log.error("error", error);
       setLoading(false);
     }
   }
 
   useEffect(() => {
     setLoading(true);
-    async function initializeOpenlogin() {
+    async function initializeAuth() {
       try {
-        await openlogin.init();
-        if (openlogin.privKey) {
+        await auth.init();
+        if (auth.privKey) {
           await printUserInfo();
         }
-        setLoading(false);
       } catch (error) {
-        console.log("error while initialization", error);
+        log.error("error while initialization", error);
       } finally {
         setLoading(false);
       }
     }
-    initializeOpenlogin();
+    initializeAuth();
   }, []);
 
   const getEd25519Key = async () => {
-    const { sk } = getED25519Key(openlogin.privKey);
-    const base58Key = bs58.encode(sk);
+    const { sk } = getED25519Key(auth.privKey);
+    const base58Key = bs58.encode(new Uint8Array(sk));
     printToConsole(base58Key);
   };
 
   const logout = async () => {
     try {
       setLoading(true);
-      await openlogin.logout({});
+      await auth.logout();
     } catch (error) {
       printToConsole("error while logout", error);
     } finally {
@@ -111,17 +97,17 @@ function App() {
         </div>
       ) : (
         <div className="App">
-          {!openlogin.privKey ? (
+          {!auth.privKey ? (
             <div>
-              <h3>Login With Openlogin</h3>
-              <button onClick={login}>login</button>
+              <h3>Login With Web3Auth</h3>
+              <button onClick={login}>login with github</button>
             </div>
           ) : (
             <div>
               <section>
                 <div>
                   Private key:
-                  <i>{openlogin.privKey}</i>
+                  <i>{auth.privKey}</i>
                   <button onClick={() => logout()}>Logout</button>
                 </div>
                 <div>

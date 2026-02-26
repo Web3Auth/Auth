@@ -1,28 +1,21 @@
-import base64urlLib from "base64url";
-
-export const base64url = base64urlLib;
+import { decodeBase64Url, encodeBase64Url } from "@toruslabs/metadata-helpers";
+import { klona } from "klona/json";
 
 export function safebtoa(str: string): string {
-  return base64url.encode(str);
+  return encodeBase64Url(str);
 }
 
 export function safeatob(str: string): string {
   // Going backwards: from bytestream, to percent-encoding, to original string.
-  return base64url.decode(str);
+  return decodeBase64Url(str);
 }
 
 export function base64toJSON<T = Record<string, unknown>>(b64str: string): T {
-  return JSON.parse(base64url.decode(b64str));
+  return JSON.parse(decodeBase64Url(b64str));
 }
 
 export function jsonToBase64<T = Record<string, unknown>>(json: T): string {
-  return base64url.encode(JSON.stringify(json));
-}
-
-export interface IStorage {
-  getItem(key: string): string;
-  setItem(key: string, value: string): void;
-  removeItem(key: string): void;
+  return encodeBase64Url(JSON.stringify(json));
 }
 
 export const htmlToElement = <T extends Element>(html: string): T => {
@@ -34,7 +27,7 @@ export const htmlToElement = <T extends Element>(html: string): T => {
 
 export function cloneDeep<T>(object: T): T {
   try {
-    return structuredClone(object);
+    return klona(object);
   } catch {
     return JSON.parse(JSON.stringify(object));
   }

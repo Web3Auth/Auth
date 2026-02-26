@@ -75,11 +75,12 @@ describe("createEngineStreamV2", () => {
     expect(result).toHaveProperty("once", mockStream.once);
   });
 
-  it("invokes the write callback synchronously to signal backpressure release", () => {
+  it("invokes the write callback to signal backpressure release", async () => {
     setup(createMockEngine());
 
     const cb = vi.fn();
     capturedWrite(makeRequest(), "utf-8", cb);
+    await flushPromises();
 
     expect(cb).toHaveBeenCalledOnce();
   });

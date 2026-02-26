@@ -1,15 +1,23 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { DuplexOptions } from "readable-stream";
 import { Duplex } from "readable-stream";
 
-import { BufferEncoding } from "./interfaces";
+import type { ObjectMultiplex } from "./mux";
+
+export interface SubstreamOptions extends DuplexOptions {
+  parent: ObjectMultiplex;
+  name: string;
+}
 
 export class Substream extends Duplex {
-  private readonly _parent: any;
+  private readonly _parent: ObjectMultiplex;
 
   private readonly _name: string;
 
-  constructor({ parent, name }: { parent: any; name: string }) {
-    super({ objectMode: true });
+  constructor({ parent, name, ...streamOptions }: SubstreamOptions) {
+    super({
+      objectMode: true,
+      ...streamOptions,
+    });
     this._parent = parent;
     this._name = name;
   }

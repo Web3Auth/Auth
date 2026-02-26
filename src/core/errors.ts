@@ -1,6 +1,4 @@
-import { CustomError } from "ts-custom-error";
-
-export interface IAuthError extends CustomError {
+export interface IAuthError extends Error {
   code: number;
   message: string;
   toString(): string;
@@ -10,7 +8,7 @@ export type ErrorCodes = {
   [key: number]: string;
 };
 
-export abstract class AuthError extends CustomError implements IAuthError {
+export abstract class AuthError extends Error implements IAuthError {
   code: number;
 
   message: string;
@@ -22,7 +20,7 @@ export abstract class AuthError extends CustomError implements IAuthError {
     this.code = code;
     this.message = message || "";
     // Set name explicitly as minification can mangle class names
-    Object.defineProperty(this, "name", { value: "AuthError" });
+    Object.defineProperty(this, "name", { value: "AuthError", configurable: true });
   }
 
   toJSON(): IAuthError {
@@ -50,7 +48,7 @@ export class InitializationError extends AuthError {
     super(code, message);
 
     // Set name explicitly as minification can mangle class names
-    Object.defineProperty(this, "name", { value: "InitializationError" });
+    Object.defineProperty(this, "name", { value: "InitializationError", configurable: true });
   }
 
   public static fromCode(code: number, extraMessage = ""): AuthError {
@@ -87,7 +85,7 @@ export class LoginError extends AuthError {
     super(code, message);
 
     // Set name explicitly as minification can mangle class names
-    Object.defineProperty(this, "name", { value: "LoginError" });
+    Object.defineProperty(this, "name", { value: "LoginError", configurable: true });
   }
 
   public static fromCode(code: number, extraMessage = ""): AuthError {
