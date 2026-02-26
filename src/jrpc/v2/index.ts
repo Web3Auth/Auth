@@ -1,6 +1,6 @@
 export { getUniqueId, isNotification, isRequest } from "../../utils/jrpc";
 export { asLegacyMiddleware } from "./asLegacyMiddleware";
-export { deepClone, fromLegacyRequest, makeContext, propagateToContext, propagateToRequest } from "./compatibility-utils";
+export { deepClone, fromLegacyRequest, makeContext, propagateToContext, propagateToMutableRequest, propagateToRequest } from "./compatibility-utils";
 export { createScaffoldMiddleware as createScaffoldMiddlewareV2 } from "./createScaffoldMiddleware";
 export { JRPCEngineV2 } from "./jrpcEngineV2";
 export { JRPCServer } from "./jrpcServer";
