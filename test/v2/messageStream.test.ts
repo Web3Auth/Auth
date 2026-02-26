@@ -180,6 +180,16 @@ describe("createEngineStreamV2", () => {
       expect((pushed.error as Record<string, unknown>).message).toContain("specific failure");
     });
 
+    it("calls cb() without an error to keep the stream alive", async () => {
+      setup(createMockEngine(vi.fn().mockRejectedValue(new Error("engine failure"))));
+
+      const cb = vi.fn();
+      capturedWrite(makeRequest({ id: "err-alive" }), "utf-8", cb);
+      await flushPromises();
+
+      expect(cb).toHaveBeenCalledOnce();
+    });
+
     it("uses a fallback message for non-Error throws", async () => {
       setup(createMockEngine(vi.fn().mockRejectedValue("string error")));
 

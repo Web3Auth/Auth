@@ -25,20 +25,24 @@ export function providerFromEngine(engine: JRPCEngineV2): SafeEventEmitterProvid
     return result as U;
   };
 
+  async function handleWithCallback<T extends JRPCParams, U>(req: JRPCRequest<T>, callback: (error: unknown, providerRes: JRPCResponse<U>) => void) {
+    try {
+      const result = await engine.handle(req as JRPCRequest);
+      callback(null, { id: req.id, jsonrpc: "2.0", result: result as U });
+    } catch (error) {
+      const serializedError = serializeJrpcError(error, {
+        shouldIncludeStack: false,
+        shouldPreserveMessage: true,
+      });
+      callback(serializedError, { id: req.id, jsonrpc: "2.0", error: serializedError });
+    }
+  }
+
   provider.send = <T extends JRPCParams, U>(req: JRPCRequest<T>, callback: (error: unknown, providerRes: JRPCResponse<U>) => void) => {
     if (typeof callback !== "function") {
       throw new Error('Must provide callback to "send" method.');
     }
-    engine
-      .handle(req as JRPCRequest)
-      .then((result) => callback(null, { id: req.id, jsonrpc: "2.0", result: result as U }))
-      .catch((error) => {
-        const serializedError = serializeJrpcError(error, {
-          shouldIncludeStack: false,
-          shouldPreserveMessage: true,
-        });
-        callback(error, { id: req.id, jsonrpc: "2.0", error: serializedError });
-      });
+    handleWithCallback(req, callback);
   };
 
   provider.request = async <T extends JRPCParams, U>(args: RequestArguments<T>) => {

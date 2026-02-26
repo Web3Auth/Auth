@@ -134,10 +134,10 @@ describe("providerUtils", () => {
         const req = makeRequest({ id: "42" });
         const { error, response } = await sendPromise(provider, req);
 
-        expect(error).toBe(testError);
+        expect(error).toMatchObject({ code: -32603, message: "send error" });
+        expect(error).toBe(response.error);
         expect(response.id).toBe("42");
         expect(response.jsonrpc).toBe("2.0");
-        expect(response.error).toMatchObject({ message: "send error" });
       });
 
       it("constructs a proper JRPCResponse shape", async () => {
@@ -202,7 +202,7 @@ describe("providerUtils", () => {
 
         const { error, response } = await sendPromise(provider, makeRequest({ id: "x" }));
 
-        expect(error).toBe(thrown);
+        expect(error).toBe(response.error);
         expect(response.id).toBe("x");
         expect(response.jsonrpc).toBe("2.0");
         const rpcError = response.error as Record<string, unknown>;
@@ -323,9 +323,10 @@ describe("providerUtils", () => {
       };
       const provider = providerFromMiddleware(middleware as JRPCMiddlewareV2);
 
-      const { error } = await sendPromise(provider, makeRequest());
+      const { error, response } = await sendPromise(provider, makeRequest());
 
-      expect(error).toBe(testError);
+      expect(error).toMatchObject({ code: -32603, message: "middleware-error" });
+      expect(error).toBe(response.error);
     });
 
     it("works with a middleware that uses context", async () => {

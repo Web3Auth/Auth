@@ -3,7 +3,7 @@ import { Duplex } from "readable-stream";
 
 import { isRequest } from "../../utils/jrpc";
 import { rpcErrors } from "../errors";
-import { JRPCRequest, Json } from "../interfaces";
+import { JRPCRequest } from "../interfaces";
 import { SafeEventEmitter } from "../safeEventEmitter";
 import { JRPCEngineV2 } from "./jrpcEngineV2";
 
@@ -21,10 +21,10 @@ export function createEngineStreamV2({ engine, notificationEmitter }: { engine: 
     // noop
   }
 
-  function write(req: JRPCRequest<unknown>, _encoding: BufferEncoding, cb: (error?: Error | null) => void) {
-    engine
+  function handleRequest(req: JRPCRequest<unknown>) {
+    return engine
       .handle(req)
-      .then((res: Json | void): void => {
+      .then((res): undefined => {
         if (res !== undefined && isRequest(req)) {
           stream?.push({
             id: req.id,
@@ -32,7 +32,6 @@ export function createEngineStreamV2({ engine, notificationEmitter }: { engine: 
             result: res,
           });
         }
-        cb();
         return undefined;
       })
       .catch((err: unknown) => {
@@ -45,8 +44,13 @@ export function createEngineStreamV2({ engine, notificationEmitter }: { engine: 
           });
         }
         log.error(err);
-        cb(err as Error | null);
       });
+  }
+
+  function write(req: JRPCRequest<unknown>, _encoding: BufferEncoding, cb: (error?: Error | null) => void) {
+    return handleRequest(req).finally(() => {
+      cb();
+    });
   }
 
   stream = new Duplex({ objectMode: true, read: noop, write });
