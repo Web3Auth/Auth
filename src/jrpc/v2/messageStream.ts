@@ -21,7 +21,7 @@ export function createEngineStreamV2({ engine, notificationEmitter }: { engine: 
     // noop
   }
 
-  function write(req: JRPCRequest<unknown>, _encoding: BufferEncoding) {
+  function write(req: JRPCRequest<unknown>, _encoding: BufferEncoding, cb: (error?: Error | null) => void) {
     engine
       .handle(req)
       .then((res: Json | void): void => {
@@ -32,6 +32,7 @@ export function createEngineStreamV2({ engine, notificationEmitter }: { engine: 
             result: res,
           });
         }
+        cb();
         return undefined;
       })
       .catch((err: unknown) => {
@@ -44,6 +45,7 @@ export function createEngineStreamV2({ engine, notificationEmitter }: { engine: 
           });
         }
         log.error(err);
+        cb(err as Error | null);
       });
   }
 

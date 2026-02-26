@@ -28,7 +28,7 @@ function makeNotification(overrides: Record<string, unknown> = {}) {
 
 describe("createEngineStreamV2", () => {
   let mockStream: Record<string, Mock>;
-  let capturedWrite: (req: Record<string, unknown>, encoding: string) => void;
+  let capturedWrite: (req: Record<string, unknown>, encoding: string, cb: (error?: Error | null) => void) => void;
 
   function createMockEngine(handleImpl: Mock = vi.fn().mockResolvedValue(null)) {
     return { handle: handleImpl } as unknown as JRPCEngineV2;
@@ -75,15 +75,26 @@ describe("createEngineStreamV2", () => {
     expect(result).toHaveProperty("once", mockStream.once);
   });
 
+  it("invokes the write callback synchronously to signal backpressure release", () => {
+    setup(createMockEngine());
+
+    const cb = vi.fn();
+    capturedWrite(makeRequest(), "utf-8", cb);
+
+    expect(cb).toHaveBeenCalledOnce();
+  });
+
   describe("request handling", () => {
     it("pushes a success response for a request", async () => {
       const engine = createMockEngine(vi.fn().mockResolvedValue("hello"));
       setup(engine);
 
-      capturedWrite(makeRequest({ id: "42" }), "utf-8");
+      const cb = vi.fn();
+      capturedWrite(makeRequest({ id: "42" }), "utf-8", cb);
       await flushPromises();
 
       expect(engine.handle).toHaveBeenCalledOnce();
+      expect(cb).toHaveBeenCalledOnce();
       expect(mockStream.push).toHaveBeenCalledWith({
         id: "42",
         jsonrpc: "2.0",
@@ -94,7 +105,7 @@ describe("createEngineStreamV2", () => {
     it("pushes a null result when engine returns null", async () => {
       setup(createMockEngine());
 
-      capturedWrite(makeRequest({ id: "1" }), "utf-8");
+      capturedWrite(makeRequest({ id: "1" }), "utf-8", vi.fn());
       await flushPromises();
 
       expect(mockStream.push).toHaveBeenCalledWith({
@@ -107,7 +118,7 @@ describe("createEngineStreamV2", () => {
     it("pushes complex result objects", async () => {
       setup(createMockEngine(vi.fn().mockResolvedValue({ data: [1, 2, 3] })));
 
-      capturedWrite(makeRequest({ id: "99" }), "utf-8");
+      capturedWrite(makeRequest({ id: "99" }), "utf-8", vi.fn());
       await flushPromises();
 
       expect(mockStream.push).toHaveBeenCalledWith({
@@ -120,7 +131,7 @@ describe("createEngineStreamV2", () => {
     it("preserves the request id in the response", async () => {
       setup(createMockEngine(vi.fn().mockResolvedValue("ok")));
 
-      capturedWrite(makeRequest({ id: "abc-123" }), "utf-8");
+      capturedWrite(makeRequest({ id: "abc-123" }), "utf-8", vi.fn());
       await flushPromises();
 
       expect(mockStream.push).toHaveBeenCalledWith(expect.objectContaining({ id: "abc-123" }));
@@ -130,9 +141,9 @@ describe("createEngineStreamV2", () => {
       let counter = 0;
       setup(createMockEngine(vi.fn().mockImplementation(() => Promise.resolve(++counter))));
 
-      capturedWrite(makeRequest({ id: "a" }), "utf-8");
-      capturedWrite(makeRequest({ id: "b" }), "utf-8");
-      capturedWrite(makeRequest({ id: "c" }), "utf-8");
+      capturedWrite(makeRequest({ id: "a" }), "utf-8", vi.fn());
+      capturedWrite(makeRequest({ id: "b" }), "utf-8", vi.fn());
+      capturedWrite(makeRequest({ id: "c" }), "utf-8", vi.fn());
       await flushPromises();
 
       expect(mockStream.push).toHaveBeenCalledTimes(3);
@@ -146,7 +157,7 @@ describe("createEngineStreamV2", () => {
     it("pushes an error response when the engine rejects", async () => {
       setup(createMockEngine(vi.fn().mockRejectedValue(new Error("engine failure"))));
 
-      capturedWrite(makeRequest({ id: "err-1" }), "utf-8");
+      capturedWrite(makeRequest({ id: "err-1" }), "utf-8", vi.fn());
       await flushPromises();
 
       expect(mockStream.push).toHaveBeenCalledExactlyOnceWith(
@@ -161,7 +172,7 @@ describe("createEngineStreamV2", () => {
     it("includes the error message in the error response", async () => {
       setup(createMockEngine(vi.fn().mockRejectedValue(new Error("specific failure"))));
 
-      capturedWrite(makeRequest({ id: "err-2" }), "utf-8");
+      capturedWrite(makeRequest({ id: "err-2" }), "utf-8", vi.fn());
       await flushPromises();
 
       const pushed = mockStream.push.mock.calls[0][0] as Record<string, unknown>;
@@ -171,7 +182,7 @@ describe("createEngineStreamV2", () => {
     it("uses a fallback message for non-Error throws", async () => {
       setup(createMockEngine(vi.fn().mockRejectedValue("string error")));
 
-      capturedWrite(makeRequest({ id: "err-3" }), "utf-8");
+      capturedWrite(makeRequest({ id: "err-3" }), "utf-8", vi.fn());
       await flushPromises();
 
       const pushed = mockStream.push.mock.calls[0][0] as Record<string, unknown>;
@@ -183,7 +194,7 @@ describe("createEngineStreamV2", () => {
     it("does not push a response for notifications (no id)", async () => {
       setup(createMockEngine(vi.fn().mockResolvedValue(undefined)));
 
-      capturedWrite(makeNotification(), "utf-8");
+      capturedWrite(makeNotification(), "utf-8", vi.fn());
       await flushPromises();
 
       expect(mockStream.push).not.toHaveBeenCalled();
@@ -192,7 +203,7 @@ describe("createEngineStreamV2", () => {
     it("does not push an error response for notification failures", async () => {
       setup(createMockEngine(vi.fn().mockRejectedValue(new Error("notification error"))));
 
-      capturedWrite(makeNotification(), "utf-8");
+      capturedWrite(makeNotification(), "utf-8", vi.fn());
       await flushPromises();
 
       expect(mockStream.push).not.toHaveBeenCalled();
@@ -256,7 +267,7 @@ describe("createEngineStreamV2", () => {
       const handler = vi.mocked(emitter.on).mock.calls.find(([event]) => event === "notification")![1] as (msg: unknown) => void;
       handler({ method: "notif" });
 
-      capturedWrite(makeRequest({ id: "x" }), "utf-8");
+      capturedWrite(makeRequest({ id: "x" }), "utf-8", vi.fn());
       await flushPromises();
 
       expect(mockStream.push).toHaveBeenCalledTimes(2);
@@ -278,7 +289,7 @@ describe("createEngineStreamV2", () => {
     it("handles requests normally", async () => {
       setup(createMockEngine(vi.fn().mockResolvedValue("no-emitter")));
 
-      capturedWrite(makeRequest({ id: "1" }), "utf-8");
+      capturedWrite(makeRequest({ id: "1" }), "utf-8", vi.fn());
       await flushPromises();
 
       expect(mockStream.push).toHaveBeenCalledWith({
