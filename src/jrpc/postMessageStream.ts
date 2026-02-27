@@ -15,6 +15,9 @@ export interface PostMessageStreamArgs extends DuplexOptions {
   targetWindow?: Window;
 }
 
+/**
+ * @deprecated Part of the JRPC V1 stream API. Use {@link createEngineStreamV2} instead.
+ */
 export class PostMessageStream extends BasePostMessageStream {
   private _name: string;
 

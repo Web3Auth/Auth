@@ -31,10 +31,22 @@ export interface JRPCRequest<Params extends JRPCParams = JRPCParams> extends JRP
   params?: Params;
 }
 
+/**
+ * @deprecated Part of the JRPC V1 middleware signature. Use {@link JRPCMiddlewareV2} instead.
+ */
 export type JRPCEngineNextCallback = (cb?: (done: (error?: Error) => void) => void) => void;
+/**
+ * @deprecated Part of the JRPC V1 middleware signature. Use {@link JRPCMiddlewareV2} instead.
+ */
 export type JRPCEngineEndCallback = (error?: Error) => void;
+/**
+ * @deprecated Part of the JRPC V1 middleware signature. Use {@link JRPCMiddlewareV2} instead.
+ */
 export type JRPCEngineReturnHandler = (done: (error?: Error) => void) => void;
 
+/**
+ * @deprecated Part of the JRPC V1 stream middleware. Use {@link createEngineStreamV2} instead.
+ */
 interface IdMapValue {
   req: JRPCRequest<JRPCParams>;
   res: JRPCResponse<unknown>;
@@ -42,10 +54,17 @@ interface IdMapValue {
   end: JRPCEngineEndCallback;
 }
 
+/**
+ * @deprecated Part of the JRPC V1 stream middleware. Use {@link createEngineStreamV2} instead.
+ */
 export interface IdMap {
   [requestId: string]: IdMapValue;
 }
 
+/**
+ * @deprecated Use {@link JRPCMiddlewareV2} instead. V2 middleware receives a single
+ * params object `{ request, context, next }` and returns the result directly.
+ */
 export type JRPCMiddleware<T extends JRPCParams = JRPCParams, U = unknown> = (
   req: JRPCRequest<T>,
   res: JRPCResponse<U>,
@@ -53,6 +72,9 @@ export type JRPCMiddleware<T extends JRPCParams = JRPCParams, U = unknown> = (
   end: JRPCEngineEndCallback
 ) => void;
 
+/**
+ * @deprecated Use {@link JRPCMiddlewareV2} instead — V2 middleware is async by default.
+ */
 export type AsyncJRPCEngineNextCallback = () => Promise<void>;
 
 export type Maybe<T> = T | Partial<T> | null | undefined;
@@ -93,6 +115,9 @@ export interface JRPCError {
   stack?: string;
 }
 
+/**
+ * @deprecated Part of the JRPC V1 API. V2 middleware returns results directly.
+ */
 export interface PendingJRPCResponse<T> extends JRPCBase {
   result?: T;
   error?: Error | JRPCError;
@@ -102,22 +127,37 @@ export interface JRPCFailure extends JRPCBase {
   error: JRPCError;
 }
 
+/**
+ * @deprecated Use {@link JRPCMiddlewareV2} instead — V2 middleware is async by default.
+ */
 export type AsyncJRPCMiddleware<T extends JRPCParams, U> = (
   req: JRPCRequest<T>,
   res: PendingJRPCResponse<U>,
   next: AsyncJRPCEngineNextCallback
 ) => Promise<void>;
 
+/**
+ * @deprecated Part of the JRPC V1 middleware signature. Use {@link JRPCMiddlewareV2} instead.
+ */
 export type ReturnHandlerCallback = (error: null | Error) => void;
 
 export type BlockData = string | string[];
 
 export type Block = Record<string, BlockData>;
 
+/**
+ * @deprecated Part of the JRPC V1 provider API. Use {@link providerFromEngineV2} instead.
+ */
 export type SendAsyncCallBack = (err: Error, providerRes: JRPCResponse<Block>) => void;
 
+/**
+ * @deprecated Part of the JRPC V1 provider API. Use {@link providerFromEngineV2} instead.
+ */
 export type SendCallBack<U> = (err: any, providerRes: U) => void;
 
+/**
+ * @deprecated Part of the JRPC V1 API.
+ */
 export type Payload = Partial<JRPCRequest<string[]>>;
 
 export interface RequestArguments<T> {
@@ -125,6 +165,9 @@ export interface RequestArguments<T> {
   params?: T;
 }
 
+/**
+ * @deprecated Part of the JRPC V1 API.
+ */
 export interface ExtendedJsonRpcRequest<T extends JRPCParams> extends JRPCRequest<T> {
   skipCache?: boolean;
 }
