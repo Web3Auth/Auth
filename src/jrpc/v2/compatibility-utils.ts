@@ -98,6 +98,23 @@ export function propagateToRequest(req: Record<string, unknown>, context: Middle
 }
 
 /**
+ * Copies non-JSON-RPC string properties from the context to the request.
+ *
+ * Clone the original request object and propagate the context to the cloned request.
+ *
+ * **ATTN:** Only string properties are copied.
+ *
+ * @param req - The request to propagate the context to.
+ * @param context - The context to propagate from.
+ * @returns The mutable cloned request.
+ */
+export function propagateToMutableRequest(req: Record<string, unknown>, context: MiddlewareContext): Record<string, unknown> {
+  const clonedRequest = deepClone(req);
+  propagateToRequest(clonedRequest, context);
+  return clonedRequest;
+}
+
+/**
  * Deserialize the error property for a thrown error, merging in the cause where possible.
  *
  * @param data - The data from the thrown error.

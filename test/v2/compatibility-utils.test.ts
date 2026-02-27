@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { Json, JRPCParams, JRPCRequest } from "../../src";
-import { stringify } from "../../src/utils/jrpc";
+import { JRPCParams, JRPCRequest, Json } from "../../src";
 import { JsonRpcError } from "../../src/jrpc/errors";
 import {
   deepClone,
@@ -9,9 +8,11 @@ import {
   fromLegacyRequest,
   makeContext,
   propagateToContext,
+  propagateToMutableRequest,
   propagateToRequest,
 } from "../../src/jrpc/v2/compatibility-utils";
 import { MiddlewareContext } from "../../src/jrpc/v2/MiddlewareContext";
+import { stringify } from "../../src/utils/jrpc";
 
 const jsonrpc = "2.0" as const;
 
@@ -337,6 +338,85 @@ describe("compatibility-utils", () => {
       propagateToRequest(request, context);
 
       expect(request.existingKey).toBe("newValue");
+    });
+  });
+
+  describe("propagateToMutableRequest", () => {
+    it("returns a mutable object from a frozen request", () => {
+      const request = Object.freeze({
+        jsonrpc,
+        method: "test_method",
+        params: Object.freeze([1, 2, 3]),
+        id: 1,
+      });
+      const context = new MiddlewareContext<Record<string, unknown>>();
+      context.set("extraProp", "value");
+
+      const result = propagateToMutableRequest(request, context);
+
+      expect(Object.isFrozen(result)).toBe(false);
+      result.newKey = "can assign";
+      expect(result.newKey).toBe("can assign");
+    });
+
+    it("does not mutate the original frozen request", () => {
+      const request = Object.freeze({
+        jsonrpc,
+        method: "test_method",
+        params: Object.freeze([1, 2, 3]),
+        id: 1,
+      });
+      const context = new MiddlewareContext<Record<string, unknown>>();
+      context.set("extraProp", "value");
+
+      propagateToMutableRequest(request, context);
+
+      expect(request).toStrictEqual({
+        jsonrpc,
+        method: "test_method",
+        params: [1, 2, 3],
+        id: 1,
+      });
+      expect("extraProp" in request).toBe(false);
+    });
+
+    it("propagates context properties onto the mutable clone of a frozen request", () => {
+      const request = Object.freeze({
+        jsonrpc,
+        method: "test_method",
+        params: Object.freeze([1]),
+        id: 42,
+      });
+      const context = new MiddlewareContext<Record<string, unknown>>();
+      context.set("extraProp", "value");
+      context.set("anotherProp", { nested: true });
+
+      const result = propagateToMutableRequest(request, context);
+
+      expect(result).toStrictEqual({
+        jsonrpc,
+        method: "test_method",
+        params: [1],
+        id: 42,
+        extraProp: "value",
+        anotherProp: { nested: true },
+      });
+    });
+
+    it("produces deeply mutable params from a frozen request", () => {
+      const request = Object.freeze({
+        jsonrpc,
+        method: "test_method",
+        params: Object.freeze([Object.freeze({ a: 1 }), 2]),
+        id: 1,
+      });
+      const context = new MiddlewareContext();
+
+      const result = propagateToMutableRequest(request, context);
+
+      expect(Object.isFrozen(result.params)).toBe(false);
+      (result.params as unknown[])[0] = "replaced";
+      expect((result.params as unknown[])[0]).toBe("replaced");
     });
   });
 
