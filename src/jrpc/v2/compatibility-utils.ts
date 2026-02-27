@@ -108,10 +108,13 @@ export function propagateToRequest(req: Record<string, unknown>, context: Middle
  * @param context - The context to propagate from.
  * @returns The mutable cloned request.
  */
-export function propagateToMutableRequest(req: Record<string, unknown>, context: MiddlewareContext): Record<string, unknown> {
+export function propagateToMutableRequest<ReturnType = Record<string, unknown>>(
+  req: Record<string, unknown>,
+  context: MiddlewareContext
+): ReturnType {
   const clonedRequest = deepClone(req);
   propagateToRequest(clonedRequest, context);
-  return clonedRequest;
+  return clonedRequest as ReturnType;
 }
 
 /**
