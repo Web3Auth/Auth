@@ -20,6 +20,10 @@ import {
 import { SafeEventEmitter } from "./safeEventEmitter";
 import { SerializableError } from "./serializableError";
 
+/**
+ * @deprecated Use {@link JRPCEngineV2} instead, which does not extend EventEmitter.
+ * Notifications should be handled via a separate {@link SafeEventEmitter}.
+ */
 export type JrpcEngineEvents = {
   notification: (...args: unknown[]) => void;
 };
@@ -43,6 +47,10 @@ function constructFallbackError(error: Error): JRPCError {
 /**
  * A JSON-RPC request and response processor.
  * Give it a stack of middleware, pass it requests, and get back responses.
+ *
+ * @deprecated Use {@link JRPCEngineV2} instead. The V2 engine uses a functional
+ * middleware signature, immutable requests, and a {@link MiddlewareContext} for
+ * inter-middleware communication.
  */
 export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
   private _middleware: JRPCMiddleware<JRPCParams, unknown>[];
@@ -396,6 +404,9 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
   }
 }
 
+/**
+ * @deprecated Use {@link JRPCEngineV2.create} with a middleware array instead.
+ */
 export function mergeMiddleware(middlewareStack: JRPCMiddleware<JRPCParams, unknown>[]): JRPCMiddleware<JRPCParams, unknown> {
   const engine = new JRPCEngine();
   middlewareStack.forEach((middleware) => {
@@ -404,10 +415,16 @@ export function mergeMiddleware(middlewareStack: JRPCMiddleware<JRPCParams, unkn
   return engine.asMiddleware();
 }
 
+/**
+ * @deprecated Use {@link createEngineStreamV2} instead.
+ */
 export interface EngineStreamOptions {
   engine: JRPCEngine;
 }
 
+/**
+ * @deprecated Use {@link createEngineStreamV2} instead.
+ */
 export function createEngineStream(opts: EngineStreamOptions): Duplex {
   if (!opts || !opts.engine) {
     throw new Error("Missing engine parameter!");
@@ -447,16 +464,25 @@ export function createEngineStream(opts: EngineStreamOptions): Duplex {
   return stream;
 }
 
+/**
+ * @deprecated Use {@link providerFromEngineV2} instead.
+ */
 export type ProviderEvents = {
   data: (error: unknown, message: unknown) => void;
 };
 
+/**
+ * @deprecated Use {@link providerFromEngineV2} instead.
+ */
 export interface SafeEventEmitterProvider<E extends ProviderEvents = ProviderEvents> extends SafeEventEmitter<E> {
   sendAsync: <T extends JRPCParams, U>(req: JRPCRequest<T>) => Promise<U>;
   send: <T extends JRPCParams, U>(req: JRPCRequest<T>, callback: SendCallBack<JRPCResponse<U>>) => void;
   request: <T extends JRPCParams, U>(args: RequestArguments<T>) => Promise<Maybe<U>>;
 }
 
+/**
+ * @deprecated Use {@link providerFromEngineV2} instead.
+ */
 export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider {
   const provider: SafeEventEmitterProvider = new SafeEventEmitter<ProviderEvents>() as SafeEventEmitterProvider;
   // handle both rpc send methods
@@ -502,6 +528,9 @@ export function providerFromEngine(engine: JRPCEngine): SafeEventEmitterProvider
   return provider;
 }
 
+/**
+ * @deprecated Use {@link providerFromMiddlewareV2} instead.
+ */
 export function providerFromMiddleware(middleware: JRPCMiddleware<string[], unknown>): SafeEventEmitterProvider {
   const engine = new JRPCEngine();
   engine.push(middleware);
@@ -509,6 +538,9 @@ export function providerFromMiddleware(middleware: JRPCMiddleware<string[], unkn
   return provider;
 }
 
+/**
+ * @deprecated Use {@link providerAsMiddlewareV2} instead.
+ */
 export function providerAsMiddleware(provider: SafeEventEmitterProvider): JRPCMiddleware<JRPCParams, unknown> {
   return async (req, res, _next, end) => {
     // send request to provider

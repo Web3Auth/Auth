@@ -17,6 +17,10 @@ import {
 import { SafeEventEmitter } from "./safeEventEmitter";
 import { SerializableError } from "./serializableError";
 
+/**
+ * @deprecated Part of the JRPC V1 API. Use {@link JRPCEngineV2} which returns
+ * results directly from `handle()` without requiring callbacks.
+ */
 export const getRpcPromiseCallback =
   (resolve: (value?: unknown) => void, reject: (error?: Error) => void, unwrapResult = true) =>
   (error: Error, response: JRPCResponse<unknown>): void => {
@@ -29,6 +33,10 @@ export const getRpcPromiseCallback =
     }
   };
 
+/**
+ * @deprecated Part of the JRPC V1 API. The V2 engine handles errors internally
+ * via {@link JRPCEngineV2}.
+ */
 export function createErrorMiddleware(log: ConsoleLike): JRPCMiddleware<JRPCParams, unknown> {
   return (req, res, next, end) => {
     try {
@@ -54,10 +62,16 @@ export function createErrorMiddleware(log: ConsoleLike): JRPCMiddleware<JRPCPara
   };
 }
 
+/**
+ * @deprecated Part of the JRPC V1 API. Use {@link createEngineStreamV2} instead.
+ */
 export type StreamEvents = {
   notification: (arg1: JRPCNotification) => boolean;
 };
 
+/**
+ * @deprecated Part of the JRPC V1 API. Use {@link createEngineStreamV2} instead.
+ */
 export function createStreamMiddleware(): {
   events: SafeEventEmitter<StreamEvents>;
   middleware: JRPCMiddleware<JRPCParams, unknown>;
@@ -121,8 +135,14 @@ export function createStreamMiddleware(): {
   return { events, middleware, stream };
 }
 
+/**
+ * @deprecated Use {@link createScaffoldMiddlewareV2} and its handler type instead.
+ */
 export type ScaffoldMiddlewareHandler<T extends JRPCParams, U> = JRPCMiddleware<T, U> | Json;
 
+/**
+ * @deprecated Use {@link createScaffoldMiddlewareV2} instead.
+ */
 export function createScaffoldMiddleware(handlers: {
   [methodName: string]: ScaffoldMiddlewareHandler<JRPCParams, unknown>;
 }): JRPCMiddleware<JRPCParams, unknown> {
@@ -142,6 +162,9 @@ export function createScaffoldMiddleware(handlers: {
   };
 }
 
+/**
+ * @deprecated Part of the JRPC V1 API. The V2 engine does not require ID remapping.
+ */
 export function createIdRemapMiddleware(): JRPCMiddleware<JRPCParams, unknown> {
   return (req, res, next, _end) => {
     const originalId = req.id;
@@ -156,6 +179,9 @@ export function createIdRemapMiddleware(): JRPCMiddleware<JRPCParams, unknown> {
   };
 }
 
+/**
+ * @deprecated Part of the JRPC V1 API. Write a {@link JRPCMiddlewareV2} instead.
+ */
 export function createLoggerMiddleware(logger: ConsoleLike): JRPCMiddleware<JRPCParams, unknown> {
   return (req, res, next, _) => {
     logger.debug("REQ", req, "RES", res);
@@ -163,6 +189,9 @@ export function createLoggerMiddleware(logger: ConsoleLike): JRPCMiddleware<JRPC
   };
 }
 
+/**
+ * @deprecated Use {@link JRPCMiddlewareV2} directly — V2 middleware is async by default.
+ */
 export function createAsyncMiddleware<T extends JRPCParams, U>(asyncMiddleware: AsyncJRPCMiddleware<T, U>): JRPCMiddleware<T, U> {
   return async (req, res, next, end) => {
     // nextPromise is the key to the implementation

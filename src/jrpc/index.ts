@@ -1,3 +1,11 @@
+// ──────────────────────────────────────────────────────────────────────────────
+// JRPC V1 exports — DEPRECATED
+//
+// The V1 engine, middleware types, and stream utilities below are deprecated.
+// Migrate to the JRPC V2 API exported from "./v2" (e.g. JRPCEngineV2,
+// JRPCMiddlewareV2, createEngineStreamV2, providerFromEngineV2, etc.).
+// ──────────────────────────────────────────────────────────────────────────────
+
 export type { PostMessageEvent, StreamData, StreamMessage } from "./basePostMessageStream";
 export { BasePostMessageStream, isValidStreamMessage } from "./basePostMessageStream";
 export * from "./errors";
@@ -13,6 +21,6 @@ export type { SubstreamOptions } from "./substream";
 export { Substream } from "./substream";
 
 /**
- * Export the v2 module.
+ * JRPC V2 API — preferred.
  */
 export * from "./v2";

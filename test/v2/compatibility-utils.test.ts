@@ -418,6 +418,48 @@ describe("compatibility-utils", () => {
       (result.params as unknown[])[0] = "replaced";
       expect((result.params as unknown[])[0]).toBe("replaced");
     });
+
+    it("returns the result typed as the specified generic ReturnType", () => {
+      type CustomRequest = {
+        jsonrpc: string;
+        method: string;
+        params: JRPCParams;
+        id: number;
+        extraProp?: string;
+      };
+
+      const request = Object.freeze({
+        jsonrpc,
+        method: "test_method",
+        params: Object.freeze([1]),
+        id: 42,
+      });
+      const context = new MiddlewareContext<Record<string, unknown>>();
+      context.set("extraProp", "typed-value");
+
+      const result = propagateToMutableRequest<CustomRequest>(request, context);
+
+      expect(result.jsonrpc).toBe(jsonrpc);
+      expect(result.method).toBe("test_method");
+      expect(result.id).toBe(42);
+      expect(result.extraProp).toBe("typed-value");
+    });
+
+    it("defaults ReturnType to Record<string, unknown> when no generic is provided", () => {
+      const request = {
+        jsonrpc,
+        method: "test_method",
+        params: [1],
+        id: 42,
+      };
+      const context = new MiddlewareContext<Record<string, unknown>>();
+      context.set("extra", "value");
+
+      const result = propagateToMutableRequest(request, context);
+
+      expect(result.extra).toBe("value");
+      expect(result.method).toBe("test_method");
+    });
   });
 
   describe("deserializeError", () => {
