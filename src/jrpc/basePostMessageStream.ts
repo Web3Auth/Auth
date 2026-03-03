@@ -23,9 +23,6 @@ export interface PostMessageEvent {
   source: typeof window;
 }
 
-/**
- * @deprecated Part of the JRPC V1 stream API. Use {@link createEngineStreamV2} instead.
- */
 export function isValidStreamMessage(message: unknown): message is StreamMessage {
   return (
     typeof message === "object" &&
@@ -37,9 +34,6 @@ export function isValidStreamMessage(message: unknown): message is StreamMessage
   );
 }
 
-/**
- * @deprecated Part of the JRPC V1 stream API. Use {@link createEngineStreamV2} instead.
- */
 export abstract class BasePostMessageStream extends Duplex {
   private _init: boolean;
 

@@ -1,8 +1,7 @@
 import { getUniqueId } from "../../utils";
 import { serializeJrpcError } from "../errors";
 import { JRPCParams, JRPCRequest, JRPCResponse, Json, RequestArguments } from "../interfaces";
-import { ProviderEvents, SafeEventEmitterProvider } from "../jrpcEngine";
-import { SafeEventEmitter } from "../safeEventEmitter";
+import { ProviderEvents, SafeEventEmitter, SafeEventEmitterProvider } from "../safeEventEmitter";
 import { deepClone, propagateToRequest } from "./compatibility-utils";
 import { JRPCEngineV2 } from "./jrpcEngineV2";
 import type { JRPCMiddlewareV2 } from "./v2interfaces";

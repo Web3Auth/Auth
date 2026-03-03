@@ -2,6 +2,8 @@
 import { EventEmitter } from "events";
 import TypedEventEmitter, { EventMap } from "typed-emitter";
 
+import { JRPCParams, JRPCRequest, JRPCResponse, Maybe, RequestArguments, SendCallBack } from "./interfaces";
+
 function safeApply<T, A extends any[]>(handler: (this: T, ...handlerArgs: A) => void, context: T, args: A): void {
   try {
     Reflect.apply(handler, context, args);
@@ -68,4 +70,14 @@ export class SafeEventEmitter<T extends EventMap = EventMap> extends (EventEmitt
 
     return true;
   }
+}
+
+export type ProviderEvents = {
+  data: (error: unknown, message: unknown) => void;
+};
+
+export interface SafeEventEmitterProvider<E extends ProviderEvents = ProviderEvents> extends SafeEventEmitter<E> {
+  sendAsync: <T extends JRPCParams, U>(req: JRPCRequest<T>) => Promise<U>;
+  send: <T extends JRPCParams, U>(req: JRPCRequest<T>, callback: SendCallBack<JRPCResponse<U>>) => void;
+  request: <T extends JRPCParams, U>(args: RequestArguments<T>) => Promise<Maybe<U>>;
 }
