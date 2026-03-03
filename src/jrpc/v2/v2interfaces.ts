@@ -158,26 +158,16 @@ export type InvalidEngine<Message extends string> = { [INVALID_ENGINE]: Message 
 type JsonPrimitive = string | number | boolean | null;
 
 /**
- * A handler for a scaffold middleware function.
- *
- * @template Params - The parameters of the request.
- * @template Result - The result of the request.
- * @template Context - The context of the request.
- * @returns A JSON-RPC middleware function or a primitive JSON value.
- */
-export type ScaffoldMiddlewareHandler<
-  Params extends JRPCParams,
-  Result extends ResultConstraint<JRPCRequest<Params>>,
-  Context extends ContextConstraint,
-> = JRPCMiddlewareV2<JRPCRequest<Params>, Result, Context> | JsonPrimitive;
-
-/**
  * A record of RPC method handler functions or hard-coded results, keyed to particular method names.
  * Only primitive JSON values are permitted as hard-coded results.
+ *
+ * Uses `never` as the function parameter type so that handlers with
+ * arbitrarily-narrowed request params remain assignable to the record value type
+ * (every function type is a subtype of `(params: never) => R`).
  */
-export type MiddlewareScaffold<Context extends ContextConstraint = MiddlewareContext> = Record<
+export type MiddlewareScaffold = Record<
   string,
-  ScaffoldMiddlewareHandler<JRPCParams, Json, Context>
+  ((params: never) => Readonly<Json> | undefined | Promise<Readonly<Json> | undefined>) | JsonPrimitive
 >;
 
 // Matching the default implementation of klona, this type:

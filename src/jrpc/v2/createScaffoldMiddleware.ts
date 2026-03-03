@@ -11,10 +11,10 @@ import type { ContextConstraint, JRPCMiddlewareV2, MiddlewareScaffold } from "./
  * @returns The scaffold middleware function.
  */
 export function createScaffoldMiddleware<Context extends ContextConstraint>(
-  handlers: MiddlewareScaffold<Context>
+  handlers: MiddlewareScaffold
 ): JRPCMiddlewareV2<JRPCRequest, Json, Context> {
   return ({ request, context, next }) => {
-    const handlerOrResult = handlers[request.method];
+    const handlerOrResult = handlers[request.method] as JRPCMiddlewareV2<JRPCRequest, Json, Context>;
     if (handlerOrResult === undefined) {
       return next();
     }

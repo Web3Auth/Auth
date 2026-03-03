@@ -25,7 +25,7 @@ export interface JRPCNotification<Params extends JRPCParams = JRPCParams> {
   params?: Params;
 }
 
-export interface JRPCRequest<Params extends JRPCParams = JRPCParams> extends JRPCBase {
+export interface JRPCRequest<Params = JRPCParams> extends JRPCBase {
   id: JRPCId;
   method: string;
   params?: Params;
@@ -155,9 +155,6 @@ export type SendAsyncCallBack = (err: Error, providerRes: JRPCResponse<Block>) =
  */
 export type SendCallBack<U> = (err: any, providerRes: U) => void;
 
-/**
- * @deprecated Part of the JRPC V1 API.
- */
 export type Payload = Partial<JRPCRequest<string[]>>;
 
 export interface RequestArguments<T> {
@@ -165,9 +162,6 @@ export interface RequestArguments<T> {
   params?: T;
 }
 
-/**
- * @deprecated Part of the JRPC V1 API.
- */
 export interface ExtendedJsonRpcRequest<T extends JRPCParams> extends JRPCRequest<T> {
   skipCache?: boolean;
 }
