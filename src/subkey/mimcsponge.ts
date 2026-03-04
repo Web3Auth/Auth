@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Scalar, ZqField } from "@toruslabs/ffjavascript";
-import { bytesToHex, hexToBytes, keccak256, utf8ToBytes } from "@toruslabs/metadata-helpers";
+import { bytesToHex, hexToBytes, keccak256Bytes, utf8ToBytes } from "@toruslabs/metadata-helpers";
 
 const F = new ZqField(Scalar.fromString("21888242871839275222246405745257275088548364400416034343698204186575808495617"));
 
@@ -15,7 +15,10 @@ function keccak256Padded(str: string): string {
   } else {
     finalInput = utf8ToBytes(str);
   }
-  return `0x${bytesToHex(keccak256(finalInput)).padStart(64, "0")}`;
+
+  const hashBytes = keccak256Bytes(finalInput);
+
+  return `0x${bytesToHex(hashBytes).padStart(64, "0")}`;
 }
 
 export function mimgGetIV(seed: string): bigint {
