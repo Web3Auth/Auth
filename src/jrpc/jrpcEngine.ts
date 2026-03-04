@@ -13,11 +13,9 @@ import {
   JRPCParams,
   JRPCRequest,
   JRPCResponse,
-  Maybe,
   RequestArguments,
-  SendCallBack,
 } from "./interfaces";
-import { SafeEventEmitter } from "./safeEventEmitter";
+import { ProviderEvents, SafeEventEmitter, SafeEventEmitterProvider } from "./safeEventEmitter";
 import { SerializableError } from "./serializableError";
 
 /**
@@ -462,22 +460,6 @@ export function createEngineStream(opts: EngineStreamOptions): Duplex {
     stream.once("close", cleanup);
   }
   return stream;
-}
-
-/**
- * @deprecated Use {@link providerFromEngineV2} instead.
- */
-export type ProviderEvents = {
-  data: (error: unknown, message: unknown) => void;
-};
-
-/**
- * @deprecated Use {@link providerFromEngineV2} instead.
- */
-export interface SafeEventEmitterProvider<E extends ProviderEvents = ProviderEvents> extends SafeEventEmitter<E> {
-  sendAsync: <T extends JRPCParams, U>(req: JRPCRequest<T>) => Promise<U>;
-  send: <T extends JRPCParams, U>(req: JRPCRequest<T>, callback: SendCallBack<JRPCResponse<U>>) => void;
-  request: <T extends JRPCParams, U>(args: RequestArguments<T>) => Promise<Maybe<U>>;
 }
 
 /**

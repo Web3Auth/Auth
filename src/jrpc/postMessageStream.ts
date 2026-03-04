@@ -15,9 +15,6 @@ export interface PostMessageStreamArgs extends DuplexOptions {
   targetWindow?: Window;
 }
 
-/**
- * @deprecated Part of the JRPC V1 stream API. Use {@link createEngineStreamV2} instead.
- */
 export class PostMessageStream extends BasePostMessageStream {
   private _name: string;
 
@@ -55,7 +52,8 @@ export class PostMessageStream extends BasePostMessageStream {
   protected _postMessage(data: unknown): void {
     let originConstraint = this._targetOrigin;
     if (typeof data === "object") {
-      const dataObj = data as Record<string, unknown>;
+      // re-create the object in case it's frozen
+      const dataObj = { ...data } as Record<string, unknown>;
       if (typeof dataObj.data === "object") {
         const dataObjData = dataObj.data as Record<string, unknown>;
         if (Array.isArray(dataObjData.params) && dataObjData.params.length > 0) {

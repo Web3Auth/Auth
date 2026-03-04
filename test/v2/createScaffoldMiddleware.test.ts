@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { rpcErrors } from "../../src";
+import { JRPCRequest, rpcErrors } from "../../src";
 import { createScaffoldMiddleware } from "../../src/jrpc/v2/createScaffoldMiddleware";
 import { JRPCEngineV2 } from "../../src/jrpc/v2/jrpcEngineV2";
 import type { MiddlewareScaffold } from "../../src/jrpc/v2/v2interfaces";
@@ -14,6 +14,9 @@ describe("createScaffoldMiddleware", () => {
       method3: () => {
         throw rpcErrors.internal({ message: "method3" });
       },
+      method4: ({ request }: { request: JRPCRequest<{ foo: string }> }) => {
+        return request.params.foo;
+      },
     };
 
     const engine = JRPCEngineV2.create({
@@ -24,6 +27,7 @@ describe("createScaffoldMiddleware", () => {
     const result2 = await engine.handle(makeRequest({ method: "method2" }));
     const promise3 = engine.handle(makeRequest({ method: "method3" }));
     const result4 = await engine.handle(makeRequest({ method: "unknown" }));
+    const result5 = await engine.handle(makeRequest({ method: "method4", params: { foo: "bar" } }));
 
     expect(result1).toBe("foo");
 
@@ -32,5 +36,7 @@ describe("createScaffoldMiddleware", () => {
     await expect(promise3).rejects.toThrow(rpcErrors.internal({ message: "method3" }));
 
     expect(result4).toBe("passthrough");
+
+    expect(result5).toBe("bar");
   });
 });

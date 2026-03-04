@@ -1,8 +1,5 @@
 import stringify from "json-stable-stringify";
 
-/**
- * @deprecated Use {@link JsonRpcError} from the errors module instead.
- */
 export class SerializableError<T> extends Error {
   public code: number;
 

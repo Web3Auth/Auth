@@ -15,7 +15,7 @@ export * from "./jrpcEngine";
 export * from "./mux";
 export type { PostMessageStreamArgs } from "./postMessageStream";
 export { PostMessageStream } from "./postMessageStream";
-export { SafeEventEmitter } from "./safeEventEmitter";
+export { type ProviderEvents, SafeEventEmitter, type SafeEventEmitterProvider } from "./safeEventEmitter";
 export { SerializableError } from "./serializableError";
 export type { SubstreamOptions } from "./substream";
 export { Substream } from "./substream";
