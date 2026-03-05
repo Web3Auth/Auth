@@ -1,5 +1,6 @@
 import { SESSION_SERVER_API_URL, SESSION_SERVER_SOCKET_URL } from "@toruslabs/constants";
 import { AUTH_CONNECTION, AUTH_CONNECTION_TYPE, constructURL, getTimeout, UX_MODE } from "@toruslabs/customauth";
+import { add0x } from "@toruslabs/metadata-helpers";
 import { AuthSessionManager, SessionManager as StorageManager } from "@toruslabs/session-manager";
 import { klona } from "klona/json";
 
@@ -177,7 +178,7 @@ export class Auth {
 
     if (params.sessionId) {
       await this.sessionManager.setTokens({
-        session_id: params.sessionId,
+        session_id: add0x(params.sessionId),
         access_token: params.accessToken || "",
         refresh_token: params.refreshToken || "",
         id_token: params.idToken || "",
@@ -226,7 +227,7 @@ export class Auth {
       throw LoginError.loginFailed(result.error);
     }
     await this.sessionManager.setTokens({
-      session_id: result.sessionId,
+      session_id: add0x(result.sessionId),
       access_token: result.accessToken,
       refresh_token: result.refreshToken,
       id_token: result.idToken,
@@ -249,7 +250,7 @@ export class Auth {
 
     const result = await this.authProvider.postLoginInitiatedMessage({ actionType: AUTH_ACTIONS.LOGIN, params, options: this.options }, nonce);
     await this.sessionManager.setTokens({
-      session_id: result.sessionId,
+      session_id: add0x(result.sessionId),
       access_token: result.accessToken,
       refresh_token: result.refreshToken,
       id_token: result.idToken,
@@ -328,7 +329,7 @@ export class Auth {
       throw LoginError.loginFailed(result.error);
     }
     await this.sessionManager.setTokens({
-      session_id: result.sessionId,
+      session_id: add0x(result.sessionId),
       access_token: result.accessToken,
       refresh_token: result.refreshToken,
       id_token: result.idToken,
@@ -469,7 +470,7 @@ export class Auth {
       sessionServerBaseUrl: payload.options.storageServerUrl,
       sessionNamespace: payload.options.sessionNamespace,
       sessionTime: timeout, // each login key must be used with 10 mins (might be used at the end of popup redirect)
-      sessionId: loginId,
+      sessionId: add0x(loginId),
       allowedOrigin: this.options.sdkUrl,
     });
 

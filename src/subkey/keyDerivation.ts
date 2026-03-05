@@ -1,6 +1,4 @@
-import { mod } from "@noble/curves/abstract/modular.js";
-import { bytesToNumberBE } from "@noble/curves/utils.js";
-import { secp256k1 } from "@toruslabs/metadata-helpers";
+import { bytesToNumberBE, mod, secp256k1 } from "@toruslabs/metadata-helpers";
 
 import { mimcHash } from "./mimcsponge";
 
