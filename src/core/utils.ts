@@ -1,4 +1,6 @@
-import { AuthFlowError, AuthFlowResult, safeatob } from "../utils";
+import { decodeBase64Url } from "@toruslabs/metadata-helpers";
+
+import { AuthFlowError, AuthFlowResult } from "../utils";
 import { log } from "../utils/logger";
 
 // don't use destructuring for process.env cause it messes up webpack env plugin
@@ -28,7 +30,7 @@ export function getHashQueryParams(replaceUrl = false): HashQueryParamResult {
   const queryResult = queryUrlParams.get("b64Params");
   if (queryResult) {
     try {
-      const queryParams = JSON.parse(safeatob(queryResult));
+      const queryParams = JSON.parse(decodeBase64Url(queryResult));
       Object.keys(queryParams).forEach((key: string) => {
         result[key as keyof HashQueryParamResult] = queryParams[key];
       });
@@ -47,7 +49,7 @@ export function getHashQueryParams(replaceUrl = false): HashQueryParamResult {
   const hashResult = hashUrlParams.get("b64Params");
   if (hashResult) {
     try {
-      const hashParams = JSON.parse(safeatob(hashResult));
+      const hashParams = JSON.parse(decodeBase64Url(hashResult));
       Object.keys(hashParams).forEach((key: string) => {
         result[key as keyof HashQueryParamResult] = hashParams[key];
       });
