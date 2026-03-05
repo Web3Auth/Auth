@@ -1,10 +1,9 @@
-import { bytesToNumberBE, mod, secp256k1 } from "@toruslabs/metadata-helpers";
+import { add0x, bytesToNumberBE, hexToBigInt, mod, secp256k1 } from "@toruslabs/metadata-helpers";
 
 import { mimcHash } from "./mimcsponge";
 
 export function subkey(keyHex: string, input: Uint8Array): string {
-  const hexPrefixedKey = keyHex.startsWith("0x") ? keyHex : `0x${keyHex}`;
-  const privKeyBuf = BigInt(hexPrefixedKey).toString(10);
+  const privKeyBuf = hexToBigInt(add0x(keyHex));
   const curveN = secp256k1.Point.CURVE().n;
   const inputPath = mod(bytesToNumberBE(input), curveN).toString(10);
 

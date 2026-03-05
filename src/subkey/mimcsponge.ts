@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Scalar, ZqField } from "@toruslabs/ffjavascript";
-import { bytesToHex, hexToBytes, keccak256Bytes, utf8ToBytes } from "@toruslabs/metadata-helpers";
+import { add0x, bytesToHex, hexToBigInt, hexToBytes, isHexString, keccak256Bytes, utf8ToBytes } from "@toruslabs/metadata-helpers";
 
 const F = new ZqField(Scalar.fromString("21888242871839275222246405745257275088548364400416034343698204186575808495617"));
 
@@ -10,15 +10,15 @@ const NROUNDS = 220;
 
 function keccak256Padded(str: string): string {
   let finalInput: Uint8Array;
-  if (str.slice(0, 2) === "0x" && str.length === 66) {
-    finalInput = hexToBytes(str.slice(2));
+  if (isHexString(str)) {
+    finalInput = hexToBytes(str);
   } else {
     finalInput = utf8ToBytes(str);
   }
 
   const hashBytes = keccak256Bytes(finalInput);
 
-  return `0x${bytesToHex(hashBytes).padStart(64, "0")}`;
+  return add0x(bytesToHex(hashBytes).padStart(64, "0"));
 }
 
 export function mimgGetIV(seed: string): bigint {
@@ -42,7 +42,7 @@ export function mimcGetConstants(seed?: string, nRounds?: number): bigint[] {
 
     const n1 = BigInt(c) % F.p;
     const c2 = n1.toString(16).padStart(64, "0");
-    cts[i] = F.e(BigInt(`0x${c2}`).toString());
+    cts[i] = F.e(hexToBigInt(c2).toString());
   }
   cts[0] = F.e(0);
   cts[cts.length - 1] = F.e(0);
