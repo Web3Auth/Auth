@@ -66,6 +66,7 @@
     "@toruslabs/config": "^4.0.0",
     "@toruslabs/eslint-config-typescript": "^5.0.0",
     "@toruslabs/torus-scripts": "^8.0.0",
+    "@toruslabs/tweetnacl-js": "^1.0.4",
     "@types/color": "^4.2.0",
     "@types/deep-freeze-strict": "^1.1.2",
     "@types/node": "^25",
