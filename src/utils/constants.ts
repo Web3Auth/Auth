@@ -61,7 +61,7 @@ export const DEFAULT_SESSION_TIME = 30 * 24 * 60 * 60; // 30 days
 
 export const CITADEL_SERVER_URL_PRODUCTION = "https://api.web3auth.io/citadel-server";
 export const CITADEL_SERVER_URL_STAGING = "https://api.web3auth.io/citadel-server";
-export const CITADEL_SERVER_URL_DEVELOPMENT = "http://localhost:3020";
+export const CITADEL_SERVER_URL_DEVELOPMENT = "https://api-develop.web3auth.io/citadel-server";
 export const CITADEL_SERVER_URL_TESTING = "https://api-develop.web3auth.io/citadel-server";
 
 // Auth service urls
