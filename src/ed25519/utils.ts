@@ -13,9 +13,6 @@ export function getED25519Key(privateKey: string | Uint8Array): {
   pk: Uint8Array;
 } {
   const privKey = typeof privateKey === "string" ? hexToBytes(privateKey) : privateKey;
-  const pk = ed25519.getPublicKey(privKey);
-  const sk = new Uint8Array(64);
-  sk.set(privKey, 0);
-  sk.set(pk, 32);
-  return { sk, pk };
+  const { secretKey, publicKey } = ed25519.keygen(privKey);
+  return { sk: secretKey, pk: publicKey };
 }
