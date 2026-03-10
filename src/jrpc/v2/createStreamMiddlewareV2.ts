@@ -25,8 +25,6 @@ export function createClientStreamMiddlewareV2({ notificationEmitter }: { notifi
   }
 
   function write(this: Duplex, data: Record<string, unknown>, _encoding: BufferEncoding, cb: () => void) {
-    // eslint-disable-next-line no-console
-    console.log("createClientStreamMiddlewareV2::data", data);
     if (data.method !== undefined) {
       // Inbound request or notification from remote — route to event emitter
       // (matches V1 createStreamMiddleware behavior where all non-response

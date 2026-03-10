@@ -1,4 +1,4 @@
-import { hexToBytes } from "@toruslabs/metadata-helpers";
+import { getEd25519, hexToBytes } from "@toruslabs/metadata-helpers";
 import nacl from "@toruslabs/tweetnacl-js";
 import { describe, expect, it } from "vitest";
 
@@ -77,6 +77,12 @@ const testVectors: { seed: string; pk: string }[] = [
   },
 ];
 
+const signingTestVector = {
+  seed: "9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60",
+  pk: "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a",
+  signature: "e5564300c360ac729086e2cc806e828a84877f1eb8e5d974d873e065224901555fb8821590a33bacc61e39701cf9b46bd25bf5f0595bbe24655141438e7a100b",
+};
+
 describe("ED25519", () => {
   it("should return 64-byte sk with seed prefix and 32-byte pk suffix", () => {
     const { sk, pk } = getED25519Key(testVectors[0].seed);
@@ -152,5 +158,23 @@ describe("getED25519Key vs getED25519KeyOld", () => {
 
     expect(newResult.pk).toEqual(oldResult.pk);
     expect(newResult.sk).toEqual(oldResult.sk);
+  });
+});
+
+describe("getED25519Key signing", () => {
+  it("should sign and verify the RFC 8032 empty-message test vector", () => {
+    const message = new Uint8Array(0);
+    const { sk, pk } = getED25519Key(signingTestVector.seed);
+    const signature = nacl.sign.detached(message, sk);
+
+    expect(pk).toEqual(hexToBytes(signingTestVector.pk));
+    expect(signature).toEqual(hexToBytes(signingTestVector.signature));
+    expect(nacl.sign.detached.verify(message, signature, pk)).toBe(true);
+
+    const nobleEd25519 = getEd25519();
+    const nobleCompatibleKey = sk.slice(0, 32);
+    const nobleSig = nobleEd25519.sign(message, nobleCompatibleKey);
+    expect(nobleSig).toEqual(signature);
+    expect(nobleEd25519.verify(nobleSig, message, pk)).toBe(true);
   });
 });
