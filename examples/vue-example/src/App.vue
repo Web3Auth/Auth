@@ -765,7 +765,7 @@ const getUserInfo = async () => {
   if (!openloginInstance.value) {
     throw new Error("Openlogin is not available.");
   }
-  const userInfo = openloginInstance.value.getUserInfo();
+  const userInfo = await openloginInstance.value.getUserInfo();
   printToConsole("User Info", userInfo);
 };
 

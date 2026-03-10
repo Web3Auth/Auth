@@ -1,5 +1,6 @@
 import type { DuplexOptions } from "readable-stream";
 
+import { cloneDeep } from "../utils";
 import { BasePostMessageStream, isValidStreamMessage, type PostMessageEvent } from "./basePostMessageStream";
 
 /* istanbul ignore next */
@@ -50,19 +51,23 @@ export class PostMessageStream extends BasePostMessageStream {
   }
 
   protected _postMessage(data: unknown): void {
+    // clone the data to avoid mutating the original object and bypass the frozen state of the object
+    const clonedData = cloneDeep(data);
     let originConstraint = this._targetOrigin;
-    if (typeof data === "object") {
-      // re-create the object in case it's frozen
-      const dataObj = { ...data } as Record<string, unknown>;
+    if (typeof clonedData === "object") {
+      const dataObj = clonedData as Record<string, unknown>;
       if (typeof dataObj.data === "object") {
         const dataObjData = dataObj.data as Record<string, unknown>;
         if (Array.isArray(dataObjData.params) && dataObjData.params.length > 0) {
-          const dataObjDataParam = dataObjData.params[0] as Record<string, unknown>;
-          if (dataObjDataParam._origin) {
-            originConstraint = dataObjDataParam._origin as string;
-          }
+          const firstParam = dataObjData.params[0];
+          if (typeof firstParam === "object" && firstParam !== null) {
+            const dataObjDataParam = firstParam as Record<string, unknown>;
+            if (dataObjDataParam._origin) {
+              originConstraint = dataObjDataParam._origin as string;
+            }
 
-          dataObjDataParam._origin = window.location.origin;
+            dataObjDataParam._origin = window.location.origin;
+          }
         }
       }
     }
@@ -70,7 +75,7 @@ export class PostMessageStream extends BasePostMessageStream {
     this._targetWindow.postMessage(
       {
         target: this._target,
-        data,
+        data: clonedData,
       },
       originConstraint
     );
