@@ -1,6 +1,6 @@
 import { SESSION_SERVER_API_URL, SESSION_SERVER_SOCKET_URL } from "@toruslabs/constants";
 import { AUTH_CONNECTION, AUTH_CONNECTION_TYPE, constructURL, getTimeout, UX_MODE } from "@toruslabs/customauth";
-import { add0x } from "@toruslabs/metadata-helpers";
+import { add0x, Hex } from "@toruslabs/metadata-helpers";
 import { AuthSessionManager, SessionManager as StorageManager } from "@toruslabs/session-manager";
 import { klona } from "klona/json";
 
@@ -463,14 +463,14 @@ export class Auth {
     return CITADEL_SERVER_URL_PRODUCTION;
   }
 
-  private async storeAuthPayload(loginId: string, payload: AuthRequestPayload, timeout = 600, skipAwait = false): Promise<void> {
+  private async storeAuthPayload(loginId: Hex, payload: AuthRequestPayload, timeout = 600, skipAwait = false): Promise<void> {
     if (!this.sessionManager) throw InitializationError.notInitialized();
 
     const authRequestStorageManager = new StorageManager<AuthRequestPayload>({
       sessionServerBaseUrl: payload.options.storageServerUrl,
       sessionNamespace: payload.options.sessionNamespace,
       sessionTime: timeout, // each login key must be used with 10 mins (might be used at the end of popup redirect)
-      sessionId: add0x(loginId),
+      sessionId: loginId,
       allowedOrigin: this.options.sdkUrl,
     });
 
