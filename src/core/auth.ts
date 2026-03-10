@@ -448,11 +448,14 @@ export class Auth {
     if (this.authProvider) this.authProvider.cleanup();
   }
 
-  getUserInfo(): AuthUserInfo {
+  async getUserInfo(): Promise<AuthUserInfo> {
     if (!this.sessionId) {
       throw LoginError.userNotLoggedIn();
     }
-    return this.state.userInfo;
+    return {
+      ...this.state.userInfo,
+      idToken: await this.sessionManager.getIdToken(),
+    };
   }
 
   private getDefaultCitadelServerUrl(buildEnv: BUILD_ENV_TYPE): string {
