@@ -273,6 +273,7 @@ export class Auth {
   }
 
   async enableMFA(params: Partial<LoginParams>): Promise<boolean> {
+    if (!this.sessionId) throw LoginError.userNotLoggedIn();
     await this.refreshSession();
 
     if (this.state.userInfo.isMfaEnabled) throw LoginError.mfaAlreadyEnabled();
@@ -310,6 +311,7 @@ export class Auth {
   }
 
   async manageMFA(params: Partial<LoginParams>): Promise<void> {
+    if (!this.sessionId) throw LoginError.userNotLoggedIn();
     await this.refreshSession();
 
     if (!this.state.userInfo.isMfaEnabled) throw LoginError.mfaNotEnabled();
@@ -362,6 +364,7 @@ export class Auth {
   }
 
   async manageSocialFactor(actionType: AUTH_ACTIONS_TYPE, params: SocialMfaModParams & Pick<LoginParams, "appState">): Promise<boolean> {
+    if (!this.sessionId) throw LoginError.userNotLoggedIn();
     await this.refreshSession();
 
     const dataObject: AuthRequestPayload = {
@@ -381,6 +384,7 @@ export class Auth {
   }
 
   async addAuthenticatorFactor(params: Pick<LoginParams, "appState">): Promise<boolean> {
+    if (!this.sessionId) throw LoginError.userNotLoggedIn();
     await this.refreshSession();
 
     const dataObject: AuthRequestPayload = {
@@ -401,6 +405,7 @@ export class Auth {
   }
 
   async addPasskeyFactor(params: Pick<LoginParams, "appState">): Promise<boolean> {
+    if (!this.sessionId) throw LoginError.userNotLoggedIn();
     await this.refreshSession();
 
     const dataObject: AuthRequestPayload = {
@@ -444,7 +449,6 @@ export class Auth {
   }
 
   async refreshSession(): Promise<void> {
-    if (!this.sessionId) throw LoginError.userNotLoggedIn();
     const data = await this._authorizeSession();
     if (!data || Object.keys(data).length === 0) {
       try {
