@@ -1,7 +1,7 @@
-import { SESSION_SERVER_API_URL, SESSION_SERVER_SOCKET_URL } from "@toruslabs/constants";
+import { CITADEL_SERVER_MAP, STORAGE_SERVER_MAP, STORAGE_SERVER_SOCKET_URL_MAP } from "@toruslabs/constants";
 import { AUTH_CONNECTION, AUTH_CONNECTION_TYPE, constructURL, getTimeout, UX_MODE } from "@toruslabs/customauth";
 import { add0x, Hex } from "@toruslabs/metadata-helpers";
-import { AuthSessionManager, SessionManager as StorageManager } from "@toruslabs/session-manager";
+import { AuthSessionManager, StorageManager } from "@toruslabs/session-manager";
 import { klona } from "klona/json";
 
 import {
@@ -22,11 +22,6 @@ import {
   AuthUserInfo,
   BaseLoginParams,
   BUILD_ENV,
-  BUILD_ENV_TYPE,
-  CITADEL_SERVER_URL_DEVELOPMENT,
-  CITADEL_SERVER_URL_PRODUCTION,
-  CITADEL_SERVER_URL_STAGING,
-  CITADEL_SERVER_URL_TESTING,
   DEFAULT_SESSION_TIME,
   jsonToBase64,
   LoginParams,
@@ -40,7 +35,6 @@ import { AuthProvider } from "./AuthProvider";
 import { InitializationError, LoginError } from "./errors";
 import PopupHandler from "./PopupHandler";
 import { getHashQueryParams, isAuthFlowError, version } from "./utils";
-
 export class Auth {
   state: AuthSessionData = {};
 
@@ -91,9 +85,9 @@ export class Auth {
     if (!options.whiteLabel) options.whiteLabel = {};
     if (!options.authConnectionConfig) options.authConnectionConfig = [];
     if (!options.mfaSettings) options.mfaSettings = {};
-    if (!options.citadelServerUrl) options.citadelServerUrl = this.getDefaultCitadelServerUrl(options.buildEnv);
-    if (!options.storageServerUrl) options.storageServerUrl = SESSION_SERVER_API_URL;
-    if (!options.sessionSocketUrl) options.sessionSocketUrl = SESSION_SERVER_SOCKET_URL;
+    if (!options.citadelServerUrl) options.citadelServerUrl = CITADEL_SERVER_MAP[options.buildEnv];
+    if (!options.storageServerUrl) options.storageServerUrl = STORAGE_SERVER_MAP[options.buildEnv];
+    if (!options.sessionSocketUrl) options.sessionSocketUrl = STORAGE_SERVER_SOCKET_URL_MAP[options.buildEnv];
     if (!options.sessionTime) options.sessionTime = DEFAULT_SESSION_TIME;
 
     this.options = options;
@@ -113,6 +107,10 @@ export class Auth {
 
   get coreKitEd25519Key(): string {
     return this.state.coreKitEd25519PrivKey ? this.state.coreKitEd25519PrivKey.padStart(128, "0") : "";
+  }
+
+  get authSessionManager(): AuthSessionManager<AuthSessionData> {
+    return this.sessionManager;
   }
 
   get sessionId(): string {
@@ -178,10 +176,10 @@ export class Auth {
 
     if (params.sessionId) {
       await this.sessionManager.setTokens({
-        session_id: add0x(params.sessionId),
-        access_token: params.accessToken || "",
-        refresh_token: params.refreshToken || "",
-        id_token: params.idToken || "",
+        sessionId: add0x(params.sessionId),
+        accessToken: params.accessToken || "",
+        refreshToken: params.refreshToken || "",
+        idToken: params.idToken || "",
       });
     }
 
@@ -227,12 +225,12 @@ export class Auth {
       throw LoginError.loginFailed(result.error);
     }
     await this.sessionManager.setTokens({
-      session_id: add0x(result.sessionId),
-      access_token: result.accessToken,
-      refresh_token: result.refreshToken,
-      id_token: result.idToken,
+      sessionId: add0x(result.sessionId),
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+      idToken: result.idToken,
     });
-    await this.rehydrateSession();
+    await this.refreshSession();
     return { privKey: this.privKey };
   }
 
@@ -250,13 +248,13 @@ export class Auth {
 
     const result = await this.authProvider.postLoginInitiatedMessage({ actionType: AUTH_ACTIONS.LOGIN, params, options: this.options }, nonce);
     await this.sessionManager.setTokens({
-      session_id: add0x(result.sessionId),
-      access_token: result.accessToken,
-      refresh_token: result.refreshToken,
-      id_token: result.idToken,
+      sessionId: add0x(result.sessionId),
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+      idToken: result.idToken,
     });
     this.options.sessionNamespace = result.sessionNamespace;
-    await this.rehydrateSession();
+    await this.refreshSession();
   }
 
   async postLoginCancelledMessage(nonce: string): Promise<void> {
@@ -271,41 +269,14 @@ export class Auth {
   async logout(): Promise<void> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
     await this.sessionManager.logout();
-    this.updateState({
-      privKey: "",
-      coreKitKey: "",
-      coreKitEd25519PrivKey: "",
-      ed25519PrivKey: "",
-      walletKey: "",
-      oAuthPrivateKey: "",
-      tKey: "",
-      metadataNonce: "",
-      keyMode: undefined,
-      userInfo: {
-        name: "",
-        profileImage: "",
-        dappShare: "",
-        idToken: "",
-        oAuthIdToken: "",
-        oAuthAccessToken: "",
-        appState: "",
-        email: "",
-        authConnectionId: "",
-        userId: "",
-        groupedAuthConnectionId: "",
-        authConnection: "",
-        isMfaEnabled: false,
-      },
-      authToken: "",
-      sessionId: "",
-      signatures: [],
-    });
+    this.clearState();
   }
 
   async enableMFA(params: Partial<LoginParams>): Promise<boolean> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
-    if (this.state.userInfo.isMfaEnabled) throw LoginError.mfaAlreadyEnabled();
+    await this.refreshSession();
 
+    if (this.state.userInfo.isMfaEnabled) throw LoginError.mfaAlreadyEnabled();
     const dataObject: AuthRequestPayload = {
       actionType: AUTH_ACTIONS.ENABLE_MFA,
       options: { ...this.options, sdkMode: SDK_MODE.DEFAULT },
@@ -320,6 +291,7 @@ export class Auth {
         mfaLevel: "mandatory",
       },
       sessionId: this.sessionId,
+      accessToken: await this.getAccessToken(),
     };
 
     const result = await this.authHandler(`${this.baseUrl}/start`, dataObject, POPUP_TIMEOUT);
@@ -329,17 +301,19 @@ export class Auth {
       throw LoginError.loginFailed(result.error);
     }
     await this.sessionManager.setTokens({
-      session_id: add0x(result.sessionId),
-      access_token: result.accessToken,
-      refresh_token: result.refreshToken,
-      id_token: result.idToken,
+      sessionId: add0x(result.sessionId),
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+      idToken: result.idToken,
     });
-    await this.rehydrateSession();
+    await this.refreshSession();
     return Boolean(this.state.userInfo?.isMfaEnabled);
   }
 
   async manageMFA(params: Partial<LoginParams>): Promise<void> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
+    await this.refreshSession();
+
     if (!this.state.userInfo.isMfaEnabled) throw LoginError.mfaNotEnabled();
 
     // in case of redirect mode, redirect url will be dapp specified
@@ -371,6 +345,7 @@ export class Auth {
         appState: jsonToBase64({ loginId }),
       },
       sessionId: this.sessionId,
+      accessToken: await this.getAccessToken(),
     };
 
     this.storeAuthPayload(loginId, dataObject, dataObject.options.sessionTime, true);
@@ -390,6 +365,7 @@ export class Auth {
 
   async manageSocialFactor(actionType: AUTH_ACTIONS_TYPE, params: SocialMfaModParams & Pick<LoginParams, "appState">): Promise<boolean> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
+    await this.refreshSession();
 
     const dataObject: AuthRequestPayload = {
       actionType,
@@ -398,6 +374,7 @@ export class Auth {
         ...params,
       },
       sessionId: this.sessionId,
+      accessToken: await this.getAccessToken(),
     };
 
     const result = await this.authHandler(`${this.baseUrl}/start`, dataObject);
@@ -408,6 +385,7 @@ export class Auth {
 
   async addAuthenticatorFactor(params: Pick<LoginParams, "appState">): Promise<boolean> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
+    await this.refreshSession();
 
     const dataObject: AuthRequestPayload = {
       actionType: AUTH_ACTIONS.ADD_AUTHENTICATOR_FACTOR,
@@ -417,6 +395,7 @@ export class Auth {
         authConnection: AUTH_CONNECTION.AUTHENTICATOR,
       },
       sessionId: this.sessionId,
+      accessToken: await this.getAccessToken(),
     };
 
     const result = await this.authHandler(`${this.baseUrl}/start`, dataObject);
@@ -427,6 +406,7 @@ export class Auth {
 
   async addPasskeyFactor(params: Pick<LoginParams, "appState">): Promise<boolean> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
+    await this.refreshSession();
 
     const dataObject: AuthRequestPayload = {
       actionType: AUTH_ACTIONS.ADD_PASSKEY_FACTOR,
@@ -436,6 +416,7 @@ export class Auth {
         authConnection: AUTH_CONNECTION.PASSKEYS,
       },
       sessionId: this.sessionId,
+      accessToken: await this.getAccessToken(),
     };
 
     const result = await this.authHandler(`${this.baseUrl}/start`, dataObject);
@@ -458,12 +439,27 @@ export class Auth {
     };
   }
 
-  private getDefaultCitadelServerUrl(buildEnv: BUILD_ENV_TYPE): string {
-    if (buildEnv === BUILD_ENV.PRODUCTION) return CITADEL_SERVER_URL_PRODUCTION;
-    if (buildEnv === BUILD_ENV.STAGING) return CITADEL_SERVER_URL_STAGING;
-    if (buildEnv === BUILD_ENV.TESTING) return CITADEL_SERVER_URL_TESTING;
-    if (buildEnv === BUILD_ENV.DEVELOPMENT) return CITADEL_SERVER_URL_DEVELOPMENT;
-    return CITADEL_SERVER_URL_PRODUCTION;
+  async getAccessToken(): Promise<string> {
+    if (!this.sessionId) {
+      throw LoginError.userNotLoggedIn();
+    }
+    const token = await this.sessionManager.getAccessToken();
+    if (!token) throw LoginError.userNotLoggedIn();
+    return token;
+  }
+
+  async refreshSession(): Promise<void> {
+    const data = await this._authorizeSession();
+    if (!data || Object.keys(data).length === 0) {
+      try {
+        await this.sessionManager.logout();
+      } catch {
+        // session may already be invalid on the server, ignore cleanup errors
+      }
+      this.clearState();
+      throw LoginError.userNotLoggedIn();
+    }
+    this.updateState(data);
   }
 
   private async storeAuthPayload(loginId: Hex, payload: AuthRequestPayload, timeout = 600, skipAwait = false): Promise<void> {
@@ -494,14 +490,40 @@ export class Auth {
     }
   }
 
-  private updateState(data: Partial<AuthSessionData>) {
-    this.state = { ...this.state, ...data };
+  private clearState() {
+    this.updateState({
+      privKey: "",
+      coreKitKey: "",
+      coreKitEd25519PrivKey: "",
+      ed25519PrivKey: "",
+      walletKey: "",
+      oAuthPrivateKey: "",
+      tKey: "",
+      metadataNonce: "",
+      keyMode: undefined,
+      userInfo: {
+        name: "",
+        profileImage: "",
+        dappShare: "",
+        idToken: "",
+        oAuthIdToken: "",
+        oAuthAccessToken: "",
+        appState: "",
+        email: "",
+        authConnectionId: "",
+        userId: "",
+        groupedAuthConnectionId: "",
+        authConnection: "",
+        isMfaEnabled: false,
+      },
+      authToken: "",
+      sessionId: "",
+      signatures: [],
+    });
   }
 
-  private async rehydrateSession(): Promise<void> {
-    const result = await this._authorizeSession();
-    if (!result) return;
-    this.updateState(result);
+  private updateState(data: Partial<AuthSessionData>) {
+    this.state = { ...this.state, ...data };
   }
 
   private async authHandler(url: string, dataObject: AuthRequestPayload, popupTimeout = 1000 * 10): Promise<AuthFlowResult | null> {

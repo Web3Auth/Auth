@@ -11,9 +11,10 @@ export type {
   AuthTokens,
   CookieOptions,
   HttpClientRequestOptions,
+  IHttpSessionAuthProvider,
   IStorageAdapter,
   RefreshResponse,
   SessionState,
   StorageConfig,
 } from "@toruslabs/session-manager";
-export { CookieStorage, HttpClient, LocalStorageAdapter, MemoryStorage, SessionStorageAdapter } from "@toruslabs/session-manager";
+export { AuthError, CookieStorage, HttpClient, LocalStorageAdapter, MemoryStorage, SessionStorageAdapter } from "@toruslabs/session-manager";
