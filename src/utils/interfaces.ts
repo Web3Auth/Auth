@@ -546,6 +546,7 @@ export interface AuthRequestPayload {
   options: AuthOptions;
   params: Partial<LoginParams>;
   sessionId?: string;
+  accessToken?: string;
 }
 
 export interface AuthTokenResponse {

@@ -1,5 +1,5 @@
 <template>
-  <nav class="bg-white sticky top-0 z-50 w-full z-20 top-0 start-0 border-gray-200 dark:border-gray-600">
+  <nav class="bg-white sticky w-full z-20 top-0 start-0 border-gray-200 dark:border-gray-600">
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
       <a href="#" class="flex items-center space-x-3 rtl:space-x-reverse">
         <img :src="`/assets/web3auth.svg`" class="h-8" alt="W3A Logo" />
@@ -65,7 +65,7 @@
             </div>
             <div class="mb-4">
               <Button
-                v-if="isMFAEnabled()"
+                v-if="mfaEnabled"
                 :class="['w-full !h-auto group py-3 rounded-full flex items-center justify-center']"
                 type="button"
                 block
@@ -552,6 +552,7 @@ type EMAIL_FLOW_TYPE = (typeof EMAIL_FLOW)[keyof typeof EMAIL_FLOW];
 
 const loading = ref(false);
 const privKey = ref("");
+const mfaEnabled = ref(false);
 const walletClient = ref<WalletClient | null>(null);
 const selectedLoginProvider = ref<AUTH_CONNECTION_TYPE>(AUTH_CONNECTION.GOOGLE);
 const login_hint = ref("");
@@ -658,6 +659,7 @@ const init = async () => {
       console.log("Login time", `${loginTime}s`);
     }
     privKey.value = openloginInstance.value.privKey || (openloginInstance.value.state.walletKey as string);
+    mfaEnabled.value = openloginInstance.value.state?.userInfo?.isMfaEnabled || false;
     await setProvider(privKey.value);
   }
   loading.value = false;
@@ -747,6 +749,7 @@ const login = async () => {
       console.log("Login time", `${loginTime}s`);
 
       privKey.value = openloginInstance.value.privKey || openloginInstance.value.state.walletKey || "";
+      mfaEnabled.value = openloginInstance.value.state?.userInfo?.isMfaEnabled || false;
       await setProvider(privKey.value);
     }
   } catch (error) {
@@ -754,11 +757,6 @@ const login = async () => {
   } finally {
     loading.value = false;
   }
-};
-
-const isMFAEnabled = () => {
-  if (!openloginInstance.value || !openloginInstance.value.sessionId) return false;
-  return openloginInstance.value.state?.userInfo?.isMfaEnabled || false;
 };
 
 const getUserInfo = async () => {
@@ -773,7 +771,11 @@ const enableMFA = async () => {
   if (!openloginInstance.value || !openloginInstance.value.sessionId) {
     throw new Error("User not logged in");
   }
-  await openloginInstance.value.enableMFA({});
+  const result = await openloginInstance.value.enableMFA({});
+  console.log("Enable MFA Result", result);
+  if (result) {
+    mfaEnabled.value = true;
+  }
 };
 
 const manageMFA = async () => {
@@ -817,6 +819,7 @@ const logout = async () => {
   }
   await openloginInstance.value.logout();
   privKey.value = openloginInstance.value.privKey;
+  mfaEnabled.value = false;
   walletClient.value = null;
   if (storageAvailable("sessionStorage")) sessionStorage.removeItem("state");
 };

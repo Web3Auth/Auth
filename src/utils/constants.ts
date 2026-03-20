@@ -16,7 +16,6 @@ export const SUPPORTED_KEY_CURVES = {
 } as const;
 
 export const MFA_LEVELS = {
-  DEFAULT: "default",
   OPTIONAL: "optional",
   MANDATORY: "mandatory",
   NONE: "none",
@@ -58,11 +57,6 @@ export const JRPC_METHODS = {
 export const IFRAME_MODAL_ID = "auth-iframe";
 
 export const DEFAULT_SESSION_TIME = 30 * 24 * 60 * 60; // 30 days
-
-export const CITADEL_SERVER_URL_PRODUCTION = "https://api.web3auth.io/citadel-service";
-export const CITADEL_SERVER_URL_STAGING = "https://api.web3auth.io/citadel-service";
-export const CITADEL_SERVER_URL_DEVELOPMENT = "https://api-develop.web3auth.io/citadel-service";
-export const CITADEL_SERVER_URL_TESTING = "https://api-develop.web3auth.io/citadel-service";
 
 // Auth service urls
 export const AUTH_SERVICE_DEVELOPMENT_URL = "http://localhost:3000";

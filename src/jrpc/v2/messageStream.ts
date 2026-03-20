@@ -48,9 +48,8 @@ export function createEngineStreamV2({ engine, notificationEmitter }: { engine: 
   }
 
   function write(req: JRPCRequest<unknown>, _encoding: BufferEncoding, cb: (error?: Error | null) => void) {
-    return handleRequest(req).finally(() => {
-      cb();
-    });
+    handleRequest(req);
+    cb();
   }
 
   stream = new Duplex({ objectMode: true, read: noop, write });

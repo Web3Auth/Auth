@@ -310,4 +310,225 @@ describe("createEngineStreamV2", () => {
       });
     });
   });
+
+  describe("concurrent / async edge cases", () => {
+    it("calls cb() synchronously before engine.handle resolves", () => {
+      let handleResolved = false;
+      const engine = createMockEngine(
+        vi.fn().mockImplementation(
+          () =>
+            new Promise((resolve) => {
+              setTimeout(() => {
+                handleResolved = true;
+                resolve("delayed");
+              }, 100);
+            })
+        )
+      );
+      setup(engine);
+
+      const cb = vi.fn();
+      capturedWrite(makeRequest({ id: "sync-check" }), "utf-8", cb);
+
+      expect(cb).toHaveBeenCalledOnce();
+      expect(handleResolved).toBe(false);
+    });
+
+    it("does not block subsequent writes while a slow request is pending", () => {
+      const callOrder: string[] = [];
+      const engine = createMockEngine(
+        vi.fn().mockImplementation((req: Record<string, unknown>) => {
+          callOrder.push(`handle:${req.id}`);
+          return new Promise((resolve) => setTimeout(() => resolve(`result:${req.id}`), 50));
+        })
+      );
+      setup(engine);
+
+      const cb1 = vi.fn();
+      const cb2 = vi.fn();
+      const cb3 = vi.fn();
+      capturedWrite(makeRequest({ id: "1" }), "utf-8", cb1);
+      capturedWrite(makeRequest({ id: "2" }), "utf-8", cb2);
+      capturedWrite(makeRequest({ id: "3" }), "utf-8", cb3);
+
+      expect(cb1).toHaveBeenCalledOnce();
+      expect(cb2).toHaveBeenCalledOnce();
+      expect(cb3).toHaveBeenCalledOnce();
+      expect(callOrder).toEqual(["handle:1", "handle:2", "handle:3"]);
+    });
+
+    it("resolves a dependent request while a long-running request is still pending (deadlock prevention)", async () => {
+      let resolveSlowRequest: (value: string) => void;
+      const slowRequestPromise = new Promise<string>((resolve) => {
+        resolveSlowRequest = resolve;
+      });
+
+      const engine = createMockEngine(
+        vi.fn().mockImplementation((req: Record<string, unknown>) => {
+          if (req.method === "slow") return slowRequestPromise;
+          if (req.method === "fast") return Promise.resolve("fast-result");
+          return Promise.resolve(null);
+        })
+      );
+      setup(engine);
+
+      capturedWrite(makeRequest({ id: "slow-1", method: "slow" }), "utf-8", vi.fn());
+      capturedWrite(makeRequest({ id: "fast-1", method: "fast" }), "utf-8", vi.fn());
+      await flushPromises();
+
+      expect(mockStream.push).toHaveBeenCalledWith({
+        id: "fast-1",
+        jsonrpc: "2.0",
+        result: "fast-result",
+      });
+
+      resolveSlowRequest!("slow-result");
+      await flushPromises();
+
+      expect(mockStream.push).toHaveBeenCalledWith({
+        id: "slow-1",
+        jsonrpc: "2.0",
+        result: "slow-result",
+      });
+    });
+
+    it("delivers responses out of order when requests complete at different times", async () => {
+      const resolvers: Record<string, (value: string) => void> = {};
+      const engine = createMockEngine(
+        vi.fn().mockImplementation(
+          (req: Record<string, unknown>) =>
+            new Promise<string>((resolve) => {
+              resolvers[req.id as string] = resolve;
+            })
+        )
+      );
+      setup(engine);
+
+      capturedWrite(makeRequest({ id: "first" }), "utf-8", vi.fn());
+      capturedWrite(makeRequest({ id: "second" }), "utf-8", vi.fn());
+      capturedWrite(makeRequest({ id: "third" }), "utf-8", vi.fn());
+
+      resolvers["third"]("result-3");
+      await flushPromises();
+      expect(mockStream.push).toHaveBeenCalledTimes(1);
+      expect(mockStream.push).toHaveBeenCalledWith(expect.objectContaining({ id: "third", result: "result-3" }));
+
+      resolvers["first"]("result-1");
+      await flushPromises();
+      expect(mockStream.push).toHaveBeenCalledTimes(2);
+      expect(mockStream.push).toHaveBeenCalledWith(expect.objectContaining({ id: "first", result: "result-1" }));
+
+      resolvers["second"]("result-2");
+      await flushPromises();
+      expect(mockStream.push).toHaveBeenCalledTimes(3);
+      expect(mockStream.push).toHaveBeenCalledWith(expect.objectContaining({ id: "second", result: "result-2" }));
+    });
+
+    it("handles a mix of successes and failures in concurrent requests", async () => {
+      const engine = createMockEngine(
+        vi.fn().mockImplementation((req: Record<string, unknown>) => {
+          if (req.method === "fail") return Promise.reject(new Error("boom"));
+          return Promise.resolve("ok");
+        })
+      );
+      setup(engine);
+
+      capturedWrite(makeRequest({ id: "1", method: "succeed" }), "utf-8", vi.fn());
+      capturedWrite(makeRequest({ id: "2", method: "fail" }), "utf-8", vi.fn());
+      capturedWrite(makeRequest({ id: "3", method: "succeed" }), "utf-8", vi.fn());
+      await flushPromises();
+
+      expect(mockStream.push).toHaveBeenCalledTimes(3);
+      expect(mockStream.push).toHaveBeenCalledWith(expect.objectContaining({ id: "1", result: "ok" }));
+      expect(mockStream.push).toHaveBeenCalledWith(
+        expect.objectContaining({ id: "2", error: expect.objectContaining({ message: expect.stringContaining("boom") }) })
+      );
+      expect(mockStream.push).toHaveBeenCalledWith(expect.objectContaining({ id: "3", result: "ok" }));
+    });
+
+    it("a rejected request does not affect other in-flight requests", async () => {
+      const resolvers: Record<string, (value: string) => void> = {};
+      const rejecters: Record<string, (error: Error) => void> = {};
+      const engine = createMockEngine(
+        vi.fn().mockImplementation(
+          (req: Record<string, unknown>) =>
+            new Promise<string>((resolve, reject) => {
+              resolvers[req.id as string] = resolve;
+              rejecters[req.id as string] = reject;
+            })
+        )
+      );
+      setup(engine);
+
+      capturedWrite(makeRequest({ id: "ok" }), "utf-8", vi.fn());
+      capturedWrite(makeRequest({ id: "bad" }), "utf-8", vi.fn());
+
+      rejecters["bad"](new Error("failed"));
+      await flushPromises();
+
+      expect(mockStream.push).toHaveBeenCalledTimes(1);
+      expect(mockStream.push).toHaveBeenCalledWith(
+        expect.objectContaining({ id: "bad", error: expect.objectContaining({ message: expect.stringContaining("failed") }) })
+      );
+
+      resolvers["ok"]("success");
+      await flushPromises();
+
+      expect(mockStream.push).toHaveBeenCalledTimes(2);
+      expect(mockStream.push).toHaveBeenCalledWith(expect.objectContaining({ id: "ok", result: "success" }));
+    });
+
+    it("notifications can be emitted while requests are in-flight", async () => {
+      let resolveRequest: (value: string) => void;
+      const engine = createMockEngine(
+        vi.fn().mockImplementation(
+          () =>
+            new Promise<string>((resolve) => {
+              resolveRequest = resolve;
+            })
+        )
+      );
+      const emitter = createMockEmitter();
+      setup(engine, emitter);
+
+      const notifHandler = vi.mocked(emitter.on).mock.calls.find(([event]) => event === "notification")![1] as (msg: unknown) => void;
+
+      capturedWrite(makeRequest({ id: "pending" }), "utf-8", vi.fn());
+
+      notifHandler({ method: "subscription_update", params: { data: "xyz" } });
+      expect(mockStream.push).toHaveBeenCalledTimes(1);
+      expect(mockStream.push).toHaveBeenCalledWith({ method: "subscription_update", params: { data: "xyz" } });
+
+      resolveRequest!("done");
+      await flushPromises();
+
+      expect(mockStream.push).toHaveBeenCalledTimes(2);
+      expect(mockStream.push).toHaveBeenCalledWith(expect.objectContaining({ id: "pending", result: "done" }));
+    });
+
+    it("handles high concurrency without losing responses", async () => {
+      const count = 50;
+      const engine = createMockEngine(
+        vi.fn().mockImplementation((req: Record<string, unknown>) => {
+          const delay = Math.floor(Math.random() * 10);
+          return new Promise((resolve) => setTimeout(() => resolve(`result-${req.id}`), delay));
+        })
+      );
+      setup(engine);
+
+      const callbacks = Array.from({ length: count }, () => vi.fn());
+      for (let i = 0; i < count; i++) {
+        capturedWrite(makeRequest({ id: `req-${i}` }), "utf-8", callbacks[i]);
+      }
+
+      callbacks.forEach((cb) => expect(cb).toHaveBeenCalledOnce());
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(mockStream.push).toHaveBeenCalledTimes(count);
+      for (let i = 0; i < count; i++) {
+        expect(mockStream.push).toHaveBeenCalledWith(expect.objectContaining({ id: `req-${i}`, result: `result-req-${i}` }));
+      }
+    });
+  });
 });

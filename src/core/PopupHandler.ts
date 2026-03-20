@@ -1,4 +1,3 @@
-import { SESSION_SERVER_API_URL, SESSION_SERVER_SOCKET_URL } from "@toruslabs/constants";
 import { getPopupFeatures } from "@toruslabs/customauth";
 import { SecurePubSub } from "@toruslabs/secure-pub-sub";
 import { EventEmitter } from "events";
@@ -41,11 +40,11 @@ class PopupHandler extends (EventEmitter as new () => TypedEmitter<PopupHandlerE
     serverUrl,
   }: {
     url: string;
+    socketUrl: string;
+    serverUrl: string;
     target?: string;
     features?: string;
     timeout?: number;
-    socketUrl?: string;
-    serverUrl?: string;
   }) {
     // Disabling the rule here, as it is a false positive.
 
@@ -57,8 +56,8 @@ class PopupHandler extends (EventEmitter as new () => TypedEmitter<PopupHandlerE
     this.windowTimer = undefined;
     this.iClosedWindow = false;
     this.timeout = timeout;
-    this.serverUrl = serverUrl || SESSION_SERVER_API_URL;
-    this.socketUrl = socketUrl || SESSION_SERVER_SOCKET_URL;
+    this.serverUrl = serverUrl;
+    this.socketUrl = socketUrl;
     this._setupTimer();
   }
 
