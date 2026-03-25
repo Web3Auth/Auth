@@ -1,4 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
+import tailwind from "@tailwindcss/vite";
 import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite";
 
@@ -7,7 +8,7 @@ export default defineConfig({
   server: {
     port: 8080,
   },
-  plugins: [vue()],
+  plugins: [tailwind(), vue()],
   build: {
     sourcemap: true,
   },

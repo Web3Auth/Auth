@@ -1,3 +1,12 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+@import "@toruslabs/vue-components/web3auth-theme.css";
+
+@source "./index.html";
+@source "./src";
+@source "../node_modules/@toruslabs/vue-components/dist";
+
+/* Safelist dynamically generated order-* utilities */
+@source inline("order-1 order-2 order-3 order-4 order-5 order-6 order-7 order-8 order-9 order-10");
+
+@custom-variant dark (&:is(.dark *));
