@@ -72,7 +72,7 @@
     "@types/node": "^25",
     "@types/once": "^1.4.5",
     "@types/readable-stream": "^4.0.23",
-    "@vitest/coverage-istanbul": "^4.1.0",
+    "@vitest/coverage-istanbul": "^4.1.1",
     "color": "^5.0.3",
     "cross-env": "^10.1.0",
     "eslint": "^9.39.2",
@@ -84,15 +84,15 @@
     "tsconfig-paths-webpack-plugin": "^4.2.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.1"
   },
   "peerDependencies": {
     "@babel/runtime": "7.x",
     "color": "^5.x"
   },
   "optionalDependencies": {
-    "@nx/nx-linux-x64-gnu": "^22.6.0",
-    "@rollup/rollup-linux-x64-gnu": "^4.59.0"
+    "@nx/nx-linux-x64-gnu": "^22.6.1",
+    "@rollup/rollup-linux-x64-gnu": "^4.60.0"
   },
   "author": "Torus Labs",
   "license": "MIT",
@@ -110,8 +110,8 @@
     "npm": ">=10.x"
   },
   "dependencies": {
-    "@toruslabs/constants": "^16.1.0",
-    "@toruslabs/customauth": "^22.3.0",
+    "@toruslabs/constants": "^16.1.1",
+    "@toruslabs/customauth": "^22.3.1",
     "@toruslabs/ffjavascript": "^6.0.0",
     "@toruslabs/metadata-helpers": "^8.2.0",
     "@toruslabs/secure-pub-sub": "^4.3.0",
