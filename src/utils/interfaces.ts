@@ -539,6 +539,11 @@ export interface BaseLoginParams {
   loginId?: string;
   sessionNamespace?: string;
   storageServerUrl?: string;
+
+  /**
+   * Optional record id to be used for analytics purposes.
+   */
+  recordId?: string;
 }
 
 export interface AuthRequestPayload {

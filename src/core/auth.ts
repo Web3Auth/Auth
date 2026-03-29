@@ -23,6 +23,7 @@ import {
   BaseLoginParams,
   BUILD_ENV,
   DEFAULT_SESSION_TIME,
+  generateRecordId,
   jsonToBase64,
   LoginParams,
   POPUP_TIMEOUT,
@@ -323,6 +324,7 @@ export class Auth {
     };
 
     const loginId = StorageManager.generateRandomSessionKey();
+    const recordId = generateRecordId();
 
     const dataObject: AuthRequestPayload = {
       actionType: AUTH_ACTIONS.MANAGE_MFA,
@@ -342,7 +344,7 @@ export class Auth {
         extraLoginOptions: {
           login_hint: this.state.userInfo.userId,
         },
-        appState: jsonToBase64({ loginId }),
+        appState: jsonToBase64({ loginId, recordId }),
       },
       sessionId: this.sessionId,
       accessToken: await this.getAccessToken(),
@@ -351,6 +353,7 @@ export class Auth {
     this.storeAuthPayload(loginId, dataObject, dataObject.options.sessionTime, true);
     const configParams: BaseLoginParams = {
       loginId,
+      recordId,
       sessionNamespace: this.options.sessionNamespace,
       storageServerUrl: this.options.storageServerUrl,
     };
@@ -528,9 +531,11 @@ export class Auth {
 
   private async authHandler(url: string, dataObject: AuthRequestPayload, popupTimeout = 1000 * 10): Promise<AuthFlowResult | null> {
     const loginId = StorageManager.generateRandomSessionKey();
+    const recordId = generateRecordId();
     await this.storeAuthPayload(loginId, dataObject);
     const configParams: BaseLoginParams = {
       loginId,
+      recordId,
       sessionNamespace: this.options.sessionNamespace,
       storageServerUrl: this.options.storageServerUrl,
     };

@@ -111,7 +111,7 @@
   },
   "dependencies": {
     "@toruslabs/constants": "^16.1.1",
-    "@toruslabs/customauth": "^22.3.2",
+    "@toruslabs/customauth": "file:./toruslabs-customauth-22.3.2.tgz",
     "@toruslabs/ffjavascript": "^6.0.0",
     "@toruslabs/metadata-helpers": "^8.2.0",
     "@toruslabs/secure-pub-sub": "^4.3.0",
