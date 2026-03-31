@@ -19,7 +19,7 @@
     "bs58": "^6.0.0",
     "core-js": "^3.49.0",
     "viem": "^2.47.6",
-    "vue": "^3.5.30"
+    "vue": "^3.5.31"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.2",
