@@ -31,3 +31,9 @@ export function isObject(value: unknown): value is Record<PropertyKey, unknown> 
 export function hasProperty<Key extends PropertyKey>(value: unknown, key: Key): value is Record<Key, unknown> {
   return isObject(value) && key in value;
 }
+
+export function generateRecordId(): string {
+  const cr = typeof globalThis === "object" ? globalThis.crypto : null;
+  if (typeof cr?.randomUUID !== "function") throw new Error("crypto.randomUUID must be defined");
+  return cr.randomUUID();
+}
