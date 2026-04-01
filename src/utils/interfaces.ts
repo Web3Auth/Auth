@@ -115,6 +115,16 @@ export type LoginParams = {
    *
    */
   dappUrl?: string;
+
+  /**
+   * Optional record id to be used for auditing login progress.
+   */
+  recordId?: string;
+
+  /**
+   * Optional login source to be used for auditing login progress.
+   */
+  loginSource?: string;
 };
 
 export type SocialMfaModParams = {
