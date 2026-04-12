@@ -348,6 +348,7 @@ export class Auth {
       },
       sessionId: this.sessionId,
       accessToken: await this.getAccessToken(),
+      refreshToken: await this.sessionManager.getRefreshToken(),
     };
 
     this.storeAuthPayload(loginId, dataObject, dataObject.options.sessionTime, true);
