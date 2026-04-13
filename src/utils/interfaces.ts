@@ -258,6 +258,11 @@ export type WhiteLabelData = {
    * privacyPolicy: http://example.com/privacy
    */
   privacyPolicy?: string;
+  /**
+   * Whether to require consent for the user to login.
+   * @defaultValue false
+   */
+  consentRequired?: boolean;
 };
 
 export type AuthConnectionConfigItem = {
