@@ -262,7 +262,7 @@ export type WhiteLabelData = {
    * Whether to require consent for the user to login.
    * @defaultValue false
    */
-  requireConsent?: boolean;
+  consentRequired?: boolean;
 };
 
 export type AuthConnectionConfigItem = {
