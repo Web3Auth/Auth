@@ -567,7 +567,6 @@ export interface AuthRequestPayload {
   params: Partial<LoginParams>;
   sessionId?: string;
   accessToken?: string;
-  refreshToken?: string;
 }
 
 export interface AuthTokenResponse {
