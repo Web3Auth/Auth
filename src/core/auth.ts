@@ -540,6 +540,7 @@ export class Auth {
       sessionNamespace: this.options.sessionNamespace,
       storageServerUrl: this.options.storageServerUrl,
       loginSource: dataObject.params.loginSource,
+      wsEmbedDappClientId: dataObject.options.wsEmbedDappClientId,
     };
 
     if (this.options.uxMode === UX_MODE.REDIRECT) {
