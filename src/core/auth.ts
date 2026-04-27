@@ -357,6 +357,7 @@ export class Auth {
       recordId,
       sessionNamespace: this.options.sessionNamespace,
       storageServerUrl: this.options.storageServerUrl,
+      loginSource: params.loginSource,
     };
 
     const loginUrl = constructURL({
@@ -539,6 +540,7 @@ export class Auth {
       recordId,
       sessionNamespace: this.options.sessionNamespace,
       storageServerUrl: this.options.storageServerUrl,
+      loginSource: dataObject.params.loginSource,
     };
 
     if (this.options.uxMode === UX_MODE.REDIRECT) {

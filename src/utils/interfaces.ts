@@ -554,6 +554,11 @@ export interface BaseLoginParams {
    * Optional record id to be used for analytics purposes.
    */
   recordId?: string;
+
+  /**
+   * Optional login source to be used for analytics purposes.
+   */
+  loginSource?: string;
 }
 
 export interface AuthRequestPayload {
