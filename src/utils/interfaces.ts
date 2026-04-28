@@ -548,6 +548,12 @@ export type AuthOptions = {
    * @defaultValue true
    */
   includeUserDataInToken?: boolean;
+
+  /**
+   * The client id of the dapp that initiates the login flow in **EMBED** mode.
+   * @defaultValue undefined
+   */
+  wsEmbedDappClientId?: string;
 };
 
 export interface BaseLoginParams {
