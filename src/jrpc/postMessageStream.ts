@@ -4,10 +4,13 @@ import { cloneDeep } from "../utils";
 import { BasePostMessageStream, isValidStreamMessage, type PostMessageEvent } from "./basePostMessageStream";
 
 /* istanbul ignore next */
-const getSource = Object.getOwnPropertyDescriptor(MessageEvent.prototype, "source")?.get;
+const messageEventPrototype = typeof MessageEvent === "undefined" ? undefined : MessageEvent.prototype;
 
 /* istanbul ignore next */
-const getOrigin = Object.getOwnPropertyDescriptor(MessageEvent.prototype, "origin")?.get;
+const getSource = messageEventPrototype ? Object.getOwnPropertyDescriptor(messageEventPrototype, "source")?.get : undefined;
+
+/* istanbul ignore next */
+const getOrigin = messageEventPrototype ? Object.getOwnPropertyDescriptor(messageEventPrototype, "origin")?.get : undefined;
 
 export interface PostMessageStreamArgs extends DuplexOptions {
   name: string;

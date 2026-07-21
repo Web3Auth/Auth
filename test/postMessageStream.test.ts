@@ -72,4 +72,12 @@ describe("PostMessageStream", () => {
     expect(message.target).toBe("auth");
     expect(message.data.data.params[0]._origin).toBe("https://current.example");
   });
+
+  it("can be imported when MessageEvent is undefined", async () => {
+    vi.unstubAllGlobals();
+    // Simulate Hermes/React Native where MessageEvent is absent.
+    Reflect.deleteProperty(globalThis, "MessageEvent");
+
+    await expect(import("../src/jrpc")).resolves.toHaveProperty("PostMessageStream");
+  });
 });
