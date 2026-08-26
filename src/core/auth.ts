@@ -287,6 +287,7 @@ export class Auth {
         authConnectionId: this.state.userInfo.authConnectionId,
         groupedAuthConnectionId: this.state.userInfo.groupedAuthConnectionId,
         extraLoginOptions: {
+          ...params.extraLoginOptions,
           login_hint: this.state.userInfo.userId,
         },
         mfaLevel: "mandatory",

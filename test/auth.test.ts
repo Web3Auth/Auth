@@ -2,15 +2,27 @@ import { AUTH_CONNECTION, UX_MODE } from "@toruslabs/customauth";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Auth } from "../src/core/auth";
-import { AUTH_ACTIONS, AuthRequestPayload, BUILD_ENV, LoginParams, SDK_MODE, WEB3AUTH_NETWORK } from "../src/utils";
+import { AUTH_ACTIONS, AuthRequestPayload, BUILD_ENV, LoginParams, POPUP_TIMEOUT, SDK_MODE, WEB3AUTH_NETWORK } from "../src/utils";
 
 type AuthInternals = {
+  authHandler: (url: string, payload: AuthRequestPayload, popupTimeout?: number) => Promise<null>;
   storeAuthPayload: (loginId: string, payload: AuthRequestPayload, timeout?: number, skipAwait?: boolean) => Promise<void>;
 };
 
-describe("Auth.manageMFA", () => {
+describe("Auth MFA methods", () => {
   let auth: Auth;
+  let handledPayload: AuthRequestPayload | undefined;
+  let handledPopupTimeout: number | undefined;
+  let handledUrl: string | undefined;
   let storedPayload: AuthRequestPayload | undefined;
+
+  const enableMFA = async (params: Partial<LoginParams> = {}) => {
+    auth.state.userInfo.isMfaEnabled = false;
+    const result = await auth.enableMFA(params);
+    expect(result).toBe(false);
+    expect(handledPayload).toBeDefined();
+    return handledPayload as AuthRequestPayload;
+  };
 
   const manageMFA = async (params: Partial<LoginParams> = {}) => {
     await auth.manageMFA(params);
@@ -19,6 +31,9 @@ describe("Auth.manageMFA", () => {
   };
 
   beforeEach(() => {
+    handledPayload = undefined;
+    handledPopupTimeout = undefined;
+    handledUrl = undefined;
     storedPayload = undefined;
     vi.stubGlobal("window", {
       location: {
@@ -46,6 +61,12 @@ describe("Auth.manageMFA", () => {
 
     vi.spyOn(auth, "refreshSession").mockResolvedValue();
     vi.spyOn(auth, "getAccessToken").mockResolvedValue("synthetic-access-token");
+    vi.spyOn(auth as unknown as AuthInternals, "authHandler").mockImplementation(async (url, payload, popupTimeout) => {
+      handledUrl = url;
+      handledPayload = payload;
+      handledPopupTimeout = popupTimeout;
+      return null;
+    });
     vi.spyOn(auth as unknown as AuthInternals, "storeAuthPayload").mockImplementation(async (_loginId, payload) => {
       storedPayload = payload;
     });
@@ -56,7 +77,7 @@ describe("Auth.manageMFA", () => {
     vi.unstubAllGlobals();
   });
 
-  it("preserves custom JWT credentials in extraLoginOptions", async () => {
+  it("manageMFA preserves custom JWT credentials in extraLoginOptions", async () => {
     const payload = await manageMFA({
       extraLoginOptions: {
         client_id: "synthetic-custom-client-id",
@@ -71,7 +92,7 @@ describe("Auth.manageMFA", () => {
     });
   });
 
-  it("uses the authenticated user's login_hint instead of a caller-provided value", async () => {
+  it("manageMFA uses the authenticated user's login_hint instead of a caller-provided value", async () => {
     const payload = await manageMFA({
       extraLoginOptions: {
         login_hint: "synthetic-caller-user-id",
@@ -81,7 +102,7 @@ describe("Auth.manageMFA", () => {
     expect(payload.params.extraLoginOptions?.login_hint).toBe("synthetic-user-id");
   });
 
-  it("supports omitted extraLoginOptions", async () => {
+  it("manageMFA supports omitted extraLoginOptions", async () => {
     const payload = await manageMFA();
 
     expect(payload.params.extraLoginOptions).toEqual({
@@ -89,7 +110,7 @@ describe("Auth.manageMFA", () => {
     });
   });
 
-  it("retains the existing manage MFA payload fields", async () => {
+  it("manageMFA retains the existing payload fields", async () => {
     const payload = await manageMFA({
       dappUrl: "https://app.example/custom-return",
       loginSource: "synthetic-settings-page",
@@ -118,5 +139,68 @@ describe("Auth.manageMFA", () => {
       accessToken: "synthetic-access-token",
     });
     expect(window.open).toHaveBeenCalledWith(expect.stringContaining("/start#b64Params="), "_blank");
+  });
+
+  it("enableMFA preserves custom JWT credentials in extraLoginOptions", async () => {
+    const payload = await enableMFA({
+      extraLoginOptions: {
+        client_id: "synthetic-custom-client-id",
+        id_token: "synthetic-custom-id-token",
+      },
+    });
+
+    expect(payload.params.extraLoginOptions).toEqual({
+      client_id: "synthetic-custom-client-id",
+      id_token: "synthetic-custom-id-token",
+      login_hint: "synthetic-user-id",
+    });
+  });
+
+  it("enableMFA uses the authenticated user's login_hint instead of a caller-provided value", async () => {
+    const payload = await enableMFA({
+      extraLoginOptions: {
+        login_hint: "synthetic-caller-user-id",
+      },
+    });
+
+    expect(payload.params.extraLoginOptions?.login_hint).toBe("synthetic-user-id");
+  });
+
+  it("enableMFA supports omitted extraLoginOptions", async () => {
+    const payload = await enableMFA();
+
+    expect(payload.params.extraLoginOptions).toEqual({
+      login_hint: "synthetic-user-id",
+    });
+  });
+
+  it("enableMFA retains the existing payload fields", async () => {
+    const payload = await enableMFA({
+      appState: "synthetic-app-state",
+      loginSource: "synthetic-settings-page",
+    });
+
+    expect(payload).toEqual({
+      actionType: AUTH_ACTIONS.ENABLE_MFA,
+      options: {
+        ...auth.options,
+        sdkMode: SDK_MODE.DEFAULT,
+      },
+      params: {
+        appState: "synthetic-app-state",
+        loginSource: "synthetic-settings-page",
+        authConnection: AUTH_CONNECTION.CUSTOM,
+        authConnectionId: "synthetic-auth-connection-id",
+        groupedAuthConnectionId: "synthetic-grouped-auth-connection-id",
+        extraLoginOptions: {
+          login_hint: "synthetic-user-id",
+        },
+        mfaLevel: "mandatory",
+      },
+      sessionId: "synthetic-session-id",
+      accessToken: "synthetic-access-token",
+    });
+    expect(handledUrl).toBe(`${auth.baseUrl}/start`);
+    expect(handledPopupTimeout).toBe(POPUP_TIMEOUT);
   });
 });
