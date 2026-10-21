@@ -59,22 +59,10 @@ export class Auth {
     if (!options.buildEnv) options.buildEnv = BUILD_ENV.PRODUCTION;
     if (!options.sdkMode) options.sdkMode = SDK_MODE.DEFAULT;
 
+    // Only internal builds may override the auth service endpoint.
+    this.setEnvironmentUrls(options);
+
     if (options.buildEnv === BUILD_ENV.DEVELOPMENT || options.buildEnv === BUILD_ENV.TESTING || options.sdkUrl) this.addVersionInUrls = false;
-    if (!options.sdkUrl) {
-      if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
-        options.sdkUrl = AUTH_SERVICE_DEVELOPMENT_URL;
-        options.dashboardUrl = AUTH_DASHBOARD_DEVELOPMENT_URL;
-      } else if (options.buildEnv === BUILD_ENV.STAGING) {
-        options.sdkUrl = AUTH_SERVICE_STAGING_URL;
-        options.dashboardUrl = AUTH_DASHBOARD_STAGING_URL;
-      } else if (options.buildEnv === BUILD_ENV.TESTING) {
-        options.sdkUrl = AUTH_SERVICE_TESTING_URL;
-        options.dashboardUrl = AUTH_DASHBOARD_TESTING_URL;
-      } else {
-        options.sdkUrl = AUTH_SERVICE_PRODUCTION_URL;
-        options.dashboardUrl = AUTH_DASHBOARD_PRODUCTION_URL;
-      }
-    }
 
     if (!options.redirectUrl && typeof window !== "undefined") {
       options.redirectUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
@@ -466,6 +454,26 @@ export class Auth {
       throw LoginError.userNotLoggedIn();
     }
     this.updateState(data);
+  }
+
+  private setEnvironmentUrls(options: AuthOptions): void {
+    const customSdkUrlAllowed = options.buildEnv === BUILD_ENV.DEVELOPMENT || options.buildEnv === BUILD_ENV.TESTING;
+    if (customSdkUrlAllowed && options.sdkUrl) return;
+
+    // Ignore caller-provided endpoints and select the canonical URLs for this environment.
+    if (options.buildEnv === BUILD_ENV.DEVELOPMENT) {
+      options.sdkUrl = AUTH_SERVICE_DEVELOPMENT_URL;
+      options.dashboardUrl = AUTH_DASHBOARD_DEVELOPMENT_URL;
+    } else if (options.buildEnv === BUILD_ENV.STAGING) {
+      options.sdkUrl = AUTH_SERVICE_STAGING_URL;
+      options.dashboardUrl = AUTH_DASHBOARD_STAGING_URL;
+    } else if (options.buildEnv === BUILD_ENV.TESTING) {
+      options.sdkUrl = AUTH_SERVICE_TESTING_URL;
+      options.dashboardUrl = AUTH_DASHBOARD_TESTING_URL;
+    } else {
+      options.sdkUrl = AUTH_SERVICE_PRODUCTION_URL;
+      options.dashboardUrl = AUTH_DASHBOARD_PRODUCTION_URL;
+    }
   }
 
   private async storeAuthPayload(loginId: Hex, payload: AuthRequestPayload, timeout = 600, skipAwait = false): Promise<void> {

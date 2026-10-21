@@ -444,8 +444,8 @@ export type AuthOptions = {
   authConnectionConfig?: AuthConnectionConfig;
 
   /**
-   * sdkUrl is for internal development use only and is used to override the
-   * `network` parameter.
+   * sdkUrl is for internal development/testing use only and is ignored for
+   * staging and production builds.
    * @internal
    */
   sdkUrl?: string;
