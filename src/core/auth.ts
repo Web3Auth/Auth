@@ -59,10 +59,10 @@ export class Auth {
     if (!options.buildEnv) options.buildEnv = BUILD_ENV.PRODUCTION;
     if (!options.sdkMode) options.sdkMode = SDK_MODE.DEFAULT;
 
+    if (options.buildEnv === BUILD_ENV.DEVELOPMENT || options.buildEnv === BUILD_ENV.TESTING || options.sdkUrl) this.addVersionInUrls = false;
+
     // Only internal builds may override the auth service endpoint.
     this.setEnvironmentUrls(options);
-
-    if (options.buildEnv === BUILD_ENV.DEVELOPMENT || options.buildEnv === BUILD_ENV.TESTING || options.sdkUrl) this.addVersionInUrls = false;
 
     if (!options.redirectUrl && typeof window !== "undefined") {
       options.redirectUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
