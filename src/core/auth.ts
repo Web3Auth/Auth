@@ -35,7 +35,7 @@ import { log } from "../utils/logger";
 import { AuthProvider } from "./AuthProvider";
 import { InitializationError, LoginError } from "./errors";
 import PopupHandler from "./PopupHandler";
-import { getHashQueryParams, isAuthFlowError, version } from "./utils";
+import { getHashQueryParams, isAuthFlowError, parseRedirectLoginParams, version } from "./utils";
 export class Auth {
   state: AuthSessionData = {};
 
@@ -187,9 +187,10 @@ export class Auth {
       this.authProvider = new AuthProvider({ sdkUrl: this.baseUrl, whiteLabel: this.options.whiteLabel ?? {} });
       if (!this.state.sessionId) {
         this.authProviderPromise = this.authProvider.init({ network: this.options.network, clientId: this.options.clientId });
-        if (params.nonce) {
+        const loginParams = parseRedirectLoginParams(params.loginParams);
+        if (params.nonce && loginParams) {
           await this.authProviderPromise;
-          await this.postLoginInitiatedMessage(JSON.parse(params.loginParams as string), params.nonce);
+          await this.postLoginInitiatedMessage(loginParams, params.nonce);
         }
       }
     }
