@@ -24,12 +24,12 @@ function getED25519KeyOld(privateKey: string | Uint8Array): {
   const pk = new Uint8Array(32);
   l.crypto_hash(d, sk, 32);
 
-  d[0] &= 248;
-  d[31] &= 127;
-  d[31] |= 64;
+  d[0]! &= 248;
+  d[31]! &= 127;
+  d[31]! |= 64;
   l.scalarbase(p, d);
   l.pack(pk, p);
-  for (let i = 0; i < 32; i += 1) sk[i + 32] = pk[i];
+  for (let i = 0; i < 32; i += 1) sk[i + 32] = pk[i]!;
 
   return { sk, pk };
 }
@@ -85,8 +85,8 @@ const signingTestVector = {
 
 describe("ED25519", () => {
   it("should return 64-byte sk with seed prefix and 32-byte pk suffix", () => {
-    const { sk, pk } = getED25519Key(testVectors[0].seed);
-    const seed = hexToBytes(testVectors[0].seed);
+    const { sk, pk } = getED25519Key(testVectors[0]!.seed);
+    const seed = hexToBytes(testVectors[0]!.seed);
 
     expect(sk).toHaveLength(64);
     expect(pk).toHaveLength(32);
@@ -95,8 +95,8 @@ describe("ED25519", () => {
   });
 
   it("should accept Uint8Array input", () => {
-    const seed = hexToBytes(testVectors[0].seed);
-    const fromHex = getED25519Key(testVectors[0].seed);
+    const seed = hexToBytes(testVectors[0]!.seed);
+    const fromHex = getED25519Key(testVectors[0]!.seed);
     const fromBytes = getED25519Key(seed);
 
     expect(fromBytes.pk).toEqual(fromHex.pk);
@@ -104,8 +104,8 @@ describe("ED25519", () => {
   });
 
   it("should derive deterministic keys", () => {
-    const a = getED25519Key(testVectors[0].seed);
-    const b = getED25519Key(testVectors[0].seed);
+    const a = getED25519Key(testVectors[0]!.seed);
+    const b = getED25519Key(testVectors[0]!.seed);
 
     expect(a.pk).toEqual(b.pk);
     expect(a.sk).toEqual(b.sk);

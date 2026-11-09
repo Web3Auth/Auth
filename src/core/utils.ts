@@ -3,8 +3,8 @@ import { decodeBase64Url } from "@toruslabs/metadata-helpers";
 import { AuthFlowError, AuthFlowResult } from "../utils";
 import { log } from "../utils/logger";
 
-// don't use destructuring for process.env cause it messes up webpack env plugin
-export const version = process.env.AUTH_VERSION;
+// The build replaces process.env.AUTH_VERSION with the package version; keep this exact expression.
+export const version = process.env.AUTH_VERSION as string;
 
 export type HashQueryParamResult = {
   sessionId?: string;
@@ -18,13 +18,29 @@ export type HashQueryParamResult = {
   loginParams?: string;
 };
 
+const HASH_QUERY_PARAM_KEYS: ReadonlySet<string> = new Set<keyof HashQueryParamResult>([
+  "sessionId",
+  "sessionNamespace",
+  "accessToken",
+  "refreshToken",
+  "idToken",
+  "error",
+  "state",
+  "nonce",
+  "loginParams",
+]);
+
+function isHashQueryParamKey(key: string): key is keyof HashQueryParamResult {
+  return HASH_QUERY_PARAM_KEYS.has(key);
+}
+
 export function getHashQueryParams(replaceUrl = false): HashQueryParamResult {
   const result: HashQueryParamResult = {};
 
   const queryUrlParams = new URLSearchParams(window.location.search.slice(1));
   queryUrlParams.forEach((value: string, key: string) => {
-    if (key !== "b64Params") {
-      result[key as keyof HashQueryParamResult] = value;
+    if (isHashQueryParamKey(key)) {
+      result[key] = value;
     }
   });
   const queryResult = queryUrlParams.get("b64Params");
@@ -32,7 +48,7 @@ export function getHashQueryParams(replaceUrl = false): HashQueryParamResult {
     try {
       const queryParams = JSON.parse(decodeBase64Url(queryResult));
       Object.keys(queryParams).forEach((key: string) => {
-        result[key as keyof HashQueryParamResult] = queryParams[key];
+        if (isHashQueryParamKey(key)) result[key] = queryParams[key];
       });
     } catch (error) {
       log.error(error);
@@ -41,8 +57,8 @@ export function getHashQueryParams(replaceUrl = false): HashQueryParamResult {
 
   const hashUrlParams = new URLSearchParams(window.location.hash.substring(1));
   hashUrlParams.forEach((value: string, key: string) => {
-    if (key !== "b64Params") {
-      result[key as keyof HashQueryParamResult] = value;
+    if (isHashQueryParamKey(key)) {
+      result[key] = value;
     }
   });
 
@@ -51,7 +67,7 @@ export function getHashQueryParams(replaceUrl = false): HashQueryParamResult {
     try {
       const hashParams = JSON.parse(decodeBase64Url(hashResult));
       Object.keys(hashParams).forEach((key: string) => {
-        result[key as keyof HashQueryParamResult] = hashParams[key];
+        if (isHashQueryParamKey(key)) result[key] = hashParams[key];
       });
     } catch (error) {
       log.error(error);

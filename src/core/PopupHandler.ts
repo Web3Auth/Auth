@@ -18,9 +18,9 @@ class PopupHandler extends (EventEmitter as new () => TypedEmitter<PopupHandlerE
 
   features: string;
 
-  window: Window;
+  window?: Window | null;
 
-  windowTimer: number;
+  windowTimer?: number;
 
   iClosedWindow: boolean;
 
@@ -124,7 +124,7 @@ class PopupHandler extends (EventEmitter as new () => TypedEmitter<PopupHandlerE
     if (parsedData.error) {
       return { error: parsedData.error, state: parsedData.state };
     }
-    return parsedData.data;
+    return parsedData.data ?? null;
   }
 }
 

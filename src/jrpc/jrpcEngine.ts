@@ -353,7 +353,7 @@ export class JRPCEngine extends SafeEventEmitter<JrpcEngineEvents> {
       id: req.id,
       jsonrpc: req.jsonrpc,
     };
-    let error: Error = null;
+    let error: Error | null = null;
 
     try {
       await this._processRequest(req, res);

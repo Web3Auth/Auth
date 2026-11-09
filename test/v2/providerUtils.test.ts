@@ -239,7 +239,7 @@ describe("providerUtils", () => {
           params: [1, 2],
           jsonrpc: "2.0",
         });
-        expect(typeof observedRequests[0].id).toBe("number");
+        expect(typeof observedRequests[0]!.id).toBe("number");
       });
 
       it("passes params through to the engine", async () => {

@@ -107,7 +107,7 @@ export class JsonRpcError<Data extends OptionalDataWithOptionalCause> extends Er
    * @returns A string representation of the serialized error.
    */
   toString(): string {
-    return stringify(this.serialize(), { replacer: stringifyReplacer, space: 2 });
+    return stringify(this.serialize(), { replacer: stringifyReplacer, space: 2 }) as string;
   }
 }
 

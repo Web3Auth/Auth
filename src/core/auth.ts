@@ -41,17 +41,17 @@ export class Auth {
 
   options: AuthOptions;
 
-  private sessionManager: AuthSessionManager<AuthSessionData>;
+  private sessionManager!: AuthSessionManager<AuthSessionData>;
 
   private _storageBaseKey = "auth_store";
 
-  private dappState: string;
+  private dappState?: string;
 
   private addVersionInUrls = true;
 
-  private authProvider: AuthProvider;
+  private authProvider?: AuthProvider;
 
-  private authProviderPromise: Promise<void>;
+  private authProviderPromise?: Promise<void>;
 
   constructor(options: AuthOptions) {
     if (!options.clientId) throw InitializationError.invalidParams("clientId is required");
@@ -116,7 +116,7 @@ export class Auth {
 
   get baseUrl(): string {
     // testing and develop don't have versioning
-    if (!this.addVersionInUrls) return this.options.sdkUrl;
+    if (!this.addVersionInUrls) return this.options.sdkUrl as string;
     return `${this.options.sdkUrl}/v${version.split(".")[0]}`;
   }
 
@@ -137,7 +137,7 @@ export class Auth {
     // We dont need to set the sessionTime here, because the session would be created by auth service.
     this.sessionManager = new AuthSessionManager({
       storageKeyPrefix: storageKey,
-      apiClientConfig: { baseURL: this.options.citadelServerUrl },
+      apiClientConfig: { baseURL: this.options.citadelServerUrl as string },
       storage: this.options.storage,
       accessTokenProvider: this.options.accessTokenProvider,
       cookieOptions: this.options.cookieOptions,
@@ -184,12 +184,12 @@ export class Auth {
     }
 
     if (this.options.sdkMode === SDK_MODE.IFRAME) {
-      this.authProvider = new AuthProvider({ sdkUrl: this.baseUrl, whiteLabel: this.options.whiteLabel });
+      this.authProvider = new AuthProvider({ sdkUrl: this.baseUrl, whiteLabel: this.options.whiteLabel ?? {} });
       if (!this.state.sessionId) {
         this.authProviderPromise = this.authProvider.init({ network: this.options.network, clientId: this.options.clientId });
         if (params.nonce) {
           await this.authProviderPromise;
-          await this.postLoginInitiatedMessage(JSON.parse(params.loginParams), params.nonce);
+          await this.postLoginInitiatedMessage(JSON.parse(params.loginParams as string), params.nonce);
         }
       }
     }
@@ -231,7 +231,8 @@ export class Auth {
 
     // if there is an active session, we dont load the auth provider in the init method.
     // so we need to initialize it here, if user logged out and then login in again.
-    if (!this.authProvider?.initialized) {
+    if (!this.authProvider) throw InitializationError.notInitialized();
+    if (!this.authProvider.initialized) {
       await this.authProvider.init({ network: this.options.network, clientId: this.options.clientId });
     }
 
@@ -264,19 +265,21 @@ export class Auth {
   async enableMFA(params: Partial<LoginParams>): Promise<boolean> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
     await this.refreshSession();
+    const { userInfo } = this.state;
+    if (!userInfo) throw LoginError.userNotLoggedIn();
 
-    if (this.state.userInfo.isMfaEnabled) throw LoginError.mfaAlreadyEnabled();
+    if (userInfo.isMfaEnabled) throw LoginError.mfaAlreadyEnabled();
     const dataObject: AuthRequestPayload = {
       actionType: AUTH_ACTIONS.ENABLE_MFA,
       options: { ...this.options, sdkMode: SDK_MODE.DEFAULT },
       params: {
         ...params,
-        authConnection: this.state.userInfo.authConnection,
-        authConnectionId: this.state.userInfo.authConnectionId,
-        groupedAuthConnectionId: this.state.userInfo.groupedAuthConnectionId,
+        authConnection: userInfo.authConnection,
+        authConnectionId: userInfo.authConnectionId,
+        groupedAuthConnectionId: userInfo.groupedAuthConnectionId,
         extraLoginOptions: {
           ...params.extraLoginOptions,
-          login_hint: this.state.userInfo.userId,
+          login_hint: userInfo.userId,
         },
         mfaLevel: "mandatory",
       },
@@ -303,8 +306,10 @@ export class Auth {
   async manageMFA(params: Partial<LoginParams>): Promise<void> {
     if (!this.sessionId) throw LoginError.userNotLoggedIn();
     await this.refreshSession();
+    const { userInfo } = this.state;
+    if (!userInfo) throw LoginError.userNotLoggedIn();
 
-    if (!this.state.userInfo.isMfaEnabled) throw LoginError.mfaNotEnabled();
+    if (!userInfo.isMfaEnabled) throw LoginError.mfaNotEnabled();
 
     // in case of redirect mode, redirect url will be dapp specified
     // in case of popup mode, redirect url will be sdk specified
@@ -327,12 +332,12 @@ export class Auth {
       params: {
         ...defaultParams,
         ...params,
-        authConnection: this.state.userInfo.authConnection,
-        authConnectionId: this.state.userInfo.authConnectionId,
-        groupedAuthConnectionId: this.state.userInfo.groupedAuthConnectionId,
+        authConnection: userInfo.authConnection,
+        authConnectionId: userInfo.authConnectionId,
+        groupedAuthConnectionId: userInfo.groupedAuthConnectionId,
         extraLoginOptions: {
           ...params.extraLoginOptions,
-          login_hint: this.state.userInfo.userId,
+          login_hint: userInfo.userId,
         },
         appState: jsonToBase64({ loginId, recordId }),
       },
@@ -428,8 +433,8 @@ export class Auth {
       throw LoginError.userNotLoggedIn();
     }
     return {
-      ...this.state.userInfo,
-      idToken: await this.sessionManager.getIdToken(),
+      ...(this.state.userInfo as AuthUserInfo),
+      idToken: (await this.sessionManager.getIdToken()) ?? undefined,
     };
   }
 
@@ -480,7 +485,7 @@ export class Auth {
     if (!this.sessionManager) throw InitializationError.notInitialized();
 
     const authRequestStorageManager = new StorageManager<AuthRequestPayload>({
-      sessionServerBaseUrl: payload.options.storageServerUrl,
+      sessionServerBaseUrl: payload.options.storageServerUrl as string,
       sessionNamespace: payload.options.sessionNamespace,
       sessionTime: timeout, // each login key must be used with 10 mins (might be used at the end of popup redirect)
       sessionId: loginId,
@@ -568,8 +573,8 @@ export class Auth {
     const currentWindow = new PopupHandler({
       url: loginUrl,
       timeout: popupTimeout,
-      serverUrl: this.options.storageServerUrl,
-      socketUrl: this.options.sessionSocketUrl,
+      serverUrl: this.options.storageServerUrl as string,
+      socketUrl: this.options.sessionSocketUrl as string,
     });
 
     return new Promise((resolve, reject) => {
