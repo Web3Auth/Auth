@@ -65,7 +65,6 @@
     "@toruslabs/oxlint-config-typescript": "^1.1.0",
     "@toruslabs/torus-scripts": "^9.0.1",
     "@toruslabs/tweetnacl-js": "^1.0.4",
-    "@types/color": "^4.2.1",
     "@types/deep-freeze-strict": "^1.1.2",
     "@types/node": "^25",
     "@types/once": "^1.4.5",
@@ -87,7 +86,7 @@
   "dependencies": {
     "@toruslabs/constants": "^16.1.1",
     "@toruslabs/customauth": "^22.3.3",
-    "@toruslabs/ffjavascript": "^6.0.0",
+    "@toruslabs/ffjavascript": "^7.0.0",
     "@toruslabs/metadata-helpers": "^8.2.0",
     "@toruslabs/secure-pub-sub": "^4.3.0",
     "@toruslabs/session-manager": "^5.6.0",
