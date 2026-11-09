@@ -1,0 +1,19 @@
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directories:
+      - /
+      - /examples/react-example
+      - /examples/vue-example
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 3
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 3
