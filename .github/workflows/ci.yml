@@ -1,77 +1,162 @@
-name: Build
+name: Validate
 
-on: [push]
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
 
 jobs:
   test:
+    name: run tests
+    permissions:
+      contents: read
     strategy:
       matrix:
-        node: ["24.x"]
+        node: ["24.22", "26"]
         os: [ubuntu-latest]
 
     runs-on: ${{ matrix.os }}
-
     steps:
       - name: Wiz sensor
         uses: Web3Auth/.github/.github/actions/wiz-sensor@545f7c255313f85d38a02dc36c4ad01387d03149 # v1.0.0
         with:
           enabled: ${{ vars.WIZ_SENSOR_ENABLED }}
           token: ${{ secrets.WIZ_SENSOR_TOKEN }}
-      - name: Check out Git repository
-        uses: actions/checkout@v4
 
-      - name: Set up node
-        uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Use Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node }}
           cache: "npm"
 
+      - name: Install npm 12
+        run: npm install --global npm@12.2.0
+
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Lint
-        run: npm run lint
+      - name: Check dependency hardening
+        run: npm run harden
 
-      - name: Test
-        run: npm run test
+      - name: Check lint and format
+        run: npm run check
+
+      - name: Typecheck
+        run: npm run typecheck
 
       - name: Build
         run: npm run build
 
-      - name: Pack and build example
-        if: github.ref == 'refs/heads/master'
+      - name: Run tests
+        run: npm run test
+
+      - name: Check packed package
+        run: npm run check:pack
+
+      - name: Build React example
+        working-directory: examples/react-example
         run: |
-          cd examples/vue-example
-          npm install
+          npm ci
           npm run build
 
-      # Set the credentials from repository settings/secrets
-      - name: Configure AWS credentials
-        if: github.ref == 'refs/heads/master'
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Build Vue example
+        working-directory: examples/vue-example
+        run: |
+          npm ci
+          npm run build
+
+  release-notes:
+    if: github.event_name == 'pull_request' && !startsWith(github.head_ref, 'changeset-release/')
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Use Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24.22"
+          cache: "npm"
+
+      - name: Install npm 12
+        run: npm install --global npm@12.2.0
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check release notes
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch --no-tags origin "${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+          npm exec -- changeset status --since="origin/${BASE_REF}"
+
+  deploy-demo:
+    name: deploy demo
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    needs: test
+    permissions:
+      contents: read
+      id-token: write
+    concurrency:
+      group: deploy-demo
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wiz sensor
+        uses: Web3Auth/.github/.github/actions/wiz-sensor@545f7c255313f85d38a02dc36c4ad01387d03149 # v1.0.0
+        with:
+          enabled: ${{ vars.WIZ_SENSOR_ENABLED }}
+          token: ${{ secrets.WIZ_SENSOR_TOKEN }}
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Use Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "26"
+          cache: "npm"
+
+      - name: Install npm 12
+        run: npm install --global npm@12.2.0
+
+      - name: Build package
+        run: |
+          npm ci
+          npm run build
+
+      - name: Build Vue example
+        working-directory: examples/vue-example
+        run: |
+          npm ci
+          npm run build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION_US }}
 
-      # Copy the files from build folder to the S3 bucket
-      # Upload to S3
-      - name: sync s3
-        if: github.ref == 'refs/heads/master'
-        uses: jakejarvis/s3-sync-action@master
-        env:
-          SOURCE_DIR: "./examples/vue-example/dist"
-          AWS_REGION: "us-east-1"
-          AWS_S3_BUCKET: "demo-auth.web3auth.io"
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Upload demo to S3
+        run: aws s3 sync ./examples/vue-example/dist s3://demo-auth.web3auth.io --region us-east-1
 
-      # Invalidate Cloudfront (this action)
-      - name: Update AWS Cloudfront Config
-        uses: chaitanyapotti/cloudfront-update-distribution@v4
-        if: github.ref == 'refs/heads/master'
-        with:
-          cloudfront-distribution-id: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}
-          cloudfront-invalidation-required: true
-          cloudfront-invalidation-path: "/*"
-          cloudfront-wait-for-service-update: false
+      - name: Invalidate CloudFront
+        env:
+          DISTRIBUTION_ID: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}
+        run: aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths "/*"

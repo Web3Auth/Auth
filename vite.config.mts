@@ -40,5 +40,8 @@ export default defineConfig({
     ...formatPreset(),
     ignorePatterns: ["examples/**", "dist/**", "coverage/**", "package-lock.json", "CHANGELOG.md", ".changeset/*.md"],
   },
-  lint,
+  lint: {
+    ...lint,
+    overrides: [{ files: ["scripts/**"], rules: { "no-console": "off" } }],
+  },
 });

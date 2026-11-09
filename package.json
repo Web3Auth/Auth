@@ -57,7 +57,8 @@
     "typecheck": "tsc --noEmit",
     "harden": "harden check --package-manager npm --level moderate",
     "prepack": "npm run build",
-    "test": "vp test run --config test/configs/node.config.mts --coverage"
+    "test": "vp test run --config test/configs/node.config.mts --coverage",
+    "check:pack": "node scripts/check-pack.mjs"
   },
   "devDependencies": {
     "@lavamoat/harden": "^0.8.1",
