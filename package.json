@@ -58,9 +58,13 @@
     "harden": "harden check --package-manager npm --level moderate",
     "prepack": "npm run build",
     "test": "vp test run --config test/configs/node.config.mts --coverage",
-    "check:pack": "node scripts/check-pack.mjs"
+    "check:pack": "node scripts/check-pack.mjs",
+    "changeset": "changeset",
+    "version-packages": "changeset version && npm install --package-lock-only --ignore-scripts",
+    "release-packages": "changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^3.0.3",
     "@lavamoat/harden": "^0.8.1",
     "@toruslabs/config": "^5.0.0",
     "@toruslabs/oxlint-config-typescript": "^1.1.0",
