@@ -57,11 +57,13 @@
     "prepack": "npm run build",
     "pre-commit": "lint-staged --cwd .",
     "test": "vitest run --config test/configs/node.config.mts --coverage",
-    "prepare": "husky"
+    "prepare": "husky",
+    "harden": "harden check --package-manager npm --level moderate"
   },
   "devDependencies": {
     "@babel/register": "^7.28.6",
     "@babel/runtime": "^7.29.2",
+    "@lavamoat/harden": "^0.8.1",
     "@rollup/plugin-replace": "^6.0.3",
     "@toruslabs/config": "^4.0.0",
     "@toruslabs/eslint-config-typescript": "^5.0.1",
@@ -106,8 +108,8 @@
     ]
   },
   "engines": {
-    "node": ">=22.x",
-    "npm": ">=10.x"
+    "node": ">=24.22.0",
+    "npm": ">=12"
   },
   "dependencies": {
     "@toruslabs/constants": "^16.1.1",
@@ -127,5 +129,17 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "npm",
+      "version": ">=11.17.0",
+      "onFail": "error"
+    }
+  },
+  "allowScripts": {
+    "esbuild@0.27.3": false,
+    "fsevents@2.3.3": false,
+    "unrs-resolver@1.11.1": false
   }
 }

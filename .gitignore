@@ -106,5 +106,3 @@ dist
 .DS_Store
 
 .rollup*
-
-.npmrc
