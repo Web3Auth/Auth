@@ -1,6 +1,7 @@
+import { EventEmitter } from "events";
+
 import { getPopupFeatures } from "@toruslabs/customauth";
 import { SecurePubSub } from "@toruslabs/secure-pub-sub";
-import { EventEmitter } from "events";
 import type { default as TypedEmitter } from "typed-emitter";
 
 import { type AuthFlowResult, type AuthTokenResponse } from "../utils";
