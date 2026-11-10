@@ -343,7 +343,7 @@ describe("JRPCEngineV2", () => {
         const engine = JRPCEngineV2.create<JRPCMiddlewareV2>({
           middleware: [
             ({ context }): void => {
-              context.set = (): MiddlewareContext => undefined;
+              context.set = (): MiddlewareContext => undefined as unknown as MiddlewareContext;
             },
           ],
         });
@@ -580,7 +580,7 @@ describe("JRPCEngineV2", () => {
       });
 
       it("throws if directly modifying the result", async () => {
-        const engine = JRPCEngineV2.create({
+        const engine = JRPCEngineV2.create<JRPCMiddlewareV2<JRPCRequest, { foo: string }>>({
           middleware: [
             async ({ next }): Promise<{ foo: string }> => {
               const result = (await next()) as { foo: string };
@@ -940,7 +940,7 @@ describe("JRPCEngineV2", () => {
           ],
         });
 
-        const result = await engine2.handle(makeRequest({ params: [1] }));
+        const result = await engine2.handle(makeRequest({ params: [1] }) as JRPCRequest<number[]>);
 
         // Since inner-engine mutations do not affect the outer request,
         // the outer middleware sees the original method and params.

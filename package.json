@@ -8,13 +8,13 @@
   "module": "dist/lib.esm/index.js",
   "unpkg": "dist/lib.esm/index.js",
   "jsdelivr": "dist/lib.esm/index.js",
-  "types": "dist/lib.cjs/types/index.d.ts",
+  "types": "dist/lib.cjs/index.d.ts",
   "files": [
     "dist"
   ],
   "exports": {
     ".": {
-      "types": "./dist/lib.cjs/types/index.d.ts",
+      "types": "./dist/lib.cjs/index.d.ts",
       "import": "./dist/lib.esm/index.js",
       "require": "./dist/lib.cjs/index.js"
     },
@@ -23,109 +23,101 @@
       "require": "./package.json"
     },
     "./core": {
-      "types": "./dist/lib.cjs/types/core/index.d.ts",
+      "types": "./dist/lib.cjs/core/index.d.ts",
       "import": "./dist/lib.esm/core/index.js",
       "require": "./dist/lib.cjs/core/index.js"
     },
     "./ed25519": {
-      "types": "./dist/lib.cjs/types/ed25519/index.d.ts",
+      "types": "./dist/lib.cjs/ed25519/index.d.ts",
       "import": "./dist/lib.esm/ed25519/index.js",
       "require": "./dist/lib.cjs/ed25519/index.js"
     },
     "./jrpc": {
-      "types": "./dist/lib.cjs/types/jrpc/index.d.ts",
+      "types": "./dist/lib.cjs/jrpc/index.d.ts",
       "import": "./dist/lib.esm/jrpc/index.js",
       "require": "./dist/lib.cjs/jrpc/index.js"
     },
     "./subkey": {
-      "types": "./dist/lib.cjs/types/subkey/index.d.ts",
+      "types": "./dist/lib.cjs/subkey/index.d.ts",
       "import": "./dist/lib.esm/subkey/index.js",
       "require": "./dist/lib.cjs/subkey/index.js"
     },
     "./utils": {
-      "types": "./dist/lib.cjs/types/utils/index.d.ts",
+      "types": "./dist/lib.cjs/utils/index.d.ts",
       "import": "./dist/lib.esm/utils/index.js",
       "require": "./dist/lib.cjs/utils/index.js"
     }
   },
   "scripts": {
-    "start": "cross-env FORCE_COLOR=1 torus-scripts start",
-    "dev": "rimraf dist/ && cross-env NODE_ENV=development torus-scripts start",
-    "build": "cross-env FORCE_COLOR=1 torus-scripts build",
-    "release": "cross-env FORCE_COLOR=1 torus-scripts release",
-    "lint": "torus-scripts lint",
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "lint": "vp lint --fix",
+    "fmt": "vp fmt",
+    "check": "vp check",
+    "typecheck": "tsc --noEmit",
+    "harden": "harden check --package-manager npm --level moderate",
     "prepack": "npm run build",
-    "pre-commit": "lint-staged --cwd .",
-    "test": "vitest run --config test/configs/node.config.mts --coverage",
-    "prepare": "husky"
+    "test": "vp test run --config test/configs/node.config.mts --coverage",
+    "check:pack": "node scripts/check-pack.mjs",
+    "changeset": "changeset",
+    "version-packages": "changeset version && npm install --package-lock-only --ignore-scripts",
+    "release-packages": "changeset publish"
   },
   "devDependencies": {
-    "@babel/register": "^7.28.6",
-    "@babel/runtime": "^7.29.2",
-    "@rollup/plugin-replace": "^6.0.3",
-    "@toruslabs/config": "^4.0.0",
-    "@toruslabs/eslint-config-typescript": "^5.0.1",
-    "@toruslabs/torus-scripts": "^8.0.1",
+    "@changesets/cli": "^3.0.3",
+    "@lavamoat/harden": "^0.8.1",
+    "@toruslabs/config": "^5.0.0",
+    "@toruslabs/oxlint-config-typescript": "^1.1.0",
+    "@toruslabs/torus-scripts": "^9.0.1",
     "@toruslabs/tweetnacl-js": "^1.0.4",
-    "@types/color": "^4.2.1",
     "@types/deep-freeze-strict": "^1.1.2",
     "@types/node": "^25",
     "@types/once": "^1.4.5",
     "@types/readable-stream": "^4.0.23",
-    "@vitest/coverage-istanbul": "^4.1.1",
+    "@vitest/coverage-istanbul": "5.1.0",
     "color": "^5.0.3",
-    "cross-env": "^10.1.0",
-    "eslint": "^9.39.2",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.4.0",
-    "prettier": "^3.8.1",
-    "rimraf": "^6.1.3",
-    "tsconfig-paths": "^4.2.0",
-    "tsconfig-paths-webpack-plugin": "^4.2.0",
-    "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
-    "vitest": "^4.1.1"
+    "typescript": "^7.0.2",
+    "vite-plus": "^1.5.0"
   },
   "peerDependencies": {
-    "@babel/runtime": "7.x",
     "color": "^5.x"
-  },
-  "optionalDependencies": {
-    "@nx/nx-linux-x64-gnu": "^22.6.1",
-    "@rollup/rollup-linux-x64-gnu": "^4.60.0"
   },
   "author": "Torus Labs",
   "license": "MIT",
-  "lint-staged": {
-    "!(*d).{js,ts}": [
-      "eslint --cache --fix",
-      "prettier --write"
-    ],
-    "*.{json,md}": [
-      "prettier --write"
-    ]
-  },
   "engines": {
-    "node": ">=22.x",
-    "npm": ">=10.x"
+    "node": ">=24.22.0",
+    "npm": ">=12"
   },
   "dependencies": {
-    "@toruslabs/constants": "^16.1.1",
+    "@toruslabs/constants": "^17.0.0",
     "@toruslabs/customauth": "^22.3.3",
-    "@toruslabs/ffjavascript": "^6.0.0",
-    "@toruslabs/metadata-helpers": "^8.2.0",
-    "@toruslabs/secure-pub-sub": "^4.3.0",
-    "@toruslabs/session-manager": "^5.6.0",
+    "@toruslabs/ffjavascript": "^7.0.0",
+    "@toruslabs/metadata-helpers": "^9.0.0",
+    "@toruslabs/secure-pub-sub": "^5.0.0",
+    "@toruslabs/session-manager": "^6.0.0",
     "deep-freeze-strict": "^1.1.1",
     "events": "^3.3.0",
     "json-stable-stringify": "^1.3.0",
     "klona": "^2.0.6",
     "loglevel": "^1.9.2",
     "once": "^1.4.0",
-    "readable-stream": "^4.7.0",
+    "readable-stream": "^4.8.0",
     "typed-emitter": "^2.1.0"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "npm",
+      "version": ">=11.17.0",
+      "onFail": "error"
+    }
+  },
+  "allowScripts": {
+    "fsevents@2.3.3": false
+  },
+  "overrides": {
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.5.0"
   }
 }

@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
 
-import { Auth } from "../auth";
-import { version } from "../utils";
 import {
   AUTH_DASHBOARD_DEVELOPMENT_URL,
   AUTH_DASHBOARD_PRODUCTION_URL,
@@ -15,6 +13,8 @@ import {
   type AuthOptions,
   WEB3AUTH_NETWORK,
 } from "../../utils";
+import { Auth } from "../auth";
+import { version } from "../utils";
 
 const createAuth = (options: Pick<AuthOptions, "buildEnv" | "sdkUrl" | "dashboardUrl"> = {}): Auth =>
   new Auth({

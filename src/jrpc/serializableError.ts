@@ -3,7 +3,7 @@ import stringify from "json-stable-stringify";
 export class SerializableError<T> extends Error {
   public code: number;
 
-  public data: T;
+  public data!: T;
 
   constructor({ code, message, data }: { code: number; message: string; data?: T }) {
     if (!Number.isInteger(code)) {
@@ -26,6 +26,6 @@ export class SerializableError<T> extends Error {
       message: this.message,
       data: this.data,
       stack: this.stack,
-    });
+    }) as string;
   }
 }

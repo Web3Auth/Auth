@@ -3,7 +3,7 @@
 import { Scalar, ZqField } from "@toruslabs/ffjavascript";
 import { add0x, bytesToHex, hexToBigInt, hexToBytes, isHexString, keccak256Bytes, utf8ToBytes } from "@toruslabs/metadata-helpers";
 
-const F = new ZqField(Scalar.fromString("21888242871839275222246405745257275088548364400416034343698204186575808495617"));
+const F = new ZqField(Scalar.fromString("21888242871839275222246405745257275088548364400416034343698204186575808495617") as bigint);
 
 const SEED = "mimcsponge";
 const NROUNDS = 220;
@@ -25,16 +25,15 @@ export function mimgGetIV(seed: string): bigint {
   let _seed = seed;
   if (typeof _seed === "undefined") _seed = SEED;
   const c = keccak256Padded(`${_seed}_iv`);
-  const cn = Scalar.fromString(BigInt(c).toString());
+  const cn = Scalar.fromString(BigInt(c).toString()) as bigint;
   const iv = Scalar.mod(cn, F.p);
   return iv;
 }
 
 export function mimcGetConstants(seed?: string, nRounds?: number): bigint[] {
   let _seed = seed;
-  let _nRounds = nRounds;
+  const _nRounds = nRounds ?? NROUNDS;
   if (typeof _seed === "undefined") _seed = SEED;
-  if (typeof nRounds === "undefined") _nRounds = NROUNDS;
   const cts = new Array(_nRounds);
   let c = keccak256Padded(SEED);
   for (let i = 1; i < _nRounds; i += 1) {
@@ -63,7 +62,7 @@ export function mimcHash(
   let xR = F.e(_xR_in);
   const k = F.e(_k);
   for (let i = 0; i < NROUNDS; i += 1) {
-    const c = cts[i];
+    const c = cts[i] as bigint;
     const t = i === 0 ? F.add(xL, k) : F.add(F.add(xL, k), c);
     const xR_tmp = F.e(xR);
     if (i < NROUNDS - 1) {
@@ -106,7 +105,7 @@ export function mimcMultiHash(arr: any[], key: any, numOutputs: number): bigint[
     outputs.push(R);
   }
   if (_numOutputs === 1) {
-    return [F.normalize(outputs[0])];
+    return [F.normalize(outputs[0] as bigint)];
   }
   return outputs.map((x) => F.normalize(x));
 }

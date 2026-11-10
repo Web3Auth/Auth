@@ -104,7 +104,7 @@ export function createStreamMiddleware(): {
   }
 
   function processMessage(res: JRPCResponse<unknown>, _encoding: unknown, cb: (error?: Error | null) => void) {
-    let err: Error;
+    let err: Error | undefined;
     try {
       const isNotification = isJRPCNotification(res as JRPCNotification<JRPCParams> | JRPCRequest<JRPCParams>);
       if (isNotification) {
@@ -227,7 +227,7 @@ export function createAsyncMiddleware<T extends JRPCParams, U>(asyncMiddleware: 
         await nextPromise; // we must wait until the return handler is called
         (returnHandlerCallback as ReturnHandlerCallback)(null);
       } else {
-        end(null);
+        end();
       }
     } catch (err: unknown) {
       const error = err as Error;

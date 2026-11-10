@@ -20,15 +20,15 @@ Please refer to docs for API Reference available [here](https://docs.tor.us/open
 
 ### Bundling
 
-Each sub package is distributed in 3 formats
+Each sub package is distributed in 2 formats
 
-- `esm` build `dist/lib.esm/index.js` in es6 format
-- `commonjs` build `dist/lib.cjs/index.js` in es5 format
+- `esm` build `dist/lib.esm/index.js` targeting ES2022
+- `commonjs` build `dist/lib.cjs/index.js` targeting ES2022
 
 By default, the appropriate format is used for your specified usecase
 You can use a different format (if you know what you're doing) by referencing the correct file
 
-The cjs build is not polyfilled with core-js.
+The builds are not polyfilled.
 It is upto the user to polyfill based on the browserlist they target
 
 ### Directly in Browser
@@ -64,10 +64,16 @@ To run tests:
 npm test
 ```
 
+To lint, format check and type check:
+
+```
+npm run check
+npm run typecheck
+```
+
 ## Requirements
 
-- This package requires a peer dependency of `@babel/runtime`
-- Node 22+
+- Node 24.22+ and npm 12+
 - You will need to whitelist your domain on [developer dashboard](https://dashboard.web3auth.io)
 
 ## 💬 Troubleshooting and Discussions
@@ -79,5 +85,3 @@ npm test
 ## License
 
 `AuthSdk` is [MIT Licensed](LICENSE)
-
-TODO: fix demo app ci
