@@ -42,7 +42,7 @@ export function isValidJson(value: unknown): value is Json {
  * @returns The stringified value.
  */
 export function stringify(value: unknown): string {
-  return jsonStableStringify(value, { space: 2 });
+  return jsonStableStringify(value, { space: 2 }) as string;
 }
 
 // ─── JRPC Type Guards ───────────────────────────────────────────────────────────

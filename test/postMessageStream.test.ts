@@ -50,9 +50,9 @@ describe("PostMessageStream", () => {
 
     expect(originConstraint).toBe("*");
     expect(message.target).toBe("auth");
-    expect(message.data.data.params[0]._origin).toBe("https://current.example");
+    expect(message.data.data.params[0]!._origin).toBe("https://current.example");
     // the original payload should not be mutated
-    expect(payload.data.params[0]._origin).toBeUndefined();
+    expect(payload.data.params[0]!._origin).toBeUndefined();
   });
 
   it("uses the previous _origin as the postMessage origin constraint before rewriting it", async () => {
@@ -70,7 +70,7 @@ describe("PostMessageStream", () => {
 
     expect(originConstraint).toBe("https://allowed.example");
     expect(message.target).toBe("auth");
-    expect(message.data.data.params[0]._origin).toBe("https://current.example");
+    expect(message.data.data.params[0]!._origin).toBe("https://current.example");
   });
 
   it("can be imported when MessageEvent is undefined", async () => {

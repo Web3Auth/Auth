@@ -23,32 +23,22 @@ A tool for processing JSON-RPC requests and responses.
 > For how to migrate from the legacy `JRPCEngine` to `JRPCEngineV2`, see [Migrating from `JRPCEngine`](#migrating-from-jrpcengine).
 
 ```ts
-import {
-  JRPCEngineV2,
-  type Json,
-  type JRPCMiddlewareV2,
-  type JRPCRequest,
-  type MiddlewareContext,
-} from '@web3auth/auth/jrpc';
+import { JRPCEngineV2, type Json, type JRPCMiddlewareV2, type JRPCRequest, type MiddlewareContext } from "@web3auth/auth/jrpc";
 
-type Middleware = JRPCMiddlewareV2<
-  JRPCRequest,
-  Json,
-  MiddlewareContext<{ hello: string }>
->;
+type Middleware = JRPCMiddlewareV2<JRPCRequest, Json, MiddlewareContext<{ hello: string }>>;
 
 // Engines are instantiated using the `create()` factory method as opposed to
 // the constructor, which is private.
 const engine = JRPCEngineV2.create<Middleware>({
   middleware: [
     ({ request, next, context }) => {
-      if (request.method === 'hello') {
-        context.set('hello', 'world');
+      if (request.method === "hello") {
+        context.set("hello", "world");
         return next();
       }
       return null;
     },
-    ({ context }) => context.assertGet('hello'),
+    ({ context }) => context.assertGet("hello"),
   ],
 });
 ```
@@ -56,7 +46,7 @@ const engine = JRPCEngineV2.create<Middleware>({
 Requests are handled asynchronously, stepping down the middleware stack until complete.
 
 ```ts
-const request = { id: '1', jsonrpc: '2.0', method: 'hello' };
+const request = { id: "1", jsonrpc: "2.0", method: "hello" };
 
 try {
   const result = await engine.handle(request);
@@ -71,17 +61,17 @@ objects into well-formed requests, and handles error serialization:
 
 ```ts
 const server = new JRPCServer({ engine, onError });
-const request = { id: '1', jsonrpc: '2.0', method: 'hello' };
+const request = { id: "1", jsonrpc: "2.0", method: "hello" };
 
 // server.handle() never throws
 const response = await server.handle(request);
-if ('result' in response) {
+if ("result" in response) {
   // Handle result
 } else {
   // Handle error
 }
 
-const notification = { jsonrpc: '2.0', method: 'hello' };
+const notification = { jsonrpc: "2.0", method: "hello" };
 
 // Always returns undefined for notifications
 await server.handle(notification);
@@ -100,7 +90,7 @@ the `context` will be copied over._
 #### Converting a V2 engine
 
 ```ts
-import { asLegacyMiddleware, JRPCEngineV2, JRPCEngine } from '@web3auth/auth/jrpc';
+import { asLegacyMiddleware, JRPCEngineV2, JRPCEngine } from "@web3auth/auth/jrpc";
 
 const legacyEngine = new JRPCEngine();
 
@@ -116,12 +106,7 @@ legacyEngine.push(asLegacyMiddleware(v2Engine));
 #### Converting V2 middleware
 
 ```ts
-import {
-  asLegacyMiddleware,
-  JRPCEngine,
-  type JRPCMiddlewareV2,
-  type JRPCRequest,
-} from '@web3auth/auth/jrpc';
+import { asLegacyMiddleware, JRPCEngine, type JRPCMiddlewareV2, type JRPCRequest } from "@web3auth/auth/jrpc";
 
 // Convert a single V2 middleware
 const middleware1: JRPCMiddlewareV2<JRPCRequest> = ({ request }) => {
@@ -158,12 +143,12 @@ Here's a basic example:
 const engine = JRPCEngineV2.create({
   middleware: [
     ({ next, context }) => {
-      context.set('foo', 'bar');
+      context.set("foo", "bar");
       // Proceed to the next middleware and return its result
       return next();
     },
     async ({ request, context }) => {
-      await doSomething(request, context.get('foo'));
+      await doSomething(request, context.get("foo"));
       // Return a result without calling next() to end the request
       return 42;
     },
@@ -180,9 +165,9 @@ export const permissionMiddleware: JRPCMiddlewareV2<
   Json, // The result
   MiddlewareContext<{ user: User; permissions: Permissions }>
 > = async ({ request, context, next }) => {
-  const user = context.assertGet('user');
+  const user = context.assertGet("user");
   const permissions = await getUserPermissions(user.id);
-  context.set('permissions', permissions);
+  context.set("permissions", permissions);
   return next();
 };
 ```
@@ -220,7 +205,7 @@ const engine = JRPCEngineV2.create({
   ],
 });
 
-const request = { jsonrpc: '2.0', id: '1', method: 'hello' };
+const request = { jsonrpc: "2.0", id: "1", method: "hello" };
 
 try {
   const result = await engine.handle(request);
@@ -234,7 +219,7 @@ For notifications, on the other hand, one of the engine's middleware must return
 and any non-`undefined` return values will cause an error to be thrown:
 
 ```ts
-const notification = { jsonrpc: '2.0', method: 'hello' };
+const notification = { jsonrpc: "2.0", method: "hello" };
 
 try {
   const result = await engine.handle(notification);
@@ -254,16 +239,12 @@ use the `isRequest` or `isNotification` utilities to determine what to do:
 > for a notification.
 
 ```ts
-import {
-  isRequest,
-  isNotification,
-  JRPCEngineV2,
-} from '@web3auth/auth/jrpc';
+import { isRequest, isNotification, JRPCEngineV2 } from "@web3auth/auth/jrpc";
 
 const engine = JRPCEngineV2.create({
   middleware: [
     async ({ request, next }) => {
-      if (isRequest(request) && request.method === 'everything') {
+      if (isRequest(request) && request.method === "everything") {
         return 42;
       }
       return next();
@@ -294,7 +275,7 @@ const engine = JRPCEngineV2.create({
       // The new request object will be deeply frozen
       return next({
         ...request,
-        method: 'modified_method',
+        method: "modified_method",
         params: [1, 2, 3],
       });
     },
@@ -316,8 +297,8 @@ const engine = JRPCEngineV2.create({
       return next({
         ...request,
         // Modifying either property will cause an error
-        jsonrpc: '3.0',
-        id: 'foo',
+        jsonrpc: "3.0",
+        id: "foo",
       });
     },
     () => 42,
@@ -341,15 +322,13 @@ const engine = JRPCEngineV2.create({
       const duration = Date.now() - startTime;
 
       // Log the request duration
-      console.log(
-        `Request ${request.method} producing ${result} took ${duration}ms`,
-      );
+      console.log(`Request ${request.method} producing ${result} took ${duration}ms`);
 
       // By returning `undefined`, the result will be forwarded unmodified to earlier
       // middleware.
     },
     ({ request }) => {
-      return 'Hello, World!';
+      return "Hello, World!";
     },
   ],
 });
@@ -365,7 +344,7 @@ const engine = JRPCEngineV2.create({
       const result = await next();
 
       // Add metadata to the result
-      if (result && typeof result === 'object') {
+      if (result && typeof result === "object") {
         // The new result will also be deeply frozen
         return {
           ...result,
@@ -381,15 +360,15 @@ const engine = JRPCEngineV2.create({
     },
     ({ request }) => {
       // Initial result
-      return { message: 'Hello, World!' };
+      return { message: "Hello, World!" };
     },
   ],
 });
 
 const result = await engine.handle({
-  id: '1',
-  jsonrpc: '2.0',
-  method: 'hello',
+  id: "1",
+  jsonrpc: "2.0",
+  method: "hello",
 });
 console.log(result);
 // {
@@ -409,18 +388,18 @@ Use the `context` to share data between middleware:
 const engine = JRPCEngineV2.create({
   middleware: [
     async ({ context, next }) => {
-      context.set('user', { id: '123', name: 'Alice' });
+      context.set("user", { id: "123", name: "Alice" });
       return next();
     },
     async ({ context, next }) => {
       // context.assertGet() throws if the value does not exist
-      const user = context.assertGet('user') as { id: string; name: string };
-      context.set('permissions', await getUserPermissions(user.id));
+      const user = context.assertGet("user") as { id: string; name: string };
+      context.set("permissions", await getUserPermissions(user.id));
       return next();
     },
     ({ context }) => {
-      const user = context.get('user');
-      const permissions = context.get('permissions');
+      const user = context.get("user");
+      const permissions = context.get("permissions");
       return { user, permissions };
     },
   ],
@@ -436,12 +415,12 @@ Context values are not frozen, and objects can be mutated as normal:
 const engine = JRPCEngineV2.create({
   middleware: [
     async ({ context, next }) => {
-      context.set('user', { id: '123', name: 'Alice' });
+      context.set("user", { id: "123", name: "Alice" });
       return next();
     },
     async ({ context, next }) => {
-      const user = context.assertGet('user') as { id: string; name: string };
-      user.name = 'Bob';
+      const user = context.assertGet("user") as { id: string; name: string };
+      user.name = "Bob";
       return next();
     },
     // ...
@@ -455,22 +434,16 @@ You can pass a `MiddlewareContext` instance directly to `handle()`:
 
 ```ts
 const context = new MiddlewareContext();
-context.set('foo', 'bar');
-const result = await engine.handle(
-  { id: '1', jsonrpc: '2.0', method: 'hello' },
-  { context },
-);
+context.set("foo", "bar");
+const result = await engine.handle({ id: "1", jsonrpc: "2.0", method: "hello" }, { context });
 console.log(result); // 'bar'
 ```
 
 You can also pass a plain object as a shorthand for a `MiddlewareContext` instance:
 
 ```ts
-const context = { foo: 'bar' };
-const result = await engine.handle(
-  { id: '1', jsonrpc: '2.0', method: 'hello' },
-  { context },
-);
+const context = { foo: "bar" };
+const result = await engine.handle({ id: "1", jsonrpc: "2.0", method: "hello" }, { context });
 console.log(result); // 'bar'
 ```
 
@@ -483,18 +456,18 @@ a context instance supports:
 
 ```ts
 const context = new MiddlewareContext();
-context.set('foo', 'bar');
-context.get('foo'); // 'bar'
-context.get('fizz'); // undefined
+context.set("foo", "bar");
+context.get("foo"); // 'bar'
+context.get("fizz"); // undefined
 ```
 
 By default, `KeyValues` is `Record<PropertyKey, unknown>`. However, any object type can be
 specified, effectively turning the context into a strongly typed `Map`:
 
 ```ts
-const context = new MiddlewareContext<{ foo: string }>([['foo', 'bar']]);
-context.get('foo'); // 'bar'
-context.get('fizz'); // Type error
+const context = new MiddlewareContext<{ foo: string }>([["foo", "bar"]]);
+context.get("foo"); // 'bar'
+context.get("fizz"); // Type error
 ```
 
 The context is itself exposed as the third generic parameter of the `JRPCMiddlewareV2` type.
@@ -512,18 +485,18 @@ const engine = JRPCEngineV2.create({
       return next();
     },
     ({ request, next }) => {
-      if (request.method === 'restricted') {
-        throw new Error('Method not allowed');
+      if (request.method === "restricted") {
+        throw new Error("Method not allowed");
       }
-      return 'Success';
+      return "Success";
     },
   ],
 });
 
 try {
-  await engine.handle({ id: '1', jsonrpc: '2.0', method: 'restricted' });
+  await engine.handle({ id: "1", jsonrpc: "2.0", method: "restricted" });
 } catch (error) {
-  console.error('Request failed:', error.message);
+  console.error("Request failed:", error.message);
 }
 ```
 
@@ -542,18 +515,18 @@ const engine = JRPCEngineV2.create({
     },
     ({ request }) => {
       if (!isValid(request)) {
-        throw new Error('Invalid request');
+        throw new Error("Invalid request");
       }
     },
   ],
 });
 
 const result = await engine.handle({
-  id: '1',
-  jsonrpc: '2.0',
-  method: 'hello',
+  id: "1",
+  jsonrpc: "2.0",
+  method: "hello",
 });
-console.log('Result:', result);
+console.log("Result:", result);
 // Request hello errored: Error: Invalid request
 // Result: 42
 ```
@@ -656,7 +629,7 @@ Engines can be nested by converting them to middleware using `asMiddleware()`:
 const subEngine = JRPCEngineV2.create({
   middleware: [
     ({ request }) => {
-      return 'Sub-engine result';
+      return "Sub-engine result";
     },
   ],
 });
@@ -679,7 +652,7 @@ used as middleware:
 const loggingEngine = JRPCEngineV2.create({
   middleware: [
     ({ request, next }) => {
-      console.log('Observed request:', request.method);
+      console.log("Observed request:", request.method);
     },
   ],
 });
@@ -688,14 +661,14 @@ const mainEngine = JRPCEngineV2.create({
   middleware: [
     loggingEngine.asMiddleware(),
     ({ request }) => {
-      return 'success';
+      return "success";
     },
   ],
 });
 
-const request = { id: '1', jsonrpc: '2.0', method: 'hello' };
+const request = { id: "1", jsonrpc: "2.0", method: "hello" };
 const result = await mainEngine.handle(request);
-console.log('Result:', result);
+console.log("Result:", result);
 // Observed request: hello
 // Result: success
 
@@ -714,15 +687,11 @@ middleware pipelines:
 
 ```ts
 const requestEngine = JRPCEngineV2.create({
-  middleware: [
-    /* Request-only middleware */
-  ],
+  middleware: [/* Request-only middleware */],
 });
 
 const notificationEngine = JRPCEngineV2.create({
-  middleware: [
-    /* Notification-only middleware */
-  ],
+  middleware: [/* Notification-only middleware */],
 });
 
 const orchestratorEngine = JRPCEngineV2.create({
@@ -742,30 +711,30 @@ const orchestratorEngine = JRPCEngineV2.create({
 The `JRPCServer` wraps a `JRPCEngineV2` to provide JSON-RPC 2.0 compliance and error handling. It coerces raw request objects into well-formed requests and handles error serialization.
 
 ```ts
-import { JRPCEngineV2, JRPCServer } from '@web3auth/auth/jrpc';
+import { JRPCEngineV2, JRPCServer } from "@web3auth/auth/jrpc";
 
 const engine = JRPCEngineV2.create({ middleware });
 
 const server = new JRPCServer({
   engine,
   // onError receives the raw error, before it is coerced into a JSON-RPC error.
-  onError: (error) => console.error('Server error:', error),
+  onError: (error) => console.error("Server error:", error),
 });
 
 // server.handle() never throws - all errors are handled by onError
 const response = await server.handle({
-  id: '1',
-  jsonrpc: '2.0',
-  method: 'hello',
+  id: "1",
+  jsonrpc: "2.0",
+  method: "hello",
 });
-if ('result' in response) {
+if ("result" in response) {
   // Handle successful response
 } else {
   // Handle error response
 }
 
 // Notifications always return undefined
-const notification = { jsonrpc: '2.0', method: 'hello' };
+const notification = { jsonrpc: "2.0", method: "hello" };
 await server.handle(notification); // Returns undefined
 ```
 
@@ -804,16 +773,15 @@ of the middleware function may need to be updated.
 For example if you have a legacy middleware implementation like this:
 
 ```ts
-const createFooMiddleware =
-  (processFoo: (req: JRPCRequest) => string) => (req, res, next, end) => {
-    if (req.method === 'foo') {
-      const fooResult = processFoo(req); // May expect non-JSON-RPC properties on the request object!
-      res.result = fooResult;
-      end();
-    } else {
-      next();
-    }
-  };
+const createFooMiddleware = (processFoo: (req: JRPCRequest) => string) => (req, res, next, end) => {
+  if (req.method === "foo") {
+    const fooResult = processFoo(req); // May expect non-JSON-RPC properties on the request object!
+    res.result = fooResult;
+    end();
+  } else {
+    next();
+  }
+};
 ```
 
 `processFoo` may expect non-JSON-RPC properties on the request object. To fully migrate the middleware, you need to
@@ -828,13 +796,12 @@ If injected dependencies mutate the request object, it will cause an error.
 For example, if you have a legacy middleware implementation like this:
 
 ```ts
-const createBarMiddleware =
-  (processBar: (req: JRPCRequest) => string) => (req, _res, next, _end) => {
-    if (req.method === 'bar') {
-      processBar(req); // May mutate the request object!
-    }
-    next();
-  };
+const createBarMiddleware = (processBar: (req: JRPCRequest) => string) => (req, _res, next, _end) => {
+  if (req.method === "bar") {
+    processBar(req); // May mutate the request object!
+  }
+  next();
+};
 ```
 
 `processBar` may mutate the request object. To fully migrate the middleware, you need to

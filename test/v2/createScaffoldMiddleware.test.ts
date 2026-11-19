@@ -15,7 +15,7 @@ describe("createScaffoldMiddleware", () => {
         throw rpcErrors.internal({ message: "method3" });
       },
       method4: ({ request }: { request: JRPCRequest<{ foo: string }> }) => {
-        return request.params.foo;
+        return request.params!.foo;
       },
     };
 

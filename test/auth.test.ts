@@ -17,7 +17,7 @@ describe("Auth MFA methods", () => {
   let storedPayload: AuthRequestPayload | undefined;
 
   const enableMFA = async (params: Partial<LoginParams> = {}) => {
-    auth.state.userInfo.isMfaEnabled = false;
+    auth.state.userInfo!.isMfaEnabled = false;
     const result = await auth.enableMFA(params);
     expect(result).toBe(false);
     expect(handledPayload).toBeDefined();

@@ -16,7 +16,7 @@ export const makeNotification = <Request extends JRPCNotification = JRPCNotifica
   jsonrpc,
   method: "test_request",
   params: [],
-  ...params,
+  ...(params as object),
 });
 
 /**
@@ -85,8 +85,8 @@ export function createDeferredPromise<Result = void>({
 }: {
   suppressUnhandledRejection?: boolean;
 } = {}): DeferredPromise<Result> {
-  let resolve: DeferredPromise<Result>["resolve"];
-  let reject: DeferredPromise<Result>["reject"];
+  let resolve!: DeferredPromise<Result>["resolve"];
+  let reject!: DeferredPromise<Result>["reject"];
   // eslint-disable-next-line promise/param-names
   const promise = new Promise<Result>((innerResolve: DeferredPromise<Result>["resolve"], innerReject: DeferredPromise<Result>["reject"]) => {
     resolve = innerResolve;

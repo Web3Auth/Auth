@@ -27,7 +27,7 @@ function makeNotification(overrides: Record<string, unknown> = {}) {
 }
 
 describe("createEngineStreamV2", () => {
-  let mockStream: Record<string, Mock>;
+  let mockStream: Record<"push" | "once", Mock>;
   let capturedWrite: (req: Record<string, unknown>, encoding: string, cb: (error?: Error | null) => void) => void;
 
   function createMockEngine(handleImpl: Mock = vi.fn().mockResolvedValue(null)) {
@@ -176,7 +176,7 @@ describe("createEngineStreamV2", () => {
       capturedWrite(makeRequest({ id: "err-2" }), "utf-8", vi.fn());
       await flushPromises();
 
-      const pushed = mockStream.push.mock.calls[0][0] as Record<string, unknown>;
+      const pushed = mockStream.push.mock.calls[0]![0] as Record<string, unknown>;
       expect((pushed.error as Record<string, unknown>).message).toContain("specific failure");
     });
 
@@ -196,7 +196,7 @@ describe("createEngineStreamV2", () => {
       capturedWrite(makeRequest({ id: "err-3" }), "utf-8", vi.fn());
       await flushPromises();
 
-      const pushed = mockStream.push.mock.calls[0][0] as Record<string, unknown>;
+      const pushed = mockStream.push.mock.calls[0]![0] as Record<string, unknown>;
       expect((pushed.error as Record<string, unknown>).message).toContain("Internal JSON-RPC error");
     });
   });
@@ -408,17 +408,17 @@ describe("createEngineStreamV2", () => {
       capturedWrite(makeRequest({ id: "second" }), "utf-8", vi.fn());
       capturedWrite(makeRequest({ id: "third" }), "utf-8", vi.fn());
 
-      resolvers["third"]("result-3");
+      resolvers["third"]!("result-3");
       await flushPromises();
       expect(mockStream.push).toHaveBeenCalledTimes(1);
       expect(mockStream.push).toHaveBeenCalledWith(expect.objectContaining({ id: "third", result: "result-3" }));
 
-      resolvers["first"]("result-1");
+      resolvers["first"]!("result-1");
       await flushPromises();
       expect(mockStream.push).toHaveBeenCalledTimes(2);
       expect(mockStream.push).toHaveBeenCalledWith(expect.objectContaining({ id: "first", result: "result-1" }));
 
-      resolvers["second"]("result-2");
+      resolvers["second"]!("result-2");
       await flushPromises();
       expect(mockStream.push).toHaveBeenCalledTimes(3);
       expect(mockStream.push).toHaveBeenCalledWith(expect.objectContaining({ id: "second", result: "result-2" }));
@@ -463,7 +463,7 @@ describe("createEngineStreamV2", () => {
       capturedWrite(makeRequest({ id: "ok" }), "utf-8", vi.fn());
       capturedWrite(makeRequest({ id: "bad" }), "utf-8", vi.fn());
 
-      rejecters["bad"](new Error("failed"));
+      rejecters["bad"]!(new Error("failed"));
       await flushPromises();
 
       expect(mockStream.push).toHaveBeenCalledTimes(1);
@@ -471,7 +471,7 @@ describe("createEngineStreamV2", () => {
         expect.objectContaining({ id: "bad", error: expect.objectContaining({ message: expect.stringContaining("failed") }) })
       );
 
-      resolvers["ok"]("success");
+      resolvers["ok"]!("success");
       await flushPromises();
 
       expect(mockStream.push).toHaveBeenCalledTimes(2);
@@ -518,7 +518,7 @@ describe("createEngineStreamV2", () => {
 
       const callbacks = Array.from({ length: count }, () => vi.fn());
       for (let i = 0; i < count; i++) {
-        capturedWrite(makeRequest({ id: `req-${i}` }), "utf-8", callbacks[i]);
+        capturedWrite(makeRequest({ id: `req-${i}` }), "utf-8", callbacks[i]!);
       }
 
       callbacks.forEach((cb) => expect(cb).toHaveBeenCalledOnce());

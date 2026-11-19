@@ -32,7 +32,7 @@ describe("JRPCEngine", () => {
     const mockCallback = vi.fn();
     const error = new SerializableError({ code: errorCodes.rpc.invalidRequest, message: "Requests must be plain objects. Received: object" });
 
-    engine.handle(null, mockCallback);
+    engine.handle(null as unknown as JRPCRequest, mockCallback);
 
     expect(mockCallback).toHaveBeenCalledWith(error, {
       id: undefined,
@@ -71,10 +71,10 @@ describe("JRPCEngine", () => {
     };
     engine.push(middleware);
     const response = await engine.handle([MOCK_REQUEST, MOCK_REQUEST]);
-    expect(response[0].error).toBeDefined();
-    expect(response[0].error?.message).toBe("test error");
-    expect(response[1].error).toBeDefined();
-    expect(response[1].error?.message).toBe("test error");
+    expect(response[0]!.error).toBeDefined();
+    expect(response[0]!.error?.message).toBe("test error");
+    expect(response[1]!.error).toBeDefined();
+    expect(response[1]!.error?.message).toBe("test error");
   });
 
   it("should execute the return handlers if provided in `next` function", async () => {
@@ -112,7 +112,7 @@ describe("JRPCEngine Middlewares", () => {
     };
 
     const middleware2 = ((_req: JRPCRequest<JRPCParams>, res: JRPCResponse<string[]>, _next: JRPCEngineNextCallback, end: () => void) => {
-      res.result = [...res.result, "merged-md-2"];
+      res.result = [...(res.result ?? []), "merged-md-2"];
       end();
     }) as JRPCMiddleware<JRPCParams, unknown>;
 
@@ -172,9 +172,9 @@ describe("JRPCEngine request validation", () => {
     const engine = new JRPCEngine();
     const responses = await engine.handle([]);
     expect(responses).toHaveLength(1);
-    expect(responses[0].error?.code).toBe(errorCodes.rpc.invalidRequest);
-    expect(responses[0].id).toBeUndefined();
-    expect(responses[0].jsonrpc).toBe("2.0");
+    expect(responses[0]!.error?.code).toBe(errorCodes.rpc.invalidRequest);
+    expect(responses[0]!.id).toBeUndefined();
+    expect(responses[0]!.jsonrpc).toBe("2.0");
   });
 });
 

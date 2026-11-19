@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { EventEmitter } from "events";
+
 import TypedEventEmitter, { EventMap } from "typed-emitter";
 
 import { JRPCParams, JRPCRequest, JRPCResponse, Maybe, RequestArguments, SendCallBack } from "./interfaces";

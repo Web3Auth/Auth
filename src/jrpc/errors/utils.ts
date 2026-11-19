@@ -16,7 +16,7 @@ export function isValidNumber(value: unknown): value is number {
       return true;
     }
 
-    const parsedValue = Number(value.toString());
+    const parsedValue = Number((value as { toString(): string }).toString());
     return Number.isInteger(parsedValue);
   } catch {
     return false;

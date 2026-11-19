@@ -10,15 +10,19 @@
   "dependencies": {
     "@web3auth/auth": "../../",
     "bs58": "^6.0.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   },
   "devDependencies": {
-    "@types/bs58": "^5.0.0",
-    "@types/react": "^19.1.0",
-    "@types/react-dom": "^19.1.0",
-    "@vitejs/plugin-react": "^4.4.1",
-    "typescript": "~5.9.3",
-    "vite": "^7.3.1"
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^4.7.0",
+    "typescript": "^7.0.2",
+    "vite": "^7.3.8"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": false,
+    "file:../../../..": false,
+    "fsevents@2.3.3": false
   }
 }

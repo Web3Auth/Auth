@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import tailwind from "@tailwindcss/vite";
 import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite";

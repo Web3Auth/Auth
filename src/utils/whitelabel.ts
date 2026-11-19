@@ -37,16 +37,16 @@ export function applyWhiteLabelTheme(colorPackage: ColorConstructor, rootElement
   if (theme.primary) {
     const themeSet = generateWhiteLabelTheme(colorPackage, theme.primary);
 
-    rootElement.style.setProperty("--app-primary-900", themeSet[0]);
-    rootElement.style.setProperty("--app-primary-800", themeSet[1]);
-    rootElement.style.setProperty("--app-primary-700", themeSet[2]);
-    rootElement.style.setProperty("--app-primary-600", themeSet[3]);
-    rootElement.style.setProperty("--app-primary-500", themeSet[4]);
-    rootElement.style.setProperty("--app-primary-400", themeSet[5]);
-    rootElement.style.setProperty("--app-primary-300", themeSet[6]);
-    rootElement.style.setProperty("--app-primary-200", themeSet[7]);
-    rootElement.style.setProperty("--app-primary-100", themeSet[8]);
-    rootElement.style.setProperty("--app-primary-50", themeSet[9]);
+    rootElement.style.setProperty("--app-primary-900", themeSet[0] as string);
+    rootElement.style.setProperty("--app-primary-800", themeSet[1] as string);
+    rootElement.style.setProperty("--app-primary-700", themeSet[2] as string);
+    rootElement.style.setProperty("--app-primary-600", themeSet[3] as string);
+    rootElement.style.setProperty("--app-primary-500", themeSet[4] as string);
+    rootElement.style.setProperty("--app-primary-400", themeSet[5] as string);
+    rootElement.style.setProperty("--app-primary-300", themeSet[6] as string);
+    rootElement.style.setProperty("--app-primary-200", themeSet[7] as string);
+    rootElement.style.setProperty("--app-primary-100", themeSet[8] as string);
+    rootElement.style.setProperty("--app-primary-50", themeSet[9] as string);
   }
 
   if (theme.onPrimary) {
