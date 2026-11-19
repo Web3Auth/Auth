@@ -44,7 +44,7 @@ jobs:
         run: npm ci
 
       - name: Check dependency hardening
-        run: npm run harden
+        run: npm exec --no -- harden check --package-manager npm
 
       - name: Check lint and format
         run: npm run check
@@ -74,7 +74,10 @@ jobs:
           npm run build
 
   release-notes:
-    if: github.event_name == 'pull_request' && !startsWith(github.head_ref, 'changeset-release/')
+    if: |
+      github.event_name == 'pull_request' &&
+      !startsWith(github.head_ref, 'changeset-release/') &&
+      !startsWith(github.head_ref, 'dependabot/')
     permissions:
       contents: read
     runs-on: ubuntu-latest

@@ -59,6 +59,7 @@
     "prepack": "npm run build",
     "test": "vp test run --config test/configs/node.config.mts --coverage",
     "check:pack": "node scripts/check-pack.mjs",
+    "prepare": "husky",
     "changeset": "changeset",
     "version-packages": "changeset version && npm install --package-lock-only --ignore-scripts",
     "release-packages": "changeset publish"
@@ -68,29 +69,40 @@
     "@lavamoat/harden": "^0.8.1",
     "@toruslabs/config": "^5.0.0",
     "@toruslabs/oxlint-config-typescript": "^1.1.0",
-    "@toruslabs/torus-scripts": "^9.0.1",
+    "@toruslabs/torus-scripts": "^9.0.2",
     "@toruslabs/tweetnacl-js": "^1.0.4",
     "@types/deep-freeze-strict": "^1.1.2",
-    "@types/node": "^25",
+    "@types/node": "^26.6.6",
     "@types/once": "^1.4.5",
-    "@types/readable-stream": "^4.0.23",
+    "@types/readable-stream": "^4.0.25",
     "@vitest/coverage-istanbul": "5.1.0",
     "color": "^5.0.3",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "typescript": "^7.0.2",
-    "vite-plus": "^1.5.0"
+    "vite-plus": "^1.6.0"
   },
   "peerDependencies": {
     "color": "^5.x"
   },
   "author": "Torus Labs",
   "license": "MIT",
+  "lint-staged": {
+    "*.{js,mjs,cjs,ts,mts,cts}": [
+      "vp lint --fix",
+      "vp fmt"
+    ],
+    "*.{json,md}": [
+      "vp fmt"
+    ]
+  },
   "engines": {
     "node": ">=24.22.0",
     "npm": ">=12"
   },
   "dependencies": {
     "@toruslabs/constants": "^17.0.0",
-    "@toruslabs/customauth": "^22.3.3",
+    "@toruslabs/customauth": "^23.0.0",
     "@toruslabs/ffjavascript": "^7.0.0",
     "@toruslabs/metadata-helpers": "^9.0.0",
     "@toruslabs/secure-pub-sub": "^5.0.0",
@@ -118,6 +130,7 @@
     "fsevents@2.3.3": false
   },
   "overrides": {
-    "vite": "npm:@voidzero-dev/vite-plus-core@1.5.0"
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.6.0",
+    "vitest": "5.1.0"
   }
 }
