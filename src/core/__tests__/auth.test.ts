@@ -9,8 +9,8 @@ import {
   AUTH_SERVICE_PRODUCTION_URL,
   AUTH_SERVICE_STAGING_URL,
   AUTH_SERVICE_TESTING_URL,
-  BUILD_ENV,
   type AuthOptions,
+  BUILD_ENV,
   WEB3AUTH_NETWORK,
 } from "../../utils";
 import { Auth } from "../auth";
