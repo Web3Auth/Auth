@@ -185,7 +185,7 @@
                   label="Select Build Env*"
                   aria-label="Select Build Env*"
                   placeholder="Select Build Env"
-                  :options="Object.values(BUILD_ENV).map((x) => ({ name: x, value: x }))"
+                  :options="SERVER_BUILD_ENVS.map((x) => ({ name: x, value: x }))"
                   :helper-text="`Selected Build Env: ${selectedBuildEnv}`"
                   :error="!selectedBuildEnv"
                 />
@@ -487,7 +487,6 @@
 <script setup lang="ts">
 import {
   BUILD_ENV,
-  BUILD_ENV_TYPE,
   LANGUAGE_TYPE,
   LANGUAGES,
   AUTH_CONNECTION,
@@ -519,14 +518,39 @@ import * as ethWeb3 from "./lib/ethWeb3";
 import whitelabel from "./lib/whitelabel";
 import { getEvmChainConfig } from "./chainConfig";
 
-const OPENLOGIN_PROJECT_IDS: Record<WEB3AUTH_NETWORK_TYPE, string> = {
-  [WEB3AUTH_NETWORK.MAINNET]: "BJRZ6qdDTbj6Vd5YXvV994TYCqY42-PxldCetmvGTUdoq6pkCqdpuC1DIehz76zuYdaq1RJkXGHuDraHRhCQHvA",
-  [WEB3AUTH_NETWORK.TESTNET]: "BHr_dKcxC0ecKn_2dZQmQeNdjPgWykMkcodEHkVvPMo71qzOV6SgtoN8KCvFdLN7bf34JOm89vWQMLFmSfIo84A",
-  [WEB3AUTH_NETWORK.AQUA]: "BM34K7ZqV3QwbDt0lvJFCdr4DxS9gyn7XZ2wZUaaf0Ddr71nLjPCNNYtXuGWxxc4i7ivYdgQzFqKlIot4IWrWCE",
-  [WEB3AUTH_NETWORK.CYAN]: "BEglQSgt4cUWcj6SKRdu5QkOXTsePmMcusG5EAoyjyOYKlVRjIF1iCNnMOTfpzCiunHRrMui8TIwQPXdkQ8Yxuk",
-  [WEB3AUTH_NETWORK.SAPPHIRE_DEVNET]: "BMAtt15LpfxIshlsX0fumPV99TNfJAEPkSTEbZR2KHyr2S8P-XKodZlcJaNUTbg0gYEbyJeqi-R6ssvG0yU5X1g",
-  [WEB3AUTH_NETWORK.SAPPHIRE_MAINNET]: "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ",
-  [WEB3AUTH_NETWORK.CELESTE]: "openlogin",
+const SERVER_BUILD_ENVS = [BUILD_ENV.PRODUCTION, BUILD_ENV.TESTING] as const;
+
+type ServerBuildEnv = (typeof SERVER_BUILD_ENVS)[number];
+
+const OPENLOGIN_PROJECT_IDS: Record<WEB3AUTH_NETWORK_TYPE, Record<ServerBuildEnv, string>> = {
+  [WEB3AUTH_NETWORK.MAINNET]: {
+    [BUILD_ENV.PRODUCTION]: "BJRZ6qdDTbj6Vd5YXvV994TYCqY42-PxldCetmvGTUdoq6pkCqdpuC1DIehz76zuYdaq1RJkXGHuDraHRhCQHvA",
+    [BUILD_ENV.TESTING]: "BJRZ6qdDTbj6Vd5YXvV994TYCqY42-PxldCetmvGTUdoq6pkCqdpuC1DIehz76zuYdaq1RJkXGHuDraHRhCQHvA",
+  },
+  [WEB3AUTH_NETWORK.TESTNET]: {
+    [BUILD_ENV.PRODUCTION]: "BHr_dKcxC0ecKn_2dZQmQeNdjPgWykMkcodEHkVvPMo71qzOV6SgtoN8KCvFdLN7bf34JOm89vWQMLFmSfIo84A",
+    [BUILD_ENV.TESTING]: "BHr_dKcxC0ecKn_2dZQmQeNdjPgWykMkcodEHkVvPMo71qzOV6SgtoN8KCvFdLN7bf34JOm89vWQMLFmSfIo84A",
+  },
+  [WEB3AUTH_NETWORK.AQUA]: {
+    [BUILD_ENV.PRODUCTION]: "BM34K7ZqV3QwbDt0lvJFCdr4DxS9gyn7XZ2wZUaaf0Ddr71nLjPCNNYtXuGWxxc4i7ivYdgQzFqKlIot4IWrWCE",
+    [BUILD_ENV.TESTING]: "BM34K7ZqV3QwbDt0lvJFCdr4DxS9gyn7XZ2wZUaaf0Ddr71nLjPCNNYtXuGWxxc4i7ivYdgQzFqKlIot4IWrWCE",
+  },
+  [WEB3AUTH_NETWORK.CYAN]: {
+    [BUILD_ENV.PRODUCTION]: "BEglQSgt4cUWcj6SKRdu5QkOXTsePmMcusG5EAoyjyOYKlVRjIF1iCNnMOTfpzCiunHRrMui8TIwQPXdkQ8Yxuk",
+    [BUILD_ENV.TESTING]: "BEglQSgt4cUWcj6SKRdu5QkOXTsePmMcusG5EAoyjyOYKlVRjIF1iCNnMOTfpzCiunHRrMui8TIwQPXdkQ8Yxuk",
+  },
+  [WEB3AUTH_NETWORK.SAPPHIRE_DEVNET]: {
+    [BUILD_ENV.PRODUCTION]: "BMAtt15LpfxIshlsX0fumPV99TNfJAEPkSTEbZR2KHyr2S8P-XKodZlcJaNUTbg0gYEbyJeqi-R6ssvG0yU5X1g",
+    [BUILD_ENV.TESTING]: "BIJmWf_4-VUfVFbZGG5Ljn_HriuJFAyGW1tFexi2y2HsVbcPS2cnOSjqyRxnyiWOMJXtQPPll0IAj-5lRLzgI6Y",
+  },
+  [WEB3AUTH_NETWORK.SAPPHIRE_MAINNET]: {
+    [BUILD_ENV.PRODUCTION]: "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ",
+    [BUILD_ENV.TESTING]: "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ",
+  },
+  [WEB3AUTH_NETWORK.CELESTE]: {
+    [BUILD_ENV.PRODUCTION]: "openlogin",
+    [BUILD_ENV.TESTING]: "openlogin",
+  },
 };
 
 const languages: { name: string; value: LANGUAGE_TYPE }[] = [
@@ -561,7 +585,7 @@ const selectedUxMode = ref<UX_MODE_TYPE>(UX_MODE.REDIRECT);
 const selectedOpenloginNetwork = ref<WEB3AUTH_NETWORK_TYPE>(WEB3AUTH_NETWORK.SAPPHIRE_DEVNET);
 const includeUserDataInToken = ref(true);
 const useWalletKey = ref(false);
-const selectedBuildEnv = ref<BUILD_ENV_TYPE>(BUILD_ENV.PRODUCTION);
+const selectedBuildEnv = ref<ServerBuildEnv>(BUILD_ENV.PRODUCTION);
 const emailFlowType = ref<EMAIL_FLOW_TYPE>(EMAIL_FLOW.code);
 const customSdkUrl = ref("");
 const whitelabelConfig = ref<WhiteLabelData>(whitelabel);
@@ -596,7 +620,7 @@ const isValidMFASelection = computed(() => {
 });
 
 const openloginInstance = computed(() => {
-  const currentClientId = OPENLOGIN_PROJECT_IDS[selectedOpenloginNetwork.value];
+  const currentClientId = OPENLOGIN_PROJECT_IDS[selectedOpenloginNetwork.value][selectedBuildEnv.value];
   const op = new Auth({
     clientId: currentClientId,
     network: selectedOpenloginNetwork.value,
@@ -613,7 +637,7 @@ const openloginInstance = computed(() => {
 });
 
 const setProvider = async (privKey: string) => {
-  const currentClientId = OPENLOGIN_PROJECT_IDS[selectedOpenloginNetwork.value];
+  const currentClientId = OPENLOGIN_PROJECT_IDS[selectedOpenloginNetwork.value][selectedBuildEnv.value];
   const rpcTarget = getEvmChainConfig(1, currentClientId)?.rpcTarget || "";
   const account = privateKeyToAccount(`0x${privKey}`);
   walletClient.value = createWalletClient({
