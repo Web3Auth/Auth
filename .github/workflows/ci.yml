@@ -33,40 +33,50 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Pack and build example
-        if: github.ref == 'refs/heads/v11'
+  deploy-demo:
+    name: deploy demo
+    if: github.event_name == 'push' && github.ref == 'refs/heads/v11'
+    needs: test
+    permissions:
+      contents: read
+      id-token: write
+    concurrency:
+      group: deploy-demo-v11
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24.x"
+          cache: "npm"
+
+      - name: Build package
         run: |
-          cd examples/vue-example
           npm install
           npm run build
 
-      # Set the credentials from repository settings/secrets
+      - name: Build Vue example
+        working-directory: examples/vue-example
+        run: |
+          npm install
+          npm run build
+
       - name: Configure AWS credentials
-        if: github.ref == 'refs/heads/v11'
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION_US }}
 
-      # Copy the files from build folder to the S3 bucket
-      # Upload to S3
-      - name: sync s3
-        if: github.ref == 'refs/heads/v11'
-        uses: jakejarvis/s3-sync-action@master
-        env:
-          SOURCE_DIR: "./examples/vue-example/dist"
-          AWS_REGION: "us-east-1"
-          AWS_S3_BUCKET: "demo-auth-v11.web3auth.io"
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Upload demo to S3
+        run: aws s3 sync ./examples/vue-example/dist s3://demo-auth-v11.web3auth.io --region us-east-1
 
-      # Invalidate Cloudfront (this action)
-      - name: Update AWS Cloudfront Config
-        uses: chaitanyapotti/cloudfront-update-distribution@v4
-        if: github.ref == 'refs/heads/v11'
-        with:
-          cloudfront-distribution-id: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID_V11 }}
-          cloudfront-invalidation-required: true
-          cloudfront-invalidation-path: "/*"
-          cloudfront-wait-for-service-update: false
+      - name: Invalidate CloudFront
+        env:
+          DISTRIBUTION_ID: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID_V11 }}
+        run: aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths "/*"
