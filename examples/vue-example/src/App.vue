@@ -9,7 +9,7 @@
       </div>
       <div id="navbar-sticky" class="items-center justify-between w-full md:flex md:w-auto md:order-1">
         <div class="max-sm:w-full">
-          <h1 class="leading-tight text-3xl font-extrabold">demo-auth.web3auth.io</h1>
+          <h1 class="leading-tight text-3xl font-extrabold">demo-auth-v11.web3auth.io</h1>
           <p v-if="privKey" class="leading-tight text-1xl">Web3Auth Private key : {{ privKey }}</p>
         </div>
       </div>
