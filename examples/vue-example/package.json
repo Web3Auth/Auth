@@ -13,7 +13,7 @@
     "@web3auth/auth": "../../",
     "bs58": "^6.0.0",
     "viem": "^2.57.20",
-    "vue": "^3.5.45"
+    "vue": "^3.5.46"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.5",
