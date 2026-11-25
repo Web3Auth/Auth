@@ -12,7 +12,7 @@
     "@toruslabs/vue-icons": "^9.0.0",
     "@web3auth/auth": "../../",
     "bs58": "^6.0.0",
-    "viem": "^2.57.20",
+    "viem": "^2.58.4",
     "vue": "^3.5.45"
   },
   "devDependencies": {
