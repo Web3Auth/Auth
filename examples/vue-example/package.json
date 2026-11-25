@@ -8,7 +8,7 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@toruslabs/vue-components": "^9.0.1",
+    "@toruslabs/vue-components": "^10.0.0",
     "@toruslabs/vue-icons": "^9.0.0",
     "@web3auth/auth": "../../",
     "bs58": "^6.0.0",
