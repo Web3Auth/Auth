@@ -75,7 +75,7 @@
     "@types/node": "^26.6.6",
     "@types/once": "^1.4.5",
     "@types/readable-stream": "^4.0.25",
-    "@vitest/coverage-istanbul": "5.1.0",
+    "@vitest/coverage-istanbul": "5.1.1",
     "color": "^5.0.3",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
